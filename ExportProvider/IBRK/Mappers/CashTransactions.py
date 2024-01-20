@@ -12,6 +12,15 @@ def convertDividendCashTransactionRowToDividend(line: CT.CashTransactionRow) -> 
     divLine.DividendReceivedDateTime = line.DateAndTime
     divLine.SecurityISIN = line.Isin
 
+    ordinaryDividend = line.Description.__contains__("Ordinary Dividend")
+    bonusDividend = line.Description.__contains__("Bonus Dividend")
+
+    if ordinaryDividend:
+        divLine.DividendType = d.DividendTypes.ORDINARY
+
+    if bonusDividend:
+        divLine.DividendType = d.DividendTypes.BONUS
+
     return divLine
 
 def convertWitheldTaxCashTransactionRowToWitheldTax(line: CT.CashTransactionRow) -> d.WitholdingTaxLine:

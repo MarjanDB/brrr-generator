@@ -33,7 +33,9 @@ class DividendsReport:
 
             reportLine.DividendAmount += dividend.getAmountInBaseCurrency()
             reportLine.DateReceived = dividend.DividendReceivedDateTime
-            reportLine.DividendType = d.DividendTypes.COMMON
+            reportLine.DividendType = dividend.DividendType
+
+            reportLine.DividendIdentifierForTracking = actionId
             
             try:
                 responsibleCompany = self.companyLookupProvider.getCompanyInfo(dividend.SecurityISIN)
@@ -52,7 +54,7 @@ class DividendsReport:
 
             except Exception as e:
                 print("Failed for ISIN: " + dividend.SecurityISIN)
-                print(e)
+                
 
             # print(reportLine)
 
@@ -67,6 +69,8 @@ class DividendsReport:
 
             reportLine.ForeignTaxPaid += withheldTax.getAmountInBaseCurrency()
             reportLine.DateReceived = withheldTax.WitholdingTaxReceivedDateTime
+
+            reportLine.DividendIdentifierForTracking = actionId
 
             try:
                 responsibleCompany = self.companyLookupProvider.getCompanyInfo(withheldTax.SecurityISIN)
@@ -85,7 +89,6 @@ class DividendsReport:
 
             except Exception as e:
                 print("Failed for ISIN: " + withheldTax.SecurityISIN)
-                print(e)
 
         createdLines = list(actionToDividendMapping.values())
         return createdLines
@@ -106,7 +109,8 @@ class DividendsReport:
                 'Znesek dividend (v EUR)': data.DividendAmount.__round__(2),
                 'Tuji davek (v EUR)': data.ForeignTaxPaid.__round__(2),
                 'Država vira': data.CountryOfOrigin,
-                'Uveljavljam oprostitev po mednarodni pogodbi': data.TaxReliefParagraphInInternationalTreaty
+                'Uveljavljam oprostitev po mednarodni pogodbi': data.TaxReliefParagraphInInternationalTreaty,
+                'Action Tracking': data.DividendIdentifierForTracking
             }
             return converted
         

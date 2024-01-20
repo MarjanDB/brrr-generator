@@ -1,11 +1,16 @@
 from arrow import Arrow
 from enum import Enum
 
+# https://www.racunovodstvo.net/zakonodaja/zdoh/90-clen
 class DividendTypes(str, Enum):
-    COMMON = "1"        # Dividenda - tretji odstavek 97. člena Zakona o dohodnini (Uradni list RS, št. 51/3-UPB6)
+    ORDINARY = "1"      # Dividenda - tretji odstavek 97. člena Zakona o dohodnini (Uradni list RS, št. 51/3-UPB6)
     CONSTRUCTIVE = "2"  # Prikrito izplačilo dobička, določeno v zakonu, ki ureja davek od dohodka pravnih oseb
     LIQUIDATING = "3"   # Guessing: Dobiček, ki se razdeli v zvezi z dolžniškimi vrednostnimi papirji, ki zagotavljajo udeležbo v dobičku plačnika
-    OTHER = "4"         #  	Dohodek, dosežen na podlagi delitve čistega dobička vzajemnega sklada ali delitve prihodkov vzajemnega sklada, razen dohodka, ki ga zavezanec doseže na podlagi delitve prihodkov vzajemnega sklada v obliki obresti – 3. točka četrtega odstavka 90. člena Zakona o dohodnini (Uradni list RS, št. 51/10-UPB6)
+    OTHER = "4"         # DOHODEK, KI GA ZAVEZANEC DOSEŽE NA PODLAGI DELITVE DOBIČKA, ČISTEGA DOBIČKA ALI PRIHODKOV INVESTICIJSKEGA SKLADA, RAZEN DOHODKA, KI GA ZAVEZANEC DOSEŽE NA PODLAGI DELITEV PRIHODKOV INVESTICIJSKEGA SKLADA V OBLIKI OBRESTI (3. TOČKA ČETRTEGA ODSTAVKA 90. ČLENA ZAKONA O DOHODNINI (URADNI LIST RS ŠT. 30/12, 40/12 – ZUJF, 75/12, 94/12, 52/13 – ODL. US, 96/13, 29/14 – ODL. US, 50/14, 23/15, 55/15 IN 63/16)) 
+    OTHER_2 = "5"       # VREDNOST VRNJENEGA NAKNADNEGA VPLAČILA (4. TOČKA ČETRTEGA ODSTAVKA 90. ČLENA ZDOH) 
+    BONUS = "6"       # DODATNA NAKNADNA IZPLAČILA V ZVEZI Z ODSVOJITVIJO DELEŽA (5. TOČKA ČETRTEGA ODSTAVKA 90. ČLENA ZDOH) 
+
+
 
 
 class DividendLine:
@@ -18,6 +23,7 @@ class DividendLine:
     DividendActionID: str
     SecurityISIN: str
     ListingExchange: str
+    DividendType: DividendTypes
 
     def __init__(self):
         self.AccountID = ""
@@ -82,6 +88,9 @@ class DividendReportLine:
 
     TaxReliefParagraphInInternationalTreaty = str | None
 
+
+    DividendIdentifierForTracking: str
+
     def __init__(self):
         self.TaxNumberForDividendPayer = ""
         self.DividendPayerIdentificationNumber = ""
@@ -90,5 +99,6 @@ class DividendReportLine:
         self.DividendPayerCountryOfOrigin = ""
         self.CountryOfOrigin = ""
         self.TaxReliefParagraphInInternationalTreaty = None
+        self.DividendIdentifierForTracking = ""
 
 

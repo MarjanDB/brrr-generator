@@ -14,7 +14,7 @@ class TreatyType(str, Enum):
 class Country:
     name: str
     shortCode2: str
-    treaties: dict[TreatyType, str]
+    treaties: dict[TreatyType, str] # https://www.gov.si/drzavni-organi/ministrstva/ministrstvo-za-finance/o-ministrstvu/direktorat-za-sistem-davcnih-carinskih-in-drugih-javnih-prihodkov/seznam-veljavnih-konvencij-o-izogibanju-dvojnega-obdavcevanja-dohodka-in-premozenja/
 
     def __init__(self, name: str, shortCode2: str, treaties: dict[TreatyType, str]):
         self.name = name
@@ -22,20 +22,29 @@ class Country:
         self.treaties = treaties
 
 class CountryLookupProvider:
+    problematicCountryMappings: dict[str, str]
+
     def __init__(self):
         definitionsPath = os.path.join(os.getcwd(), 'InfoProviders', 'internationalTreaties.json')
+        problematicCountryMappingsFile = os.path.join(os.getcwd(), 'InfoProviders', 'specialCountryMappings.json')
 
         with open(definitionsPath, "r") as read_file:
             self.definitions = json.load(read_file)
+            
+        with open(problematicCountryMappingsFile, "r") as read_file:
+            self.problematicCountryMappings = json.load(read_file)
 
     def getCountry(self, country: str) -> Country:
-        countryDefinition = pc.countries.get(name=country)
-        shortCode = countryDefinition.alpha_2
+        if self.problematicCountryMappings.get(country) is None:
+            countryDefinition = pc.countries.get(name=country)
+            shortCode = countryDefinition.alpha_2
+        else:
+            shortCode = self.problematicCountryMappings[country]
 
-        definedTreaties = self.definitions["treaties"]["taxRelief"]
+        definedTreaties = dict(self.definitions["treaties"]["taxRelief"])
         thisCountryTreaties : dict[TreatyType, str] = {}
 
-        if definedTreaties[shortCode]:
+        if definedTreaties.get(shortCode) is not None:
             thisCountryTreaties[TreatyType.TaxRelief] = str(definedTreaties[shortCode])
 
         return Country(country, shortCode, thisCountryTreaties)
@@ -100,10 +109,36 @@ class CompanyInfo:
 
 class CompanyLookupProvider:
     mappings: dict[str, yf.Ticker] = dict()
+    isinToTickerLookup: dict[str, str]
+    isinToCompanyLookup: dict[str, dict[str, str]]
+
+    def __init__(self):
+        definitionsPath = os.path.join(os.getcwd(), 'InfoProviders', 'missingISINLookup.json')
+
+        with open(definitionsPath, "r") as read_file:
+            self.isinToTickerLookup = dict(json.load(read_file))
+
+        definitionsPath = os.path.join(os.getcwd(), 'InfoProviders', 'missingCompaniesLookup.json')
+
+        with open(definitionsPath, "r") as read_file:
+            self.isinToCompanyLookup = dict(json.load(read_file))
+
+
 
     def getCompanyInfo(self, isin: str) -> CompanyInfo:
-        yfinanceTicker = self.getInfoByISIN(isin)
-        companyInfo = yfinanceTicker.info
+        try:
+            yfinanceTicker = self.getInfoByISIN(isin)
+            companyInfo = yfinanceTicker.info
+            if companyInfo.values().__len__() == 0:
+                raise ValueError("Empty Company Data for ISIN ({})".format(isin))
+        except Exception:
+            print("Failed online lookup of ISIN ({}), falling back to hardcoded company definitions".format(isin))
+
+            if self.isinToCompanyLookup.get(isin) is None:
+                raise ValueError("Failed lookup of ISIN ({})".format(isin))
+            
+            companyInfo = self.isinToCompanyLookup[isin]
+
 
         address1 = companyInfo.get("address1")
         address2 = companyInfo.get("address2")
@@ -127,4 +162,14 @@ class CompanyLookupProvider:
         return lookUp
     
     def getInfoByISIN(self, isin: str) -> yf.Ticker:
-        return self.getInfoByTicker(isin)
+        try:
+            return self.getInfoByTicker(isin)
+        except Exception as e:
+            print("Failed lookup using ISIN ({}), trying again with ISIN mapping if exists".format(isin))
+            print("Cause: {}".format(e))
+
+        if self.isinToTickerLookup.get(isin) is None:
+            raise ValueError("ISIN {} has no mapping to fall back on".format(isin))
+        
+        return self.getInfoByTicker(self.isinToTickerLookup[isin])
+
