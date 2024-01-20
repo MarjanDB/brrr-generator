@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+ib-insync = "0.9.*"
+pandas = "2.1.*"
+numpy = "*"
+arrow = "*"
+yfinance = "*"
+pycountry = "*"
+
+[dev-packages]
+ipykernel = "6.29.*"
+
+[requires]
+python_version = "3.11"
