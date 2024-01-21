@@ -10,6 +10,7 @@ numpy = "*"
 arrow = "*"
 yfinance = "*"
 pycountry = "*"
+lxml = "*"
 
 [dev-packages]
 ipykernel = "6.29.*"

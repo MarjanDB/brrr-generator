@@ -99,7 +99,7 @@ class DividendsReport:
 
         def convertToDict(data : d.DividendReportLine):
             converted = {
-                'Datum prejema dividend': data.DateReceived.format("DD. MM. YYYY."),
+                'Datum prejema dividend': data.DateReceived.format("YYYY-MM-DD"),
                 'Davčna številka izplačevalca dividend': data.TaxNumberForDividendPayer,
                 'Identifikacijska številka izplačevalca dividend': data.DividendPayerIdentificationNumber,
                 'Naziv izplačevalca dividend': data.DividendPayerTitle,
@@ -107,7 +107,7 @@ class DividendsReport:
                 'Država izplačevalca dividend': data.DividendPayerCountryOfOrigin,
                 'Šifra vrste dividend': data.DividendType.value,
                 'Znesek dividend (v EUR)': data.DividendAmount.__round__(2),
-                'Tuji davek (v EUR)': data.ForeignTaxPaid.__round__(2),
+                'Tuji davek (v EUR)': data.ForeignTaxPaid.__abs__().__round__(2),
                 'Država vira': data.CountryOfOrigin,
                 'Uveljavljam oprostitev po mednarodni pogodbi': data.TaxReliefParagraphInInternationalTreaty,
                 'Action Tracking': data.DividendIdentifierForTracking
@@ -119,4 +119,8 @@ class DividendsReport:
         dataframe = pd.DataFrame.from_records(dataAsDict)
 
         return dataframe
+    
+    # https://edavki.durs.si/EdavkiPortal/OpenPortal/pages/technicals/FormsXml.aspx
+    # def convertToXMLForSubmission(self, data: pd.DataFrame):
+        
 
