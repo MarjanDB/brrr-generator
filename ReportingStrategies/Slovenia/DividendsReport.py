@@ -2,8 +2,16 @@ import ReportingStrategies.Common.Dividend as d
 from InfoProviders.CompanyLookupProvider import CompanyLookupProvider
 from InfoProviders.CompanyLookupProvider import CountryLookupProvider
 from InfoProviders.CompanyLookupProvider import TreatyType
+from ReportingStrategies.Slovenia.CommonReport import TaxPayerInfo
 import pycountry as pc
 import pandas as pd
+from lxml import etree
+from dataclasses import dataclass
+
+@dataclass
+class DividendReportConfig:
+    period: str
+
 
 class DividendsReport:
 
@@ -121,6 +129,43 @@ class DividendsReport:
         return dataframe
     
     # https://edavki.durs.si/EdavkiPortal/OpenPortal/pages/technicals/FormsXml.aspx
-    # def convertToXMLForSubmission(self, data: pd.DataFrame):
-        
+    def appendToXMLForSubmission(self, data: list[dict[str, str]], config: DividendReportConfig, taxPayerInfo: TaxPayerInfo, templateEnvelope: etree.Element):
+
+        nsmap = templateEnvelope.nsmap
+        nsmap[None] = "http://edavki.durs.si/Documents/Schemas/Doh_Div_3.xsd"
+        envelope = etree.Element(templateEnvelope.tag, attrib=templateEnvelope.attrib, nsmap=nsmap)
+        envelope[:] = templateEnvelope[:]
+
+        body = etree.SubElement(envelope, "body")
+
+        Doh_Div = etree.SubElement(body, "Doh_Div")
+        etree.SubElement(Doh_Div, "Period").text = config.period
+        etree.SubElement(Doh_Div, "EmailAddress").text = ""
+        etree.SubElement(Doh_Div, "PhoneNumber").text = ""
+        etree.SubElement(Doh_Div, "ResidentCountry").text = taxPayerInfo.countryID
+        etree.SubElement(Doh_Div, "IsResident").text = str(taxPayerInfo.countryID == 'SI').lower()
+        # etree.SubElement(Doh_Obr, "Locked").text = False
+        # etree.SubElement(Doh_Obr, "SelfReport").text = False
+        # etree.SubElement(Doh_Obr, "WfTypeU").text = False
+
+        def transformDividendLineToXML(line: dict[str, str]):
+            dividendLine = etree.SubElement(body, "Dividend")
+            etree.SubElement(dividendLine, "Date").text = line['Datum prejema dividend']
+            etree.SubElement(dividendLine, "PayerTaxNumber").text = line['Davčna številka izplačevalca dividend']
+            etree.SubElement(dividendLine, "PayerIdentificationNumber").text = line['Identifikacijska številka izplačevalca dividend']
+            etree.SubElement(dividendLine, "PayerName").text = line['Naziv izplačevalca dividend']
+            etree.SubElement(dividendLine, "PayerAddress").text = line['Naslov izplačevalca dividend']
+            etree.SubElement(dividendLine, "PayerCountry").text = line['Država izplačevalca dividend']
+            etree.SubElement(dividendLine, "Type").text = line['Šifra vrste dividend']
+            etree.SubElement(dividendLine, "Value").text = str(line['Znesek dividend (v EUR)'])
+            etree.SubElement(dividendLine, "ForeignTax").text = str(line['Tuji davek (v EUR)'])
+            etree.SubElement(dividendLine, "SourceCountry").text = line['Država vira']
+            etree.SubElement(dividendLine, "ReliefStatement").text = line['Uveljavljam oprostitev po mednarodni pogodbi']
+
+        for line in data:
+            transformDividendLineToXML(line)    # type: ignore
+
+        return envelope
+
+
 
