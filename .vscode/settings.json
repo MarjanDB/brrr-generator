@@ -4,5 +4,8 @@
             "pattern": "GeneratedReports/Doh_Div_3.xml",
             "systemId": "ReportingStrategies/Slovenia/Schemas/Doh_Div_3.xsd"
         }
-    ]
+    ],
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportIncompatibleVariableOverride": "information"
+    }
 }
