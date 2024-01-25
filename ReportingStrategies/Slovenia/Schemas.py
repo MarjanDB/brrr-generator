@@ -26,7 +26,7 @@ class ExportGenericDividendLine:
     DividendActionID: str
     SecurityISIN: str
     ListingExchange: str
-    EdavkiDividendType: EdavkiDividendTypes
+    EdavkiDividendType: EdavkiDividendTypes | None
 
     LineType: DividendType
 

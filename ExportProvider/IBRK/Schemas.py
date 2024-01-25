@@ -235,7 +235,7 @@ class CashTransactionType(str, Enum):
 class CashTransaction:
     ClientAccountID: str
     AccountAlias: str | None
-    Model: Model
+    Model: Model | None
     CurrencyPrimary: str
     FXRateToBase: float
     AssetClass: AssetClass
