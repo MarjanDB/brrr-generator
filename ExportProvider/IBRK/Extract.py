@@ -68,23 +68,9 @@ def extractCashTransactionFromXML(root: etree.ElementBase) -> list[CashTransacti
 
     return list(map(lambda node: xmlNodeToCashTransaction(node), cashTransactionNodes))
 
-
-"""
-    @staticmethod
-    def mergeCashTransactionReports(reports: "list[CashTransactionReport]"):
-        allReportRows = list(map(lambda report: report.rows, reports))
-        allRows = [x for xs in allReportRows for x in xs]
+def mergeCashTransactions(transactions: list[list[CashTransaction]]) -> list[CashTransaction]:
+        allRows = [x for xs in transactions for x in xs]
 
         uniqueTransactionRows = list({row.TransactionID: row for row in allRows}.values())
 
-        emptyReport = CashTransactionReport([])
-
-        emptyReport.rows = uniqueTransactionRows
-
-        return emptyReport
-    
-    def getTransactionRowsOfType(self, type: CashTransactionType):
-        return list(filter(lambda row: row.Type == type, self.rows))
-
-
-"""
+        return uniqueTransactionRows

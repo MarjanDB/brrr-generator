@@ -1,5 +1,5 @@
 import ExportProvider.IBRK.ExportReports.CashTransactions as CT
-import ReportingStrategies.Common.Dividend as d
+import ReportingStrategies.Slovenia.Schemas as d
 
 def convertDividendCashTransactionRowToDividend(line: CT.CashTransactionRow) -> d.DividendLine:
     divLine = d.DividendLine()
