@@ -6,8 +6,8 @@ from typing import TypeVar, Generic
 from Common.Configuration import TaxPayerInfo
 from Common.Configuration import ReportBaseConfig
 from ReportingStrategies.Slovenia.Schemas import ExportGenericDividendLine
-from ReportingStrategies.Slovenia.Schemas import DividendType
-from ReportingStrategies.Slovenia.Schemas import EdavkiDividendReportLine
+from ReportingStrategies.Slovenia.Schemas import DividendLineType
+from ReportingStrategies.Slovenia.Schemas import EDavkiDividendReportLine
 from InfoProviders.CompanyLookupProvider import CompanyLookupProvider
 from InfoProviders.CompanyLookupProvider import CountryLookupProvider
 from InfoProviders.CompanyLookupProvider import TreatyType
@@ -74,35 +74,39 @@ class ReportProvider(Generic[INPUT_DATA]):
         self.taxPayerInfo = taxPayerInfo
 
     @abstractmethod
-    def generateXmlReport(self, data: list[INPUT_DATA], templateEnvelope: etree.ElementBase) -> None:
+    def generateXmlReport(self, data: list[INPUT_DATA], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
+        ...
+
+    @abstractmethod
+    def generateDataFrameReport(self, data: list[INPUT_DATA],) -> pd.DataFrame:
         ...
 
 
 class DividendReport(ReportProvider[ExportGenericDividendLine]):
     def segmentDataBasedOnLineType(self, data: list[ExportGenericDividendLine]):
-        dividendLines = list(filter(lambda line: line.LineType == DividendType.DIVIDEND, data))
-        witholdingTax = list(filter(lambda line: line.LineType == DividendType.WITHOLDING_TAX, data))
+        dividendLines = list(filter(lambda line: line.LineType == DividendLineType.DIVIDEND, data))
+        witholdingTax = list(filter(lambda line: line.LineType == DividendLineType.WITHOLDING_TAX, data))
 
         return {
-            DividendType.DIVIDEND: dividendLines,
-            DividendType.WITHOLDING_TAX: witholdingTax
+            DividendLineType.DIVIDEND: dividendLines,
+            DividendLineType.WITHOLDING_TAX: witholdingTax
         }
     
-    def calculateLines(self, data: list[ExportGenericDividendLine]) -> list[EdavkiDividendReportLine]:
-        actionToDividendMapping : dict[str, EdavkiDividendReportLine] = dict()
+    def calculateLines(self, data: list[ExportGenericDividendLine]) -> list[EDavkiDividendReportLine]:
+        actionToDividendMapping : dict[str, EDavkiDividendReportLine] = dict()
         segmentedLines = self.segmentDataBasedOnLineType(data)
 
-        for dividend in segmentedLines[DividendType.DIVIDEND]:
+        for dividend in segmentedLines[DividendLineType.DIVIDEND]:
             actionId = dividend.DividendActionID
 
-            thisDividendLine = EdavkiDividendReportLine(
+            thisDividendLine = EDavkiDividendReportLine(
                 DateReceived = dividend.ReceivedDateTime,
                 TaxNumberForDividendPayer = "",
                 DividendPayerIdentificationNumber = dividend.SecurityISIN,
                 DividendPayerTitle = "",
                 DividendPayerAddress = "",
                 DividendPayerCountryOfOrigin = "",
-                DividendType = dividend.EdavkiDividendType,
+                DividendType = dividend.EDavkiDividendType,
                 CountryOfOrigin = "",
                 DividendIdentifierForTracking = dividend.DividendActionID,
                 TaxReliefParagraphInInternationalTreaty = "",
@@ -117,17 +121,17 @@ class DividendReport(ReportProvider[ExportGenericDividendLine]):
             actionToDividendMapping[actionId].DividendAmount += dividend.getAmountInBaseCurrency()
 
 
-        for withheldTax in segmentedLines[DividendType.WITHOLDING_TAX]:
+        for withheldTax in segmentedLines[DividendLineType.WITHOLDING_TAX]:
             actionId = withheldTax.DividendActionID
 
-            thisDividendLine = EdavkiDividendReportLine(
+            thisDividendLine = EDavkiDividendReportLine(
                 DateReceived = withheldTax.ReceivedDateTime,
                 TaxNumberForDividendPayer = "",
                 DividendPayerIdentificationNumber = withheldTax.SecurityISIN,
                 DividendPayerTitle = "",
                 DividendPayerAddress = "",
                 DividendPayerCountryOfOrigin = "",
-                DividendType = withheldTax.EdavkiDividendType,
+                DividendType = withheldTax.EDavkiDividendType,
                 CountryOfOrigin = "",
                 DividendIdentifierForTracking = withheldTax.DividendActionID,
                 TaxReliefParagraphInInternationalTreaty = "",
@@ -175,7 +179,7 @@ class DividendReport(ReportProvider[ExportGenericDividendLine]):
     def generateDataFrameReport(self, data: list[ExportGenericDividendLine]) -> pd.DataFrame:
         lines = self.calculateLines(data)
 
-        def convertToDict(data: EdavkiDividendReportLine):
+        def convertToDict(data: EDavkiDividendReportLine):
             converted = {
                 'Datum prejema dividend': data.DateReceived.format("YYYY-MM-DD"),
                 'Davčna številka izplačevalca dividend': data.TaxNumberForDividendPayer,
@@ -198,7 +202,7 @@ class DividendReport(ReportProvider[ExportGenericDividendLine]):
     
     
 
-    def generateXmlReport(self, data: list[ExportGenericDividendLine], templateEnvelope: etree.ElementBase):
+    def generateXmlReport(self, data: list[ExportGenericDividendLine], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
         lines = self.calculateLines(data)
 
         nsmap = templateEnvelope.nsmap
@@ -216,7 +220,7 @@ class DividendReport(ReportProvider[ExportGenericDividendLine]):
         etree.SubElement(Doh_Div, "IsResident").text = str(self.taxPayerInfo.countryID == 'SI').lower()
 
 
-        def transformDividendLineToXML(line: EdavkiDividendReportLine):
+        def transformDividendLineToXML(line: EDavkiDividendReportLine):
             dividendLine = etree.SubElement(body, "Dividend")
             etree.SubElement(dividendLine, "Date").text = line.DateReceived.format("YYYY-MM-DD")
             etree.SubElement(dividendLine, "PayerTaxNumber").text = line.TaxNumberForDividendPayer
