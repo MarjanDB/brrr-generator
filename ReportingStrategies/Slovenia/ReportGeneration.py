@@ -1,17 +1,13 @@
 from lxml import etree
 from enum import Enum
 import pandas as pd
-from abc import abstractmethod
-from typing import TypeVar, Generic
-from Common.Configuration import TaxPayerInfo
-from Common.Configuration import ReportBaseConfig
 from ReportingStrategies.GenericFormats import GenericDividendLine
 from ReportingStrategies.GenericFormats import GenericDividendLineType
 from ReportingStrategies.Slovenia.Schemas import EDavkiDividendReportLine
 from ReportingStrategies.Slovenia.Schemas import EDavkiDividendType
-from InfoProviders.InfoLookupProvider import CompanyLookupProvider
-from InfoProviders.InfoLookupProvider import CountryLookupProvider
 from InfoProviders.InfoLookupProvider import TreatyType
+from ReportingStrategies.GenericReports import GenericDividendReport
+from ReportingStrategies.GenericReports import GenericReportWrapper
 
 # https://edavki.durs.si/EdavkiPortal/PersonalPortal/[360253]/Pages/Help/sl/WorkflowType1.htm
 class DocumentWorkflowType(str, Enum):
@@ -25,13 +21,7 @@ class DocumentWorkflowType(str, Enum):
     CANCELLED = "S"
 
 
-class ReportGenerator:
-    taxPayerInfo: TaxPayerInfo
-
-    def __init__(self, taxPayerInfo: TaxPayerInfo):
-        self.taxPayerInfo = taxPayerInfo
-
-
+class EDavkiReportWrapper(GenericReportWrapper):
     def createReportEnvelope(self):
         edp = "http://edavki.durs.si/Documents/Schemas/EDP-Common-1.xsd"
 
@@ -63,27 +53,9 @@ class ReportGenerator:
         return Envelope
     
 
-INPUT_DATA = TypeVar('INPUT_DATA')
-REPORT_CONFIG = TypeVar('REPORT_CONFIG')
-
-class ReportProvider(Generic[INPUT_DATA]):
-    companyLookupProvider = CompanyLookupProvider()
-    countryLookupProvider = CountryLookupProvider()
-
-    def __init__(self, reportConfig: ReportBaseConfig, taxPayerInfo: TaxPayerInfo) -> None:
-        self.reportConfig = reportConfig
-        self.taxPayerInfo = taxPayerInfo
-
-    @abstractmethod
-    def generateXmlReport(self, data: list[INPUT_DATA], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
-        ...
-
-    @abstractmethod
-    def generateDataFrameReport(self, data: list[INPUT_DATA],) -> pd.DataFrame:
-        ...
 
 
-class DividendReport(ReportProvider[GenericDividendLine]):
+class EDavkiDividendReport(GenericDividendReport):
     def segmentDataBasedOnLineType(self, data: list[GenericDividendLine]):
         dividendLines = list(filter(lambda line: line.LineType == GenericDividendLineType.DIVIDEND, data))
         witholdingTax = list(filter(lambda line: line.LineType == GenericDividendLineType.WITHOLDING_TAX, data))
