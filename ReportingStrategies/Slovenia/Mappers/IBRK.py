@@ -1,31 +1,31 @@
 from ExportProvider.IBRK.Schemas import CashTransaction
 from ExportProvider.IBRK.Schemas import CashTransactionType
-from ReportingStrategies.Slovenia.Schemas import ExportGenericDividendLine
-from ReportingStrategies.Slovenia.Schemas import EDavkiDividendType
-from ReportingStrategies.Slovenia.Schemas import DividendLineType
+from ReportingStrategies.GenericFormats import GenericDividendLine
+from ReportingStrategies.GenericFormats import GenericDividendLineType
+from ReportingStrategies.GenericFormats import GenericDividendType
 
 
-def getExportGenericDividendLineFromCashTransactions(cashTransactions: list[CashTransaction]) -> list[ExportGenericDividendLine]:
+def getExportGenericDividendLineFromCashTransactions(cashTransactions: list[CashTransaction]) -> list[GenericDividendLine]:
 
-    def mapToGenericDividendLine(transaction: CashTransaction) -> ExportGenericDividendLine:
-        edavkiDividendType = EDavkiDividendType.UNKNOWN
+    def mapToGenericDividendLine(transaction: CashTransaction) -> GenericDividendLine:
+        edavkiDividendType = GenericDividendType.UNKNOWN
 
         ordinaryDividend = transaction.Description.__contains__("Ordinary Dividend")
         bonusDividend = transaction.Description.__contains__("Bonus Dividend")
 
         if ordinaryDividend:
-            edavkiDividendType = EDavkiDividendType.ORDINARY
+            edavkiDividendType = GenericDividendType.ORDINARY
 
         if bonusDividend:
-            edavkiDividendType = EDavkiDividendType.BONUS
+            edavkiDividendType = GenericDividendType.BONUS
 
         dividendMapping = {
-            CashTransactionType.DIVIDEND: DividendLineType.DIVIDEND,
-            CashTransactionType.WITHOLDING_TAX: DividendLineType.WITHOLDING_TAX
+            CashTransactionType.DIVIDEND: GenericDividendLineType.DIVIDEND,
+            CashTransactionType.WITHOLDING_TAX: GenericDividendLineType.WITHOLDING_TAX
         }
 
 
-        return ExportGenericDividendLine(
+        return GenericDividendLine(
             AccountID = transaction.ClientAccountID,
             LineCurrency = transaction.CurrencyPrimary,
             ConversionToBaseAccountCurrency = transaction.FXRateToBase,
@@ -35,7 +35,7 @@ def getExportGenericDividendLineFromCashTransactions(cashTransactions: list[Cash
             DividendActionID = transaction.ActionID,
             SecurityISIN = transaction.ISIN,
             ListingExchange = transaction.ListingExchange,
-            EDavkiDividendType = edavkiDividendType,
+            DividendType = edavkiDividendType,
             LineType = dividendMapping[transaction.Type]
         )
 

@@ -36,3 +36,59 @@ class GenericDividendLine:
     
     def getActionIdentifierForTax(self) -> str:
         return self.DividendActionID
+    
+
+
+# Names here are just guesses, since I don't know what these corespond to in English
+class GenericTradeReportItemType(str, Enum):
+    STOCK = "STOCK"
+    STOCK_SHORT = "STOCK_SHORT"
+    STOCK_CONTRACT = "STOCK_CONTRACT"
+    STOCK_CONTRACT_SHORT = "STOCK_CONTRACT_SHORT"
+    COMPANY_SHARE = "COMPANY_SHARE"
+    PLVPZOK = "PLVPZOK"
+
+class GenericTradeReportItemGainType(str, Enum):
+    CAPITAL_INVESTMENT = "A" # guessing
+    BOUGHT = "B"
+    CAPITAL_RAISE = "C" # guessing
+    CAPITAL_ASSET = "D" # guessing
+    CAPITALIZATION_CHANGE = "E" # guessing
+    INHERITENCE = "F"
+    GIFT = "G"
+    OTHER = "H"
+    CAPITAL_STOCK_ISSUANCE = "I" # guessing
+
+
+@dataclass
+class GenericTradeReportItemSecurityLineBought:
+    AcquiredDate: Arrow
+    AcquiredHow: GenericTradeReportItemGainType
+    NumberOfUnits: float
+    AmountPerUnit: float
+    TotalAmountPaid: float  # to avoid rounding errors in case of % purchases
+    TaxPaidForPurchase: float
+
+
+@dataclass
+class GenericTradeReportItemSecurityLineSold:
+    SoldDate: Arrow
+    NumberOfUnitsSold: float
+    AmountPerUnit: float
+    TotalAmountSoldFor: float
+
+
+@dataclass
+class GenericTradeReportItem:
+    ItemID: str | None
+    InventoryListType: GenericTradeReportItemType
+    Ticker: str | None
+    HasForeignTax: bool
+    ForeignTax: float | None
+    ForeignTaxCountryID: str | None
+    ForeignTaxCountryName: str | None
+    HasLossTransfer: bool | None
+    ForeignTransfer: bool | None
+    TaxDecreaseConformance: bool | None
+
+    Lines: list[GenericTradeReportItemSecurityLineBought | GenericTradeReportItemSecurityLineSold]
