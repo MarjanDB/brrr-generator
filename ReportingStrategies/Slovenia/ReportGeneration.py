@@ -5,12 +5,13 @@ from abc import abstractmethod
 from typing import TypeVar, Generic
 from Common.Configuration import TaxPayerInfo
 from Common.Configuration import ReportBaseConfig
-from ReportingStrategies.Slovenia.Schemas import ExportGenericDividendLine
-from ReportingStrategies.Slovenia.Schemas import DividendLineType
+from ReportingStrategies.GenericFormats import GenericDividendLine
+from ReportingStrategies.GenericFormats import GenericDividendLineType
 from ReportingStrategies.Slovenia.Schemas import EDavkiDividendReportLine
-from InfoProviders.CompanyLookupProvider import CompanyLookupProvider
-from InfoProviders.CompanyLookupProvider import CountryLookupProvider
-from InfoProviders.CompanyLookupProvider import TreatyType
+from ReportingStrategies.Slovenia.Schemas import EDavkiDividendType
+from InfoProviders.InfoLookupProvider import CompanyLookupProvider
+from InfoProviders.InfoLookupProvider import CountryLookupProvider
+from InfoProviders.InfoLookupProvider import TreatyType
 
 # https://edavki.durs.si/EdavkiPortal/PersonalPortal/[360253]/Pages/Help/sl/WorkflowType1.htm
 class DocumentWorkflowType(str, Enum):
@@ -82,21 +83,21 @@ class ReportProvider(Generic[INPUT_DATA]):
         ...
 
 
-class DividendReport(ReportProvider[ExportGenericDividendLine]):
-    def segmentDataBasedOnLineType(self, data: list[ExportGenericDividendLine]):
-        dividendLines = list(filter(lambda line: line.LineType == DividendLineType.DIVIDEND, data))
-        witholdingTax = list(filter(lambda line: line.LineType == DividendLineType.WITHOLDING_TAX, data))
+class DividendReport(ReportProvider[GenericDividendLine]):
+    def segmentDataBasedOnLineType(self, data: list[GenericDividendLine]):
+        dividendLines = list(filter(lambda line: line.LineType == GenericDividendLineType.DIVIDEND, data))
+        witholdingTax = list(filter(lambda line: line.LineType == GenericDividendLineType.WITHOLDING_TAX, data))
 
         return {
-            DividendLineType.DIVIDEND: dividendLines,
-            DividendLineType.WITHOLDING_TAX: witholdingTax
+            GenericDividendLineType.DIVIDEND: dividendLines,
+            GenericDividendLineType.WITHOLDING_TAX: witholdingTax
         }
     
-    def calculateLines(self, data: list[ExportGenericDividendLine]) -> list[EDavkiDividendReportLine]:
+    def calculateLines(self, data: list[GenericDividendLine]) -> list[EDavkiDividendReportLine]:
         actionToDividendMapping : dict[str, EDavkiDividendReportLine] = dict()
         segmentedLines = self.segmentDataBasedOnLineType(data)
 
-        for dividend in segmentedLines[DividendLineType.DIVIDEND]:
+        for dividend in segmentedLines[GenericDividendLineType.DIVIDEND]:
             actionId = dividend.DividendActionID
 
             thisDividendLine = EDavkiDividendReportLine(
@@ -106,7 +107,7 @@ class DividendReport(ReportProvider[ExportGenericDividendLine]):
                 DividendPayerTitle = "",
                 DividendPayerAddress = "",
                 DividendPayerCountryOfOrigin = "",
-                DividendType = dividend.EDavkiDividendType,
+                DividendType = EDavkiDividendType(dividend.DividendType),
                 CountryOfOrigin = "",
                 DividendIdentifierForTracking = dividend.DividendActionID,
                 TaxReliefParagraphInInternationalTreaty = "",
@@ -121,7 +122,7 @@ class DividendReport(ReportProvider[ExportGenericDividendLine]):
             actionToDividendMapping[actionId].DividendAmount += dividend.getAmountInBaseCurrency()
 
 
-        for withheldTax in segmentedLines[DividendLineType.WITHOLDING_TAX]:
+        for withheldTax in segmentedLines[GenericDividendLineType.WITHOLDING_TAX]:
             actionId = withheldTax.DividendActionID
 
             thisDividendLine = EDavkiDividendReportLine(
@@ -131,7 +132,7 @@ class DividendReport(ReportProvider[ExportGenericDividendLine]):
                 DividendPayerTitle = "",
                 DividendPayerAddress = "",
                 DividendPayerCountryOfOrigin = "",
-                DividendType = withheldTax.EDavkiDividendType,
+                DividendType = EDavkiDividendType(withheldTax.DividendType),
                 CountryOfOrigin = "",
                 DividendIdentifierForTracking = withheldTax.DividendActionID,
                 TaxReliefParagraphInInternationalTreaty = "",
@@ -176,7 +177,7 @@ class DividendReport(ReportProvider[ExportGenericDividendLine]):
 
         return createdLines
 
-    def generateDataFrameReport(self, data: list[ExportGenericDividendLine]) -> pd.DataFrame:
+    def generateDataFrameReport(self, data: list[GenericDividendLine]) -> pd.DataFrame:
         lines = self.calculateLines(data)
 
         def convertToDict(data: EDavkiDividendReportLine):
@@ -202,7 +203,7 @@ class DividendReport(ReportProvider[ExportGenericDividendLine]):
     
     
 
-    def generateXmlReport(self, data: list[ExportGenericDividendLine], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
+    def generateXmlReport(self, data: list[GenericDividendLine], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
         lines = self.calculateLines(data)
 
         nsmap = templateEnvelope.nsmap

@@ -1,23 +1,23 @@
 from ExportProvider.IBRK.Schemas import CashTransaction
 from ExportProvider.IBRK.Schemas import CashTransactionType
 from ReportingStrategies.Slovenia.Schemas import ExportGenericDividendLine
-from ReportingStrategies.Slovenia.Schemas import EDavkiDividendTypes
+from ReportingStrategies.Slovenia.Schemas import EDavkiDividendType
 from ReportingStrategies.Slovenia.Schemas import DividendLineType
 
 
 def getExportGenericDividendLineFromCashTransactions(cashTransactions: list[CashTransaction]) -> list[ExportGenericDividendLine]:
 
     def mapToGenericDividendLine(transaction: CashTransaction) -> ExportGenericDividendLine:
-        edavkiDividendType = EDavkiDividendTypes.UNKNOWN
+        edavkiDividendType = EDavkiDividendType.UNKNOWN
 
         ordinaryDividend = transaction.Description.__contains__("Ordinary Dividend")
         bonusDividend = transaction.Description.__contains__("Bonus Dividend")
 
         if ordinaryDividend:
-            edavkiDividendType = EDavkiDividendTypes.ORDINARY
+            edavkiDividendType = EDavkiDividendType.ORDINARY
 
         if bonusDividend:
-            edavkiDividendType = EDavkiDividendTypes.BONUS
+            edavkiDividendType = EDavkiDividendType.BONUS
 
         dividendMapping = {
             CashTransactionType.DIVIDEND: DividendLineType.DIVIDEND,
