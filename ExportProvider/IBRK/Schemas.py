@@ -7,6 +7,7 @@ class AssetClass(str, Enum):
     CASH = "CASH"
 
 class SubCategory(str, Enum):
+    NONE = ""   # CASH AssetClass
     COMMON = "COMMON" # https://www.investopedia.com/terms/c/commonstock.asp
     PREFERRED = "PREFERRED" # Superior common stock -> https://www.investopedia.com/terms/p/preferredstock.asp
     RIGHT = "RIGHT" # Right to newly issued shares -> https://www.investopedia.com/terms/r/rightsoffering.asp
@@ -14,6 +15,7 @@ class SubCategory(str, Enum):
     ROYALTY_RUST = "ROYALTY TRST" # Royalty Income Trust -> https://www.investopedia.com/terms/r/royaltyincometrust.asp
 
 class OpenCloseIndicator(str, Enum):
+    NONE = ""   # CASH positions cannot be closed or opened
     OPEN = "O"
     CLOSE = "C"
 
@@ -21,6 +23,7 @@ class TransactionType(str, Enum):
     EXCHANGE_TRADE = "ExchTrade"
 
 class SecurityIDType(str, Enum):
+    NONE = "" # CASH
     ISIN = "ISIN"
 
 class BuyOrSell(str, Enum):
@@ -48,7 +51,8 @@ class Codes(str, Enum):
     ETF_CREATION_REDEMPTION = "ETF"
     RESULTED_FROM_AN_EXPIRED_POSITION = "Ep"
     EXERCISE = "Ex"
-    FRATIONAL_PORTION_EXECUTED_AGAINST_IB_OR_AFFILIATE = "FPA"
+    IB_ACTED_AS_AGENT_FOR_FRACTIONAL_SHARE_PORTION_OF_TRADE_EXECUTED_BY_AN_IB_AFFILIATE_AS_PRINCIPAL = "FP"
+    IB_ACTED_AS_AGENT_FOR_FRACTIONAL_AND_WHOLE_SHARE_PORTION_TRADE_WHERE_FRACTIONAL_WAS_EXECUTED_BY_AN_IB_AFFILIATE_AS_PRINCIPAL = "FPA"
     TRADE_IN_GUARANTEED_ACCOUNT_SEGMENT = "G"
     EXERCISE_OR_ASSIGNMENT_RESULTING_FROM_OFFSETTING_POSITIONS = "GEA"
     HIGHEST_COST_TAX_BASIS_ELECTION = "HC"
@@ -102,12 +106,13 @@ class LevelOfDetail(str, Enum):
 
 class OrderType(str, Enum):
     LIMIT = "LMT"
+    MARKET = "MKT"
 
 class Model(str, Enum):
     INDEPENDENT = "Independent"
 
 @dataclass
-class Trade:
+class TradeLine:
     ClientAccountID: str
     AccountAlias: str | None
     Model: Model | None
@@ -137,7 +142,7 @@ class Trade:
     ReportDate: Arrow
     Expiry: Arrow | None
     DateTime: Arrow
-    PutOrCall: str
+    PutOrCall: str | None
     TradeDate: Arrow
     PrincipalAdjustFactor: float | None
     SettleDateTarget: Arrow | None
@@ -156,7 +161,8 @@ class Trade:
     OpenCloseIndicator: OpenCloseIndicator
     NotesAndCodes: list[Codes]
     CostBasis: float
-    FifoPnlRealized: float
+    FifoProfitAndLossRealized: float
+    CapitalGainsProfitAndLoss: float
     ForexProfitAndLoss: float
     MarketToMarketProfitAndLoss: float | None
     OrigTradePrice: float | None
@@ -194,7 +200,7 @@ class Trade:
     Weight: float
 
 @dataclass
-class TraceOpen(Trade):
+class Trade(TradeLine):
     TradeID: str
     SettleDateTarget: Arrow
     TransactionType: TransactionType
@@ -213,7 +219,6 @@ class TraceOpen(Trade):
     IBOrderID: str
     IBExecID: str
     BrokerageOrderID: str
-    ExchOrderID: str
     ExtExecID: str
     OrderTime: Arrow
     ChangeInPrice: float
@@ -223,9 +228,16 @@ class TraceOpen(Trade):
     AccruedInterest: float
 
 @dataclass
-class TradeClose(Trade):
+class TradeLot(TradeLine):
     OpenDateTime: Arrow
     HoldingPeriodDateTime: Arrow
+
+@dataclass
+class SegmentedTrades:
+    trades: list[Trade]
+    lots: list[TradeLot]
+
+
 
 class CashTransactionType(str, Enum):
     WITHOLDING_TAX = "Withholding Tax"

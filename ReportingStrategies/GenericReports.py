@@ -7,6 +7,7 @@ from Common.Configuration import ReportBaseConfig
 from InfoProviders.InfoLookupProvider import CompanyLookupProvider
 from InfoProviders.InfoLookupProvider import CountryLookupProvider
 from ReportingStrategies.GenericFormats import GenericDividendLine
+from ReportingStrategies.GenericFormats import GenericTradeReportItem
 
 
 
@@ -44,4 +45,8 @@ class GenericReportProvider(Generic[INPUT_DATA]):
 
 
 class GenericDividendReport(GenericReportProvider[GenericDividendLine]):
+    ...
+
+
+class GenericTradesReport(GenericReportProvider[GenericTradeReportItem]):
     ...

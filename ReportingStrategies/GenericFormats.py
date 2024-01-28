@@ -41,6 +41,7 @@ class GenericDividendLine:
 
 # Names here are just guesses, since I don't know what these corespond to in English
 class GenericTradeReportItemType(str, Enum):
+    UNKNOWN = ""
     STOCK = "STOCK"
     STOCK_SHORT = "STOCK_SHORT"
     STOCK_CONTRACT = "STOCK_CONTRACT"
@@ -49,15 +50,15 @@ class GenericTradeReportItemType(str, Enum):
     PLVPZOK = "PLVPZOK"
 
 class GenericTradeReportItemGainType(str, Enum):
-    CAPITAL_INVESTMENT = "A" # guessing
-    BOUGHT = "B"
-    CAPITAL_RAISE = "C" # guessing
-    CAPITAL_ASSET = "D" # guessing
-    CAPITALIZATION_CHANGE = "E" # guessing
-    INHERITENCE = "F"
-    GIFT = "G"
-    OTHER = "H"
-    CAPITAL_STOCK_ISSUANCE = "I" # guessing
+    CAPITAL_INVESTMENT = "CAPITAL_INVESTMENT" # guessing
+    BOUGHT = "BOUGHT"
+    CAPITAL_RAISE = "CAPITAL_RAISE" # guessing
+    CAPITAL_ASSET = "CAPITAL_ASSET" # guessing
+    CAPITALIZATION_CHANGE = "CAPITALIZATION_CHANGE" # guessing
+    INHERITENCE = "INHERITENCE"
+    GIFT = "GIFT"
+    OTHER = "OTHER"
+    CAPITAL_STOCK_ISSUANCE = "CAPITAL_STOCK_ISSUANCE" # guessing
 
 
 @dataclass
@@ -76,19 +77,17 @@ class GenericTradeReportItemSecurityLineSold:
     NumberOfUnitsSold: float
     AmountPerUnit: float
     TotalAmountSoldFor: float
+    WashSale: bool # https://www.investopedia.com/terms/w/washsale.asp
 
 
 @dataclass
 class GenericTradeReportItem:
-    ItemID: str | None
     InventoryListType: GenericTradeReportItemType
-    Ticker: str | None
+    ISIN: str
+    Ticker: str
     HasForeignTax: bool
     ForeignTax: float | None
     ForeignTaxCountryID: str | None
     ForeignTaxCountryName: str | None
-    HasLossTransfer: bool | None
-    ForeignTransfer: bool | None
-    TaxDecreaseConformance: bool | None
 
     Lines: list[GenericTradeReportItemSecurityLineBought | GenericTradeReportItemSecurityLineSold]

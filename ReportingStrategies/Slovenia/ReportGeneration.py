@@ -8,6 +8,8 @@ from ReportingStrategies.Slovenia.Schemas import EDavkiDividendType
 from InfoProviders.InfoLookupProvider import TreatyType
 from ReportingStrategies.GenericReports import GenericDividendReport
 from ReportingStrategies.GenericReports import GenericReportWrapper
+from ReportingStrategies.GenericReports import GenericTradesReport
+from ReportingStrategies.GenericFormats import GenericTradeReportItem
 
 # https://edavki.durs.si/EdavkiPortal/PersonalPortal/[360253]/Pages/Help/sl/WorkflowType1.htm
 class DocumentWorkflowType(str, Enum):
@@ -212,3 +214,11 @@ class EDavkiDividendReport(GenericDividendReport):
 
         return envelope
 
+
+
+class EDavkiTradesReport(GenericTradesReport):
+    def generateXmlReport(self, data: list[GenericTradeReportItem], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
+        ...
+
+    def generateDataFrameReport(self, data: list[GenericTradeReportItem],) -> pd.DataFrame:
+        ...
