@@ -41,7 +41,6 @@ class GenericDividendLine:
 
 # Names here are just guesses, since I don't know what these corespond to in English
 class GenericTradeReportItemType(str, Enum):
-    UNKNOWN = ""
     STOCK = "STOCK"
     STOCK_SHORT = "STOCK_SHORT"
     STOCK_CONTRACT = "STOCK_CONTRACT"

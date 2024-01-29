@@ -5,11 +5,15 @@ from ReportingStrategies.GenericFormats import GenericDividendLine
 from ReportingStrategies.GenericFormats import GenericDividendLineType
 from ReportingStrategies.Slovenia.Schemas import EDavkiDividendReportLine
 from ReportingStrategies.Slovenia.Schemas import EDavkiDividendType
+from ReportingStrategies.Slovenia.Schemas import EDavkiTradeSecurityType
 from InfoProviders.InfoLookupProvider import TreatyType
 from ReportingStrategies.GenericReports import GenericDividendReport
 from ReportingStrategies.GenericReports import GenericReportWrapper
 from ReportingStrategies.GenericReports import GenericTradesReport
 from ReportingStrategies.GenericFormats import GenericTradeReportItem
+from ReportingStrategies.GenericFormats import GenericTradeReportItemType
+from ReportingStrategies.GenericFormats import GenericTradeReportItemSecurityLineBought
+from ReportingStrategies.GenericFormats import GenericTradeReportItemSecurityLineSold
 
 # https://edavki.durs.si/EdavkiPortal/PersonalPortal/[360253]/Pages/Help/sl/WorkflowType1.htm
 class DocumentWorkflowType(str, Enum):
@@ -220,5 +224,41 @@ class EDavkiTradesReport(GenericTradesReport):
     def generateXmlReport(self, data: list[GenericTradeReportItem], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
         ...
 
-    def generateDataFrameReport(self, data: list[GenericTradeReportItem],) -> pd.DataFrame:
-        ...
+    def generateDataFrameReport(self, data: list[GenericTradeReportItem]) -> pd.DataFrame:
+        def getLinesFromData(singleLine: GenericTradeReportItem) -> pd.DataFrame:
+
+            securityMapping : dict[GenericTradeReportItemType, EDavkiTradeSecurityType] = {
+                GenericTradeReportItemType.STOCK: EDavkiTradeSecurityType.PLVP,
+                GenericTradeReportItemType.STOCK_SHORT: EDavkiTradeSecurityType.PLVPSHORT,
+                GenericTradeReportItemType.STOCK_CONTRACT: EDavkiTradeSecurityType.PLVPGB,
+                GenericTradeReportItemType.STOCK_CONTRACT_SHORT: EDavkiTradeSecurityType.PLVPGBSHORT,
+                GenericTradeReportItemType.COMPANY_SHARE: EDavkiTradeSecurityType.PLD,
+                GenericTradeReportItemType.PLVPZOK: EDavkiTradeSecurityType.PLVPZOK,
+            }
+
+            
+            InventoryListType = securityMapping[singleLine.InventoryListType]
+            ISIN = singleLine.ISIN
+            Ticker = singleLine.Ticker
+            HasForeignTax = singleLine.HasForeignTax
+            ForeignTax = singleLine.ForeignTax
+            ForeignTaxCountryID = singleLine.ForeignTaxCountryID
+            ForeignTaxCountryName = singleLine.ForeignTaxCountryName
+
+
+            lines = pd.DataFrame(singleLine.Lines)
+            lines['InventoryListType'] = InventoryListType.value
+            lines['ISIN'] = ISIN
+            lines['Ticker'] = Ticker
+            lines['HasForeignTax'] = HasForeignTax
+            lines['ForeignTax'] = ForeignTax
+            lines['ForeignTaxCountryID'] = ForeignTaxCountryID
+            lines['ForeignTaxCountryName'] = ForeignTaxCountryName
+
+            return lines
+
+        mappedData = list(map(getLinesFromData, data))
+
+        combinedData = pd.concat(mappedData)
+
+        return combinedData

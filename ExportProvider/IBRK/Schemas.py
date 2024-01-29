@@ -200,7 +200,7 @@ class TradeLine:
     Weight: float
 
 @dataclass
-class Trade(TradeLine):
+class TradeStock(TradeLine):
     TradeID: str
     SettleDateTarget: Arrow
     TransactionType: TransactionType
@@ -231,10 +231,56 @@ class Trade(TradeLine):
 class TradeLot(TradeLine):
     OpenDateTime: Arrow
     HoldingPeriodDateTime: Arrow
+    
+
+@dataclass
+class TradeCash(TradeLine):
+    SecurityID: None
+    SecurityIDType: None
+    CUSIP: None
+    ISIN: None
+    FIGI: None
+    ListingExchange: None
+    UnderlyingConid: None
+    UnderlyingSymbol: None
+    UnderlyingSecurityID: None
+    UnderlyingListingExchange: None
+    RelatedTradeID: None
+    Issuer: None
+    IssuerCountryCode: None
+    SettleDateTarget: Arrow
+    TransactionType: TransactionType
+    Exchange: str
+    TradeMoney: float
+    Proceeds: float
+    Taxes: float
+    IBCommission: float
+    IBCommissionCurrency: str
+    NetCash: float
+    NetCashInBase: float
+    ClosePrice: float
+    OpenCloseIndicator: OpenCloseIndicator
+    NotesAndCodes: list[Codes]
+    MarketToMarketProfitAndLoss: float
+    OrigTradePrice: None
+    OrigOrderID: None
+    OrigTradeDate: None
+    OrigTradeID: None
+    OrigTransactionID: None
+    IBOrderID: str
+    IBExecID: str
+    OrderTime: Arrow
+    ChangeInPrice: float
+    ChangeInQuantity: float
+    OrderType: OrderType
+    IsAPIOrder: bool
+    AccruedInterest: float
+    
 
 @dataclass
 class SegmentedTrades:
-    trades: list[Trade]
+    stockTrades: list[TradeStock]
+    cashTrades: list[TradeCash]
     lots: list[TradeLot]
 
 

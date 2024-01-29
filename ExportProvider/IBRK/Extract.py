@@ -4,7 +4,7 @@ import arrow
 
 
 def safeDateParse(dateString: str) -> arrow.Arrow:
-     safeDateString = dateString.replace('EDT', 'US/Eastern').replace('EST', 'US/Eastern')
+     safeDateString = dateString.replace('EDT', 'UTC-4').replace('EST', 'UTC-5')
      return arrow.get(safeDateString, ['YYYY-MM-DD HH:mm:ss ZZZ', 'YYYY-MM-DD;HH:mm:ss ZZZ', 'YYYY-MM-DD'])
 
 def valueOrNone(value: str) -> str | None:
@@ -87,17 +87,19 @@ def mergeCashTransactions(transactions: list[list[s.CashTransaction]]) -> list[s
 
 
 def extractTradesFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
-    openTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade")
+    stockTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.STOCK.value))
+    cashTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.CASH.value))
     closeTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Lot")
 
-    openTradeNodes = openTradesFinder(root)
+    openStockTradeNodes = stockTradesFinder(root)
     closeTradeNodes = closeTradesFinder(root)
+    cashTradeNodes = cashTradesFinder(root)
 
-    def xmlNodeToOpenTrade(node: etree.ElementBase) -> s.Trade:
+    def xmlNodeToStockTrade(node: etree.ElementBase) -> s.TradeStock:
         notesAndCodes = str(node.attrib['notes']).split(";")
         notesAndCodesParsed = list(map(lambda code: s.Codes(code), notesAndCodes)) if node.attrib['notes'] != "" else []
 
-        return s.Trade(
+        return s.TradeStock(
                 ClientAccountID = node.attrib['accountId'],
                 AccountAlias = valueOrNone(node.attrib['acctAlias']),
                 Model = s.Model(node.attrib['model']) if node.attrib['model'] != "" else None,
@@ -277,11 +279,106 @@ def extractTradesFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
                 Weight = float(node.attrib['weight'])
           )
 
+    def xmlNodeToCashTrade(node: etree.ElementBase) -> s.TradeCash:
+        notesAndCodes = str(node.attrib['notes']).split(";")
+        notesAndCodesParsed = list(map(lambda code: s.Codes(code), notesAndCodes))  if node.attrib['notes'] != "" else []
 
-    openTrades = list(map(xmlNodeToOpenTrade, openTradeNodes))
+        return s.TradeCash(
+             ClientAccountID = node.attrib['accountId'],
+                AccountAlias = valueOrNone(node.attrib['acctAlias']),
+                Model = s.Model(node.attrib['model']) if node.attrib['model'] != "" else None,
+                CurrencyPrimary = node.attrib['currency'],
+                FXRateToBase = node.attrib['fxRateToBase'],
+                AssetClass = s.AssetClass(node.attrib['assetCategory']),
+                SubCategory = s.SubCategory(node.attrib['subCategory']),
+                Symbol = node.attrib['symbol'],
+                Description = node.attrib['description'],
+                Conid = node.attrib['conid'],
+                SecurityID = None,
+                SecurityIDType = None,
+                CUSIP = None,
+                ISIN = None,
+                FIGI = None,
+                ListingExchange = None,
+                UnderlyingConid = None,
+                UnderlyingSymbol = None,
+                UnderlyingSecurityID = None,
+                UnderlyingListingExchange = None,
+                Issuer = None,
+                IssuerCountryCode = None,
+                TradeID = node.attrib['tradeID'],
+                Multiplier = float(node.attrib['multiplier']),
+                RelatedTradeID = None,
+                Strike = float(node.attrib['strike']) if node.attrib['strike'] != "" else None,
+                ReportDate = safeDateParse(node.attrib['reportDate']),
+                Expiry = safeDateParse(node.attrib['expiry']) if node.attrib['expiry'] != "" else None,
+                DateTime = safeDateParse(node.attrib['dateTime']),
+                PutOrCall = valueOrNone(node.attrib['putCall']),
+                TradeDate = safeDateParse(node.attrib['tradeDate']),
+                PrincipalAdjustFactor = floatValueOrNone(node.attrib['principalAdjustFactor']),
+                SettleDateTarget = safeDateParse(node.attrib['settleDateTarget']),
+                TransactionType = s.TransactionType(node.attrib['transactionType']),
+                Exchange = node.attrib['exchange'],
+                Quantity = float(node.attrib['quantity']),
+                TradePrice = float(node.attrib['tradePrice']),
+                TradeMoney = float(node.attrib['tradeMoney']),
+                Proceeds = float(node.attrib['proceeds']),
+                Taxes = float(node.attrib['taxes']),
+                IBCommission = float(node.attrib['ibCommission']),
+                IBCommissionCurrency = node.attrib['ibCommissionCurrency'],
+                NetCash = float(node.attrib['netCash']),
+                NetCashInBase = float(node.attrib['netCashInBase']),
+                ClosePrice = float(node.attrib['closePrice']),
+                OpenCloseIndicator = s.OpenCloseIndicator(node.attrib['openCloseIndicator']),
+                NotesAndCodes = notesAndCodesParsed,
+                CostBasis = float(node.attrib['cost']),
+                FifoProfitAndLossRealized = float(node.attrib['fifoPnlRealized']),
+                CapitalGainsProfitAndLoss = float(node.attrib['capitalGainsPnl']),
+                ForexProfitAndLoss = float(node.attrib['fxPnl']),
+                MarketToMarketProfitAndLoss = float(node.attrib['mtmPnl']),
+                OrigTradePrice = None,
+                OrigTradeDate = None,
+                OrigTradeID = None,
+                OrigOrderID = None,
+                OrigTransactionID = None,
+                BuyOrSell = s.BuyOrSell(node.attrib['buySell']),
+                ClearingFirmID = valueOrNone(node.attrib['clearingFirmID']),
+                IBOrderID = node.attrib['ibOrderID'],
+                TransactionID = node.attrib['transactionID'],
+                IBExecID = node.attrib['ibExecID'],
+                RelatedTransactionID = valueOrNone(node.attrib['relatedTransactionID']),
+                BrokerageOrderID = node.attrib['brokerageOrderID'],
+                OrderReference = valueOrNone(node.attrib['orderReference']),
+                VolatilityOrderLink = valueOrNone(node.attrib['volatilityOrderLink']),
+                ExchOrderID = node.attrib['exchOrderId'] if node.attrib['exchOrderId'] != "N/A" else None,
+                ExtExecID = node.attrib['extExecID'],
+                OrderTime = safeDateParse(node.attrib['orderTime']),
+                OpenDateTime = dateValueOrNone(node.attrib['openDateTime']),
+                HoldingPeriodDateTime = dateValueOrNone(node.attrib['holdingPeriodDateTime']),
+                WhenRealized = dateValueOrNone(node.attrib['whenRealized']),
+                WhenReopened = dateValueOrNone(node.attrib['whenReopened']),
+                LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
+                ChangeInPrice = float(node.attrib['changeInPrice']),
+                ChangeInQuantity = float(node.attrib['changeInQuantity']),
+                OrderType = s.OrderType(node.attrib['orderType']),
+                TraderID = valueOrNone(node.attrib['traderID']),
+                IsAPIOrder = str(node.attrib['traderID']).lower() == 'y',
+                AccruedInterest = float(node.attrib['accruedInt']),
+                SerialNumber = valueOrNone(node.attrib['serialNumber']),
+                DeliveryType = valueOrNone(node.attrib['deliveryType']),
+                CommodityType = valueOrNone(node.attrib['commodityType']),
+                Fineness = float(node.attrib['fineness']),
+                Weight = float(node.attrib['weight'])
+        )
+
+
+
+    stockTrades = list(map(xmlNodeToStockTrade, openStockTradeNodes))
     closeTrades = list(map(xmlNodeToLotTrade, closeTradeNodes))
+    cashTrades = list(map(xmlNodeToCashTrade, cashTradeNodes))
 
     return s.SegmentedTrades(
-         trades = openTrades,
-         lots = closeTrades
+         stockTrades = stockTrades,
+         lots = closeTrades,
+         cashTrades = cashTrades
     )

@@ -52,7 +52,7 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
 
     # only interested in closed lots, we do not take into account custom lot matching, as that can be achieved through IBKR
     lots = trades.lots
-    allTrades = trades.trades
+    allTrades = trades.stockTrades
 
     ISINSegmented: dict[str, list[s.TradeLot]] = {}
     for key, valuesiter in groupby(lots, key=lambda lot: lot.ISIN):
@@ -84,7 +84,7 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
         # we're interested in Capital Gains, as those are the actual taxable events associated with the trade
         # forex gains are ignored (if trading foreign currency), as those will be taken into account in the actual forex gains report
         # https://www.investopedia.com/terms/c/capitalgain.asp
-        def convertLotToBuyAndSell(lot: s.TradeLot, ) -> list[gf.GenericTradeReportItemSecurityLineBought | gf.GenericTradeReportItemSecurityLineSold]:
+        def convertLotToBuyAndSell(lot: s.TradeLot) -> list[gf.GenericTradeReportItemSecurityLineBought | gf.GenericTradeReportItemSecurityLineSold]:
             buyDate = lot.OpenDateTime
             sellDate = lot.DateTime
 
@@ -102,9 +102,11 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
 
             # for wash sales, we need to check all transactions for this instrument
             # if at least one was done 30 days before or after this tax lot close, this becomes a wash sale
+            # OrderTime is date of actual execution, while DateTime is when it was placed
+            # (no other way of avoiding matching its own sell)
             nonlocal allTrades
             sameInstrumentTrades = list(filter(lambda x: x.ISIN == isin, allTrades))
-            relevantTradesOfThisInstrument = list(filter(lambda trade: (trade.OrderTime - sellDate).days.__abs__() <= 30 , sameInstrumentTrades))
+            relevantTradesOfThisInstrument = list(filter(lambda trade: (trade.OrderTime - sellDate).days.__abs__() <= 30 and trade.DateTime.to('utc').format() != sellDate.to('utc').format() , sameInstrumentTrades))
 
             sellLine = gf.GenericTradeReportItemSecurityLineSold(
                 SoldDate = sellDate,
