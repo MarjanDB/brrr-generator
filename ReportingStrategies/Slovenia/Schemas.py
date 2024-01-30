@@ -2,6 +2,7 @@ from arrow import Arrow
 from enum import Enum
 from dataclasses import dataclass
 
+
 # https://www.racunovodstvo.net/zakonodaja/zdoh/90-clen
 class EDavkiDividendType(str, Enum):
     UNKNOWN = ""        # For internal use of this reporting script
@@ -53,295 +54,41 @@ class EDavkiTradeReportGainType(str, Enum):
     OTHER = "H"
     CAPITAL_STOCK_ISSUANCE = "I" # guessing
 
-@dataclass
-class EDavkiTradeReportSecurityLinePurchase:
-    """Datum pridobitve"""
-    F1: Arrow
-
-    """Način pridobitve"""
-    F2: EDavkiTradeReportGainType
-
-    """Količina"""
-    F3: float
-
-    """Nabavna vrednost ob pridobitvi (na enoto)"""
-    F4: float
-
-    """Plačan davek na dediščine in darila"""
-    F5: float | None
-
-    """Zmanjšana nabavna vrednost vrednostnega papirja (na enoto) zaradi zmanjšanja osnovnega kapitala ob nespremenjeni količini"""
-    F11: float | None
 
 @dataclass
-class EDavkiTradeReportSecurityLineSale:
-    """Datum odsvojitve"""
-    F6: Arrow
-
-    """Količina odsvojenega v.p."""
-    F7: float
-
-    """Vrednost ob osvojitvi (na enoto)"""
-    F9: float
-
-    """Pravilo iz  drugega odstavka v povezavi s petim odstavkom 97.člena ZDoh-2"""
-    F10: bool
+class EDavkiTradeReportSecurityLineGenericEventBuy:
+    BoughtOn: Arrow
+    GainType: EDavkiTradeReportGainType
+    Quantity: float
+    PricePerUnit: float
+    TotalPrice: float
+    InheritanceAndGiftTaxPaid: float | None
+    BaseTaxReduction: float | None
 
 @dataclass
-class EDavkiTradeReportSecurityLine:
-    ID: int
-    Line: EDavkiTradeReportSecurityLinePurchase | EDavkiTradeReportSecurityLineSale
+class EDavkiTradeReportSecurityLineGenericEventSell:
+    SoldOn: Arrow
+    Quantity: float
+    TotalPrice: float
+    PricePerUnit: float
+    WashSale: bool
 
 @dataclass
-class EDavkiTradeReportSecurity:
+class EDavkiTradeReportSecurityLineEvent:
     ISIN: str
     Code: str | None
     Name: str | None
-    IsFond: bool
-    Resolution: str | None
-    ResolutionDate: Arrow | None
-    Rows: list[EDavkiTradeReportSecurityLine]
-
-
-@dataclass
-class EDavkiTradeReportSecurityShortLinePurchase:
-    """Datum pridobitve"""
-    F1: Arrow
-
-    """Način pridobitve"""
-    F2: EDavkiTradeReportGainType
-
-    """Količina"""
-    F3: float
-
-    """Nabavna vrednost ob pridobitvi (na enoto)"""
-    F4: float
-
-    """Plačan davek na dediščine in darila"""
-    F5: float | None
-
-@dataclass
-class EDavkiTradeReportSecurityShortLineSale:
-    """Datum odsvojitve"""
-    F6: Arrow
-
-    """Količina odsvojenega v.p."""
-    F7: float
-
-    """Vrednost ob osvojitvi (na enoto)"""
-    F9: float
-
-@dataclass
-class EDavkiTradeReportSecurityShortLine:
-    ID: int
-    Line: EDavkiTradeReportSecurityShortLinePurchase | EDavkiTradeReportSecurityShortLineSale
-
-
-@dataclass
-class EDavkiTradeReportSecurityShort:
-    ISIN: str
-    Code: str | None
-    Name: str | None
-    IsFond: bool
-    Rows: list[EDavkiTradeReportSecurityShortLine]
-
-
-
-@dataclass
-class EDavkiTradeReportSecurityWithContractLinePurchase:
-    """Datum pridobitve"""
-    F1: Arrow
-
-    """Način pridobitve"""
-    F2: EDavkiTradeReportGainType
-
-    """Količina"""
-    F3: float
-
-    """Nabavna vrednost ob pridobitvi (na enoto)"""
-    F4: float
-
-    """Plačan davek na dediščine in darila"""
-    F5: float | None
-
-    """Zmanjšana nabavna vrednost vrednostnega papirja (na enoto) zaradi zmanjšanja osnovnega kapitala ob nespremenjeni količini"""
-    F11: float | None
-
-@dataclass
-class EDavkiTradeReportSecurityWithContractLineSale:
-    """Datum odsvojitve"""
-    F6: Arrow
-
-    """Količina odsvojenega v.p."""
-    F7: float
-
-    """Vrednost ob osvojitvi (na enoto)"""
-    F9: float
-
-    """Pravilo iz  drugega odstavka v povezavi s petim odstavkom 97.člena ZDoh-2"""
-    F10: bool
-
-@dataclass
-class EDavkiTradeReportSecurityWithContractLine:
-    ID: int
-    Line: EDavkiTradeReportSecurityWithContractLinePurchase | EDavkiTradeReportSecurityWithContractLineSale
-
-@dataclass
-class EDavkiTradeReportSecurityWithContract:
-    ISIN: str
-    Code: str | None
-    Name: str | None
-    IsFond: bool
+    IsFund: bool
     StockExchangeName: str
     Resolution: str | None
     ResolutionDate: Arrow | None
-    Rows: list[EDavkiTradeReportSecurityWithContractLine]
 
-
-
-
-
-@dataclass
-class EDavkiTradeReportSecurityWithContractShortLinePurchase:
-    """Datum pridobitve"""
-    F1: Arrow
-
-    """Način pridobitve"""
-    F2: EDavkiTradeReportGainType
-
-    """Količina"""
-    F3: float
-
-    """Nabavna vrednost ob pridobitvi (na enoto)"""
-    F4: float
-
-    """Plačan davek na dediščine in darila"""
-    F5: float | None
-
-@dataclass
-class EDavkiTradeReportSecurityWithContractShortLineSale:
-    """Datum odsvojitve"""
-    F6: Arrow
-
-    """Količina odsvojenega v.p."""
-    F7: float
-
-    """Vrednost ob osvojitvi (na enoto)"""
-    F9: float
-
-@dataclass
-class EDavkiTradeReportSecurityWithContractShortLine:
-    ID: int
-    Line: EDavkiTradeReportSecurityWithContractShortLinePurchase | EDavkiTradeReportSecurityWithContractShortLineSale
-
-@dataclass
-class EDavkiTradeReportSecurityWithContractShort:
-    ISIN: str
-    Code: str | None
-    Name: str | None
-    IsFond: bool
-    StockExchangeName: str
-    Rows: list[EDavkiTradeReportSecurityWithContractShortLine]
+    Events: list[EDavkiTradeReportSecurityLineGenericEventBuy | EDavkiTradeReportSecurityLineGenericEventSell]
 
 
 
 @dataclass
-class EDavkiTradeReportShareLinePurchase:
-    """Datum pridobitve"""
-    F1: Arrow
-
-    """Način pridobitve"""
-    F2: EDavkiTradeReportGainType
-
-    """Nabavna vrednost ob pridobitvi"""
-    F3: float
-
-    """Plačan davek na dediščine in darila"""
-    F4: float
-
-@dataclass
-class EDavkiTradeReportShareLineSale:
-    """Datum odsvojitve"""
-    F5: Arrow
-
-    """% odsvojenega deleža"""
-    F6: float
-
-    """Vrednost ob osvojitvi"""
-    F8: float
-
-    """Pravilo iz  drugega odstavka v povezavi s petim odstavkom 97.člena ZDoh-2"""
-    F18: bool
-
-@dataclass
-class EDavkiTradeReportShareLine:
-    ID: int
-    Line: EDavkiTradeReportShareLinePurchase | EDavkiTradeReportShareLineSale
-
-@dataclass
-class EDavkiTradeReportShareLineSubsequentPayments:
-    PaymentTaxNumber: str
-    PaymentDate: Arrow
-    PaymentAmount: float
-
-@dataclass
-class EDavkiTradeReportShare:
-    Name: str
-    DivestmentTaxNumber: str
-    SubsequentPayments: bool
-    SubsequentPaymentRow: list[EDavkiTradeReportShareLineSubsequentPayments]
-    Rows: list[EDavkiTradeReportShareLine]
-
-
-
-
-@dataclass
-class EDavkiTradeReportSecurityCapitalReductionLinePurchase:
-    """Datum pridobitve"""
-    F1: Arrow
-
-    """Način pridobitve"""
-    F2: EDavkiTradeReportGainType
-
-    """Količina"""
-    F3: float
-
-    """Nabavna vrednost ob pridobitvi (na enoto)"""
-    F4: float
-
-
-@dataclass
-class EDavkiTradeReportSecurityCapitalReductionLineSale:
-    """Datum odsvojitve"""
-    F5: Arrow
-
-    """% zmanjšanja osnovnega kapitala"""
-    F6: float
-
-    """Izplačana vrednost na podlagi zmanjšanja osnovnega kapitala"""
-    F7: float
-
-@dataclass
-class EDavkiTradeReportSecurityCapitalReductionLine:
-    ID: int
-    Line: EDavkiTradeReportSecurityCapitalReductionLinePurchase | EDavkiTradeReportSecurityCapitalReductionLineSale
-
-@dataclass
-class EDavkiTradeReportSecurityCapitalReduction:
-    ISIN: str
-    Code: str | None
-    Name: str | None
-    IsFond: bool
-    Resolution: str | None
-    ResolutionDate: Arrow | None
-    Rows: list[EDavkiTradeReportSecurityCapitalReductionLine]
-
-
-
-
-
-@dataclass
-class EDavkiTradeReportItem:
+class EDavkiGenericTradeReportItem:
     ItemID: str | None
     InventoryListType: EDavkiTradeSecurityType
     Name: str | None
@@ -351,12 +98,6 @@ class EDavkiTradeReportItem:
     FTCountryName: str | None
     HasLossTransfer: bool | None
     ForeignTransfer: bool | None
-    TaxDecreaseConformance: bool | None
+    TaxDecreaseConformance: bool | None # zamenjava vrednostnih papirjev z istovrstnimi papirji istega izdajatelja, pri kateri se ne spreminjajo razmerja med družbeniki in kapital izdajatelja ter ni denarnega toka;
 
-    Securities: list[EDavkiTradeReportSecurity]
-    SecuritiesShort: list[EDavkiTradeReportSecurityShort]
-    Shares: list[EDavkiTradeReportShare]
-    SecuritiesWithContract: list[EDavkiTradeReportSecurityShort]
-    SecuritiesWithcontractShort: list[EDavkiTradeReportSecurityWithContractShort]
-    SecuritiesCapitalReduction: list[EDavkiTradeReportSecurityCapitalReduction]
-
+    Items: list[EDavkiTradeReportSecurityLineEvent]
