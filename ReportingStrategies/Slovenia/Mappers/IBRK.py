@@ -1,34 +1,29 @@
-from ExportProvider.IBRK.Schemas import CashTransaction
-from ExportProvider.IBRK.Schemas import CashTransactionType
 import ExportProvider.IBRK.Schemas as s
-from ReportingStrategies.GenericFormats import GenericDividendLine
-from ReportingStrategies.GenericFormats import GenericDividendLineType
-from ReportingStrategies.GenericFormats import GenericDividendType
 import ReportingStrategies.GenericFormats as gf
 from itertools import groupby
 from arrow import Arrow
 
 
-def getGenericDividendLineFromIBRKCashTransactions(cashTransactions: list[CashTransaction]) -> list[GenericDividendLine]:
-    def mapToGenericDividendLine(transaction: CashTransaction) -> GenericDividendLine:
-        edavkiDividendType = GenericDividendType.UNKNOWN
+def getGenericDividendLineFromIBRKCashTransactions(cashTransactions: list[s.CashTransaction]) -> list[gf.GenericDividendLine]:
+    def mapToGenericDividendLine(transaction: s.CashTransaction) -> gf.GenericDividendLine:
+        edavkiDividendType = gf.GenericDividendType.UNKNOWN
 
         ordinaryDividend = transaction.Description.__contains__("Ordinary Dividend")
         bonusDividend = transaction.Description.__contains__("Bonus Dividend")
 
         if ordinaryDividend:
-            edavkiDividendType = GenericDividendType.ORDINARY
+            edavkiDividendType = gf.GenericDividendType.ORDINARY
 
         if bonusDividend:
-            edavkiDividendType = GenericDividendType.BONUS
+            edavkiDividendType = gf.GenericDividendType.BONUS
 
         dividendMapping = {
-            CashTransactionType.DIVIDEND: GenericDividendLineType.DIVIDEND,
-            CashTransactionType.WITHOLDING_TAX: GenericDividendLineType.WITHOLDING_TAX
+            s.CashTransactionType.DIVIDEND: gf.GenericDividendLineType.DIVIDEND,
+            s.CashTransactionType.WITHOLDING_TAX: gf.GenericDividendLineType.WITHOLDING_TAX
         }
 
 
-        return GenericDividendLine(
+        return gf.GenericDividendLine(
             AccountID = transaction.ClientAccountID,
             LineCurrency = transaction.CurrencyPrimary,
             ConversionToBaseAccountCurrency = transaction.FXRateToBase,

@@ -1,6 +1,7 @@
 from lxml import etree
 import ExportProvider.IBRK.Schemas as s
 import arrow
+from typing import Any
 
 
 def safeDateParse(dateString: str) -> arrow.Arrow:
@@ -21,6 +22,13 @@ def dateValueOrNone(value: str) -> arrow.Arrow | None:
     if value == "":
          return None
     return safeDateParse(value)
+
+def deduplicateList(lines: list[list[Any]]):
+    allRows = [x for xs in lines for x in xs]
+
+    uniqueTransactionRows = list({row.TransactionID: row for row in allRows}.values())
+
+    return uniqueTransactionRows
 
 
 def extractCashTransactionFromXML(root: etree.ElementBase) -> list[s.CashTransaction]:
@@ -77,11 +85,7 @@ def extractCashTransactionFromXML(root: etree.ElementBase) -> list[s.CashTransac
     return list(map(lambda node: xmlNodeToCashTransaction(node), cashTransactionNodes))
 
 def mergeCashTransactions(transactions: list[list[s.CashTransaction]]) -> list[s.CashTransaction]:
-        allRows = [x for xs in transactions for x in xs]
-
-        uniqueTransactionRows = list({row.TransactionID: row for row in allRows}.values())
-
-        return uniqueTransactionRows
+        return deduplicateList(transactions)
 
 
 
@@ -381,4 +385,21 @@ def extractTradesFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
          stockTrades = stockTrades,
          lots = closeTrades,
          cashTrades = cashTrades
+    )
+
+
+
+def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
+    stockTrades = list(map(lambda trade: trade.stockTrades, trades))
+    cashTrades = list(map(lambda trade: trade.cashTrades, trades))
+    lotTrades = list(map(lambda trade: trade.lots, trades))
+
+    stockTrades = deduplicateList(stockTrades)
+    cashTrades = deduplicateList(cashTrades)
+    lotTrades = deduplicateList(lotTrades)
+
+    return s.SegmentedTrades(
+         stockTrades=stockTrades,
+         cashTrades=cashTrades,
+         lots=lotTrades
     )

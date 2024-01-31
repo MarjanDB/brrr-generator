@@ -84,7 +84,7 @@ class EDavkiDividendReport(GenericDividendReport):
                 DividendPayerTitle = "",
                 DividendPayerAddress = "",
                 DividendPayerCountryOfOrigin = "",
-                DividendType = EDavkiDividendType(dividend.DividendType),
+                DividendType = ss.EDavkiDividendType(dividend.DividendType),
                 CountryOfOrigin = "",
                 DividendIdentifierForTracking = dividend.DividendActionID,
                 TaxReliefParagraphInInternationalTreaty = "",
@@ -109,7 +109,7 @@ class EDavkiDividendReport(GenericDividendReport):
                 DividendPayerTitle = "",
                 DividendPayerAddress = "",
                 DividendPayerCountryOfOrigin = "",
-                DividendType = EDavkiDividendType(withheldTax.DividendType),
+                DividendType = ss.EDavkiDividendType(withheldTax.DividendType),
                 CountryOfOrigin = "",
                 DividendIdentifierForTracking = withheldTax.DividendActionID,
                 TaxReliefParagraphInInternationalTreaty = "",
@@ -220,7 +220,7 @@ class EDavkiDividendReport(GenericDividendReport):
 
 
 class EDavkiTradesReport(GenericTradesReport):
-    securityMapping : dict[GenericTradeReportItemType, ss.EDavkiTradeSecurityType] = {
+    SECURITY_MAPPING : dict[GenericTradeReportItemType, ss.EDavkiTradeSecurityType] = {
         GenericTradeReportItemType.STOCK: ss.EDavkiTradeSecurityType.PLVP,
         GenericTradeReportItemType.STOCK_SHORT: ss.EDavkiTradeSecurityType.PLVPSHORT,
         GenericTradeReportItemType.STOCK_CONTRACT: ss.EDavkiTradeSecurityType.PLVPGB,
@@ -235,74 +235,76 @@ class EDavkiTradesReport(GenericTradesReport):
 
         ISINSegmented: dict[str, list[GenericTradeReportItem]] = {}
         for key, valuesiter in groupby(data, key=lambda item: item.ISIN):
-            ISINSegmented[key] = list(v for v in valuesiter)
+            ISINSegmented[key] = list(valuesiter)
 
         for ISIN, entries in ISINSegmented.items():
 
-            securitySegmented: dict[GenericTradeReportItemType, GenericTradeReportItem] = {}
+            securitySegmented: dict[GenericTradeReportItemType, list[GenericTradeReportItem]] = {}
             for key, valuesiter in groupby(entries, key=lambda item: item.InventoryListType):
-                ISINSegmented[key] = list(v for v in valuesiter)
+                securitySegmented[key] = list(valuesiter)
 
-            for securityType, lots in securitySegmented.items():
+            for securityType, securityLines in securitySegmented.items():
 
-                def convertBuy(line: GenericTradeReportItemSecurityLineBought) -> ss.EDavkiTradeReportSecurityLineGenericEventBuy:
-                    return ss.EDavkiTradeReportSecurityLineGenericEventBuy(
-                        BoughtOn = line.AcquiredDate,
-                        GainType = ss.EDavkiTradeReportGainType.BOUGHT, # TODO: Take into account actual gain type
-                        Quantity = line.NumberOfUnits,
-                        PricePerUnit = line.AmountPerUnit,
-                        TotalPrice = line.TotalAmountPaid,
-                        InheritanceAndGiftTaxPaid = None,
-                        BaseTaxReduction = None
+                for lots in securityLines:
+
+                    def convertBuy(line: GenericTradeReportItemSecurityLineBought) -> ss.EDavkiTradeReportSecurityLineGenericEventBuy:
+                        return ss.EDavkiTradeReportSecurityLineGenericEventBuy(
+                            BoughtOn = line.AcquiredDate,
+                            GainType = ss.EDavkiTradeReportGainType.BOUGHT, # TODO: Take into account actual gain type
+                            Quantity = line.NumberOfUnits,
+                            PricePerUnit = line.AmountPerUnit,
+                            TotalPrice = line.TotalAmountPaid,
+                            InheritanceAndGiftTaxPaid = None,
+                            BaseTaxReduction = None
+                        )
+
+                    def convertSell(line: GenericTradeReportItemSecurityLineSold) -> ss.EDavkiTradeReportSecurityLineGenericEventSell:
+                        return ss.EDavkiTradeReportSecurityLineGenericEventSell(
+                            SoldOn = line.SoldDate,
+                            Quantity = line.NumberOfUnitsSold,
+                            TotalPrice = line.TotalAmountSoldFor,
+                            PricePerUnit = line.AmountPerUnit,
+                            WashSale = line.WashSale
+                        )
+                    
+                    buyLines = filter(lambda line: isinstance(line, GenericTradeReportItemSecurityLineBought), lots.Lines)
+                    buys = list(map(convertBuy, buyLines)) # type: ignore
+                    sellLines = filter(lambda line: isinstance(line, GenericTradeReportItemSecurityLineSold), lots.Lines)
+                    sells = list(map(convertSell, sellLines)) # type: ignore
+
+                    reportItem = ss.EDavkiTradeReportSecurityLineEvent(
+                        ISIN = ISIN,
+                        Code = None,
+                        Name = None,
+                        IsFund = False, # TODO: Determine funds
+                        StockExchangeName = "EXCH",
+                        Resolution = None,
+                        ResolutionDate = None,
+                        Events = buys + sells
                     )
 
-                def convertSell(line: GenericTradeReportItemSecurityLineSold) -> ss.EDavkiTradeReportSecurityLineGenericEventSell:
-                    return ss.EDavkiTradeReportSecurityLineGenericEventSell(
-                        SoldOn = line.SoldDate,
-                        Quantity = line.NumberOfUnitsSold,
-                        TotalPrice = line.TotalAmountSoldFor,
-                        PricePerUnit = line.AmountPerUnit,
-                        WashSale = line.WashSale
+
+                    ForeignTaxPaid = sum(map(lambda entry: entry.ForeignTax or 0, entries))
+                    HasForeignTax = True
+                    if ForeignTaxPaid <= 0:
+                        ForeignTaxPaid = None
+                        HasForeignTax = False
+                    
+                    ISINEntry = ss.EDavkiGenericTradeReportItem(
+                        ItemID = None,
+                        InventoryListType = self.SECURITY_MAPPING[securityType],
+                        Name = None,
+                        HasForeignTax = HasForeignTax,
+                        ForeignTax = ForeignTaxPaid,
+                        FTCountryID = None,
+                        FTCountryName = None,
+                        HasLossTransfer = None,
+                        ForeignTransfer = None,
+                        TaxDecreaseConformance = False,    
+                        Items=[reportItem]
                     )
-                
-                buyLines = filter(lambda line: isinstance(line, GenericTradeReportItemSecurityLineBought), lots.Lines)
-                buys = list(map(convertBuy, buyLines)) # type: ignore
-                sellLines = filter(lambda line: isinstance(line, GenericTradeReportItemSecurityLineSold), lots.Lines)
-                sells = list(map(convertSell, sellLines)) # type: ignore
 
-                reportItem = ss.EDavkiTradeReportSecurityLineEvent(
-                    ISIN = ISIN,
-                    Code = None,
-                    Name = None,
-                    IsFund = False, # TODO: Determine funds
-                    StockExchangeName = "EXCH",
-                    Resolution = None,
-                    ResolutionDate = None,
-                    Events = buys + sells
-                )
-
-
-                ForeignTaxPaid = sum(map(lambda entry: entry.ForeignTax or 0, entries))
-                HasForeignTax = True
-                if ForeignTaxPaid <= 0:
-                    ForeignTaxPaid = None
-                    HasForeignTax = False
-                
-                ISINEntry = ss.EDavkiGenericTradeReportItem(
-                    ItemID = None,
-                    InventoryListType = self.securityMapping[securityType],
-                    Name = None,
-                    HasForeignTax = HasForeignTax,
-                    ForeignTax = ForeignTaxPaid,
-                    FTCountryID = None,
-                    FTCountryName = None,
-                    HasLossTransfer = None,
-                    ForeignTransfer = None,
-                    TaxDecreaseConformance = False,    
-                    Items=[reportItem]
-                )
-
-                converted.append(ISINEntry)
+                    converted.append(ISINEntry)
 
 
 
@@ -334,30 +336,28 @@ class EDavkiTradesReport(GenericTradesReport):
         return envelope
 
     def generateDataFrameReport(self, data: list[GenericTradeReportItem]) -> pd.DataFrame:
-        def getLinesFromData(singleLine: GenericTradeReportItem) -> pd.DataFrame:
-           
-            InventoryListType = self.securityMapping[singleLine.InventoryListType]
-            ISIN = singleLine.ISIN
-            Ticker = singleLine.Ticker
-            HasForeignTax = singleLine.HasForeignTax
-            ForeignTax = singleLine.ForeignTax
-            ForeignTaxCountryID = singleLine.ForeignTaxCountryID
-            ForeignTaxCountryName = singleLine.ForeignTaxCountryName
+        convertedTrades = self.convertTradesToKdvpItems(data)
 
 
-            lines = pd.DataFrame(singleLine.Lines)
-            lines['InventoryListType'] = InventoryListType.value
-            lines['ISIN'] = ISIN
-            lines['Ticker'] = Ticker
-            lines['HasForeignTax'] = HasForeignTax
-            lines['ForeignTax'] = ForeignTax
-            lines['ForeignTaxCountryID'] = ForeignTaxCountryID
-            lines['ForeignTaxCountryName'] = ForeignTaxCountryName
+        def getLinesFromData(entry: ss.EDavkiGenericTradeReportItem) -> list[pd.DataFrame]:
+            
+            def getLinesDataFromEvents(line: ss.EDavkiTradeReportSecurityLineEvent):
+                lines = pd.DataFrame(line.Events)
+                lines['ISIN'] = line.ISIN
+                lines['HasForeignTax'] = entry.HasForeignTax
+                lines['ForeignTax'] = entry.ForeignTax
+                lines['ForeignTaxCountryID'] = entry.ForeignTransfer
+                lines['ForeignTaxCountryName'] = entry.HasForeignTax
 
-            return lines
+                return lines
 
-        mappedData = list(map(getLinesFromData, data))
 
-        combinedData = pd.concat(mappedData)
+
+            return list(map(getLinesDataFromEvents, entry.Items))
+
+        mappedData = list(map(getLinesFromData, convertedTrades))
+        flattenedData = [x for xn in mappedData for x in xn]
+
+        combinedData = pd.concat(flattenedData)
 
         return combinedData
