@@ -35,28 +35,27 @@ class EDavkiDividendReportLine:
 
 
 class EDavkiTradeSecurityType(str, Enum):
-    PLVP = "PLVP" # Popisni list vrednostnega papirja oziroma invecticijskega kupona
-    PLVPSHORT = "PLVPSHORT" # Popisni list vrednostnega papirja oziroma invecticijskega kupona SHORT
-    PLVPGB = "PLVPG" # Popisni list vrednostnega papirja, ki je v gospodarjenju pri borznoposredniški družbi na podlagi pogodbe o gospodarjenju
-    PLVPGBSHORT = "PLVPGBSHORT" # Popisni list vrednostnega papirja, ki je v gospodarjenju pri borznoposredniški družbi na podlagi pogodbe o gospodarjenju SHORT
-    PLD = "PLD" # Popisni list deleža v gospodarskih družbah, zadrugah in drugih oblikah organiziranja
-    PLVPZOK = "PLVPZOK" # Popisni list vrednostnega papirja za primer zmanjšanja osnovnega kapitala ob nespremenjeni količini vrednostnega papirja
+    SECURITY = "PLVP" # Popisni list vrednostnega papirja oziroma invecticijskega kupona
+    SECURITY_SHORT = "PLVPSHORT" # Popisni list vrednostnega papirja oziroma invecticijskega kupona SHORT
+    SECURITY_WITH_CONTRACT = "PLVPG" # Popisni list vrednostnega papirja, ki je v gospodarjenju pri borznoposredniški družbi na podlagi pogodbe o gospodarjenju
+    SECURITY_WITH_CONTRACT_SHORT = "PLVPGBSHORT" # Popisni list vrednostnega papirja, ki je v gospodarjenju pri borznoposredniški družbi na podlagi pogodbe o gospodarjenju SHORT
+    SHARE = "PLD" # Popisni list deleža v gospodarskih družbah, zadrugah in drugih oblikah organiziranja
+    SECURITY_WITH_CAPITAL_REDUCTION = "PLVPZOK" # Popisni list vrednostnega papirja za primer zmanjšanja osnovnega kapitala ob nespremenjeni količini vrednostnega papirja
 
 
 class EDavkiTradeReportGainType(str, Enum):
     CAPITAL_INVESTMENT = "A" # guessing
     BOUGHT = "B"
     CAPITAL_RAISE = "C" # guessing
-    CAPITAL_ASSET = "D" # guessing
+    CAPITAL_ASSET_RAISE = "D" # guessing
     CAPITALIZATION_CHANGE = "E" # guessing
     INHERITENCE = "F"
     GIFT = "G"
     OTHER = "H"
-    CAPITAL_STOCK_ISSUANCE = "I" # guessing
 
 
 @dataclass
-class EDavkiTradeReportSecurityLineGenericEventBuy:
+class EDavkiTradeReportSecurityLineGenericEventBought:
     BoughtOn: Arrow
     GainType: EDavkiTradeReportGainType
     Quantity: float
@@ -66,12 +65,12 @@ class EDavkiTradeReportSecurityLineGenericEventBuy:
     BaseTaxReduction: float | None
 
 @dataclass
-class EDavkiTradeReportSecurityLineGenericEventSell:
+class EDavkiTradeReportSecurityLineGenericEventSold:
     SoldOn: Arrow
     Quantity: float
     TotalPrice: float
     PricePerUnit: float
-    WashSale: bool
+    IsNotAWashSale: bool
 
 @dataclass
 class EDavkiTradeReportSecurityLineEvent:
@@ -79,11 +78,10 @@ class EDavkiTradeReportSecurityLineEvent:
     Code: str | None
     Name: str | None
     IsFund: bool
-    StockExchangeName: str
     Resolution: str | None
     ResolutionDate: Arrow | None
 
-    Events: list[EDavkiTradeReportSecurityLineGenericEventBuy | EDavkiTradeReportSecurityLineGenericEventSell]
+    Events: list[EDavkiTradeReportSecurityLineGenericEventBought | EDavkiTradeReportSecurityLineGenericEventSold]
 
 
 

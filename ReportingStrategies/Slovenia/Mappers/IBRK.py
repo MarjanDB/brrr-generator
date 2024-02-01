@@ -64,12 +64,17 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
             s.AssetClass.STOCK: gf.GenericTradeReportItemType.STOCK
         }
 
+        assetClassMapping = {
+            s.AssetClass.STOCK: gf.GenericAssetClass.STOCK
+        }
+
         # TODO: It's possible to have more than one type of asset class trade per ISIN, should take into account?
         tickerInfo = gf.GenericTradeReportItem(
-            InventoryListType = gf.GenericTradeReportItemType(tradeReportItemTypeMapping[firstTradeForInfoGrabbing.AssetClass]),
+            InventoryListType = tradeReportItemTypeMapping[firstTradeForInfoGrabbing.AssetClass],
             ISIN = isin,
             Ticker = ticker,
-            HasForeignTax = False, # Will fix if a case shows up
+            AssetClass = assetClassMapping[firstTradeForInfoGrabbing.AssetClass],
+            HasForeignTax = False, # TODO: Taxes - Will fix if a case shows up
             ForeignTax = None,
             ForeignTaxCountryID = None,
             ForeignTaxCountryName = None,
@@ -83,12 +88,17 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
             buyDate = lot.OpenDateTime
             sellDate = lot.DateTime
 
+            # TODO: Not all are bought
+            acquiredHow = gf.GenericTradeReportItemGainType.BOUGHT
+            if lot.SubCategory == s.SubCategory.RIGHT:
+                acquiredHow = gf.GenericTradeReportItemGainType.RIGHT_TO_NEWLY_ISSUED_STOCK
+
 
             # TODO: Since we're using lots are provided by IBKR, tax information and single unit cost is lost
             # Is this a problem?
             buyLine = gf.GenericTradeReportItemSecurityLineBought(
                 AcquiredDate = buyDate,
-                AcquiredHow = gf.GenericTradeReportItemGainType.BOUGHT, # TODO: Not all are bought
+                AcquiredHow = acquiredHow, 
                 NumberOfUnits = lot.Quantity,
                 AmountPerUnit = lot.CostBasis / lot.Quantity,
                 TotalAmountPaid = lot.CostBasis,
@@ -108,7 +118,8 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
                 NumberOfUnitsSold = lot.Quantity,
                 AmountPerUnit = (lot.CostBasis + lot.CapitalGainsProfitAndLoss) / lot.Quantity,
                 TotalAmountSoldFor = lot.CostBasis + lot.CapitalGainsProfitAndLoss,
-                WashSale = relevantTradesOfThisInstrument.__len__() > 0
+                WashSale = relevantTradesOfThisInstrument.__len__() > 0 and lot.CapitalGainsProfitAndLoss < 0,
+                SoldForProfit = lot.CapitalGainsProfitAndLoss > 0 or lot.CostBasis == 0 # gifted have cost basis of 0, and are always a profit
             )
 
             return [buyLine, sellLine]

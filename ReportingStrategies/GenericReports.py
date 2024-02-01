@@ -26,11 +26,11 @@ class GenericReportWrapper:
         ...
     
 
-class GenericReportProvider(Generic[INPUT_DATA]):
+class GenericReportProvider(Generic[INPUT_DATA, REPORT_CONFIG]):
     companyLookupProvider = CompanyLookupProvider()
     countryLookupProvider = CountryLookupProvider()
 
-    def __init__(self, reportConfig: ReportBaseConfig, taxPayerInfo: TaxPayerInfo) -> None:
+    def __init__(self, reportConfig: REPORT_CONFIG, taxPayerInfo: TaxPayerInfo) -> None:
         self.reportConfig = reportConfig
         self.taxPayerInfo = taxPayerInfo
 
@@ -44,9 +44,9 @@ class GenericReportProvider(Generic[INPUT_DATA]):
 
 
 
-class GenericDividendReport(GenericReportProvider[GenericDividendLine]):
+class GenericDividendReport(GenericReportProvider[GenericDividendLine, REPORT_CONFIG]):
     ...
 
 
-class GenericTradesReport(GenericReportProvider[GenericTradeReportItem]):
+class GenericTradesReport(GenericReportProvider[GenericTradeReportItem, REPORT_CONFIG]):
     ...

@@ -12,10 +12,14 @@ from ReportingStrategies.GenericFormats import GenericTradeReportItem
 from ReportingStrategies.GenericFormats import GenericTradeReportItemType
 from ReportingStrategies.GenericFormats import GenericTradeReportItemSecurityLineBought
 from ReportingStrategies.GenericFormats import GenericTradeReportItemSecurityLineSold
+from ReportingStrategies.GenericFormats import GenericTradeReportItemGainType
+import ReportingStrategies.GenericFormats as gf
 from itertools import groupby
+from Common.Configuration import ReportBaseConfig
+from dataclasses import dataclass
 
 # https://edavki.durs.si/EdavkiPortal/PersonalPortal/[360253]/Pages/Help/sl/WorkflowType1.htm
-class DocumentWorkflowType(str, Enum):
+class EDavkiDocumentWorkflowType(str, Enum):
     ORIGINAL = "O"
     SETTLEMENT_ZDAVP2_NO_CLAUSE = "B"
     SETTLEMENT_ZDAVP2_WITH_CLAUSE = "R"
@@ -24,6 +28,11 @@ class DocumentWorkflowType(str, Enum):
     CORRECTION_WITH_INCREASED_LIABILITIES = "V"
     CORRECTION_WITHIN_12_MONTHS_ZDAVP2 = "Z"
     CANCELLED = "S"
+
+@dataclass
+class EDavkiReportConfig(ReportBaseConfig):
+    ReportType: EDavkiDocumentWorkflowType
+
 
 
 class EDavkiReportWrapper(GenericReportWrapper):
@@ -52,7 +61,7 @@ class EDavkiReportWrapper(GenericReportWrapper):
         etree.SubElement(Envelope, etree.QName(edp, "Signatures"))
 
         workflow = etree.SubElement(Header, etree.QName(edp, "Workflow"))
-        etree.SubElement(workflow, etree.QName(edp, "DocumentWorkflowID")).text = DocumentWorkflowType.ORIGINAL.value
+        etree.SubElement(workflow, etree.QName(edp, "DocumentWorkflowID")).text = EDavkiDocumentWorkflowType.ORIGINAL.value
 
         
         return Envelope
@@ -60,7 +69,7 @@ class EDavkiReportWrapper(GenericReportWrapper):
 
 
 
-class EDavkiDividendReport(GenericDividendReport):
+class EDavkiDividendReport(GenericDividendReport[EDavkiReportConfig]):
     def segmentDataBasedOnLineType(self, data: list[GenericDividendLine]):
         dividendLines = list(filter(lambda line: line.LineType == GenericDividendLineType.DIVIDEND, data))
         witholdingTax = list(filter(lambda line: line.LineType == GenericDividendLineType.WITHOLDING_TAX, data))
@@ -219,14 +228,26 @@ class EDavkiDividendReport(GenericDividendReport):
 
 
 
-class EDavkiTradesReport(GenericTradesReport):
+class EDavkiTradesReport(GenericTradesReport[EDavkiReportConfig]):
     SECURITY_MAPPING : dict[GenericTradeReportItemType, ss.EDavkiTradeSecurityType] = {
-        GenericTradeReportItemType.STOCK: ss.EDavkiTradeSecurityType.PLVP,
-        GenericTradeReportItemType.STOCK_SHORT: ss.EDavkiTradeSecurityType.PLVPSHORT,
-        GenericTradeReportItemType.STOCK_CONTRACT: ss.EDavkiTradeSecurityType.PLVPGB,
-        GenericTradeReportItemType.STOCK_CONTRACT_SHORT: ss.EDavkiTradeSecurityType.PLVPGBSHORT,
-        GenericTradeReportItemType.COMPANY_SHARE: ss.EDavkiTradeSecurityType.PLD,
-        GenericTradeReportItemType.PLVPZOK: ss.EDavkiTradeSecurityType.PLVPZOK,
+        GenericTradeReportItemType.STOCK: ss.EDavkiTradeSecurityType.SECURITY,
+        GenericTradeReportItemType.STOCK_SHORT: ss.EDavkiTradeSecurityType.SECURITY_SHORT,
+        GenericTradeReportItemType.STOCK_CONTRACT: ss.EDavkiTradeSecurityType.SECURITY_WITH_CONTRACT,
+        GenericTradeReportItemType.STOCK_CONTRACT_SHORT: ss.EDavkiTradeSecurityType.SECURITY_WITH_CONTRACT_SHORT,
+        GenericTradeReportItemType.COMPANY_SHARE: ss.EDavkiTradeSecurityType.SHARE,
+        GenericTradeReportItemType.PLVPZOK: ss.EDavkiTradeSecurityType.SECURITY_WITH_CAPITAL_REDUCTION,
+    }
+
+    GAIN_MAPPINGS : dict[GenericTradeReportItemGainType, ss.EDavkiTradeReportGainType] = {
+        GenericTradeReportItemGainType.BOUGHT: ss.EDavkiTradeReportGainType.BOUGHT,
+        GenericTradeReportItemGainType.CAPITAL_INVESTMENT: ss.EDavkiTradeReportGainType.CAPITAL_INVESTMENT,
+        GenericTradeReportItemGainType.CAPITAL_RAISE: ss.EDavkiTradeReportGainType.CAPITAL_RAISE,
+        GenericTradeReportItemGainType.CAPITAL_ASSET: ss.EDavkiTradeReportGainType.CAPITAL_ASSET_RAISE,
+        GenericTradeReportItemGainType.CAPITALIZATION_CHANGE: ss.EDavkiTradeReportGainType.CAPITALIZATION_CHANGE,
+        GenericTradeReportItemGainType.INHERITENCE: ss.EDavkiTradeReportGainType.INHERITENCE,
+        GenericTradeReportItemGainType.GIFT: ss.EDavkiTradeReportGainType.GIFT,
+        GenericTradeReportItemGainType.OTHER: ss.EDavkiTradeReportGainType.OTHER,
+        GenericTradeReportItemGainType.RIGHT_TO_NEWLY_ISSUED_STOCK: ss.EDavkiTradeReportGainType.OTHER,
     }
 
 
@@ -247,10 +268,10 @@ class EDavkiTradesReport(GenericTradesReport):
 
                 for lots in securityLines:
 
-                    def convertBuy(line: GenericTradeReportItemSecurityLineBought) -> ss.EDavkiTradeReportSecurityLineGenericEventBuy:
-                        return ss.EDavkiTradeReportSecurityLineGenericEventBuy(
+                    def convertBuy(line: GenericTradeReportItemSecurityLineBought) -> ss.EDavkiTradeReportSecurityLineGenericEventBought:
+                        return ss.EDavkiTradeReportSecurityLineGenericEventBought(
                             BoughtOn = line.AcquiredDate,
-                            GainType = ss.EDavkiTradeReportGainType.BOUGHT, # TODO: Take into account actual gain type
+                            GainType = self.GAIN_MAPPINGS[line.AcquiredHow],
                             Quantity = line.NumberOfUnits,
                             PricePerUnit = line.AmountPerUnit,
                             TotalPrice = line.TotalAmountPaid,
@@ -258,13 +279,13 @@ class EDavkiTradesReport(GenericTradesReport):
                             BaseTaxReduction = None
                         )
 
-                    def convertSell(line: GenericTradeReportItemSecurityLineSold) -> ss.EDavkiTradeReportSecurityLineGenericEventSell:
-                        return ss.EDavkiTradeReportSecurityLineGenericEventSell(
+                    def convertSell(line: GenericTradeReportItemSecurityLineSold) -> ss.EDavkiTradeReportSecurityLineGenericEventSold:
+                        return ss.EDavkiTradeReportSecurityLineGenericEventSold(
                             SoldOn = line.SoldDate,
                             Quantity = line.NumberOfUnitsSold,
                             TotalPrice = line.TotalAmountSoldFor,
                             PricePerUnit = line.AmountPerUnit,
-                            WashSale = line.WashSale
+                            IsNotAWashSale = not line.WashSale and not line.SoldForProfit
                         )
                     
                     buyLines = filter(lambda line: isinstance(line, GenericTradeReportItemSecurityLineBought), lots.Lines)
@@ -274,10 +295,9 @@ class EDavkiTradesReport(GenericTradesReport):
 
                     reportItem = ss.EDavkiTradeReportSecurityLineEvent(
                         ISIN = ISIN,
-                        Code = None,
+                        Code = lots.Ticker,
                         Name = None,
-                        IsFund = False, # TODO: Determine funds
-                        StockExchangeName = "EXCH",
+                        IsFund = lots.AssetClass == gf.GenericAssetClass.ROYALTY_TRUST,
                         Resolution = None,
                         ResolutionDate = None,
                         Events = buys + sells
@@ -322,15 +342,81 @@ class EDavkiTradesReport(GenericTradesReport):
         envelope[:] = templateEnvelope[:]
 
         body = etree.SubElement(envelope, "body")
+        etree.SubElement(body, etree.QName(nsmap['edp'], 'bodyContent'))
 
         Doh_KDVP = etree.SubElement(body, "Doh_KDVP")
         KDVP = etree.SubElement(Doh_KDVP, "KDVP")
-        etree.SubElement(KDVP, "DocumentWorkflowID").text = DocumentWorkflowType.ORIGINAL
+        etree.SubElement(KDVP, "DocumentWorkflowID").text = self.reportConfig.ReportType.value
         etree.SubElement(KDVP, "Year").text = self.reportConfig.fromDate.format("YYYY")
+        etree.SubElement(KDVP, "PeriodStart").text = self.reportConfig.fromDate.format("YYYY-MM-DD")
+        etree.SubElement(KDVP, "PeriodEnd").text = self.reportConfig.toDate.shift(days=-1).format("YYYY-MM-DD")
         etree.SubElement(KDVP, "IsResident").text = str(self.taxPayerInfo.countryID == 'SI').lower()
-        etree.SubElement(KDVP, "CountryOfResidenceID").text = self.taxPayerInfo.countryID
-        etree.SubElement(KDVP, "TelephoneNumber").text = "telefonska"
-        etree.SubElement(KDVP, "Email").text = "email"
+        etree.SubElement(KDVP, "SecurityCount").text = "0"
+        etree.SubElement(KDVP, "SecurityShortCount").text = "0"
+        etree.SubElement(KDVP, "SecurityWithContractCount").text = "0"
+        etree.SubElement(KDVP, "SecurityWithContractShortCount").text = "0"
+        etree.SubElement(KDVP, "ShareCount").text = "0"
+        # etree.SubElement(KDVP, "CountryOfResidenceID").text = self.taxPayerInfo.countryID
+        # etree.SubElement(KDVP, "TelephoneNumber").text = "telefonska"
+        # etree.SubElement(KDVP, "Email").text = "email"
+
+        for KDVP_item_entry in convertedTrades:
+            KDVP_ITEM = etree.SubElement(Doh_KDVP, "KDVPItem")
+
+            etree.SubElement(KDVP_ITEM, "InventoryListType").text = KDVP_item_entry.InventoryListType.value
+            etree.SubElement(KDVP_ITEM, "HasForeignTax").text = str(KDVP_item_entry.HasForeignTax).lower()
+            if KDVP_item_entry.ForeignTax is not None:
+                etree.SubElement(KDVP_ITEM, "ForeignTax").text = str(KDVP_item_entry.ForeignTax.__round__(5))
+            
+            if KDVP_item_entry.FTCountryID is not None:
+                etree.SubElement(KDVP_ITEM, "FTCountryID").text = KDVP_item_entry.FTCountryID
+            if KDVP_item_entry.FTCountryName is not None:
+                etree.SubElement(KDVP_ITEM, "FTCountryName").text = KDVP_item_entry.FTCountryName
+            etree.SubElement(KDVP_ITEM, "HasLossTransfer").text = str(KDVP_item_entry.HasLossTransfer or False).lower()
+            etree.SubElement(KDVP_ITEM, "ForeignTransfer").text = str(KDVP_item_entry.ForeignTransfer or False).lower()
+            etree.SubElement(KDVP_ITEM, "TaxDecreaseConformance").text = str(KDVP_item_entry.TaxDecreaseConformance or False).lower()
+
+            if KDVP_item_entry.InventoryListType == ss.EDavkiTradeSecurityType.SECURITY:
+                for securityEntry in KDVP_item_entry.Items:
+                    entry = etree.SubElement(KDVP_ITEM, "Securities")
+
+                    etree.SubElement(entry, "ISIN").text = securityEntry.ISIN
+                    etree.SubElement(entry, "Code").text = securityEntry.Code
+                    etree.SubElement(entry, "Name").text = securityEntry.Name
+                    etree.SubElement(entry, "IsFond").text = str(securityEntry.IsFund).lower()
+
+                    if securityEntry.Resolution is not None:
+                        etree.SubElement(entry, "Resolution").text = securityEntry.Resolution
+
+                    if securityEntry.ResolutionDate is not None:
+                        etree.SubElement(entry, "ResolutionDate").text = securityEntry.ResolutionDate.format('YYYY-MM-DD')
+
+                    for id, entryLine in enumerate(securityEntry.Events):
+                        row = etree.SubElement(entry, "Row")
+
+                        etree.SubElement(row, "ID").text = str(id)
+
+                        if isinstance(entryLine, ss.EDavkiTradeReportSecurityLineGenericEventBought):
+                            purchase = etree.SubElement(row, "Purchase")
+                            etree.SubElement(purchase, "F1").text = entryLine.BoughtOn.format('YYYY-MM-DD')
+                            etree.SubElement(purchase, "F2").text = entryLine.GainType.value
+                            etree.SubElement(purchase, "F3").text = str(entryLine.Quantity.__round__(5))
+                            etree.SubElement(purchase, "F4").text = str(entryLine.PricePerUnit.__round__(5))
+                            etree.SubElement(purchase, "F5").text = str(entryLine.InheritanceAndGiftTaxPaid.__round__(5) if entryLine.InheritanceAndGiftTaxPaid is not None else "0")
+                            etree.SubElement(purchase, "F11").text = str(entryLine.BaseTaxReduction.__round__(5) if entryLine.BaseTaxReduction is not None else "0")
+
+                        
+                        if isinstance(entryLine, ss.EDavkiTradeReportSecurityLineGenericEventSold):
+                            sale = etree.SubElement(row, "Sale")
+                            etree.SubElement(sale, "F6").text = entryLine.SoldOn.format('YYYY-MM-DD')
+                            etree.SubElement(sale, "F7").text = str(entryLine.Quantity.__round__(5))
+                            etree.SubElement(sale, "F9").text = str(entryLine.PricePerUnit.__abs__().__round__(5))
+                            etree.SubElement(sale, "F10").text = str(entryLine.IsNotAWashSale).lower()
+
+
+
+
+
 
 
         return envelope

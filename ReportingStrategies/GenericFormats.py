@@ -57,8 +57,13 @@ class GenericTradeReportItemGainType(str, Enum):
     INHERITENCE = "INHERITENCE"
     GIFT = "GIFT"
     OTHER = "OTHER"
-    CAPITAL_STOCK_ISSUANCE = "CAPITAL_STOCK_ISSUANCE" # guessing
+    RIGHT_TO_NEWLY_ISSUED_STOCK = "RIGHT_TO_NEWLY_ISSUED_STOCK" # guessing
 
+
+class GenericAssetClass(str, Enum):
+    STOCK = "STOCK"
+    ROYALTY_TRUST = "ROYALTY_TRUST"
+    CASH = "CASH"
 
 @dataclass
 class GenericTradeReportItemSecurityLineBought:
@@ -77,11 +82,13 @@ class GenericTradeReportItemSecurityLineSold:
     AmountPerUnit: float
     TotalAmountSoldFor: float
     WashSale: bool # https://www.investopedia.com/terms/w/washsale.asp
+    SoldForProfit: bool # to help determine wash sale on EDavki
 
 
 @dataclass
 class GenericTradeReportItem:
     InventoryListType: GenericTradeReportItemType
+    AssetClass: GenericAssetClass
     ISIN: str
     Ticker: str
     HasForeignTax: bool
