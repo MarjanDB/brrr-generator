@@ -6,7 +6,7 @@ import src.ReportingStrategies.Slovenia.Schemas as ss
 import src.InfoProviders.InfoLookupProvider as ilp
 import src.ReportingStrategies.GenericReports as gr
 from itertools import groupby
-from Common.Configuration import ReportBaseConfig
+from src.ConfigurationProvider.Configuration import ReportBaseConfig
 from dataclasses import dataclass
 
 # https://edavki.durs.si/EdavkiPortal/PersonalPortal/[360253]/Pages/Help/sl/WorkflowType1.htm

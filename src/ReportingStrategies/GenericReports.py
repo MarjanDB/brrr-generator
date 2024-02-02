@@ -2,7 +2,7 @@ from lxml import etree
 import pandas as pd
 from abc import abstractmethod
 from typing import TypeVar, Generic
-import src.Common.Configuration as conf
+import src.ConfigurationProvider.Configuration as conf
 import src.InfoProviders.InfoLookupProvider as ilp
 import src.ReportingStrategies.GenericFormats as gf
 

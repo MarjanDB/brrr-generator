@@ -11,6 +11,7 @@ arrow = "*"
 yfinance = "*"
 pycountry = "*"
 lxml = "*"
+pyyaml = "*"
 
 [dev-packages]
 ipykernel = "6.29.*"
