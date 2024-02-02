@@ -2,3 +2,6 @@ cache
 .venv
 BrokerExports
 GeneratedReports
+
+
+config/*
