@@ -1,7 +1,6 @@
-import ExportProvider.IBRK.Schemas as s
-import ReportingStrategies.GenericFormats as gf
+import src.ExportProvider.IBRK.Schemas as s
+import src.ReportingStrategies.GenericFormats as gf
 from itertools import groupby
-from arrow import Arrow
 
 
 def getGenericDividendLineFromIBRKCashTransactions(cashTransactions: list[s.CashTransaction]) -> list[gf.GenericDividendLine]:

@@ -1,19 +1,10 @@
 from lxml import etree
 from enum import Enum
 import pandas as pd
-from ReportingStrategies.GenericFormats import GenericDividendLine
-from ReportingStrategies.GenericFormats import GenericDividendLineType
-import ReportingStrategies.Slovenia.Schemas as ss
-from InfoProviders.InfoLookupProvider import TreatyType
-from ReportingStrategies.GenericReports import GenericDividendReport
-from ReportingStrategies.GenericReports import GenericReportWrapper
-from ReportingStrategies.GenericReports import GenericTradesReport
-from ReportingStrategies.GenericFormats import GenericTradeReportItem
-from ReportingStrategies.GenericFormats import GenericTradeReportItemType
-from ReportingStrategies.GenericFormats import GenericTradeReportItemSecurityLineBought
-from ReportingStrategies.GenericFormats import GenericTradeReportItemSecurityLineSold
-from ReportingStrategies.GenericFormats import GenericTradeReportItemGainType
-import ReportingStrategies.GenericFormats as gf
+import src.ReportingStrategies.GenericFormats as gf
+import src.ReportingStrategies.Slovenia.Schemas as ss
+import src.InfoProviders.InfoLookupProvider as ilp
+import src.ReportingStrategies.GenericReports as gr
 from itertools import groupby
 from Common.Configuration import ReportBaseConfig
 from dataclasses import dataclass
@@ -35,7 +26,7 @@ class EDavkiReportConfig(ReportBaseConfig):
 
 
 
-class EDavkiReportWrapper(GenericReportWrapper):
+class EDavkiReportWrapper(gr.GenericReportWrapper):
     def createReportEnvelope(self):
         edp = "http://edavki.durs.si/Documents/Schemas/EDP-Common-1.xsd"
 
@@ -69,21 +60,21 @@ class EDavkiReportWrapper(GenericReportWrapper):
 
 
 
-class EDavkiDividendReport(GenericDividendReport[EDavkiReportConfig]):
-    def segmentDataBasedOnLineType(self, data: list[GenericDividendLine]):
-        dividendLines = list(filter(lambda line: line.LineType == GenericDividendLineType.DIVIDEND, data))
-        witholdingTax = list(filter(lambda line: line.LineType == GenericDividendLineType.WITHOLDING_TAX, data))
+class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
+    def segmentDataBasedOnLineType(self, data: list[gf.GenericDividendLine]):
+        dividendLines = list(filter(lambda line: line.LineType == gf.GenericDividendLineType.DIVIDEND, data))
+        witholdingTax = list(filter(lambda line: line.LineType == gf.GenericDividendLineType.WITHOLDING_TAX, data))
 
         return {
-            GenericDividendLineType.DIVIDEND: dividendLines,
-            GenericDividendLineType.WITHOLDING_TAX: witholdingTax
+            gf.GenericDividendLineType.DIVIDEND: dividendLines,
+            gf.GenericDividendLineType.WITHOLDING_TAX: witholdingTax
         }
     
-    def calculateLines(self, data: list[GenericDividendLine]) -> list[ss.EDavkiDividendReportLine]:
+    def calculateLines(self, data: list[gf.GenericDividendLine]) -> list[ss.EDavkiDividendReportLine]:
         actionToDividendMapping : dict[str, ss.EDavkiDividendReportLine] = dict()
         segmentedLines = self.segmentDataBasedOnLineType(data)
 
-        for dividend in segmentedLines[GenericDividendLineType.DIVIDEND]:
+        for dividend in segmentedLines[gf.GenericDividendLineType.DIVIDEND]:
             actionId = dividend.DividendActionID
 
             thisDividendLine = ss.EDavkiDividendReportLine(
@@ -108,7 +99,7 @@ class EDavkiDividendReport(GenericDividendReport[EDavkiReportConfig]):
             actionToDividendMapping[actionId].DividendAmount += dividend.getAmountInBaseCurrency()
 
 
-        for withheldTax in segmentedLines[GenericDividendLineType.WITHOLDING_TAX]:
+        for withheldTax in segmentedLines[gf.GenericDividendLineType.WITHOLDING_TAX]:
             actionId = withheldTax.DividendActionID
 
             thisDividendLine = ss.EDavkiDividendReportLine(
@@ -153,7 +144,7 @@ class EDavkiDividendReport(GenericDividendReport[EDavkiReportConfig]):
                 dividendLine.DividendPayerAddress = responsibleCompany.Location.formatAsUnternationalAddress()
 
                 relevantCountry = self.countryLookupProvider.getCountry(responsibleCompany.Location.Country)
-                treaty = relevantCountry.treaties.get(TreatyType.TaxRelief)
+                treaty = relevantCountry.treaties.get(ilp.TreatyType.TaxRelief)
                 
                 dividendLine.TaxReliefParagraphInInternationalTreaty = treaty
 
@@ -163,7 +154,7 @@ class EDavkiDividendReport(GenericDividendReport[EDavkiReportConfig]):
 
         return createdLines
 
-    def generateDataFrameReport(self, data: list[GenericDividendLine]) -> pd.DataFrame:
+    def generateDataFrameReport(self, data: list[gf.GenericDividendLine]) -> pd.DataFrame:
         lines = self.calculateLines(data)
 
         def convertToDict(data: ss.EDavkiDividendReportLine):
@@ -189,7 +180,7 @@ class EDavkiDividendReport(GenericDividendReport[EDavkiReportConfig]):
     
     
 
-    def generateXmlReport(self, data: list[GenericDividendLine], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
+    def generateXmlReport(self, data: list[gf.GenericDividendLine], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
         lines = self.calculateLines(data)
 
         nsmap = templateEnvelope.nsmap
@@ -228,39 +219,39 @@ class EDavkiDividendReport(GenericDividendReport[EDavkiReportConfig]):
 
 
 
-class EDavkiTradesReport(GenericTradesReport[EDavkiReportConfig]):
-    SECURITY_MAPPING : dict[GenericTradeReportItemType, ss.EDavkiTradeSecurityType] = {
-        GenericTradeReportItemType.STOCK: ss.EDavkiTradeSecurityType.SECURITY,
-        GenericTradeReportItemType.STOCK_SHORT: ss.EDavkiTradeSecurityType.SECURITY_SHORT,
-        GenericTradeReportItemType.STOCK_CONTRACT: ss.EDavkiTradeSecurityType.SECURITY_WITH_CONTRACT,
-        GenericTradeReportItemType.STOCK_CONTRACT_SHORT: ss.EDavkiTradeSecurityType.SECURITY_WITH_CONTRACT_SHORT,
-        GenericTradeReportItemType.COMPANY_SHARE: ss.EDavkiTradeSecurityType.SHARE,
-        GenericTradeReportItemType.PLVPZOK: ss.EDavkiTradeSecurityType.SECURITY_WITH_CAPITAL_REDUCTION,
+class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
+    SECURITY_MAPPING : dict[gf.GenericTradeReportItemType, ss.EDavkiTradeSecurityType] = {
+        gf.GenericTradeReportItemType.STOCK: ss.EDavkiTradeSecurityType.SECURITY,
+        gf.GenericTradeReportItemType.STOCK_SHORT: ss.EDavkiTradeSecurityType.SECURITY_SHORT,
+        gf.GenericTradeReportItemType.STOCK_CONTRACT: ss.EDavkiTradeSecurityType.SECURITY_WITH_CONTRACT,
+        gf.GenericTradeReportItemType.STOCK_CONTRACT_SHORT: ss.EDavkiTradeSecurityType.SECURITY_WITH_CONTRACT_SHORT,
+        gf.GenericTradeReportItemType.COMPANY_SHARE: ss.EDavkiTradeSecurityType.SHARE,
+        gf.GenericTradeReportItemType.PLVPZOK: ss.EDavkiTradeSecurityType.SECURITY_WITH_CAPITAL_REDUCTION,
     }
 
-    GAIN_MAPPINGS : dict[GenericTradeReportItemGainType, ss.EDavkiTradeReportGainType] = {
-        GenericTradeReportItemGainType.BOUGHT: ss.EDavkiTradeReportGainType.BOUGHT,
-        GenericTradeReportItemGainType.CAPITAL_INVESTMENT: ss.EDavkiTradeReportGainType.CAPITAL_INVESTMENT,
-        GenericTradeReportItemGainType.CAPITAL_RAISE: ss.EDavkiTradeReportGainType.CAPITAL_RAISE,
-        GenericTradeReportItemGainType.CAPITAL_ASSET: ss.EDavkiTradeReportGainType.CAPITAL_ASSET_RAISE,
-        GenericTradeReportItemGainType.CAPITALIZATION_CHANGE: ss.EDavkiTradeReportGainType.CAPITALIZATION_CHANGE,
-        GenericTradeReportItemGainType.INHERITENCE: ss.EDavkiTradeReportGainType.INHERITENCE,
-        GenericTradeReportItemGainType.GIFT: ss.EDavkiTradeReportGainType.GIFT,
-        GenericTradeReportItemGainType.OTHER: ss.EDavkiTradeReportGainType.OTHER,
-        GenericTradeReportItemGainType.RIGHT_TO_NEWLY_ISSUED_STOCK: ss.EDavkiTradeReportGainType.OTHER,
+    GAIN_MAPPINGS : dict[gf.GenericTradeReportItemGainType, ss.EDavkiTradeReportGainType] = {
+        gf.GenericTradeReportItemGainType.BOUGHT: ss.EDavkiTradeReportGainType.BOUGHT,
+        gf.GenericTradeReportItemGainType.CAPITAL_INVESTMENT: ss.EDavkiTradeReportGainType.CAPITAL_INVESTMENT,
+        gf.GenericTradeReportItemGainType.CAPITAL_RAISE: ss.EDavkiTradeReportGainType.CAPITAL_RAISE,
+        gf.GenericTradeReportItemGainType.CAPITAL_ASSET: ss.EDavkiTradeReportGainType.CAPITAL_ASSET_RAISE,
+        gf.GenericTradeReportItemGainType.CAPITALIZATION_CHANGE: ss.EDavkiTradeReportGainType.CAPITALIZATION_CHANGE,
+        gf.GenericTradeReportItemGainType.INHERITENCE: ss.EDavkiTradeReportGainType.INHERITENCE,
+        gf.GenericTradeReportItemGainType.GIFT: ss.EDavkiTradeReportGainType.GIFT,
+        gf.GenericTradeReportItemGainType.OTHER: ss.EDavkiTradeReportGainType.OTHER,
+        gf.GenericTradeReportItemGainType.RIGHT_TO_NEWLY_ISSUED_STOCK: ss.EDavkiTradeReportGainType.OTHER,
     }
 
 
-    def convertTradesToKdvpItems(self, data: list[GenericTradeReportItem]) -> list[ss.EDavkiGenericTradeReportItem]:
+    def convertTradesToKdvpItems(self, data: list[gf.GenericTradeReportItem]) -> list[ss.EDavkiGenericTradeReportItem]:
         converted: list[ss.EDavkiGenericTradeReportItem] = list()
 
-        ISINSegmented: dict[str, list[GenericTradeReportItem]] = {}
+        ISINSegmented: dict[str, list[gf.GenericTradeReportItem]] = {}
         for key, valuesiter in groupby(data, key=lambda item: item.ISIN):
             ISINSegmented[key] = list(valuesiter)
 
         for ISIN, entries in ISINSegmented.items():
 
-            securitySegmented: dict[GenericTradeReportItemType, list[GenericTradeReportItem]] = {}
+            securitySegmented: dict[gf.GenericTradeReportItemType, list[gf.GenericTradeReportItem]] = {}
             for key, valuesiter in groupby(entries, key=lambda item: item.InventoryListType):
                 securitySegmented[key] = list(valuesiter)
 
@@ -268,7 +259,7 @@ class EDavkiTradesReport(GenericTradesReport[EDavkiReportConfig]):
 
                 for lots in securityLines:
 
-                    def convertBuy(line: GenericTradeReportItemSecurityLineBought) -> ss.EDavkiTradeReportSecurityLineGenericEventBought:
+                    def convertBuy(line: gf.GenericTradeReportItemSecurityLineBought) -> ss.EDavkiTradeReportSecurityLineGenericEventBought:
                         return ss.EDavkiTradeReportSecurityLineGenericEventBought(
                             BoughtOn = line.AcquiredDate,
                             GainType = self.GAIN_MAPPINGS[line.AcquiredHow],
@@ -279,7 +270,7 @@ class EDavkiTradesReport(GenericTradesReport[EDavkiReportConfig]):
                             BaseTaxReduction = None
                         )
 
-                    def convertSell(line: GenericTradeReportItemSecurityLineSold) -> ss.EDavkiTradeReportSecurityLineGenericEventSold:
+                    def convertSell(line: gf.GenericTradeReportItemSecurityLineSold) -> ss.EDavkiTradeReportSecurityLineGenericEventSold:
                         return ss.EDavkiTradeReportSecurityLineGenericEventSold(
                             SoldOn = line.SoldDate,
                             Quantity = line.NumberOfUnitsSold,
@@ -288,9 +279,9 @@ class EDavkiTradesReport(GenericTradesReport[EDavkiReportConfig]):
                             IsNotAWashSale = not line.WashSale and not line.SoldForProfit
                         )
                     
-                    buyLines = filter(lambda line: isinstance(line, GenericTradeReportItemSecurityLineBought), lots.Lines)
+                    buyLines = filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineBought), lots.Lines)
                     buys = list(map(convertBuy, buyLines)) # type: ignore
-                    sellLines = filter(lambda line: isinstance(line, GenericTradeReportItemSecurityLineSold), lots.Lines)
+                    sellLines = filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineSold), lots.Lines)
                     sells = list(map(convertSell, sellLines)) # type: ignore
 
                     reportItem = ss.EDavkiTradeReportSecurityLineEvent(
@@ -333,7 +324,7 @@ class EDavkiTradesReport(GenericTradesReport[EDavkiReportConfig]):
 
 
 
-    def generateXmlReport(self, data: list[GenericTradeReportItem], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
+    def generateXmlReport(self, data: list[gf.GenericTradeReportItem], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
         convertedTrades = self.convertTradesToKdvpItems(data)
 
         nsmap = templateEnvelope.nsmap
@@ -382,7 +373,7 @@ class EDavkiTradesReport(GenericTradesReport[EDavkiReportConfig]):
 
                     etree.SubElement(entry, "ISIN").text = securityEntry.ISIN
                     etree.SubElement(entry, "Code").text = securityEntry.Code
-                    etree.SubElement(entry, "Name").text = securityEntry.Name
+                    # etree.SubElement(entry, "Name").text = securityEntry.Name
                     etree.SubElement(entry, "IsFond").text = str(securityEntry.IsFund).lower()
 
                     if securityEntry.Resolution is not None:
@@ -421,7 +412,7 @@ class EDavkiTradesReport(GenericTradesReport[EDavkiReportConfig]):
 
         return envelope
 
-    def generateDataFrameReport(self, data: list[GenericTradeReportItem]) -> pd.DataFrame:
+    def generateDataFrameReport(self, data: list[gf.GenericTradeReportItem]) -> pd.DataFrame:
         convertedTrades = self.convertTradesToKdvpItems(data)
 
 
