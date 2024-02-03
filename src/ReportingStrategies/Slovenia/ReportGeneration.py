@@ -421,6 +421,7 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
             def getLinesDataFromEvents(line: ss.EDavkiTradeReportSecurityLineEvent):
                 lines = pd.DataFrame(line.Events)
                 lines['ISIN'] = line.ISIN
+                lines['Ticker'] = line.Code
                 lines['HasForeignTax'] = entry.HasForeignTax
                 lines['ForeignTax'] = entry.ForeignTax
                 lines['ForeignTaxCountryID'] = entry.ForeignTransfer

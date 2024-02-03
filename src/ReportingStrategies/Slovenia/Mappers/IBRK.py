@@ -55,6 +55,7 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
     genericTradeReportItems : list[gf.GenericTradeReportItem] = list()
 
     for isin, tradeLots in ISINSegmented.items():
+        print(isin)
         firstTradeForInfoGrabbing = tradeLots[0]
 
         ticker = firstTradeForInfoGrabbing.Symbol
@@ -93,30 +94,31 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
                 acquiredHow = gf.GenericTradeReportItemGainType.RIGHT_TO_NEWLY_ISSUED_STOCK
 
 
-            # TODO: Since we're using lots are provided by IBKR, tax information and single unit cost is lost
-            # Is this a problem?
-            buyLine = gf.GenericTradeReportItemSecurityLineBought(
-                AcquiredDate = buyDate,
-                AcquiredHow = acquiredHow, 
-                NumberOfUnits = lot.Quantity,
-                AmountPerUnit = lot.CostBasis / lot.Quantity,
-                TotalAmountPaid = lot.CostBasis,
-                TaxPaidForPurchase = 0
-            )
-
             # for wash sales, we need to check all transactions for this instrument
             # if at least one was done 30 days before or after this tax lot close, this becomes a wash sale
             # OrderTime is date of actual execution, while DateTime is when it was placed
             # (no other way of avoiding matching its own sell)
             nonlocal allTrades
-            sameInstrumentTrades = list(filter(lambda x: x.ISIN == isin, allTrades))
+            sameInstrumentTrades = list(filter(lambda x: x.ISIN == isin and x.AssetClass == lot.AssetClass and x.SubCategory == lot.SubCategory, allTrades))
             relevantTradesOfThisInstrument = list(filter(lambda trade: (trade.OrderTime - sellDate).days.__abs__() <= 30 and trade.DateTime.to('utc').format() != sellDate.to('utc').format() , sameInstrumentTrades))
+
+            # TODO: Since we're using lots are provided by IBKR, tax information and single unit cost is lost
+            # Is this a problem?
+            # NOTE: lot's CostBasis is the cost basis of the sell, not the buy. Buy is calculated by subtracting the capital gains (we want the reverse of the realized gains)
+            buyLine = gf.GenericTradeReportItemSecurityLineBought(
+                AcquiredDate = buyDate,
+                AcquiredHow = acquiredHow, 
+                NumberOfUnits = lot.Quantity,
+                AmountPerUnit = (lot.CostBasis - lot.CapitalGainsProfitAndLoss) / lot.Quantity,
+                TotalAmountPaid = (lot.CostBasis - lot.CapitalGainsProfitAndLoss),
+                TaxPaidForPurchase = 0
+            )
 
             sellLine = gf.GenericTradeReportItemSecurityLineSold(
                 SoldDate = sellDate,
                 NumberOfUnitsSold = lot.Quantity,
-                AmountPerUnit = (lot.CostBasis + lot.CapitalGainsProfitAndLoss) / lot.Quantity,
-                TotalAmountSoldFor = lot.CostBasis + lot.CapitalGainsProfitAndLoss,
+                AmountPerUnit = lot.CostBasis / lot.Quantity,
+                TotalAmountSoldFor = lot.CostBasis,
                 WashSale = relevantTradesOfThisInstrument.__len__() > 0 and lot.CapitalGainsProfitAndLoss < 0,
                 SoldForProfit = lot.CapitalGainsProfitAndLoss > 0 or lot.CostBasis == 0 # gifted have cost basis of 0, and are always a profit
             )
@@ -124,8 +126,12 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
             return [buyLine, sellLine]
 
         convertedLots = list(map(convertLotToBuyAndSell, tradeLots))
-
         allLots = [item for row in convertedLots for item in row]
+
+
+        # TODO: Merge sells that fall on the same execution to avoid false losses being reported
+        allBuyTrades = list(filter(lambda lotLine: isinstance(lotLine, gf.GenericTradeReportItemSecurityLineBought), allLots))
+        allSellTrades = list(filter(lambda lotLine: isinstance(lotLine, gf.GenericTradeReportItemSecurityLineSold), allLots))
 
         tickerInfo.Lines = allLots
 
