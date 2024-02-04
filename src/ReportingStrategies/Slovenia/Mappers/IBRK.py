@@ -1,6 +1,7 @@
 import src.ExportProvider.IBRK.Schemas as s
 import src.ReportingStrategies.GenericFormats as gf
 from itertools import groupby
+import arrow
 
 
 def getGenericDividendLineFromIBRKCashTransactions(cashTransactions: list[s.CashTransaction]) -> list[gf.GenericDividendLine]:
@@ -102,25 +103,33 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
             sameInstrumentTrades = list(filter(lambda x: x.ISIN == isin and x.AssetClass == lot.AssetClass and x.SubCategory == lot.SubCategory, allTrades))
             relevantTradesOfThisInstrument = list(filter(lambda trade: (trade.OrderTime - sellDate).days.__abs__() <= 30 and trade.DateTime.to('utc').format() != sellDate.to('utc').format() , sameInstrumentTrades))
 
-            # TODO: Since we're using lots are provided by IBKR, tax information and single unit cost is lost
-            # Is this a problem?
-            # NOTE: lot's CostBasis is the cost basis of the sell, not the buy. Buy is calculated by subtracting the capital gains (we want the reverse of the realized gains)
+            corespondingBuyTrade = next(filter(lambda trade: trade.TransactionID == lot.TransactionID, sameInstrumentTrades), None)
+
+            # NOTE: Corporate Actions can result in stocks that haven't been bought
+            numberOfBought = corespondingBuyTrade.Quantity if corespondingBuyTrade else lot.Quantity
+            tradePriceOfBought = corespondingBuyTrade.TradePrice * lot.FXRateToBase if corespondingBuyTrade else lot.TradePrice * lot.FXRateToBase
+            tradeTotalOfBought = corespondingBuyTrade.TradeMoney * lot.FXRateToBase if corespondingBuyTrade else lot.TradePrice * lot.Quantity * lot.FXRateToBase
+            taxesOfBought = corespondingBuyTrade.Taxes * lot.FXRateToBase if corespondingBuyTrade else 0
+
             buyLine = gf.GenericTradeReportItemSecurityLineBought(
                 AcquiredDate = buyDate,
                 AcquiredHow = acquiredHow, 
-                NumberOfUnits = lot.Quantity,
-                AmountPerUnit = (lot.CostBasis - lot.CapitalGainsProfitAndLoss) / lot.Quantity,
-                TotalAmountPaid = (lot.CostBasis - lot.CapitalGainsProfitAndLoss),
-                TaxPaidForPurchase = 0
+                NumberOfUnits = numberOfBought,
+                AmountPerUnit = tradePriceOfBought,
+                TotalAmountPaid = tradeTotalOfBought,
+                TaxPaidForPurchase = taxesOfBought
             )
+
+            # TODO: Maybe make more robust matching?
+            corespondingSellTrade = next(filter(lambda trade: trade.DateTime.to('utc').format() == sellDate.to('utc').format() , sameInstrumentTrades))
 
             sellLine = gf.GenericTradeReportItemSecurityLineSold(
                 SoldDate = sellDate,
-                NumberOfUnitsSold = lot.Quantity,
-                AmountPerUnit = lot.CostBasis / lot.Quantity,
-                TotalAmountSoldFor = lot.CostBasis,
-                WashSale = relevantTradesOfThisInstrument.__len__() > 0 and lot.CapitalGainsProfitAndLoss < 0,
-                SoldForProfit = lot.CapitalGainsProfitAndLoss > 0 or lot.CostBasis == 0 # gifted have cost basis of 0, and are always a profit
+                NumberOfUnitsSold = numberOfBought,
+                AmountPerUnit = corespondingSellTrade.TradePrice.__abs__() * lot.FXRateToBase,
+                TotalAmountSoldFor = corespondingSellTrade.TradeMoney.__abs__() * (numberOfBought / corespondingSellTrade.Quantity.__abs__()) * lot.FXRateToBase,
+                WashSale = relevantTradesOfThisInstrument.__len__() > 0,
+                RealizedProfit = (corespondingSellTrade.TradeMoney.__abs__() * (numberOfBought / corespondingSellTrade.Quantity.__abs__()) * lot.FXRateToBase) - tradeTotalOfBought,
             )
 
             return [buyLine, sellLine]
@@ -131,9 +140,38 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
 
         # TODO: Merge sells that fall on the same execution to avoid false losses being reported
         allBuyTrades = list(filter(lambda lotLine: isinstance(lotLine, gf.GenericTradeReportItemSecurityLineBought), allLots))
-        allSellTrades = list(filter(lambda lotLine: isinstance(lotLine, gf.GenericTradeReportItemSecurityLineSold), allLots))
+        allSellTrades : list[gf.GenericTradeReportItemSecurityLineSold] = list(filter(lambda lotLine: isinstance(lotLine, gf.GenericTradeReportItemSecurityLineSold), allLots)) # type: ignore
 
-        tickerInfo.Lines = allLots
+        segmentedSellsOnDate: dict[str, list[gf.GenericTradeReportItemSecurityLineSold]] = {}
+        for key, valuesiter in groupby(allSellTrades, key=lambda line: line.SoldDate.format()):
+            segmentedSellsOnDate[key] = list(v for v in valuesiter)
+
+        # TODO: Need to handle how these were acquired as well, since you don't want to count gifted towards tax basis reduction (you "can't" lose money on gifts)
+        newSellTradeLines : list[gf.GenericTradeReportItemSecurityLineSold] = list()
+        for date, sellLines in segmentedSellsOnDate.items():
+            commonSellDate = arrow.get(date)
+            commonUnitsSold = sum(map(lambda line: line.NumberOfUnitsSold, sellLines))
+            commonTotalSoldFor = sum(map(lambda line: line.TotalAmountSoldFor, sellLines))
+            hasAtLeastOneWashSale = next(map(lambda line: line.WashSale, filter(lambda line: line.WashSale, sellLines)), False)
+
+            originalCostBasis = sum(map(lambda line: line.TotalAmountSoldFor - line.RealizedProfit, sellLines))
+            realizedProfit = commonTotalSoldFor - originalCostBasis
+
+            mergedSellLine = gf.GenericTradeReportItemSecurityLineSold(
+                commonSellDate,
+                commonUnitsSold,
+                commonTotalSoldFor / commonUnitsSold,
+                commonTotalSoldFor,
+                hasAtLeastOneWashSale,
+                realizedProfit,
+            )
+
+            newSellTradeLines.append(mergedSellLine)
+
+
+
+
+        tickerInfo.Lines = allBuyTrades + newSellTradeLines
 
         genericTradeReportItems.append(tickerInfo)
 

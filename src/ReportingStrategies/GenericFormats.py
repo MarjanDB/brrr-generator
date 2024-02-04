@@ -82,7 +82,7 @@ class GenericTradeReportItemSecurityLineSold:
     AmountPerUnit: float
     TotalAmountSoldFor: float
     WashSale: bool # https://www.investopedia.com/terms/w/washsale.asp
-    SoldForProfit: bool # to help determine wash sale on EDavki
+    RealizedProfit: float # to help determine lowered tax basis
 
 
 @dataclass

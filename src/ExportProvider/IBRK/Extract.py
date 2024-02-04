@@ -195,7 +195,7 @@ def extractTradesFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
         notesAndCodes = str(node.attrib['notes']).split(";")
         notesAndCodesParsed = list(map(lambda code: s.Codes(code), notesAndCodes))  if node.attrib['notes'] != "" else []
 
-        return s.TradeLot(
+        createdNode = s.TradeLot(
                 ClientAccountID = node.attrib['accountId'],
                 AccountAlias = valueOrNone(node.attrib['acctAlias']),
                 Model = s.Model(node.attrib['model']) if node.attrib['model'] != "" else None,
@@ -283,6 +283,9 @@ def extractTradesFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
                 Weight = float(node.attrib['weight'])
           )
 
+        return createdNode
+    
+    
     def xmlNodeToCashTrade(node: etree.ElementBase) -> s.TradeCash:
         notesAndCodes = str(node.attrib['notes']).split(";")
         notesAndCodesParsed = list(map(lambda code: s.Codes(code), notesAndCodes))  if node.attrib['notes'] != "" else []
@@ -396,7 +399,16 @@ def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
 
     stockTrades = deduplicateList(stockTrades)
     cashTrades = deduplicateList(cashTrades)
-    lotTrades = deduplicateList(lotTrades)
+
+    def specialLotTradeDeduplicate(lots: list[list[s.TradeLot]]) -> list[s.TradeLot]:
+        allRows = [x for xs in lots for x in xs]
+
+        uniqueTransactionRows = list({"{}-{}".format(row.TransactionID, row.CapitalGainsProfitAndLoss): row for row in allRows}.values())
+
+        return uniqueTransactionRows
+
+
+    lotTrades = specialLotTradeDeduplicate(lotTrades)   # lots can have the same transaction IDs, but are different lots
 
     return s.SegmentedTrades(
          stockTrades=stockTrades,

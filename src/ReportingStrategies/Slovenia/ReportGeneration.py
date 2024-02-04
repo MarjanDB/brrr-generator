@@ -276,7 +276,7 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                             Quantity = line.NumberOfUnitsSold,
                             TotalPrice = line.TotalAmountSoldFor,
                             PricePerUnit = line.AmountPerUnit,
-                            IsNotAWashSale = not line.WashSale and not line.SoldForProfit
+                            SatisfiesTaxBasisReduction = (not line.WashSale) and line.RealizedProfit < 0
                         )
                     
                     buyLines = filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineBought), lots.Lines)
@@ -402,7 +402,7 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                             etree.SubElement(sale, "F6").text = entryLine.SoldOn.format('YYYY-MM-DD')
                             etree.SubElement(sale, "F7").text = str(entryLine.Quantity.__round__(5))
                             etree.SubElement(sale, "F9").text = str(entryLine.PricePerUnit.__abs__().__round__(5))
-                            etree.SubElement(sale, "F10").text = str(entryLine.IsNotAWashSale).lower()
+                            etree.SubElement(sale, "F10").text = str(entryLine.SatisfiesTaxBasisReduction).lower()
 
 
 

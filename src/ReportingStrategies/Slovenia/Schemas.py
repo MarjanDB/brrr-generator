@@ -70,7 +70,7 @@ class EDavkiTradeReportSecurityLineGenericEventSold:
     Quantity: float
     TotalPrice: float
     PricePerUnit: float
-    IsNotAWashSale: bool
+    SatisfiesTaxBasisReduction: bool
 
 @dataclass
 class EDavkiTradeReportSecurityLineEvent:

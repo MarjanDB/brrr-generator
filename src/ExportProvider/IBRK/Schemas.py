@@ -231,6 +231,7 @@ class TradeStock(TradeLine):
 class TradeLot(TradeLine):
     OpenDateTime: Arrow
     HoldingPeriodDateTime: Arrow
+    TransactionID: str  # this transaction ID correlates lots and their buy trades (1 buy trade can map to multiple lots)
     
 
 @dataclass
