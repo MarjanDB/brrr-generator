@@ -276,7 +276,7 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                             Quantity = line.NumberOfUnitsSold,
                             TotalPrice = line.TotalAmountSoldFor,
                             PricePerUnit = line.AmountPerUnit,
-                            SatisfiesTaxBasisReduction = (not line.WashSale) and line.RealizedProfit < 0
+                            SatisfiesTaxBasisReduction = (not line.WashSale) and not line.SoldForProfit
                         )
                     
                     buyLines = filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineBought), lots.Lines)

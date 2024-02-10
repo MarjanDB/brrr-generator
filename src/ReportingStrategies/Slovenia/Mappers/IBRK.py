@@ -2,6 +2,43 @@ import src.ExportProvider.IBRK.Schemas as s
 import src.ReportingStrategies.GenericFormats as gf
 from itertools import groupby
 import arrow
+from dataclasses import dataclass
+from typing import Any, Callable
+
+
+TRADE_REPORT_ITEM_TYPE_MAPPING = {
+    s.AssetClass.STOCK: gf.GenericTradeReportItemType.STOCK
+}
+
+ASSET_CLASS_MAPPING = {
+    s.AssetClass.STOCK: gf.GenericAssetClass.STOCK
+}
+
+@dataclass
+class SegmentedTradeBuyEvent:
+    Quantity: float
+    BuyLine: gf.GenericTradeReportItemSecurityLineBought
+
+@dataclass
+class SegmentedTradeSellEvent:
+    Quantity: float
+    SellLine: gf.GenericTradeReportItemSecurityLineSold
+
+@dataclass
+class SegmentedTradeEvents:
+    Buys: list[SegmentedTradeBuyEvent]
+    Sells: list[SegmentedTradeSellEvent]
+
+@dataclass
+class SegmentedTrades:
+    Buys: list[gf.GenericTradeReportItemSecurityLineBought]
+    Sells: list[gf.GenericTradeReportItemSecurityLineSold]
+
+
+def deduplicateList(lines: list[Any]):
+    uniqueTransactionRows = list({row.TransactionID: row for row in lines}.values())
+    return uniqueTransactionRows
+
 
 
 def getGenericDividendLineFromIBRKCashTransactions(cashTransactions: list[s.CashTransaction]) -> list[gf.GenericDividendLine]:
@@ -43,73 +80,57 @@ def getGenericDividendLineFromIBRKCashTransactions(cashTransactions: list[s.Cash
 
 
 
-def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.GenericTradeReportItem]:
 
-    # only interested in closed lots, we do not take into account custom lot matching, as that can be achieved through IBKR
-    lots = trades.lots
+def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.GenericTradeReportItem]:
     allTrades = trades.stockTrades
 
-    ISINSegmented: dict[str, list[s.TradeLot]] = {}
-    for key, valuesiter in groupby(lots, key=lambda lot: lot.ISIN):
-        ISINSegmented[key] = list(v for v in valuesiter)
+    # lots are set through IBKR, so open and close trades are matched through those lots and aren't generated through this application
+    lots = trades.lots
 
-    genericTradeReportItems : list[gf.GenericTradeReportItem] = list()
+    def getTradeByTransactionId(allTrades: list[s.TradeStock], transactionId: str) -> s.TradeStock | None:
+        match = next(filter(lambda trade: trade.TransactionID == transactionId, allTrades), None)
+        return match
 
-    for isin, tradeLots in ISINSegmented.items():
-        print(isin)
-        firstTradeForInfoGrabbing = tradeLots[0]
+    def getTradeOnDateTime(allTrades: list[s.TradeStock], date: arrow.Arrow) -> s.TradeStock | None:
+        match = next(filter(lambda trade: trade.DateTime == date, allTrades), None)
+        return match
 
-        ticker = firstTradeForInfoGrabbing.Symbol
+    def getTradesForIsin(allTrades: list[s.TradeStock], isin: str) -> list[s.TradeStock]:
+        sameInstrumentTrades = list(filter(lambda x: x.ISIN == isin, allTrades))
+        return sameInstrumentTrades
+    
+    def segmentLotByLambda(lots: list[s.TradeLot], callback: Callable[[s.TradeLot], str]) -> dict[str, list[s.TradeLot]]:
+        segmented: dict[str, list[s.TradeLot]] = {}
+        for key, valuesiter in groupby(lots, key=callback):
+            segmented[key] = list(v for v in valuesiter)
+        return segmented
 
-        tradeReportItemTypeMapping = {
-            s.AssetClass.STOCK: gf.GenericTradeReportItemType.STOCK
-        }
+    def segmentLotsByIsin(lots: list[s.TradeLot]) -> dict[str, list[s.TradeLot]]:
+        return segmentLotByLambda(lots, lambda lot: lot.ISIN)
+    
+    def segmentLotsByAssetClass(lots: list[s.TradeLot]) -> dict[s.AssetClass, list[s.TradeLot]]:
+        return segmentLotByLambda(lots, lambda lot: lot.AssetClass) # type: ignore
+    
+    def matchTradesWithLots(lots: list[s.TradeLot], trades: list[s.TradeStock]) -> list[gf.GenericTradeReportLotMatches]:
+        def createLotMatchFromLot(lot: s.TradeLot, trades: list[s.TradeStock]) -> gf.GenericTradeReportLotMatches:
+            
+            # lot TransactionId coresponds to the buy event transactionId
+            # this means we can use it to match the buy line for this lot
+            lotTransactionId = lot.TransactionID
+            matchingBuy = getTradeByTransactionId(trades, lotTransactionId)
 
-        assetClassMapping = {
-            s.AssetClass.STOCK: gf.GenericAssetClass.STOCK
-        }
-
-        # TODO: It's possible to have more than one type of asset class trade per ISIN, should take into account?
-        tickerInfo = gf.GenericTradeReportItem(
-            InventoryListType = tradeReportItemTypeMapping[firstTradeForInfoGrabbing.AssetClass],
-            ISIN = isin,
-            Ticker = ticker,
-            AssetClass = assetClassMapping[firstTradeForInfoGrabbing.AssetClass],
-            HasForeignTax = False, # TODO: Taxes - Will fix if a case shows up
-            ForeignTax = None,
-            ForeignTaxCountryID = None,
-            ForeignTaxCountryName = None,
-            Lines = []
-        )
-
-        # we're interested in Capital Gains, as those are the actual taxable events associated with the trade
-        # forex gains are ignored (if trading foreign currency), as those will be taken into account in the actual forex gains report
-        # https://www.investopedia.com/terms/c/capitalgain.asp
-        def convertLotToBuyAndSell(lot: s.TradeLot) -> list[gf.GenericTradeReportItemSecurityLineBought | gf.GenericTradeReportItemSecurityLineSold]:
-            buyDate = lot.OpenDateTime
-            sellDate = lot.DateTime
-
+            
             # TODO: Not all are bought
             acquiredHow = gf.GenericTradeReportItemGainType.BOUGHT
             if lot.SubCategory == s.SubCategory.RIGHT:
                 acquiredHow = gf.GenericTradeReportItemGainType.RIGHT_TO_NEWLY_ISSUED_STOCK
 
-
-            # for wash sales, we need to check all transactions for this instrument
-            # if at least one was done 30 days before or after this tax lot close, this becomes a wash sale
-            # OrderTime is date of actual execution, while DateTime is when it was placed
-            # (no other way of avoiding matching its own sell)
-            nonlocal allTrades
-            sameInstrumentTrades = list(filter(lambda x: x.ISIN == isin and x.AssetClass == lot.AssetClass and x.SubCategory == lot.SubCategory, allTrades))
-            relevantTradesOfThisInstrument = list(filter(lambda trade: (trade.OrderTime - sellDate).days.__abs__() <= 30 and trade.DateTime.to('utc').format() != sellDate.to('utc').format() , sameInstrumentTrades))
-
-            corespondingBuyTrade = next(filter(lambda trade: trade.TransactionID == lot.TransactionID, sameInstrumentTrades), None)
-
             # NOTE: Corporate Actions can result in stocks that haven't been bought
-            numberOfBought = corespondingBuyTrade.Quantity if corespondingBuyTrade else lot.Quantity
-            tradePriceOfBought = corespondingBuyTrade.TradePrice * lot.FXRateToBase if corespondingBuyTrade else lot.TradePrice * lot.FXRateToBase
-            tradeTotalOfBought = corespondingBuyTrade.TradeMoney * lot.FXRateToBase if corespondingBuyTrade else lot.TradePrice * lot.Quantity * lot.FXRateToBase
-            taxesOfBought = corespondingBuyTrade.Taxes * lot.FXRateToBase if corespondingBuyTrade else 0
+            buyDate = lot.OpenDateTime
+            numberOfBought = matchingBuy.Quantity if matchingBuy else lot.Quantity
+            tradePriceOfBought = matchingBuy.TradePrice * lot.FXRateToBase if matchingBuy else lot.TradePrice * lot.FXRateToBase
+            tradeTotalOfBought = matchingBuy.TradeMoney * lot.FXRateToBase if matchingBuy else lot.TradePrice * lot.Quantity * lot.FXRateToBase
+            taxesOfBought = matchingBuy.Taxes * lot.FXRateToBase if matchingBuy else 0
 
             buyLine = gf.GenericTradeReportItemSecurityLineBought(
                 AcquiredDate = buyDate,
@@ -117,64 +138,160 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
                 NumberOfUnits = numberOfBought,
                 AmountPerUnit = tradePriceOfBought,
                 TotalAmountPaid = tradeTotalOfBought,
-                TaxPaidForPurchase = taxesOfBought
+                TaxPaidForPurchase = taxesOfBought,
+                TransactionID = lot.TransactionID   # lot transaction is tied to all related trades
             )
 
-            # TODO: Maybe make more robust matching?
-            corespondingSellTrade = next(filter(lambda trade: trade.DateTime.to('utc').format() == sellDate.to('utc').format() , sameInstrumentTrades))
+            # finding sell lines is a bit harder, as we can only match by DateTime (should be good enough for most cases)
+            sellDate = lot.DateTime
+            matchingSell = getTradeOnDateTime(trades, sellDate)
+            if matchingSell is None:
+                raise ValueError("Could not find matching sell")
 
             sellLine = gf.GenericTradeReportItemSecurityLineSold(
                 SoldDate = sellDate,
-                NumberOfUnitsSold = numberOfBought,
-                AmountPerUnit = corespondingSellTrade.TradePrice.__abs__() * lot.FXRateToBase,
-                TotalAmountSoldFor = corespondingSellTrade.TradeMoney.__abs__() * (numberOfBought / corespondingSellTrade.Quantity.__abs__()) * lot.FXRateToBase,
-                WashSale = relevantTradesOfThisInstrument.__len__() > 0,
-                RealizedProfit = (corespondingSellTrade.TradeMoney.__abs__() * (numberOfBought / corespondingSellTrade.Quantity.__abs__()) * lot.FXRateToBase) - tradeTotalOfBought,
+                NumberOfUnitsSold = matchingSell.Quantity.__abs__(),
+                AmountPerUnit = matchingSell.TradePrice.__abs__() * lot.FXRateToBase,
+                TotalAmountSoldFor = matchingSell.TradeMoney.__abs__() * lot.FXRateToBase,
+                TransactionID = matchingSell.TransactionID,
+                WashSale = True,
+                SoldForProfit = True
             )
 
-            return [buyLine, sellLine]
-
-        convertedLots = list(map(convertLotToBuyAndSell, tradeLots))
-        allLots = [item for row in convertedLots for item in row]
-
-
-        # TODO: Merge sells that fall on the same execution to avoid false losses being reported
-        allBuyTrades = list(filter(lambda lotLine: isinstance(lotLine, gf.GenericTradeReportItemSecurityLineBought), allLots))
-        allSellTrades : list[gf.GenericTradeReportItemSecurityLineSold] = list(filter(lambda lotLine: isinstance(lotLine, gf.GenericTradeReportItemSecurityLineSold), allLots)) # type: ignore
-
-        segmentedSellsOnDate: dict[str, list[gf.GenericTradeReportItemSecurityLineSold]] = {}
-        for key, valuesiter in groupby(allSellTrades, key=lambda line: line.SoldDate.format()):
-            segmentedSellsOnDate[key] = list(v for v in valuesiter)
-
-        # TODO: Need to handle how these were acquired as well, since you don't want to count gifted towards tax basis reduction (you "can't" lose money on gifts)
-        newSellTradeLines : list[gf.GenericTradeReportItemSecurityLineSold] = list()
-        for date, sellLines in segmentedSellsOnDate.items():
-            commonSellDate = arrow.get(date)
-            commonUnitsSold = sum(map(lambda line: line.NumberOfUnitsSold, sellLines))
-            commonTotalSoldFor = sum(map(lambda line: line.TotalAmountSoldFor, sellLines))
-            hasAtLeastOneWashSale = next(map(lambda line: line.WashSale, filter(lambda line: line.WashSale, sellLines)), False)
-
-            originalCostBasis = sum(map(lambda line: line.TotalAmountSoldFor - line.RealizedProfit, sellLines))
-            realizedProfit = commonTotalSoldFor - originalCostBasis
-
-            mergedSellLine = gf.GenericTradeReportItemSecurityLineSold(
-                commonSellDate,
-                commonUnitsSold,
-                commonTotalSoldFor / commonUnitsSold,
-                commonTotalSoldFor,
-                hasAtLeastOneWashSale,
-                realizedProfit,
+            genericLot = gf.GenericTradeReportLotMatches(
+                TransactionID = lotTransactionId,
+                Quantitiy = lot.Quantity,
+                LotOriginalBuy = buyLine,
+                LotOriginalSell = sellLine
             )
 
-            newSellTradeLines.append(mergedSellLine)
+            return genericLot
+
+        genericLotMatches = list(map(lambda lot: createLotMatchFromLot(lot, trades), lots))
+        return genericLotMatches
+    
+    def segmentBuyAndSellTradesWithQuantity(lots: list[gf.GenericTradeReportLotMatches]):
+        buyCounts: dict[str, SegmentedTradeBuyEvent] = {}
+        sellCounts: dict[str, SegmentedTradeSellEvent] = {}
+
+        for lot in lots:
+            buyLine = lot.LotOriginalBuy
+            buyTransaction = buyLine.TransactionID
+            sellLine = lot.LotOriginalSell
+            selltransaction = sellLine.TransactionID
+            lotResponsibleForQuantity = lot.Quantitiy
+
+            existingBuyEntry = buyCounts.get(buyTransaction)
+            if existingBuyEntry is None:
+                existingBuyEntry = SegmentedTradeBuyEvent(Quantity = 0, BuyLine = buyLine)
+
+            existingBuyEntry.Quantity += lotResponsibleForQuantity
+            buyCounts[buyTransaction] = existingBuyEntry
+
+
+            existingSellEntry = sellCounts.get(selltransaction)
+            if existingSellEntry is None:
+                existingSellEntry = SegmentedTradeSellEvent(Quantity = 0, SellLine = sellLine)
+
+            existingSellEntry.Quantity += lotResponsibleForQuantity
+            sellCounts[selltransaction] = existingSellEntry
+
+        return SegmentedTradeEvents(Buys = list(buyCounts.values()), Sells = list(sellCounts.values()))
+    
+    def createSegmentedTradesBasedOnGenericLots(trades: SegmentedTradeEvents) -> SegmentedTrades:
+        def sellEventToGenericSell(sellEvent : SegmentedTradeSellEvent) -> gf.GenericTradeReportItemSecurityLineSold:
+            generic = gf.GenericTradeReportItemSecurityLineSold(
+                SoldDate = sellEvent.SellLine.SoldDate,
+                NumberOfUnitsSold = sellEvent.Quantity,
+                AmountPerUnit = sellEvent.SellLine.AmountPerUnit,
+                TotalAmountSoldFor = sellEvent.SellLine.AmountPerUnit * sellEvent.Quantity,
+                TransactionID = sellEvent.SellLine.TransactionID,
+                WashSale = True,
+                SoldForProfit = True
+            )
+
+            return generic
+        
+        def buyEventToGenericBuy(buyEvent: SegmentedTradeBuyEvent) -> gf.GenericTradeReportItemSecurityLineBought:
+            generic = gf.GenericTradeReportItemSecurityLineBought(
+                AcquiredDate = buyEvent.BuyLine.AcquiredDate,
+                AcquiredHow = buyEvent.BuyLine.AcquiredHow,
+                NumberOfUnits = buyEvent.Quantity,
+                AmountPerUnit = buyEvent.BuyLine.AmountPerUnit,
+                TotalAmountPaid = buyEvent.BuyLine.AmountPerUnit * buyEvent.Quantity,
+                TaxPaidForPurchase = (buyEvent.BuyLine.TaxPaidForPurchase / buyEvent.BuyLine.NumberOfUnits) * buyEvent.Quantity,
+                TransactionID = buyEvent.BuyLine.TransactionID
+            )
+
+            return generic
+        
+        genericSells = list(map(sellEventToGenericSell, trades.Sells))
+        genericBuys = list(map(buyEventToGenericBuy, trades.Buys))
+
+        genericSegmented = SegmentedTrades(Buys=genericBuys, Sells=genericSells)
+        return genericSegmented
+
+    def determineWashSales(lots: list[gf.GenericTradeReportLotMatches], allInstrumentTrades: list[s.TradeStock]) -> list[gf.GenericTradeReportLotMatches]:
+        for lot in lots:
+            sellLine = lot.LotOriginalSell
+            sellDate = sellLine.SoldDate
+            salesWithinWashSaleWindow = list(filter(lambda trade: (trade.OrderTime - sellDate).days.__abs__() <= 30 and trade.DateTime != sellDate, allInstrumentTrades))
+            soldForProfit = lot.LotOriginalSell.AmountPerUnit - lot.LotOriginalBuy.AmountPerUnit > 0
+
+            lot.LotOriginalSell.WashSale = len(salesWithinWashSaleWindow) > 0
+            lot.LotOriginalSell.SoldForProfit = soldForProfit
+            
+        return lots
+
+    def createReportForIsinAssetClass(isin: str, assetClass: s.AssetClass, lotsForAssetClass: list[s.TradeLot], allTradesForIsin: list[s.TradeStock]) -> gf.GenericTradeReportItem:
+        print(isin)
+
+        firstLotForInfo = lots[0]
+        ticker = firstLotForInfo.Symbol
+
+        tickerInfo = gf.GenericTradeReportItem(
+            InventoryListType = TRADE_REPORT_ITEM_TYPE_MAPPING[assetClass],
+            ISIN = isin,
+            Ticker = ticker,
+            AssetClass = ASSET_CLASS_MAPPING[assetClass],
+            HasForeignTax = False, # TODO: Taxes - Will fix if a case shows up
+            ForeignTax = None,
+            ForeignTaxCountryID = None,
+            ForeignTaxCountryName = None,
+            Lines = []
+        )
+
+        lotMatches = matchTradesWithLots(lotsForAssetClass, allTradesForIsin)
+
+        lotMatchesWithUpdatedWashSaleInformation = determineWashSales(lotMatches, allTradesForIsin)
+
+        segmentedTrades = segmentBuyAndSellTradesWithQuantity(lotMatchesWithUpdatedWashSaleInformation)
+
+        generatedSegmentedTrades = createSegmentedTradesBasedOnGenericLots(segmentedTrades)
+
+        tickerInfo.Lines = generatedSegmentedTrades.Buys + generatedSegmentedTrades.Sells
+
+        return tickerInfo
 
 
 
+    def createReportsForIsin(isin: str, lots: list[s.TradeLot], allTrades: list[s.TradeStock]) -> list[gf.GenericTradeReportItem]:
+        segmentedByAssetClass = segmentLotsByAssetClass(lots)
+        lines: list[gf.GenericTradeReportItem] = list()
+        for assetClass, classLots in segmentedByAssetClass.items():
+            relevantTrades = getTradesForIsin(allTrades=allTrades, isin=isin)
+            report = createReportForIsinAssetClass(isin, assetClass, classLots, relevantTrades)
+            lines.append(report)
+        return lines
 
-        tickerInfo.Lines = allBuyTrades + newSellTradeLines
+    isinSegmented = segmentLotsByIsin(lots)
 
-        genericTradeReportItems.append(tickerInfo)
 
+    genericTradeReportItems : list[gf.GenericTradeReportItem] = list()
+
+    for isin, tradeLots in isinSegmented.items():
+        lotsByAssetClass = createReportsForIsin(isin, tradeLots, allTrades)
+        genericTradeReportItems = genericTradeReportItems + lotsByAssetClass
 
 
     return genericTradeReportItems

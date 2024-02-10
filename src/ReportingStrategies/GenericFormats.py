@@ -73,6 +73,7 @@ class GenericTradeReportItemSecurityLineBought:
     AmountPerUnit: float
     TotalAmountPaid: float  # to avoid rounding errors in case of % purchases
     TaxPaidForPurchase: float
+    TransactionID: str
 
 
 @dataclass
@@ -81,8 +82,16 @@ class GenericTradeReportItemSecurityLineSold:
     NumberOfUnitsSold: float
     AmountPerUnit: float
     TotalAmountSoldFor: float
-    WashSale: bool # https://www.investopedia.com/terms/w/washsale.asp
-    RealizedProfit: float # to help determine lowered tax basis
+    TransactionID: str
+    WashSale: bool  # no trades 30 days before and after, and sold for loss
+    SoldForProfit: bool
+
+@dataclass
+class GenericTradeReportLotMatches:
+    TransactionID: str
+    Quantitiy: float
+    LotOriginalBuy: GenericTradeReportItemSecurityLineBought
+    LotOriginalSell: GenericTradeReportItemSecurityLineSold
 
 
 @dataclass
