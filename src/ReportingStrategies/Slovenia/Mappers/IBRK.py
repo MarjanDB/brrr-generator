@@ -128,9 +128,9 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
             # NOTE: Corporate Actions can result in stocks that haven't been bought
             buyDate = lot.OpenDateTime
             numberOfBought = matchingBuy.Quantity if matchingBuy else lot.Quantity
-            tradePriceOfBought = matchingBuy.TradePrice * lot.FXRateToBase if matchingBuy else lot.TradePrice * lot.FXRateToBase
-            tradeTotalOfBought = matchingBuy.TradeMoney * lot.FXRateToBase if matchingBuy else lot.TradePrice * lot.Quantity * lot.FXRateToBase
-            taxesOfBought = matchingBuy.Taxes * lot.FXRateToBase if matchingBuy else 0
+            tradePriceOfBought = matchingBuy.TradePrice * matchingBuy.FXRateToBase if matchingBuy else lot.TradePrice * lot.FXRateToBase
+            tradeTotalOfBought = matchingBuy.TradeMoney * matchingBuy.FXRateToBase if matchingBuy else lot.TradePrice * lot.Quantity * lot.FXRateToBase
+            taxesOfBought = matchingBuy.Taxes * matchingBuy.FXRateToBase if matchingBuy else 0
 
             buyLine = gf.GenericTradeReportItemSecurityLineBought(
                 AcquiredDate = buyDate,
@@ -206,8 +206,8 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
                 AmountPerUnit = sellEvent.SellLine.AmountPerUnit,
                 TotalAmountSoldFor = sellEvent.SellLine.AmountPerUnit * sellEvent.Quantity,
                 TransactionID = sellEvent.SellLine.TransactionID,
-                WashSale = True,
-                SoldForProfit = True
+                WashSale = sellEvent.SellLine.WashSale,
+                SoldForProfit = sellEvent.SellLine.SoldForProfit
             )
 
             return generic
@@ -246,7 +246,7 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
     def createReportForIsinAssetClass(isin: str, assetClass: s.AssetClass, lotsForAssetClass: list[s.TradeLot], allTradesForIsin: list[s.TradeStock]) -> gf.GenericTradeReportItem:
         print(isin)
 
-        firstLotForInfo = lots[0]
+        firstLotForInfo = lotsForAssetClass[0]
         ticker = firstLotForInfo.Symbol
 
         tickerInfo = gf.GenericTradeReportItem(
