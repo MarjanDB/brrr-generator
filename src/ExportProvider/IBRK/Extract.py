@@ -400,15 +400,7 @@ def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
     stockTrades = deduplicateList(stockTrades)
     cashTrades = deduplicateList(cashTrades)
 
-    def specialLotTradeDeduplicate(lots: list[list[s.TradeLot]]) -> list[s.TradeLot]:
-        allRows = [x for xs in lots for x in xs]
-
-        uniqueTransactionRows = list({"{}-{}".format(row.TransactionID, row.CapitalGainsProfitAndLoss): row for row in allRows}.values())
-
-        return uniqueTransactionRows
-
-
-    lotTrades = specialLotTradeDeduplicate(lotTrades)   # lots can have the same transaction IDs, but are different lots
+    lotTrades = [x for xs in lotTrades for x in xs]   # lots cannot be deduplicated, as there is no unique identifer
 
     return s.SegmentedTrades(
          stockTrades=stockTrades,
