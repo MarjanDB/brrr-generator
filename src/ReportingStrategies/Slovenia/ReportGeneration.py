@@ -73,6 +73,12 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
     def calculateLines(self, data: list[gf.GenericDividendLine]) -> list[ss.EDavkiDividendReportLine]:
         actionToDividendMapping : dict[str, ss.EDavkiDividendReportLine] = dict()
         segmentedLines = self.segmentDataBasedOnLineType(data)
+        
+        periodStart = self.reportConfig.fromDate
+        periodEnd = self.reportConfig.toDate
+
+        segmentedLines[gf.GenericDividendLineType.DIVIDEND] = list(filter(lambda line: line.ReceivedDateTime >= periodStart and line.ReceivedDateTime <= periodEnd, segmentedLines[gf.GenericDividendLineType.DIVIDEND]))
+        segmentedLines[gf.GenericDividendLineType.WITHOLDING_TAX] = list(filter(lambda line: line.ReceivedDateTime >= periodStart and line.ReceivedDateTime <= periodEnd, segmentedLines[gf.GenericDividendLineType.WITHOLDING_TAX]))
 
         for dividend in segmentedLines[gf.GenericDividendLineType.DIVIDEND]:
             actionId = dividend.DividendActionID
@@ -258,7 +264,6 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
             for securityType, securityLines in securitySegmented.items():
 
                 for lots in securityLines:
-
                     def convertBuy(line: gf.GenericTradeReportItemSecurityLineBought) -> ss.EDavkiTradeReportSecurityLineGenericEventBought:
                         return ss.EDavkiTradeReportSecurityLineGenericEventBought(
                             BoughtOn = line.AcquiredDate,
@@ -279,9 +284,17 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                             SatisfiesTaxBasisReduction = (not line.WashSale) and not line.SoldForProfit
                         )
                     
-                    buyLines = filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineBought), lots.Lines)
+
+                    periodStart = self.reportConfig.fromDate
+                    periodEnd = self.reportConfig.toDate
+
+                    buyLines: list[gf.GenericTradeReportItemSecurityLineBought] = list(filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineBought), lots.Lines)) # type: ignore
+                    sellLines: list[gf.GenericTradeReportItemSecurityLineSold] = list(filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineSold), lots.Lines)) # type: ignore
+
+                    buyLines = list(filter(lambda line: line.AcquiredDate >= periodStart and line.AcquiredDate <= periodEnd, buyLines))
+                    sellLines = list(filter(lambda line: line.SoldDate >= periodStart and line.SoldDate <= periodEnd, sellLines))
+
                     buys = list(map(convertBuy, buyLines)) # type: ignore
-                    sellLines = filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineSold), lots.Lines)
                     sells = list(map(convertSell, sellLines)) # type: ignore
 
                     reportItem = ss.EDavkiTradeReportSecurityLineEvent(
