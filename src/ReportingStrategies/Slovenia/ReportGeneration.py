@@ -28,7 +28,7 @@ class EDavkiReportConfig(ReportBaseConfig):
 
 
 class EDavkiReportWrapper(gr.GenericReportWrapper):
-    def createReportEnvelope(self):
+    def createReportEnvelope(self, documentType: EDavkiDocumentWorkflowType = EDavkiDocumentWorkflowType.ORIGINAL):
         edp = "http://edavki.durs.si/Documents/Schemas/EDP-Common-1.xsd"
 
         nsmap = {
@@ -52,14 +52,6 @@ class EDavkiReportWrapper(gr.GenericReportWrapper):
         etree.SubElement(Envelope, etree.QName(edp, "Signatures"))
 
         workflow = etree.SubElement(Header, etree.QName(edp, "Workflow"))
-        
-        documentType = EDavkiDocumentWorkflowType.ORIGINAL.value
-
-        currentYear = int(arrow.Arrow.now().format("YYYY"))
-        lastYear = currentYear - 1
-        reportEndPeriod = int(self.baseReportConfig.toDate.shift(days = -1).format("YYYY"))
-        if reportEndPeriod < lastYear:
-            documentType = EDavkiDocumentWorkflowType.SELF_REPORT.value
 
         etree.SubElement(workflow, etree.QName(edp, "DocumentWorkflowID")).text = documentType
         
@@ -69,6 +61,19 @@ class EDavkiReportWrapper(gr.GenericReportWrapper):
 
 
 class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
+    shouldSelfReport: bool = False
+
+    def createReportEnvelope(self):
+        currentYear = int(arrow.Arrow.now().format("YYYY"))
+        lastYear = currentYear - 1
+        reportEndPeriod = int(self.baseReportConfig.toDate.shift(days = -1).format("YYYY"))
+        if reportEndPeriod < lastYear:
+            self.shouldSelfReport = True
+
+
+        return EDavkiReportWrapper.createReportEnvelope(self)  # type: ignore
+
+
     def segmentDataBasedOnLineType(self, data: list[gf.GenericDividendLine]):
         dividendLines = list(filter(lambda line: line.LineType == gf.GenericDividendLineType.DIVIDEND, data))
         witholdingTax = list(filter(lambda line: line.LineType == gf.GenericDividendLineType.WITHOLDING_TAX, data))
@@ -82,8 +87,8 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
         actionToDividendMapping : dict[str, ss.EDavkiDividendReportLine] = dict()
         segmentedLines = self.segmentDataBasedOnLineType(data)
         
-        periodStart = self.reportConfig.fromDate
-        periodEnd = self.reportConfig.toDate
+        periodStart = self.baseReportConfig.fromDate
+        periodEnd = self.baseReportConfig.toDate
 
         segmentedLines[gf.GenericDividendLineType.DIVIDEND] = list(filter(lambda line: line.ReceivedDateTime >= periodStart and line.ReceivedDateTime < periodEnd, segmentedLines[gf.GenericDividendLineType.DIVIDEND]))
         segmentedLines[gf.GenericDividendLineType.WITHOLDING_TAX] = list(filter(lambda line: line.ReceivedDateTime >= periodStart and line.ReceivedDateTime < periodEnd, segmentedLines[gf.GenericDividendLineType.WITHOLDING_TAX]))
@@ -191,8 +196,6 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
         dataAsDict = list(map(convertToDict, lines))
         dataframe = pd.DataFrame.from_records(dataAsDict)
         return dataframe
-    
-    
 
     def generateXmlReport(self, data: list[gf.GenericDividendLine], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
         lines = self.calculateLines(data)
@@ -205,11 +208,12 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
         body = etree.SubElement(envelope, "body")
 
         Doh_Div = etree.SubElement(body, "Doh_Div")
-        etree.SubElement(Doh_Div, "Period").text = self.reportConfig.fromDate.format("YYYY")
+        etree.SubElement(Doh_Div, "Period").text = self.baseReportConfig.fromDate.format("YYYY")
         etree.SubElement(Doh_Div, "EmailAddress").text = "email"
         etree.SubElement(Doh_Div, "PhoneNumber").text = "telefonska"
         etree.SubElement(Doh_Div, "ResidentCountry").text = self.taxPayerInfo.countryID
         etree.SubElement(Doh_Div, "IsResident").text = str(self.taxPayerInfo.countryID == 'SI').lower()
+        etree.SubElement(Doh_Div, "SelfReport").text = str(self.shouldSelfReport).lower()
 
 
         def transformDividendLineToXML(line: ss.EDavkiDividendReportLine):
@@ -255,6 +259,19 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
         gf.GenericTradeReportItemGainType.RIGHT_TO_NEWLY_ISSUED_STOCK: ss.EDavkiTradeReportGainType.OTHER,
     }
 
+    documentType: EDavkiDocumentWorkflowType = EDavkiDocumentWorkflowType.ORIGINAL
+
+    def createReportEnvelope(self):
+        currentYear = int(arrow.Arrow.now().format("YYYY"))
+        lastYear = currentYear - 1
+        reportEndPeriod = int(self.baseReportConfig.toDate.shift(days = -1).format("YYYY"))
+        self.documentType = EDavkiDocumentWorkflowType.ORIGINAL
+        if reportEndPeriod < lastYear:
+            self.documentType = EDavkiDocumentWorkflowType.SELF_REPORT
+
+
+        return EDavkiReportWrapper.createReportEnvelope(self, self.documentType)  # type: ignore
+
 
     def convertTradesToKdvpItems(self, data: list[gf.GenericTradeReportItem]) -> list[ss.EDavkiGenericTradeReportItem]:
         converted: list[ss.EDavkiGenericTradeReportItem] = list()
@@ -293,8 +310,8 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                         )
                     
 
-                    periodStart = self.reportConfig.fromDate
-                    periodEnd = self.reportConfig.toDate
+                    periodStart = self.baseReportConfig.fromDate
+                    periodEnd = self.baseReportConfig.toDate
 
                     buyLines: list[gf.GenericTradeReportItemSecurityLineBought] = list(filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineBought), lots.Lines)) # type: ignore
                     sellLines: list[gf.GenericTradeReportItemSecurityLineSold] = list(filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineSold), lots.Lines)) # type: ignore
@@ -358,10 +375,10 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
 
         Doh_KDVP = etree.SubElement(body, "Doh_KDVP")
         KDVP = etree.SubElement(Doh_KDVP, "KDVP")
-        etree.SubElement(KDVP, "DocumentWorkflowID").text = self.reportConfig.ReportType.value
-        etree.SubElement(KDVP, "Year").text = self.reportConfig.fromDate.format("YYYY")
-        etree.SubElement(KDVP, "PeriodStart").text = self.reportConfig.fromDate.format("YYYY-MM-DD")
-        etree.SubElement(KDVP, "PeriodEnd").text = self.reportConfig.toDate.shift(days=-1).format("YYYY-MM-DD")
+        etree.SubElement(KDVP, "DocumentWorkflowID").text = self.documentType.value
+        etree.SubElement(KDVP, "Year").text = self.baseReportConfig.fromDate.format("YYYY")
+        etree.SubElement(KDVP, "PeriodStart").text = self.baseReportConfig.fromDate.format("YYYY-MM-DD")
+        etree.SubElement(KDVP, "PeriodEnd").text = self.baseReportConfig.toDate.shift(days=-1).format("YYYY-MM-DD")
         etree.SubElement(KDVP, "IsResident").text = str(self.taxPayerInfo.countryID == 'SI').lower()
         etree.SubElement(KDVP, "SecurityCount").text = "0"
         etree.SubElement(KDVP, "SecurityShortCount").text = "0"

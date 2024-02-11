@@ -12,7 +12,6 @@ from src.ConfigurationProvider.Configuration import ReportBaseConfig
 INPUT_DATA = TypeVar('INPUT_DATA')
 REPORT_CONFIG = TypeVar('REPORT_CONFIG')
 
-
 class GenericReportWrapper:
     taxPayerInfo: conf.TaxPayerInfo
     baseReportConfig: ReportBaseConfig
@@ -26,20 +25,20 @@ class GenericReportWrapper:
         ...
     
 
-class GenericReportProvider(Generic[INPUT_DATA, REPORT_CONFIG]):
+class GenericReportProvider(GenericReportWrapper, Generic[INPUT_DATA, REPORT_CONFIG]):
     companyLookupProvider = ilp.CompanyLookupProvider()
     countryLookupProvider = ilp.CountryLookupProvider()
 
-    def __init__(self, reportConfig: REPORT_CONFIG, taxPayerInfo: conf.TaxPayerInfo) -> None:
-        self.reportConfig = reportConfig
-        self.taxPayerInfo = taxPayerInfo
+    def __init__(self, taxPayerInfo: conf.TaxPayerInfo, reportConfig: REPORT_CONFIG) -> None:
+        super().__init__(taxPayerInfo, reportConfig)
+
 
     @abstractmethod
     def generateXmlReport(self, data: list[INPUT_DATA], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
         ...
 
     @abstractmethod
-    def generateDataFrameReport(self, data: list[INPUT_DATA],) -> pd.DataFrame:
+    def generateDataFrameReport(self, data: list[INPUT_DATA]) -> pd.DataFrame:
         ...
 
 
