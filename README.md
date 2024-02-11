@@ -1,13 +1,22 @@
-# Generiranje Izvozov za eDavke
+# Generate import forms for The Tax Man
 
-Podatki so lahko narobni, tak da se naj preveri kaj se je generiralo.
+> Generated exports can be wrong, so verify the generated reports before submitting to your tax authority.
 
-## Cilj
+[![Slovenski prevod](https://img.shields.io/badge/lang-si-blue)](resources/readme-translations/README.si.md)
 
-Omogočanje izvoza iz broker platform v format ki ga znajo eDavki in podobne davčne organizacije premleti.
+## How To Use
+### Generate Broker Export
+![Location of Flex Queries](resources/images/flex-queries-location.png)
+![How to create new Flex Query](resources/images/flex-query-new.png)
+![Flex Query Sections](resources/images/flex-queries-selected.png)
 
-## Trenutno implementirno
-- [x] Doh-KDVP
-- [x] Doh-Div
-- [ ] D-IFI
-- [ ] Doh-Obr
+#### Section Field Selections
+> All sections should select all available fields
+
+![Flex Query Trade Section selection](resources/images/flex-query-trades.png)
+![Flex Query Cash transactions Section selection](resources/images/flex-query-cash-transaction.png)
+
+### Run this program
+
+
+
