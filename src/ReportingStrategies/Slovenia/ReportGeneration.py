@@ -8,6 +8,7 @@ import src.ReportingStrategies.GenericReports as gr
 from itertools import groupby
 from src.ConfigurationProvider.Configuration import ReportBaseConfig
 from dataclasses import dataclass
+import arrow
 
 # https://edavki.durs.si/EdavkiPortal/PersonalPortal/[360253]/Pages/Help/sl/WorkflowType1.htm
 class EDavkiDocumentWorkflowType(str, Enum):
@@ -31,7 +32,6 @@ class EDavkiReportWrapper(gr.GenericReportWrapper):
         edp = "http://edavki.durs.si/Documents/Schemas/EDP-Common-1.xsd"
 
         nsmap = {
-            # None: "http://edavki.durs.si/Documents/Schemas/Doh_Div_3.xsd",
             "edp": edp,
             "xs": "http://www.w3.org/2001/XMLSchema"
         }
@@ -52,8 +52,16 @@ class EDavkiReportWrapper(gr.GenericReportWrapper):
         etree.SubElement(Envelope, etree.QName(edp, "Signatures"))
 
         workflow = etree.SubElement(Header, etree.QName(edp, "Workflow"))
-        etree.SubElement(workflow, etree.QName(edp, "DocumentWorkflowID")).text = EDavkiDocumentWorkflowType.ORIGINAL.value
+        
+        documentType = EDavkiDocumentWorkflowType.ORIGINAL.value
 
+        currentYear = int(arrow.Arrow.now().format("YYYY"))
+        lastYear = currentYear - 1
+        reportEndPeriod = int(self.baseReportConfig.toDate.shift(days = -1).format("YYYY"))
+        if reportEndPeriod < lastYear:
+            documentType = EDavkiDocumentWorkflowType.SELF_REPORT.value
+
+        etree.SubElement(workflow, etree.QName(edp, "DocumentWorkflowID")).text = documentType
         
         return Envelope
     
@@ -77,8 +85,8 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
         periodStart = self.reportConfig.fromDate
         periodEnd = self.reportConfig.toDate
 
-        segmentedLines[gf.GenericDividendLineType.DIVIDEND] = list(filter(lambda line: line.ReceivedDateTime >= periodStart and line.ReceivedDateTime <= periodEnd, segmentedLines[gf.GenericDividendLineType.DIVIDEND]))
-        segmentedLines[gf.GenericDividendLineType.WITHOLDING_TAX] = list(filter(lambda line: line.ReceivedDateTime >= periodStart and line.ReceivedDateTime <= periodEnd, segmentedLines[gf.GenericDividendLineType.WITHOLDING_TAX]))
+        segmentedLines[gf.GenericDividendLineType.DIVIDEND] = list(filter(lambda line: line.ReceivedDateTime >= periodStart and line.ReceivedDateTime < periodEnd, segmentedLines[gf.GenericDividendLineType.DIVIDEND]))
+        segmentedLines[gf.GenericDividendLineType.WITHOLDING_TAX] = list(filter(lambda line: line.ReceivedDateTime >= periodStart and line.ReceivedDateTime < periodEnd, segmentedLines[gf.GenericDividendLineType.WITHOLDING_TAX]))
 
         for dividend in segmentedLines[gf.GenericDividendLineType.DIVIDEND]:
             actionId = dividend.DividendActionID
@@ -291,8 +299,8 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                     buyLines: list[gf.GenericTradeReportItemSecurityLineBought] = list(filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineBought), lots.Lines)) # type: ignore
                     sellLines: list[gf.GenericTradeReportItemSecurityLineSold] = list(filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineSold), lots.Lines)) # type: ignore
 
-                    buyLines = list(filter(lambda line: line.AcquiredDate >= periodStart and line.AcquiredDate <= periodEnd, buyLines))
-                    sellLines = list(filter(lambda line: line.SoldDate >= periodStart and line.SoldDate <= periodEnd, sellLines))
+                    buyLines = list(filter(lambda line: line.AcquiredDate >= periodStart and line.AcquiredDate < periodEnd, buyLines))
+                    sellLines = list(filter(lambda line: line.SoldDate >= periodStart and line.SoldDate < periodEnd, sellLines))
 
                     buys = list(map(convertBuy, buyLines)) # type: ignore
                     sells = list(map(convertSell, sellLines)) # type: ignore

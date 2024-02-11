@@ -6,6 +6,7 @@ import src.ConfigurationProvider.Configuration as conf
 import src.InfoProviders.InfoLookupProvider as ilp
 import src.ReportingStrategies.GenericFormats as gf
 
+from src.ConfigurationProvider.Configuration import ReportBaseConfig
 
 
 INPUT_DATA = TypeVar('INPUT_DATA')
@@ -14,9 +15,11 @@ REPORT_CONFIG = TypeVar('REPORT_CONFIG')
 
 class GenericReportWrapper:
     taxPayerInfo: conf.TaxPayerInfo
+    baseReportConfig: ReportBaseConfig
 
-    def __init__(self, taxPayerInfo: conf.TaxPayerInfo):
+    def __init__(self, taxPayerInfo: conf.TaxPayerInfo, baseReportConfig: ReportBaseConfig):
         self.taxPayerInfo = taxPayerInfo
+        self.baseReportConfig = baseReportConfig
 
     @abstractmethod
     def createReportEnvelope(self):
