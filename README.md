@@ -18,5 +18,8 @@
 
 ### Run this program
 
+1. Create a config file based on the example config in ./config directory
+2. Place the Broker export inside the exports folder in ./exports directory
+3. Run all cells in dividents.ipynb (fix dates if you're reporting for 2023)
 
 
