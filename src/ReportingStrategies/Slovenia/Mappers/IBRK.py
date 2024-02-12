@@ -7,11 +7,13 @@ from typing import Any, Callable
 
 
 TRADE_REPORT_ITEM_TYPE_MAPPING = {
-    s.AssetClass.STOCK: gf.GenericTradeReportItemType.STOCK
+    s.AssetClass.STOCK: gf.GenericTradeReportItemType.STOCK,
+    s.AssetClass.OPTION: gf.GenericTradeReportItemType.OPTION
 }
 
 ASSET_CLASS_MAPPING = {
-    s.AssetClass.STOCK: gf.GenericAssetClass.STOCK
+    s.AssetClass.STOCK: gf.GenericAssetClass.STOCK,
+    s.AssetClass.OPTION: gf.GenericAssetClass.OPTION
 }
 
 @dataclass

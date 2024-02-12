@@ -42,6 +42,7 @@ class GenericDividendLine:
 # Names here are just guesses, since I don't know what these corespond to in English
 class GenericTradeReportItemType(str, Enum):
     STOCK = "STOCK"
+    OPTION = "OPTION"
     STOCK_SHORT = "STOCK_SHORT"
     STOCK_CONTRACT = "STOCK_CONTRACT"
     STOCK_CONTRACT_SHORT = "STOCK_CONTRACT_SHORT"
@@ -64,6 +65,7 @@ class GenericAssetClass(str, Enum):
     STOCK = "STOCK"
     ROYALTY_TRUST = "ROYALTY_TRUST"
     CASH = "CASH"
+    OPTION = "OPTION"
 
 @dataclass
 class GenericTradeReportItemSecurityLineBought:

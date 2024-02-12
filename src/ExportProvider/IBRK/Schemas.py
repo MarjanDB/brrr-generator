@@ -5,6 +5,7 @@ from arrow import Arrow
 class AssetClass(str, Enum):
     STOCK = "STK"
     CASH = "CASH"
+    OPTION = "OPT"
 
 class SubCategory(str, Enum):
     NONE = ""   # CASH AssetClass
@@ -13,6 +14,7 @@ class SubCategory(str, Enum):
     RIGHT = "RIGHT" # Right to newly issued shares -> https://www.investopedia.com/terms/r/rightsoffering.asp
     ADR = "ADR" # American Depositary Receipt -> https://www.investopedia.com/terms/a/adr.asp
     ROYALTY_RUST = "ROYALTY TRST" # Royalty Income Trust -> https://www.investopedia.com/terms/r/royaltyincometrust.asp
+    ETF = "ETF" # Exchange Traded Fund -> https://www.investopedia.com/terms/e/etf.asp
 
 class OpenCloseIndicator(str, Enum):
     NONE = ""   # CASH positions cannot be closed or opened
@@ -105,8 +107,10 @@ class LevelOfDetail(str, Enum):
     CLOSED_LOT = "CLOSED_LOT"
 
 class OrderType(str, Enum):
+    UNKNOWN = ""
     LIMIT = "LMT"
     MARKET = "MKT"
+    MID_POINT = "MIDPX"
 
 class Model(str, Enum):
     INDEPENDENT = "Independent"
