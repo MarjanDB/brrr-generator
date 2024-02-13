@@ -115,6 +115,7 @@ class OrderType(str, Enum):
 class Model(str, Enum):
     INDEPENDENT = "Independent"
 
+
 @dataclass
 class TradeLine:
     ClientAccountID: str
@@ -204,32 +205,49 @@ class TradeLine:
     Weight: float
 
 @dataclass
-class TradeStock(TradeLine):
-    TradeID: str
-    SettleDateTarget: Arrow
+class TradeStock:
+    ClientAccountID: str
+    CurrencyPrimary: str
+    FXRateToBase: float
+    AssetClass: AssetClass
+    SubCategory: SubCategory
+    Symbol: str
+    Description: str
+    Conid: str
+    SecurityID: str
+    SecurityIDType: SecurityIDType
+    CUSIP: str | None
+    ISIN: str
+    FIGI: str | None
+    ListingExchange: str
     TransactionType: TransactionType
+    Exchange: str
+    NetCash: float
+    NetCashInBase: float
+    ClosePrice: float
+    OpenCloseIndicator: OpenCloseIndicator
+    NotesAndCodes: list[Codes]
+    CostBasis: float
+    FifoProfitAndLossRealized: float
+    CapitalGainsProfitAndLoss: float
+    ForexProfitAndLoss: float
+    MarketToMarketProfitAndLoss: float
+    Quantity: float
+    TradePrice: float
     TradeMoney: float
     Proceeds: float
     Taxes: float
     IBCommission: float
     IBCommissionCurrency: str
-    NetCash: float
-    NetCashInBase: float
-    ClosePrice: float
-    MarketToMarketProfitAndLoss: float
-    OrigTradePrice: float
-    OrigOrderID: str
-    OrigTransactionID: str
-    IBOrderID: str
-    IBExecID: str
-    BrokerageOrderID: str
-    ExtExecID: str
+    BuyOrSell: BuyOrSell
+    TransactionID: str
     OrderTime: Arrow
-    ChangeInPrice: float
-    ChangeInQuantity: float
-    OrderType: OrderType
-    IsAPIOrder: bool
-    AccruedInterest: float
+    OpenDateTime: Arrow
+    HoldingPeriodDateTime: Arrow
+    ReportDate: Arrow
+    DateTime: Arrow
+    TradeDate: Arrow
+    SettleDateTarget: Arrow
 
 @dataclass
 class TradeLot(TradeLine):
@@ -239,47 +257,43 @@ class TradeLot(TradeLine):
     
 
 @dataclass
-class TradeCash(TradeLine):
-    SecurityID: None
-    SecurityIDType: None
-    CUSIP: None
-    ISIN: None
-    FIGI: None
-    ListingExchange: None
-    UnderlyingConid: None
-    UnderlyingSymbol: None
-    UnderlyingSecurityID: None
-    UnderlyingListingExchange: None
-    RelatedTradeID: None
-    Issuer: None
-    IssuerCountryCode: None
-    SettleDateTarget: Arrow
+class TradeCash:
+    ClientAccountID: str
+    CurrencyPrimary: str
+    FXRateToBase: float
+    AssetClass: AssetClass
+    SubCategory: SubCategory
+    Symbol: str
+    Description: str
+    Conid: str
     TransactionType: TransactionType
     Exchange: str
-    TradeMoney: float
-    Proceeds: float
-    Taxes: float
-    IBCommission: float
-    IBCommissionCurrency: str
     NetCash: float
     NetCashInBase: float
     ClosePrice: float
     OpenCloseIndicator: OpenCloseIndicator
     NotesAndCodes: list[Codes]
+    CostBasis: float
+    FifoProfitAndLossRealized: float
+    CapitalGainsProfitAndLoss: float
+    ForexProfitAndLoss: float
     MarketToMarketProfitAndLoss: float
-    OrigTradePrice: None
-    OrigOrderID: None
-    OrigTradeDate: None
-    OrigTradeID: None
-    OrigTransactionID: None
-    IBOrderID: str
-    IBExecID: str
+    Quantity: float
+    TradePrice: float
+    TradeMoney: float
+    Proceeds: float
+    Taxes: float
+    IBCommission: float
+    IBCommissionCurrency: str
+    BuyOrSell: BuyOrSell
+    TransactionID: str
     OrderTime: Arrow
-    ChangeInPrice: float
-    ChangeInQuantity: float
-    OrderType: OrderType
-    IsAPIOrder: bool
-    AccruedInterest: float
+    OpenDateTime: Arrow
+    HoldingPeriodDateTime: Arrow
+    ReportDate: Arrow
+    DateTime: Arrow
+    TradeDate: Arrow
+    SettleDateTarget: Arrow
     
 
 @dataclass
