@@ -43,8 +43,8 @@ def deduplicateList(lines: list[Any]):
 
 
 
-def getGenericDividendLineFromIBRKCashTransactions(cashTransactions: list[s.CashTransaction]) -> list[gf.GenericDividendLine]:
-    def mapToGenericDividendLine(transaction: s.CashTransaction) -> gf.GenericDividendLine:
+def getGenericDividendLineFromIBRKCashTransactions(cashTransactions: list[s.TradeCash]) -> list[gf.GenericDividendLine]:
+    def mapToGenericDividendLine(transaction: s.TradeCash) -> gf.GenericDividendLine:
         edavkiDividendType = gf.GenericDividendType.UNKNOWN
 
         ordinaryDividend = transaction.Description.__contains__("Ordinary Dividend")

@@ -31,15 +31,13 @@ def deduplicateList(lines: list[list[Any]]):
     return uniqueTransactionRows
 
 
-def extractCashTransactionFromXML(root: etree.ElementBase) -> list[s.CashTransaction]:
+def extractCashTransactionFromXML(root: etree.ElementBase) -> list[s.TradeCash]:
     cashTransactionsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/CashTransactions/*")
     cashTransactionNodes = cashTransactionsFinder(root)
 
     def xmlNodeToCashTransaction(node: etree.ElementBase):
-        return s.CashTransaction(
+        return s.TradeCash(
             ClientAccountID=node.attrib["accountId"],
-            AccountAlias=node.attrib["acctAlias"],
-            Model=s.Model[node.attrib["model"]] if node.attrib["model"] != "" else None,
             CurrencyPrimary=node.attrib["currency"],
             FXRateToBase=float(node.attrib["fxRateToBase"]),
             AssetClass=s.AssetClass(node.attrib["assetCategory"]),
@@ -53,38 +51,19 @@ def extractCashTransactionFromXML(root: etree.ElementBase) -> list[s.CashTransac
             ISIN=node.attrib["isin"],
             FIGI=node.attrib["figi"],
             ListingExchange=node.attrib["listingExchange"],
-            UnderlyingConid=node.attrib["underlyingConid"],
-            UnderlyingSymbol=node.attrib["underlyingSymbol"],
-            UnderlyingSecurityID=node.attrib["underlyingSecurityID"],
-            UnderlyingListingExchange=node.attrib["underlyingListingExchange"],
-            Issuer=node.attrib["issuer"],
-            IssuerCountryCode=node.attrib["issuerCountryCode"],
-            Multiplier=float(node.attrib["multiplier"]),
-            Strike=node.attrib["strike"],
-            Expiry=None,
-            PutOrCall=node.attrib["putCall"],
-            PrincipalAdjustFactor=None,
             DateTime=safeDateParse(str(node.attrib["dateTime"])),
             SettleDate=safeDateParse(str(node.attrib["settleDate"])),
             Amount=float(node.attrib["amount"]),
             Type=s.CashTransactionType(node.attrib["type"]),
-            TradeID=node.attrib["settleDate"],
             Code=node.attrib["code"],
             TransactionID=node.attrib["transactionID"],
             ReportDate=safeDateParse(str(node.attrib["reportDate"])),
-            ClientReference=node.attrib["clientReference"],
-            ActionID=node.attrib["actionID"],
-            LevelOfDetail=s.LevelOfDetail(node.attrib["levelOfDetail"]),
-            SerialNumber=node.attrib["serialNumber"],
-            DeliveryType=node.attrib["deliveryType"],
-            CommodityType=node.attrib["commodityType"],
-            Fineness=float(node.attrib["fineness"]),
-            Weight=float(node.attrib["weight"])
+            ActionID=node.attrib["actionID"]
         )
 
     return list(map(lambda node: xmlNodeToCashTransaction(node), cashTransactionNodes))
 
-def mergeCashTransactions(transactions: list[list[s.CashTransaction]]) -> list[s.CashTransaction]:
+def mergeCashTransactions(transactions: list[list[s.TradeCash]]) -> list[s.TradeCash]:
         return deduplicateList(transactions)
 
 
@@ -105,8 +84,6 @@ def extractTradesFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
 
         return s.TradeStock(
                 ClientAccountID = node.attrib['accountId'],
-                AccountAlias = valueOrNone(node.attrib['acctAlias']),
-                Model = s.Model(node.attrib['model']) if node.attrib['model'] != "" else None,
                 CurrencyPrimary = node.attrib['currency'],
                 FXRateToBase = float(node.attrib['fxRateToBase']),
                 AssetClass = s.AssetClass(node.attrib['assetCategory']),
@@ -120,25 +97,11 @@ def extractTradesFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
                 ISIN = node.attrib['isin'],
                 FIGI = node.attrib['figi'],
                 ListingExchange = node.attrib['listingExchange'],
-                UnderlyingConid = valueOrNone(node.attrib['underlyingConid']),
-                UnderlyingSymbol = valueOrNone(node.attrib['underlyingSymbol']),
-                UnderlyingSecurityID = valueOrNone(node.attrib['underlyingSecurityID']),
-                UnderlyingListingExchange = valueOrNone(node.attrib['underlyingListingExchange']),
-                Issuer = valueOrNone(node.attrib['issuer']),
-                IssuerCountryCode = valueOrNone(node.attrib['issuerCountryCode']),
-                TradeID = node.attrib['tradeID'],
-                Multiplier = float(node.attrib['multiplier']),
-                RelatedTradeID = node.attrib['relatedTradeID'],
-                Strike = float(node.attrib['strike']) if node.attrib['strike'] != "" else None,
                 ReportDate = safeDateParse(node.attrib['reportDate']),
-                Expiry = safeDateParse(node.attrib['expiry']) if node.attrib['expiry'] != "" else None,
                 DateTime = safeDateParse(node.attrib['dateTime']),
-                PutOrCall = valueOrNone(node.attrib['putCall']),
                 TradeDate = safeDateParse(node.attrib['tradeDate']),
-                PrincipalAdjustFactor = floatValueOrNone(node.attrib['principalAdjustFactor']),
-                SettleDateTarget = safeDateParse(node.attrib['settleDateTarget']),
                 TransactionType = s.TransactionType(node.attrib['transactionType']),
-                Exchange = valueOrNone(node.attrib['exchange']),
+                Exchange = node.attrib['exchange'],
                 Quantity = float(node.attrib['quantity']),
                 TradePrice = float(node.attrib['tradePrice']),
                 TradeMoney = float(node.attrib['tradeMoney']),
@@ -156,39 +119,14 @@ def extractTradesFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
                 CapitalGainsProfitAndLoss = float(node.attrib['capitalGainsPnl']),
                 ForexProfitAndLoss = float(node.attrib['fxPnl']),
                 MarketToMarketProfitAndLoss = float(node.attrib['mtmPnl']),
-                OrigTradePrice = float(node.attrib['origTradePrice']),
-                OrigTradeDate = dateValueOrNone(node.attrib['origTradeDate']),
-                OrigTradeID = valueOrNone(node.attrib['origTradeID']),
-                OrigOrderID = node.attrib['origOrderID'],
-                OrigTransactionID = node.attrib['origTransactionID'],
                 BuyOrSell = s.BuyOrSell(node.attrib['buySell']),
-                ClearingFirmID = valueOrNone(node.attrib['clearingFirmID']),
-                IBOrderID = node.attrib['ibOrderID'],
                 TransactionID = node.attrib['transactionID'],
-                IBExecID = node.attrib['ibExecID'],
-                RelatedTransactionID = valueOrNone(node.attrib['relatedTransactionID']),
-                BrokerageOrderID = node.attrib['brokerageOrderID'],
-                OrderReference = valueOrNone(node.attrib['orderReference']),
-                VolatilityOrderLink = valueOrNone(node.attrib['volatilityOrderLink']),
-                ExchOrderID = node.attrib['exchOrderId'] if node.attrib['exchOrderId'] != "N/A" else None,
-                ExtExecID = node.attrib['extExecID'],
                 OrderTime = safeDateParse(node.attrib['orderTime']),
-                OpenDateTime = dateValueOrNone(node.attrib['openDateTime']),
-                HoldingPeriodDateTime = dateValueOrNone(node.attrib['holdingPeriodDateTime']),
-                WhenRealized = dateValueOrNone(node.attrib['whenRealized']),
-                WhenReopened = dateValueOrNone(node.attrib['whenReopened']),
                 LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
                 ChangeInPrice = float(node.attrib['changeInPrice']),
                 ChangeInQuantity = float(node.attrib['changeInQuantity']),
                 OrderType = s.OrderType(node.attrib['orderType']),
-                TraderID = valueOrNone(node.attrib['traderID']),
-                IsAPIOrder = str(node.attrib['traderID']).lower() == 'y',
-                AccruedInterest = float(node.attrib['accruedInt']),
-                SerialNumber = valueOrNone(node.attrib['serialNumber']),
-                DeliveryType = valueOrNone(node.attrib['deliveryType']),
-                CommodityType = valueOrNone(node.attrib['commodityType']),
-                Fineness = float(node.attrib['fineness']),
-                Weight = float(node.attrib['weight'])
+                AccruedInterest = float(node.attrib['accruedInt'])
           )
 
     def xmlNodeToLotTrade(node: etree.ElementBase) -> s.TradeLot:
