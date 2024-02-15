@@ -87,7 +87,7 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
     allTrades = trades.stockTrades
 
     # lots are set through IBKR, so open and close trades are matched through those lots and aren't generated through this application
-    lots = trades.lots
+    lots = trades.stockLots
 
     def getTradeByTransactionId(allTrades: list[s.TradeStock], transactionId: str) -> s.TradeStock | None:
         match = next(filter(lambda trade: trade.TransactionID == transactionId, allTrades), None)

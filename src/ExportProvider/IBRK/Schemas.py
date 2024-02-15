@@ -120,8 +120,20 @@ class Model(str, Enum):
     INDEPENDENT = "Independent"
 
 
+
+class CashTransactionType(str, Enum):
+    WITHOLDING_TAX = "Withholding Tax"
+    DIVIDEND = "Dividends"
+
+
+
 @dataclass
-class TradeLine:
+class TradeGeneric:
+    """
+        Generic class for copy paste when making new Trade/Lot Types
+    """
+
+
     ClientAccountID: str
     AccountAlias: str | None
     Model: Model | None
@@ -208,109 +220,6 @@ class TradeLine:
     Fineness: float
     Weight: float
 
-@dataclass
-class TradeStock:
-    ClientAccountID: str
-    CurrencyPrimary: str
-    FXRateToBase: float
-    AssetClass: AssetClass
-    SubCategory: SubCategory
-    Symbol: str
-    Description: str
-    Conid: str
-    SecurityID: str
-    SecurityIDType: SecurityIDType
-    CUSIP: str | None
-    ISIN: str
-    FIGI: str | None
-    ListingExchange: str
-    TransactionType: TransactionType
-    Exchange: str
-    NetCash: float
-    NetCashInBase: float
-    ClosePrice: float
-    OpenCloseIndicator: OpenCloseIndicator
-    NotesAndCodes: list[Codes]
-    CostBasis: float
-    FifoProfitAndLossRealized: float
-    CapitalGainsProfitAndLoss: float
-    ForexProfitAndLoss: float
-    MarketToMarketProfitAndLoss: float
-    Quantity: float
-    TradePrice: float
-    TradeMoney: float
-    Proceeds: float
-    Taxes: float
-    IBCommission: float
-    IBCommissionCurrency: str
-    BuyOrSell: BuyOrSell
-    TransactionID: str
-    OrderTime: Arrow
-    OpenDateTime: Arrow
-    HoldingPeriodDateTime: Arrow
-    ReportDate: Arrow
-    DateTime: Arrow
-    TradeDate: Arrow
-    SettleDateTarget: Arrow
-
-@dataclass
-class TradeLot(TradeLine):
-    OpenDateTime: Arrow
-    HoldingPeriodDateTime: Arrow
-    TransactionID: str  # this transaction ID correlates lots and their buy trades (1 buy trade can map to multiple lots)
-    
-
-@dataclass
-class TradeCash:
-    ClientAccountID: str
-    CurrencyPrimary: str
-    FXRateToBase: float
-    AssetClass: AssetClass
-    SubCategory: SubCategory
-    Symbol: str
-    Description: str
-    Conid: str
-    TransactionType: TransactionType
-    Exchange: str
-    NetCash: float
-    NetCashInBase: float
-    ClosePrice: float
-    OpenCloseIndicator: OpenCloseIndicator
-    NotesAndCodes: list[Codes]
-    CostBasis: float
-    FifoProfitAndLossRealized: float
-    CapitalGainsProfitAndLoss: float
-    ForexProfitAndLoss: float
-    MarketToMarketProfitAndLoss: float
-    Quantity: float
-    TradePrice: float
-    TradeMoney: float
-    Proceeds: float
-    Taxes: float
-    IBCommission: float
-    IBCommissionCurrency: str
-    BuyOrSell: BuyOrSell
-    TransactionID: str
-    OrderTime: Arrow
-    OpenDateTime: Arrow
-    HoldingPeriodDateTime: Arrow
-    ReportDate: Arrow
-    DateTime: Arrow
-    TradeDate: Arrow
-    SettleDateTarget: Arrow
-    
-
-@dataclass
-class SegmentedTrades:
-    stockTrades: list[TradeStock]
-    cashTrades: list[TradeCash]
-    lots: list[TradeLot]
-
-
-
-class CashTransactionType(str, Enum):
-    WITHOLDING_TAX = "Withholding Tax"
-    DIVIDEND = "Dividends"
 
 @dataclass
 class TradeCash:
@@ -385,6 +294,7 @@ class TradeStock:
     OrderType: OrderType
     AccruedInterest: float
 
+
 @dataclass
 class LotStock:
     ClientAccountID: str
@@ -401,8 +311,6 @@ class LotStock:
     ISIN: str
     FIGI: str | None
     ListingExchange: str
-    Issuer: str | None
-    IssuerCountryCode: str
     Multiplier: float
     ReportDate: Arrow
     DateTime: Arrow
@@ -418,8 +326,8 @@ class LotStock:
     ForexProfitAndLoss: float
     BuyOrSell: BuyOrSell
     TransactionID: str
-    OpenDateTime: Arrow | None
-    HoldingPeriodDateTime: Arrow | None
+    OpenDateTime: Arrow
+    HoldingPeriodDateTime: Arrow
     LevelOfDetail: LevelOfDetail
 
 
@@ -506,9 +414,22 @@ class LotOption:
     FifoProfitAndLossRealized: float
     CapitalGainsProfitAndLoss: float
     ForexProfitAndLoss: float
-    MarketToMarketProfitAndLoss: float | None
     BuyOrSell: BuyOrSell
     TransactionID: str
-    OpenDateTime: Arrow | None
-    HoldingPeriodDateTime: Arrow | None
+    OpenDateTime: Arrow
+    HoldingPeriodDateTime: Arrow
     LevelOfDetail: LevelOfDetail
+
+
+
+
+@dataclass
+class SegmentedTrades:
+    cashTrades: list[TradeCash]
+
+    stockTrades: list[TradeStock]
+    stockLots: list[LotStock]
+
+    optionTrades: list[TradeOption]
+    optionLots: list[LotOption]
+
