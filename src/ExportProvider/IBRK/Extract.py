@@ -31,7 +31,7 @@ def deduplicateList(lines: list[list[Any]]):
     return uniqueTransactionRows
 
 def parseNotes(notes: str) -> list[s.Codes]:
-    notesAndCodes = str().split(";")
+    notesAndCodes = notes.split(";")
     notesAndCodesParsed = list(map(lambda code: s.Codes(code), notesAndCodes)) if notes != "" else []
     return notesAndCodesParsed
 
@@ -260,14 +260,7 @@ def extractCashTransaction(node: etree.ElementBase) -> s.TransactionCash:
 
 
 
-
-def mergeCashTransactions(transactions: list[list[s.TransactionCash]]) -> list[s.TransactionCash]:
-        return deduplicateList(transactions)
-
-
-
-
-def extractTradesFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
+def extractFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
     # cashTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.CASH.value))
     # cashTradeNodes = cashTradesFinder(root)
     cashTransactionsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/CashTransactions/*")

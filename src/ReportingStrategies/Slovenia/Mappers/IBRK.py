@@ -101,20 +101,20 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
         sameInstrumentTrades = list(filter(lambda x: x.ISIN == isin, allTrades))
         return sameInstrumentTrades
     
-    def segmentLotByLambda(lots: list[s.TradeLot], callback: Callable[[s.TradeLot], str]) -> dict[str, list[s.TradeLot]]:
-        segmented: dict[str, list[s.TradeLot]] = {}
+    def segmentLotByLambda(lots: list[s.LotStock], callback: Callable[[s.LotStock], str]) -> dict[str, list[s.LotStock]]:
+        segmented: dict[str, list[s.LotStock]] = {}
         for key, valuesiter in groupby(lots, key=callback):
             segmented[key] = list(v for v in valuesiter)
         return segmented
 
-    def segmentLotsByIsin(lots: list[s.TradeLot]) -> dict[str, list[s.TradeLot]]:
+    def segmentLotsByIsin(lots: list[s.LotStock]) -> dict[str, list[s.LotStock]]:
         return segmentLotByLambda(lots, lambda lot: lot.ISIN)
     
-    def segmentLotsByAssetClass(lots: list[s.TradeLot]) -> dict[s.AssetClass, list[s.TradeLot]]:
+    def segmentLotsByAssetClass(lots: list[s.LotStock]) -> dict[s.AssetClass, list[s.LotStock]]:
         return segmentLotByLambda(lots, lambda lot: lot.AssetClass) # type: ignore
     
-    def matchTradesWithLots(lots: list[s.TradeLot], trades: list[s.TradeStock]) -> list[gf.GenericTradeReportLotMatches]:
-        def createLotMatchFromLot(lot: s.TradeLot, trades: list[s.TradeStock]) -> gf.GenericTradeReportLotMatches:
+    def matchTradesWithLots(lots: list[s.LotStock], trades: list[s.TradeStock]) -> list[gf.GenericTradeReportLotMatches]:
+        def createLotMatchFromLot(lot: s.LotStock, trades: list[s.TradeStock]) -> gf.GenericTradeReportLotMatches:
             
             # lot TransactionId coresponds to the buy event transactionId
             # this means we can use it to match the buy line for this lot
@@ -245,7 +245,7 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
             
         return lots
 
-    def createReportForIsinAssetClass(isin: str, assetClass: s.AssetClass, lotsForAssetClass: list[s.TradeLot], allTradesForIsin: list[s.TradeStock]) -> gf.GenericTradeReportItem:
+    def createReportForIsinAssetClass(isin: str, assetClass: s.AssetClass, lotsForAssetClass: list[s.LotStock], allTradesForIsin: list[s.TradeStock]) -> gf.GenericTradeReportItem:
         print(isin)
 
         firstLotForInfo = lotsForAssetClass[0]
@@ -277,7 +277,7 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
 
 
 
-    def createReportsForIsin(isin: str, lots: list[s.TradeLot], allTrades: list[s.TradeStock]) -> list[gf.GenericTradeReportItem]:
+    def createReportsForIsin(isin: str, lots: list[s.LotStock], allTrades: list[s.TradeStock]) -> list[gf.GenericTradeReportItem]:
         segmentedByAssetClass = segmentLotsByAssetClass(lots)
         lines: list[gf.GenericTradeReportItem] = list()
         for assetClass, classLots in segmentedByAssetClass.items():
