@@ -222,7 +222,7 @@ class TradeGeneric:
 
 
 @dataclass
-class TradeCash:
+class TransactionCash:
     ClientAccountID: str
     CurrencyPrimary: str
     FXRateToBase: float
@@ -425,7 +425,8 @@ class LotOption:
 
 @dataclass
 class SegmentedTrades:
-    cashTrades: list[TradeCash]
+    # cashTrades: list[TransactionCash]
+    cashTransactions: list[TransactionCash]
 
     stockTrades: list[TradeStock]
     stockLots: list[LotStock]

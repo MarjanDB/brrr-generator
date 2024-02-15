@@ -230,8 +230,8 @@ def extractOptionLot(node: etree.ElementBase) -> s.LotOption:
 
 
 
-def extractCashTrade(node: etree.ElementBase) -> s.TradeCash:
-    trade = s.TradeCash(
+def extractCashTransaction(node: etree.ElementBase) -> s.TransactionCash:
+    trade = s.TransactionCash(
         ClientAccountID=node.attrib["accountId"],
         CurrencyPrimary=node.attrib["currency"],
         FXRateToBase=float(node.attrib["fxRateToBase"]),
@@ -260,20 +260,18 @@ def extractCashTrade(node: etree.ElementBase) -> s.TradeCash:
 
 
 
-def extractCashTransactionFromXML(root: etree.ElementBase) -> list[s.TradeCash]:
-    cashTransactionsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/CashTransactions/*")
-    cashTransactionNodes = cashTransactionsFinder(root)
-    return list(map(lambda node: extractCashTrade(node), cashTransactionNodes))
 
-def mergeCashTransactions(transactions: list[list[s.TradeCash]]) -> list[s.TradeCash]:
+def mergeCashTransactions(transactions: list[list[s.TransactionCash]]) -> list[s.TransactionCash]:
         return deduplicateList(transactions)
 
 
 
 
 def extractTradesFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
-    cashTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.CASH.value))
-    cashTradeNodes = cashTradesFinder(root)
+    # cashTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.CASH.value))
+    # cashTradeNodes = cashTradesFinder(root)
+    cashTransactionsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/CashTransactions/*")
+    cashTransactionNodes = cashTransactionsFinder(root)
 
     optionTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.OPTION.value))
     optionLotsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Lot[@assetCategory='{}']".format(s.AssetClass.OPTION.value))
@@ -286,17 +284,20 @@ def extractTradesFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
     stockLotNodes = stockLotsFinder(root)
 
 
-    cashTrades = list(map(extractCashTrade, cashTradeNodes))
+    # cashTrades = list(map(extractCashTrade, cashTradeNodes))
+    cashTransactions = list(map(extractCashTransaction, cashTransactionNodes))
 
     stockTrades = list(map(extractStockTrade, stockTradeNodes))
     stockLots = list(map(extractStockLot, stockLotNodes))
 
     optionTrades = list(map(extractOptionTrade, optionTradeNodes))
     optionLots = list(map(extractOptionLot, optionLotNodes))
+
     
 
     return s.SegmentedTrades(
-        cashTrades = cashTrades,
+        # cashTrades = cashTrades,
+        cashTransactions = cashTransactions,
         stockTrades = stockTrades,
         stockLots = stockLots,
         optionTrades = optionTrades,
@@ -308,20 +309,23 @@ def extractTradesFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
 def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
     stockTrades = list(map(lambda trade: trade.stockTrades, trades))
     optionTrades = list(map(lambda trade: trade.optionTrades, trades))
-    cashTrades = list(map(lambda trade: trade.cashTrades, trades))
+    # cashTrades = list(map(lambda trade: trade.cashTrades, trades))
+    cashTransactions = list(map(lambda trade: trade.cashTransactions, trades))
 
     stockLots = list(map(lambda trade: trade.stockLots, trades))
     optionLots = list(map(lambda trade: trade.optionLots, trades))
 
     stockTrades = deduplicateList(stockTrades)
-    cashTrades = deduplicateList(cashTrades)
+    # cashTrades = deduplicateList(cashTrades)
     optionTrades = deduplicateList(optionTrades)
+    cashTransactions = deduplicateList(cashTransactions)
 
     optionLots = [x for xs in optionLots for x in xs]   # lots cannot be deduplicated, as there is no unique identifer
     stockLots = [x for xs in stockLots for x in xs]   # lots cannot be deduplicated, as there is no unique identifer
 
     return s.SegmentedTrades(
-        cashTrades = cashTrades,
+        # cashTrades = cashTrades,
+        cashTransactions = cashTransactions,
         stockTrades = stockTrades,
         stockLots = stockLots,
         optionTrades = optionTrades,
