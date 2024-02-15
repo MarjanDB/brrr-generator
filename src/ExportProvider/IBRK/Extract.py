@@ -32,7 +32,7 @@ def deduplicateList(lines: list[list[Any]]):
 
 def parseNotes(notes: str) -> list[s.Codes]:
     notesAndCodes = str().split(";")
-    notesAndCodesParsed = list(map(lambda code: s.Codes(code), notesAndCodes)) if node.attrib['notes'] != "" else []
+    notesAndCodesParsed = list(map(lambda code: s.Codes(code), notesAndCodes)) if notes != "" else []
     return notesAndCodesParsed
 
 
