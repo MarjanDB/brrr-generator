@@ -49,3 +49,7 @@ class GenericDividendReport(GenericReportProvider[gf.GenericDividendLine, REPORT
 
 class GenericTradesReport(GenericReportProvider[gf.GenericTradeReportItem, REPORT_CONFIG]):
     ...
+
+
+class GenericDerivativeReport(GenericReportProvider[gf.GenericDerivativeReportItem, REPORT_CONFIG]):
+    ...
