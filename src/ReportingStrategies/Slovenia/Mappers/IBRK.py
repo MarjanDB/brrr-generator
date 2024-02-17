@@ -362,8 +362,8 @@ def getGenericDerivativeTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> l
             # NOTE: Corporate Actions can result in stocks that haven't been bought
             buyDate = lot.OpenDateTime
             numberOfBought = matchingBuy.Quantity if matchingBuy else lot.Quantity
-            tradePriceOfBought = matchingBuy.TradePrice * matchingBuy.FXRateToBase if matchingBuy else lot.TradePrice * lot.FXRateToBase
-            tradeTotalOfBought = matchingBuy.TradeMoney * matchingBuy.FXRateToBase if matchingBuy else lot.TradePrice * lot.Quantity * lot.FXRateToBase
+            tradePriceOfBought = matchingBuy.TradePrice * matchingBuy.FXRateToBase * matchingBuy.Multiplier if matchingBuy else lot.TradePrice * lot.FXRateToBase * lot.Multiplier
+            tradeTotalOfBought = matchingBuy.TradeMoney * matchingBuy.FXRateToBase if matchingBuy else lot.TradePrice * lot.Quantity * lot.FXRateToBase * lot.Multiplier
             taxesOfBought = matchingBuy.Taxes * matchingBuy.FXRateToBase if matchingBuy else 0
 
             buyLine = gf.GenericDerivativeReportItemSecurityLineBought(
@@ -386,8 +386,8 @@ def getGenericDerivativeTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> l
             sellLine = gf.GenericDerivativeReportItemSecurityLineSold(
                 SoldDate = sellDate,
                 NumberOfUnitsSold = matchingSell.Quantity.__abs__(),
-                AmountPerUnit = matchingSell.TradePrice.__abs__() * lot.FXRateToBase,
-                TotalAmountSoldFor = matchingSell.TradeMoney.__abs__() * lot.FXRateToBase,
+                AmountPerUnit = matchingSell.TradePrice.__abs__() * lot.FXRateToBase * matchingSell.Multiplier,
+                TotalAmountSoldFor = matchingSell.TradeMoney.__abs__() * lot.FXRateToBase * matchingSell.Multiplier,
                 TransactionID = matchingSell.TransactionID,
                 WashSale = True,
                 SoldForProfit = True,
