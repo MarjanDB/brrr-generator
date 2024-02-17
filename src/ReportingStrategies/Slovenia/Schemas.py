@@ -99,3 +99,65 @@ class EDavkiGenericTradeReportItem:
     TaxDecreaseConformance: bool | None # zamenjava vrednostnih papirjev z istovrstnimi papirji istega izdajatelja, pri kateri se ne spreminjajo razmerja med družbeniki in kapital izdajatelja ter ni denarnega toka;
 
     Items: list[EDavkiTradeReportSecurityLineEvent]
+
+
+
+
+
+
+
+
+class EDavkiDerivativeSecurityType(str, Enum):
+    FUTURES_CONTRACT = "01" 
+    CONTRACT_FOR_DIFFERENCE = "02"
+    OPTION = "03"
+    CERTIFICATE = "04"
+
+class EDavkiDerivativeReportGainType(str, Enum):
+    CAPITAL_INVESTMENT = "A" # guessing
+    BOUGHT = "B"
+    CAPITAL_RAISE = "C" # guessing
+    CAPITAL_ASSET = "D" # guessing
+    CAPITALIZATION_CHANGE = "E" # guessing
+    INHERITENCE = "F"
+    GIFT = "G"
+    OTHER = "H"
+
+class EDavkiDerivativeReportItemType(str, Enum):
+    DERIVATIVE = "PLIFI"
+    DERIVATIVE_SHORT = "PLIFIShort"
+
+
+
+
+@dataclass
+class EDavkiDerivativeReportSecurityLineGenericEventBought:
+    BoughtOn: Arrow
+    GainType: EDavkiDerivativeReportGainType
+    Quantity: float
+    PricePerUnit: float
+    TotalPrice: float
+    Leveraged: bool    # Options are not Leveraged
+
+@dataclass
+class EDavkiDerivativeReportSecurityLineGenericEventSold:
+    SoldOn: Arrow
+    Quantity: float
+    TotalPrice: float
+    PricePerUnit: float
+    Leveraged: bool
+
+
+
+@dataclass
+class EDavkiGenericDerivativeReportItem:
+    InventoryListType: EDavkiDerivativeSecurityType
+    Name: str | None
+    Code: str | None
+    ISIN: str
+    HasForeignTax: bool
+    ForeignTax: float | None
+    FTCountryID: str | None
+    FTCountryName: str | None
+
+    Items: list[EDavkiDerivativeReportSecurityLineGenericEventBought | EDavkiDerivativeReportSecurityLineGenericEventSold]

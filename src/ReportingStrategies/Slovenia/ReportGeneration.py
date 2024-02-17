@@ -483,20 +483,23 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
 
 
 class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
-    SECURITY_MAPPING : dict[gf.GenericDerivativeReportItemType, ss.EDavkiTradeSecurityType] = {
-        gf.GenericDerivativeReportItemType.DERIVATIVE: "" ,
-        gf.GenericDerivativeReportItemType.DERIVATIVE_SHORT: "",
+    SECURITY_MAPPING : dict[gf.GenericDerivativeReportAssetClassType, ss.EDavkiDerivativeSecurityType] = {
+        gf.GenericDerivativeReportAssetClassType.OPTION: ss.EDavkiDerivativeSecurityType.OPTION,
+        gf.GenericDerivativeReportAssetClassType.FUTURES_CONTRACT: ss.EDavkiDerivativeSecurityType.FUTURES_CONTRACT,
+        gf.GenericDerivativeReportAssetClassType.CONTRACT_FOR_DIFFERENCE: ss.EDavkiDerivativeSecurityType.CONTRACT_FOR_DIFFERENCE,
+        gf.GenericDerivativeReportAssetClassType.CERTIFICATE: ss.EDavkiDerivativeSecurityType.CERTIFICATE,
+        # gf.GenericDerivativeReportAssetClassType.OTHER: ss.EDavkiDerivativeReportItemType.DERIVATIVE_SHORT,
     }
 
-    GAIN_MAPPINGS : dict[gf.GenericDerivativeReportItemGainType, ss.EDavkiTradeReportGainType] = {
-        gf.GenericDerivativeReportItemGainType.BOUGHT: ss.EDavkiTradeReportGainType.BOUGHT,
-        gf.GenericDerivativeReportItemGainType.CAPITAL_INVESTMENT: ss.EDavkiTradeReportGainType.CAPITAL_INVESTMENT,
-        gf.GenericDerivativeReportItemGainType.CAPITAL_RAISE: ss.EDavkiTradeReportGainType.CAPITAL_RAISE,
-        gf.GenericDerivativeReportItemGainType.CAPITAL_ASSET: ss.EDavkiTradeReportGainType.CAPITAL_ASSET_RAISE,
-        gf.GenericDerivativeReportItemGainType.CAPITALIZATION_CHANGE: ss.EDavkiTradeReportGainType.CAPITALIZATION_CHANGE,
-        gf.GenericDerivativeReportItemGainType.INHERITENCE: ss.EDavkiTradeReportGainType.INHERITENCE,
-        gf.GenericDerivativeReportItemGainType.GIFT: ss.EDavkiTradeReportGainType.GIFT,
-        gf.GenericDerivativeReportItemGainType.OTHER: ss.EDavkiTradeReportGainType.OTHER,
+    GAIN_MAPPINGS : dict[gf.GenericDerivativeReportItemGainType, ss.EDavkiDerivativeReportGainType] = {
+        gf.GenericDerivativeReportItemGainType.BOUGHT: ss.EDavkiDerivativeReportGainType.BOUGHT,
+        gf.GenericDerivativeReportItemGainType.CAPITAL_INVESTMENT: ss.EDavkiDerivativeReportGainType.CAPITAL_INVESTMENT,
+        gf.GenericDerivativeReportItemGainType.CAPITAL_RAISE: ss.EDavkiDerivativeReportGainType.CAPITAL_RAISE,
+        gf.GenericDerivativeReportItemGainType.CAPITAL_ASSET: ss.EDavkiDerivativeReportGainType.CAPITAL_ASSET,
+        gf.GenericDerivativeReportItemGainType.CAPITALIZATION_CHANGE: ss.EDavkiDerivativeReportGainType.CAPITALIZATION_CHANGE,
+        gf.GenericDerivativeReportItemGainType.INHERITENCE: ss.EDavkiDerivativeReportGainType.INHERITENCE,
+        gf.GenericDerivativeReportItemGainType.GIFT: ss.EDavkiDerivativeReportGainType.GIFT,
+        gf.GenericDerivativeReportItemGainType.OTHER: ss.EDavkiDerivativeReportGainType.OTHER,
     }
 
     documentType: EDavkiDocumentWorkflowType = EDavkiDocumentWorkflowType.ORIGINAL
@@ -516,48 +519,47 @@ class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
 
 
 
-    def convertTradesToIfiItems(self, data: list[gf.GenericDerivativeReportItem]) -> list[ss.EDavkiGenericTradeReportItem]:
-        converted: list[ss.EDavkiGenericTradeReportItem] = list()
+    def convertTradesToIfiItems(self, data: list[gf.GenericDerivativeReportItem]) -> list[ss.EDavkiGenericDerivativeReportItem]:
+        converted: list[ss.EDavkiGenericDerivativeReportItem] = list()
 
-        ISINSegmented: dict[str, list[gf.GenericTradeReportItem]] = {}
+        ISINSegmented: dict[str, list[gf.GenericDerivativeReportItem]] = {}
         for key, valuesiter in groupby(data, key=lambda item: item.ISIN):
             ISINSegmented[key] = list(valuesiter)
 
         for ISIN, entries in ISINSegmented.items():
 
-            securitySegmented: dict[gf.GenericTradeReportItemType, list[gf.GenericTradeReportItem]] = {}
-            for key, valuesiter in groupby(entries, key=lambda item: item.InventoryListType):
+            securitySegmented: dict[gf.GenericDerivativeReportAssetClassType, list[gf.GenericDerivativeReportItem]] = {}
+            for key, valuesiter in groupby(entries, key=lambda item: item.InventoryAssetClass):
                 securitySegmented[key] = list(valuesiter)
 
             for securityType, securityLines in securitySegmented.items():
 
                 for lots in securityLines:
-                    def convertBuy(line: gf.GenericTradeReportItemSecurityLineBought) -> ss.EDavkiTradeReportSecurityLineGenericEventBought:
-                        return ss.EDavkiTradeReportSecurityLineGenericEventBought(
+                    def convertBuy(line: gf.GenericDerivativeReportItemSecurityLineBought) -> ss.EDavkiDerivativeReportSecurityLineGenericEventBought:
+                        return ss.EDavkiDerivativeReportSecurityLineGenericEventBought(
                             BoughtOn = line.AcquiredDate,
                             GainType = self.GAIN_MAPPINGS[line.AcquiredHow],
                             Quantity = line.NumberOfUnits,
                             PricePerUnit = line.AmountPerUnit,
                             TotalPrice = line.TotalAmountPaid,
-                            InheritanceAndGiftTaxPaid = None,
-                            BaseTaxReduction = None
+                            Leveraged = False
                         )
 
-                    def convertSell(line: gf.GenericTradeReportItemSecurityLineSold) -> ss.EDavkiTradeReportSecurityLineGenericEventSold:
-                        return ss.EDavkiTradeReportSecurityLineGenericEventSold(
+                    def convertSell(line: gf.GenericDerivativeReportItemSecurityLineSold) -> ss.EDavkiDerivativeReportSecurityLineGenericEventSold:
+                        return ss.EDavkiDerivativeReportSecurityLineGenericEventSold(
                             SoldOn = line.SoldDate,
                             Quantity = line.NumberOfUnitsSold,
                             TotalPrice = line.TotalAmountSoldFor,
                             PricePerUnit = line.AmountPerUnit,
-                            SatisfiesTaxBasisReduction = (not line.WashSale) and not line.SoldForProfit
+                            Leveraged = False
                         )
                     
 
                     periodStart = self.baseReportConfig.fromDate
                     periodEnd = self.baseReportConfig.toDate
 
-                    buyLines: list[gf.GenericTradeReportItemSecurityLineBought] = list(filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineBought), lots.Lines)) # type: ignore
-                    sellLines: list[gf.GenericTradeReportItemSecurityLineSold] = list(filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineSold), lots.Lines)) # type: ignore
+                    buyLines: list[gf.GenericDerivativeReportItemSecurityLineBought] = list(filter(lambda line: isinstance(line, gf.GenericDerivativeReportItemSecurityLineBought), lots.Lines)) # type: ignore
+                    sellLines: list[gf.GenericDerivativeReportItemSecurityLineSold] = list(filter(lambda line: isinstance(line, gf.GenericDerivativeReportItemSecurityLineSold), lots.Lines)) # type: ignore
 
                     buyLines = list(filter(lambda line: line.AcquiredDate >= periodStart and line.AcquiredDate < periodEnd, buyLines))
                     sellLines = list(filter(lambda line: line.SoldDate >= periodStart and line.SoldDate < periodEnd, sellLines))
@@ -565,15 +567,7 @@ class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
                     buys = list(map(convertBuy, buyLines)) # type: ignore
                     sells = list(map(convertSell, sellLines)) # type: ignore
 
-                    reportItem = ss.EDavkiTradeReportSecurityLineEvent(
-                        ISIN = ISIN,
-                        Code = lots.Ticker,
-                        Name = None,
-                        IsFund = lots.AssetClass == gf.GenericAssetClass.ROYALTY_TRUST,
-                        Resolution = None,
-                        ResolutionDate = None,
-                        Events = buys + sells
-                    )
+                    buysAndSells : list[ss.EDavkiDerivativeReportSecurityLineGenericEventBought | ss.EDavkiDerivativeReportSecurityLineGenericEventSold] = buys + sells
 
 
                     ForeignTaxPaid = sum(map(lambda entry: entry.ForeignTax or 0, entries))
@@ -582,18 +576,16 @@ class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
                         ForeignTaxPaid = None
                         HasForeignTax = False
                     
-                    ISINEntry = ss.EDavkiGenericTradeReportItem(
-                        ItemID = None,
+                    ISINEntry = ss.EDavkiGenericDerivativeReportItem(
                         InventoryListType = self.SECURITY_MAPPING[securityType],
+                        Code = None,
+                        ISIN = ISIN,
                         Name = None,
                         HasForeignTax = HasForeignTax,
                         ForeignTax = ForeignTaxPaid,
                         FTCountryID = None,
                         FTCountryName = None,
-                        HasLossTransfer = None,
-                        ForeignTransfer = None,
-                        TaxDecreaseConformance = False,    
-                        Items=[reportItem]
+                        Items = buysAndSells
                     )
 
                     converted.append(ISINEntry)
