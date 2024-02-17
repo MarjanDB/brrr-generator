@@ -130,10 +130,10 @@ def extractStockLot(node: etree.ElementBase) -> s.LotStock:
     return trade
 
 
-def extractOptionTrade(node: etree.ElementBase) -> s.TradeOption:
+def extractOptionTrade(node: etree.ElementBase) -> s.TradeDerivative:
     notesAndCodesParsed = parseNotes(node.attrib['notes'])
     
-    trade = s.TradeOption(
+    trade = s.TradeDerivative(
         ClientAccountID = node.attrib['accountId'],
         CurrencyPrimary = node.attrib['currency'],
         FXRateToBase = float(node.attrib['fxRateToBase']),
@@ -186,10 +186,10 @@ def extractOptionTrade(node: etree.ElementBase) -> s.TradeOption:
 
 
 
-def extractOptionLot(node: etree.ElementBase) -> s.LotOption:
+def extractOptionLot(node: etree.ElementBase) -> s.LotDerivative:
     notesAndCodesParsed = parseNotes(node.attrib['notes'])
     
-    trade = s.LotOption(
+    trade = s.LotDerivative(
         ClientAccountID = node.attrib['accountId'],
         CurrencyPrimary = node.attrib['currency'],
         FXRateToBase = float(node.attrib['fxRateToBase']),
@@ -293,20 +293,20 @@ def extractFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
         cashTransactions = cashTransactions,
         stockTrades = stockTrades,
         stockLots = stockLots,
-        optionTrades = optionTrades,
-        optionLots = optionLots,
+        derivativeTrades = optionTrades,
+        derivativeLots = optionLots,
     )
 
 
 
 def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
     stockTrades = list(map(lambda trade: trade.stockTrades, trades))
-    optionTrades = list(map(lambda trade: trade.optionTrades, trades))
+    optionTrades = list(map(lambda trade: trade.derivativeTrades, trades))
     # cashTrades = list(map(lambda trade: trade.cashTrades, trades))
     cashTransactions = list(map(lambda trade: trade.cashTransactions, trades))
 
     stockLots = list(map(lambda trade: trade.stockLots, trades))
-    optionLots = list(map(lambda trade: trade.optionLots, trades))
+    optionLots = list(map(lambda trade: trade.derivativeLots, trades))
 
     stockTrades = deduplicateList(stockTrades)
     # cashTrades = deduplicateList(cashTrades)
@@ -321,6 +321,6 @@ def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
         cashTransactions = cashTransactions,
         stockTrades = stockTrades,
         stockLots = stockLots,
-        optionTrades = optionTrades,
-        optionLots = optionLots,
+        derivativeTrades = optionTrades,
+        derivativeLots = optionLots,
     )

@@ -162,6 +162,7 @@ class GenericDerivativeReportItemSecurityLineBought:
     NumberOfUnits: float
     AmountPerUnit: float
     TotalAmountPaid: float  # to avoid rounding errors in case of % purchases
+    TaxPaidForPurchase: float
     Leveraged: bool
     TransactionID: str
 
@@ -188,7 +189,7 @@ class GenericDerivativeReportLotMatches:
 @dataclass
 class GenericDerivativeReportItem:
     InventoryListType: GenericDerivativeReportItemType
-    InventoryAssetClass: GenericDerivativeReportAssetClassType
+    AssetClass: GenericDerivativeReportAssetClassType
     ISIN: str
     Ticker: str
     HasForeignTax: bool

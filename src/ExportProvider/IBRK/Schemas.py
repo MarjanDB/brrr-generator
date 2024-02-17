@@ -332,7 +332,7 @@ class LotStock:
 
 
 @dataclass
-class TradeOption:
+class TradeDerivative:
     ClientAccountID: str
     CurrencyPrimary: str
     FXRateToBase: float
@@ -383,7 +383,7 @@ class TradeOption:
 
 
 @dataclass
-class LotOption:
+class LotDerivative:
     ClientAccountID: str
     CurrencyPrimary: str
     FXRateToBase: float
@@ -431,6 +431,6 @@ class SegmentedTrades:
     stockTrades: list[TradeStock]
     stockLots: list[LotStock]
 
-    optionTrades: list[TradeOption]
-    optionLots: list[LotOption]
+    derivativeTrades: list[TradeDerivative]
+    derivativeLots: list[LotDerivative]
 

@@ -529,7 +529,7 @@ class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
         for ISIN, entries in ISINSegmented.items():
 
             securitySegmented: dict[gf.GenericDerivativeReportAssetClassType, list[gf.GenericDerivativeReportItem]] = {}
-            for key, valuesiter in groupby(entries, key=lambda item: item.InventoryAssetClass):
+            for key, valuesiter in groupby(entries, key=lambda item: item.AssetClass):
                 securitySegmented[key] = list(valuesiter)
 
             for securityType, securityLines in securitySegmented.items():
