@@ -5,6 +5,7 @@ from arrow import Arrow
 class AssetClass(str, Enum):
     STOCK = "STK"
     CASH = "CASH"
+    OPTION = "OPT"
 
 class SubCategory(str, Enum):
     NONE = ""   # CASH AssetClass
@@ -13,6 +14,7 @@ class SubCategory(str, Enum):
     RIGHT = "RIGHT" # Right to newly issued shares -> https://www.investopedia.com/terms/r/rightsoffering.asp
     ADR = "ADR" # American Depositary Receipt -> https://www.investopedia.com/terms/a/adr.asp
     ROYALTY_RUST = "ROYALTY TRST" # Royalty Income Trust -> https://www.investopedia.com/terms/r/royaltyincometrust.asp
+    ETF = "ETF" # Exchange Traded Fund -> https://www.investopedia.com/terms/e/etf.asp
 
 class OpenCloseIndicator(str, Enum):
     NONE = ""   # CASH positions cannot be closed or opened
@@ -29,6 +31,10 @@ class SecurityIDType(str, Enum):
 class BuyOrSell(str, Enum):
     BUY = "BUY"
     SELL = "SELL"
+
+class PutOrCall(str, Enum):
+    PUT = "P"
+    CALL = "C"
 
 # You can find these when generating standard statements under Performance & Reports > Statements
 # They're redefined here for type completion and so they're readable in code
@@ -105,14 +111,29 @@ class LevelOfDetail(str, Enum):
     CLOSED_LOT = "CLOSED_LOT"
 
 class OrderType(str, Enum):
+    UNKNOWN = ""
     LIMIT = "LMT"
     MARKET = "MKT"
+    MID_POINT = "MIDPX"
 
 class Model(str, Enum):
     INDEPENDENT = "Independent"
 
+
+
+class CashTransactionType(str, Enum):
+    WITHOLDING_TAX = "Withholding Tax"
+    DIVIDEND = "Dividends"
+
+
+
 @dataclass
-class TradeLine:
+class TradeGeneric:
+    """
+        Generic class for copy paste when making new Trade/Lot Types
+    """
+
+
     ClientAccountID: str
     AccountAlias: str | None
     Model: Model | None
@@ -199,102 +220,10 @@ class TradeLine:
     Fineness: float
     Weight: float
 
-@dataclass
-class TradeStock(TradeLine):
-    TradeID: str
-    SettleDateTarget: Arrow
-    TransactionType: TransactionType
-    TradeMoney: float
-    Proceeds: float
-    Taxes: float
-    IBCommission: float
-    IBCommissionCurrency: str
-    NetCash: float
-    NetCashInBase: float
-    ClosePrice: float
-    MarketToMarketProfitAndLoss: float
-    OrigTradePrice: float
-    OrigOrderID: str
-    OrigTransactionID: str
-    IBOrderID: str
-    IBExecID: str
-    BrokerageOrderID: str
-    ExtExecID: str
-    OrderTime: Arrow
-    ChangeInPrice: float
-    ChangeInQuantity: float
-    OrderType: OrderType
-    IsAPIOrder: bool
-    AccruedInterest: float
 
 @dataclass
-class TradeLot(TradeLine):
-    OpenDateTime: Arrow
-    HoldingPeriodDateTime: Arrow
-    TransactionID: str  # this transaction ID correlates lots and their buy trades (1 buy trade can map to multiple lots)
-    
-
-@dataclass
-class TradeCash(TradeLine):
-    SecurityID: None
-    SecurityIDType: None
-    CUSIP: None
-    ISIN: None
-    FIGI: None
-    ListingExchange: None
-    UnderlyingConid: None
-    UnderlyingSymbol: None
-    UnderlyingSecurityID: None
-    UnderlyingListingExchange: None
-    RelatedTradeID: None
-    Issuer: None
-    IssuerCountryCode: None
-    SettleDateTarget: Arrow
-    TransactionType: TransactionType
-    Exchange: str
-    TradeMoney: float
-    Proceeds: float
-    Taxes: float
-    IBCommission: float
-    IBCommissionCurrency: str
-    NetCash: float
-    NetCashInBase: float
-    ClosePrice: float
-    OpenCloseIndicator: OpenCloseIndicator
-    NotesAndCodes: list[Codes]
-    MarketToMarketProfitAndLoss: float
-    OrigTradePrice: None
-    OrigOrderID: None
-    OrigTradeDate: None
-    OrigTradeID: None
-    OrigTransactionID: None
-    IBOrderID: str
-    IBExecID: str
-    OrderTime: Arrow
-    ChangeInPrice: float
-    ChangeInQuantity: float
-    OrderType: OrderType
-    IsAPIOrder: bool
-    AccruedInterest: float
-    
-
-@dataclass
-class SegmentedTrades:
-    stockTrades: list[TradeStock]
-    cashTrades: list[TradeCash]
-    lots: list[TradeLot]
-
-
-
-class CashTransactionType(str, Enum):
-    WITHOLDING_TAX = "Withholding Tax"
-    DIVIDEND = "Dividends"
-
-@dataclass
-class CashTransaction:
+class TransactionCash:
     ClientAccountID: str
-    AccountAlias: str | None
-    Model: Model | None
     CurrencyPrimary: str
     FXRateToBase: float
     AssetClass: AssetClass
@@ -308,30 +237,200 @@ class CashTransaction:
     ISIN: str
     FIGI: str | None
     ListingExchange: str
-    UnderlyingConid: str | None
-    UnderlyingSymbol: str | None
-    UnderlyingSecurityID: str | None
-    UnderlyingListingExchange: str | None
-    Issuer: str | None
-    IssuerCountryCode: str | None
-    Multiplier: float
-    Strike: float | None
-    Expiry: Arrow | None
-    PutOrCall: str | None
-    PrincipalAdjustFactor: float | None
     DateTime: Arrow
     SettleDate: Arrow
     Amount: float
     Type: CashTransactionType
-    TradeID: str | None
     Code: str | None
     TransactionID: str
     ReportDate: Arrow
-    ClientReference: str | None
     ActionID: str
+
+
+@dataclass
+class TradeStock:
+    ClientAccountID: str
+    CurrencyPrimary: str
+    FXRateToBase: float
+    AssetClass: AssetClass
+    SubCategory: SubCategory
+    Symbol: str
+    Description: str
+    Conid: str
+    SecurityID: str
+    SecurityIDType: SecurityIDType
+    CUSIP: str | None
+    ISIN: str
+    FIGI: str | None
+    ListingExchange: str
+    ReportDate: Arrow
+    DateTime: Arrow
+    TradeDate: Arrow
+    TransactionType: TransactionType
+    Exchange: str
+    Quantity: float
+    TradePrice: float
+    TradeMoney: float
+    Proceeds: float
+    Taxes: float
+    IBCommission: float
+    IBCommissionCurrency: str
+    NetCash: float
+    NetCashInBase: float
+    ClosePrice: float
+    OpenCloseIndicator: OpenCloseIndicator
+    NotesAndCodes: list[Codes]
+    CostBasis: float
+    FifoProfitAndLossRealized: float
+    CapitalGainsProfitAndLoss: float
+    ForexProfitAndLoss: float
+    MarketToMarketProfitAndLoss: float
+    BuyOrSell: BuyOrSell
+    TransactionID: str
+    OrderTime: Arrow 
     LevelOfDetail: LevelOfDetail
-    SerialNumber: str | None
-    DeliveryType: str | None # enum
-    CommodityType: str | None # enum
-    Fineness: float
-    Weight: float
+    ChangeInPrice: float
+    ChangeInQuantity: float
+    OrderType: OrderType
+    AccruedInterest: float
+
+
+@dataclass
+class LotStock:
+    ClientAccountID: str
+    CurrencyPrimary: str
+    FXRateToBase: float
+    AssetClass: AssetClass
+    SubCategory: SubCategory
+    Symbol: str
+    Description: str
+    Conid: str
+    SecurityID: str
+    SecurityIDType: SecurityIDType
+    CUSIP: str | None
+    ISIN: str
+    FIGI: str | None
+    ListingExchange: str
+    Multiplier: float
+    ReportDate: Arrow
+    DateTime: Arrow
+    TradeDate: Arrow
+    Exchange: str
+    Quantity: float
+    TradePrice: float
+    OpenCloseIndicator: OpenCloseIndicator
+    NotesAndCodes: list[Codes]
+    CostBasis: float
+    FifoProfitAndLossRealized: float
+    CapitalGainsProfitAndLoss: float
+    ForexProfitAndLoss: float
+    BuyOrSell: BuyOrSell
+    TransactionID: str
+    OpenDateTime: Arrow
+    HoldingPeriodDateTime: Arrow
+    LevelOfDetail: LevelOfDetail
+
+
+@dataclass
+class TradeDerivative:
+    ClientAccountID: str
+    CurrencyPrimary: str
+    FXRateToBase: float
+    AssetClass: AssetClass
+    SubCategory: SubCategory
+    Symbol: str
+    Description: str
+    Conid: str
+    FIGI: str | None
+    ListingExchange: str
+    UnderlyingConid: str
+    UnderlyingSymbol: str
+    UnderlyingSecurityID: str
+    UnderlyingListingExchange: str
+    TradeID: str
+    Multiplier: float
+    Strike: float
+    ReportDate: Arrow
+    Expiry: Arrow
+    DateTime: Arrow
+    PutOrCall: PutOrCall
+    TradeDate: Arrow
+    SettleDateTarget: Arrow
+    TransactionType: TransactionType
+    Exchange: str
+    Quantity: float
+    TradePrice: float
+    TradeMoney: float
+    Proceeds: float
+    Taxes: float 
+    IBCommission: float
+    IBCommissionCurrency: str
+    NetCash: float
+    NetCashInBase: float
+    ClosePrice: float
+    OpenCloseIndicator: OpenCloseIndicator
+    NotesAndCodes: list[Codes]
+    CostBasis: float
+    FifoProfitAndLossRealized: float
+    CapitalGainsProfitAndLoss: float
+    ForexProfitAndLoss: float
+    MarketToMarketProfitAndLoss: float | None
+    BuyOrSell: BuyOrSell
+    TransactionID: str
+    OrderTime: Arrow
+    LevelOfDetail: LevelOfDetail
+    OrderType: OrderType
+
+
+@dataclass
+class LotDerivative:
+    ClientAccountID: str
+    CurrencyPrimary: str
+    FXRateToBase: float
+    AssetClass: AssetClass
+    SubCategory: SubCategory
+    Symbol: str
+    Description: str
+    Conid: str
+    FIGI: str | None
+    ListingExchange: str
+    UnderlyingConid: str
+    UnderlyingSymbol: str
+    UnderlyingSecurityID: str
+    UnderlyingListingExchange: str
+    Multiplier: float
+    Strike: float
+    ReportDate: Arrow
+    Expiry: Arrow
+    DateTime: Arrow
+    PutOrCall: PutOrCall
+    TradeDate: Arrow
+    Exchange: str
+    Quantity: float
+    TradePrice: float
+    OpenCloseIndicator: OpenCloseIndicator
+    NotesAndCodes: list[Codes]
+    CostBasis: float
+    FifoProfitAndLossRealized: float
+    CapitalGainsProfitAndLoss: float
+    ForexProfitAndLoss: float
+    BuyOrSell: BuyOrSell
+    TransactionID: str
+    OpenDateTime: Arrow
+    HoldingPeriodDateTime: Arrow
+    LevelOfDetail: LevelOfDetail
+
+
+
+
+@dataclass
+class SegmentedTrades:
+    # cashTrades: list[TransactionCash]
+    cashTransactions: list[TransactionCash]
+
+    stockTrades: list[TradeStock]
+    stockLots: list[LotStock]
+
+    derivativeTrades: list[TradeDerivative]
+    derivativeLots: list[LotDerivative]
+

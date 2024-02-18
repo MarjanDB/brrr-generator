@@ -2,6 +2,13 @@ from enum import Enum
 from dataclasses import dataclass
 from arrow import Arrow
 
+class GenericAssetClass(str, Enum):
+    STOCK = "STOCK"
+    ROYALTY_TRUST = "ROYALTY_TRUST"
+    CASH = "CASH"
+    OPTION = "OPTION"
+
+
 # https://www.racunovodstvo.net/zakonodaja/zdoh/90-clen
 class GenericDividendType(str, Enum):
     UNKNOWN = ""        # For internal use of this reporting script
@@ -42,6 +49,7 @@ class GenericDividendLine:
 # Names here are just guesses, since I don't know what these corespond to in English
 class GenericTradeReportItemType(str, Enum):
     STOCK = "STOCK"
+    OPTION = "OPTION"
     STOCK_SHORT = "STOCK_SHORT"
     STOCK_CONTRACT = "STOCK_CONTRACT"
     STOCK_CONTRACT_SHORT = "STOCK_CONTRACT_SHORT"
@@ -60,10 +68,7 @@ class GenericTradeReportItemGainType(str, Enum):
     RIGHT_TO_NEWLY_ISSUED_STOCK = "RIGHT_TO_NEWLY_ISSUED_STOCK" # guessing
 
 
-class GenericAssetClass(str, Enum):
-    STOCK = "STOCK"
-    ROYALTY_TRUST = "ROYALTY_TRUST"
-    CASH = "CASH"
+
 
 @dataclass
 class GenericTradeReportItemSecurityLineBought:
@@ -106,3 +111,90 @@ class GenericTradeReportItem:
     ForeignTaxCountryName: str | None
 
     Lines: list[GenericTradeReportItemSecurityLineBought | GenericTradeReportItemSecurityLineSold]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class GenericDerivativeReportItemType(str, Enum):
+    DERIVATIVE = "DERIVATIVE"
+    DERIVATIVE_SHORT = "DERIVATIVE_SHORT"
+
+class GenericDerivativeReportAssetClassType(str, Enum):
+    FUTURES_CONTRACT = "FUTURES_CONTRACT" # https://www.investopedia.com/terms/f/futurescontract.asp
+    CONTRACT_FOR_DIFFERENCE = "CFD" # https://www.investopedia.com/terms/c/contractfordifferences.asp
+    OPTION = "OPTION"
+    CERTIFICATE = "CERTIFICATE"
+    OTHER = "OTHER"
+
+class GenericDerivativeReportItemGainType(str, Enum):
+    CAPITAL_INVESTMENT = "CAPITAL_INVESTMENT" # guessing
+    BOUGHT = "BOUGHT"
+    CAPITAL_RAISE = "CAPITAL_RAISE" # guessing
+    CAPITAL_ASSET = "CAPITAL_ASSET" # guessing
+    CAPITALIZATION_CHANGE = "CAPITALIZATION_CHANGE" # guessing
+    INHERITENCE = "INHERITENCE"
+    GIFT = "GIFT"
+    OTHER = "OTHER"
+
+
+
+
+@dataclass
+class GenericDerivativeReportItemSecurityLineBought:
+    AcquiredDate: Arrow
+    AcquiredHow: GenericDerivativeReportItemGainType
+    NumberOfUnits: float
+    AmountPerUnit: float
+    TotalAmountPaid: float  # to avoid rounding errors in case of % purchases
+    TaxPaidForPurchase: float
+    Leveraged: bool
+    TransactionID: str
+
+
+@dataclass
+class GenericDerivativeReportItemSecurityLineSold:
+    SoldDate: Arrow
+    NumberOfUnitsSold: float
+    AmountPerUnit: float
+    TotalAmountSoldFor: float
+    TransactionID: str
+    Leveraged: bool
+    WashSale: bool  # no trades 30 days before and after, and sold for loss
+    SoldForProfit: bool
+
+@dataclass
+class GenericDerivativeReportLotMatches:
+    TransactionID: str
+    Quantitiy: float
+    LotOriginalBuy: GenericDerivativeReportItemSecurityLineBought
+    LotOriginalSell: GenericDerivativeReportItemSecurityLineSold
+
+
+@dataclass
+class GenericDerivativeReportItem:
+    InventoryListType: GenericDerivativeReportItemType
+    AssetClass: GenericDerivativeReportAssetClassType
+    ISIN: str
+    Ticker: str
+    HasForeignTax: bool
+    ForeignTax: float | None
+    ForeignTaxCountryID: str | None
+    ForeignTaxCountryName: str | None
+
+    Lines: list[GenericDerivativeReportItemSecurityLineBought | GenericDerivativeReportItemSecurityLineSold]

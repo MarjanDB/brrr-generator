@@ -30,380 +30,297 @@ def deduplicateList(lines: list[list[Any]]):
 
     return uniqueTransactionRows
 
+def parseNotes(notes: str) -> list[s.Codes]:
+    notesAndCodes = notes.split(";")
+    notesAndCodesParsed = list(map(lambda code: s.Codes(code), notesAndCodes)) if notes != "" else []
+    return notesAndCodesParsed
 
-def extractCashTransactionFromXML(root: etree.ElementBase) -> list[s.CashTransaction]:
+
+
+def extractStockTrade(node: etree.ElementBase) -> s.TradeStock:
+    notesAndCodesParsed = parseNotes(node.attrib['notes'])
+    
+    trade = s.TradeStock(
+        ClientAccountID = node.attrib['accountId'],
+        CurrencyPrimary = node.attrib['currency'],
+        FXRateToBase = float(node.attrib['fxRateToBase']),
+        AssetClass = s.AssetClass(node.attrib['assetCategory']),
+        SubCategory = s.SubCategory(node.attrib['subCategory']),
+        Symbol = node.attrib['symbol'],
+        Description = node.attrib['description'],
+        Conid = node.attrib['conid'],
+        SecurityID = node.attrib['securityID'],
+        SecurityIDType = s.SecurityIDType(node.attrib['securityIDType']),
+        CUSIP = valueOrNone(node.attrib['cusip']),
+        ISIN = node.attrib['isin'],
+        FIGI = node.attrib['figi'],
+        ListingExchange = node.attrib['listingExchange'],
+        ReportDate = safeDateParse(node.attrib['reportDate']),
+        DateTime = safeDateParse(node.attrib['dateTime']),
+        TradeDate = safeDateParse(node.attrib['tradeDate']),
+        TransactionType = s.TransactionType(node.attrib['transactionType']),
+        Exchange = node.attrib['exchange'],
+        Quantity = float(node.attrib['quantity']),
+        TradePrice = float(node.attrib['tradePrice']),
+        TradeMoney = float(node.attrib['tradeMoney']),
+        Proceeds = float(node.attrib['proceeds']),
+        Taxes = float(node.attrib['taxes']),
+        IBCommission = float(node.attrib['ibCommission']),
+        IBCommissionCurrency = node.attrib['ibCommissionCurrency'],
+        NetCash = float(node.attrib['netCash']),
+        NetCashInBase = float(node.attrib['netCashInBase']),
+        ClosePrice = float(node.attrib['closePrice']),
+        OpenCloseIndicator = s.OpenCloseIndicator(node.attrib['openCloseIndicator']),
+        NotesAndCodes = notesAndCodesParsed,
+        CostBasis = float(node.attrib['cost']),
+        FifoProfitAndLossRealized = float(node.attrib['fifoPnlRealized']),
+        CapitalGainsProfitAndLoss = float(node.attrib['capitalGainsPnl']),
+        ForexProfitAndLoss = float(node.attrib['fxPnl']),
+        MarketToMarketProfitAndLoss = float(node.attrib['mtmPnl']),
+        BuyOrSell = s.BuyOrSell(node.attrib['buySell']),
+        TransactionID = node.attrib['transactionID'],
+        OrderTime = safeDateParse(node.attrib['orderTime']),
+        LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
+        ChangeInPrice = float(node.attrib['changeInPrice']),
+        ChangeInQuantity = float(node.attrib['changeInQuantity']),
+        OrderType = s.OrderType(node.attrib['orderType']),
+        AccruedInterest = float(node.attrib['accruedInt'])
+    )
+    return trade
+
+
+
+def extractStockLot(node: etree.ElementBase) -> s.LotStock:
+    notesAndCodesParsed = parseNotes(node.attrib['notes'])
+    
+    trade = s.LotStock(
+        ClientAccountID = node.attrib['accountId'],
+        CurrencyPrimary = node.attrib['currency'],
+        FXRateToBase = float(node.attrib['fxRateToBase']),
+        AssetClass = s.AssetClass(node.attrib['assetCategory']),
+        SubCategory = s.SubCategory(node.attrib['subCategory']),
+        Symbol = node.attrib['symbol'],
+        Description = node.attrib['description'],
+        Conid = node.attrib['conid'],
+        SecurityID = node.attrib['securityID'],
+        SecurityIDType = s.SecurityIDType(node.attrib['securityIDType']),
+        CUSIP = valueOrNone(node.attrib['cusip']),
+        ISIN = node.attrib['isin'],
+        FIGI = node.attrib['figi'],
+        ListingExchange = node.attrib['listingExchange'],
+        Multiplier = float(node.attrib['multiplier']),
+        ReportDate = safeDateParse(node.attrib['reportDate']),
+        DateTime = safeDateParse(node.attrib['dateTime']),
+        TradeDate = safeDateParse(node.attrib['tradeDate']),
+        Exchange = node.attrib['exchange'],
+        Quantity = float(node.attrib['quantity']),
+        TradePrice = float(node.attrib['tradePrice']),
+        OpenCloseIndicator = s.OpenCloseIndicator(node.attrib['openCloseIndicator']),
+        NotesAndCodes = notesAndCodesParsed,
+        CostBasis = float(node.attrib['cost']),
+        FifoProfitAndLossRealized = float(node.attrib['fifoPnlRealized']),
+        CapitalGainsProfitAndLoss = float(node.attrib['capitalGainsPnl']),
+        ForexProfitAndLoss = float(node.attrib['fxPnl']),
+        BuyOrSell = s.BuyOrSell(node.attrib['buySell']),
+        TransactionID = node.attrib['transactionID'],
+        OpenDateTime = safeDateParse(node.attrib['openDateTime']),
+        HoldingPeriodDateTime = safeDateParse(node.attrib['holdingPeriodDateTime']),
+        LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
+    )
+    return trade
+
+
+def extractOptionTrade(node: etree.ElementBase) -> s.TradeDerivative:
+    notesAndCodesParsed = parseNotes(node.attrib['notes'])
+    
+    trade = s.TradeDerivative(
+        ClientAccountID = node.attrib['accountId'],
+        CurrencyPrimary = node.attrib['currency'],
+        FXRateToBase = float(node.attrib['fxRateToBase']),
+        AssetClass = s.AssetClass(node.attrib['assetCategory']),
+        SubCategory = s.SubCategory(node.attrib['subCategory']),
+        Symbol = node.attrib['symbol'],
+        Description = node.attrib['description'],
+        Conid = node.attrib['conid'],
+        FIGI = node.attrib['figi'],
+        ListingExchange = node.attrib['listingExchange'],
+        UnderlyingConid = node.attrib['underlyingConid'],
+        UnderlyingSymbol = node.attrib['underlyingSymbol'],
+        UnderlyingSecurityID = node.attrib['underlyingSecurityID'],
+        UnderlyingListingExchange = node.attrib['underlyingListingExchange'],
+        TradeID = node.attrib['tradeID'],
+        Multiplier = float(node.attrib['multiplier']),
+        Strike = float(node.attrib['strike']),
+        ReportDate = safeDateParse(node.attrib['reportDate']),
+        Expiry = safeDateParse(node.attrib['expiry']),
+        DateTime = safeDateParse(node.attrib['dateTime']),
+        PutOrCall = s.PutOrCall(node.attrib['putCall']),
+        TradeDate = safeDateParse(node.attrib['tradeDate']),
+        SettleDateTarget = safeDateParse(node.attrib['settleDateTarget']),
+        TransactionType = s.TransactionType(node.attrib['transactionType']),
+        Exchange = node.attrib['exchange'],
+        Quantity = float(node.attrib['quantity']),
+        TradePrice = float(node.attrib['tradePrice']),
+        TradeMoney = float(node.attrib['tradeMoney']),
+        Proceeds = float(node.attrib['proceeds']),
+        Taxes = float(node.attrib['taxes']),
+        IBCommission = float(node.attrib['ibCommission']),
+        IBCommissionCurrency = node.attrib['ibCommissionCurrency'],
+        NetCash = float(node.attrib['netCash']),
+        NetCashInBase = float(node.attrib['netCashInBase']),
+        ClosePrice = float(node.attrib['closePrice']),
+        OpenCloseIndicator = s.OpenCloseIndicator(node.attrib['openCloseIndicator']),
+        NotesAndCodes = notesAndCodesParsed,
+        CostBasis = float(node.attrib['cost']),
+        FifoProfitAndLossRealized = float(node.attrib['fifoPnlRealized']),
+        CapitalGainsProfitAndLoss = float(node.attrib['capitalGainsPnl']),
+        ForexProfitAndLoss = float(node.attrib['fxPnl']),
+        MarketToMarketProfitAndLoss = float(node.attrib['mtmPnl']),
+        BuyOrSell = s.BuyOrSell(node.attrib['buySell']),
+        TransactionID = node.attrib['transactionID'],
+        OrderTime = safeDateParse(node.attrib['orderTime']),
+        LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
+        OrderType = s.OrderType(node.attrib['orderType']),
+    )
+    return trade
+
+
+
+def extractOptionLot(node: etree.ElementBase) -> s.LotDerivative:
+    notesAndCodesParsed = parseNotes(node.attrib['notes'])
+    
+    trade = s.LotDerivative(
+        ClientAccountID = node.attrib['accountId'],
+        CurrencyPrimary = node.attrib['currency'],
+        FXRateToBase = float(node.attrib['fxRateToBase']),
+        AssetClass = s.AssetClass(node.attrib['assetCategory']),
+        SubCategory = s.SubCategory(node.attrib['subCategory']),
+        Symbol = node.attrib['symbol'],
+        Description = node.attrib['description'],
+        Conid = node.attrib['conid'],
+        FIGI = node.attrib['figi'],
+        ListingExchange = node.attrib['listingExchange'],
+        UnderlyingConid = node.attrib['underlyingConid'],
+        UnderlyingSymbol = node.attrib['underlyingSymbol'],
+        UnderlyingSecurityID = node.attrib['underlyingSecurityID'],
+        UnderlyingListingExchange = node.attrib['underlyingListingExchange'],
+        Multiplier = float(node.attrib['multiplier']),
+        Strike = float(node.attrib['strike']),
+        ReportDate = safeDateParse(node.attrib['reportDate']),
+        Expiry = safeDateParse(node.attrib['expiry']),
+        DateTime = safeDateParse(node.attrib['dateTime']),
+        PutOrCall = s.PutOrCall(node.attrib['putCall']),
+        TradeDate = safeDateParse(node.attrib['tradeDate']),
+        Exchange = node.attrib['exchange'],
+        Quantity = float(node.attrib['quantity']),
+        TradePrice = float(node.attrib['tradePrice']),
+        OpenCloseIndicator = s.OpenCloseIndicator(node.attrib['openCloseIndicator']),
+        NotesAndCodes = notesAndCodesParsed,
+        CostBasis = float(node.attrib['cost']),
+        FifoProfitAndLossRealized = float(node.attrib['fifoPnlRealized']),
+        CapitalGainsProfitAndLoss = float(node.attrib['capitalGainsPnl']),
+        ForexProfitAndLoss = float(node.attrib['fxPnl']),
+        BuyOrSell = s.BuyOrSell(node.attrib['buySell']),
+        TransactionID = node.attrib['transactionID'],
+        OpenDateTime = safeDateParse(node.attrib['openDateTime']),
+        HoldingPeriodDateTime = safeDateParse(node.attrib['holdingPeriodDateTime']),
+        LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
+    )
+    return trade
+
+
+
+def extractCashTransaction(node: etree.ElementBase) -> s.TransactionCash:
+    trade = s.TransactionCash(
+        ClientAccountID=node.attrib["accountId"],
+        CurrencyPrimary=node.attrib["currency"],
+        FXRateToBase=float(node.attrib["fxRateToBase"]),
+        AssetClass=s.AssetClass(node.attrib["assetCategory"]),
+        SubCategory=s.SubCategory(node.attrib["subCategory"]),
+        Symbol=node.attrib["symbol"],
+        Description=node.attrib["description"],
+        Conid=node.attrib["conid"],
+        SecurityID=node.attrib["securityID"],
+        SecurityIDType=s.SecurityIDType(node.attrib["securityIDType"]),
+        CUSIP=node.attrib["cusip"],
+        ISIN=node.attrib["isin"],
+        FIGI=node.attrib["figi"],
+        ListingExchange=node.attrib["listingExchange"],
+        DateTime=safeDateParse(str(node.attrib["dateTime"])),
+        SettleDate=safeDateParse(str(node.attrib["settleDate"])),
+        Amount=float(node.attrib["amount"]),
+        Type=s.CashTransactionType(node.attrib["type"]),
+        Code=node.attrib["code"],
+        TransactionID=node.attrib["transactionID"],
+        ReportDate=safeDateParse(str(node.attrib["reportDate"])),
+        ActionID=node.attrib["actionID"]
+    )
+    return trade
+
+
+
+
+def extractFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
+    # cashTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.CASH.value))
+    # cashTradeNodes = cashTradesFinder(root)
     cashTransactionsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/CashTransactions/*")
     cashTransactionNodes = cashTransactionsFinder(root)
 
-    def xmlNodeToCashTransaction(node: etree.ElementBase):
-        return s.CashTransaction(
-            ClientAccountID=node.attrib["accountId"],
-            AccountAlias=node.attrib["acctAlias"],
-            Model=s.Model[node.attrib["model"]] if node.attrib["model"] != "" else None,
-            CurrencyPrimary=node.attrib["currency"],
-            FXRateToBase=float(node.attrib["fxRateToBase"]),
-            AssetClass=s.AssetClass(node.attrib["assetCategory"]),
-            SubCategory=s.SubCategory(node.attrib["subCategory"]),
-            Symbol=node.attrib["symbol"],
-            Description=node.attrib["description"],
-            Conid=node.attrib["conid"],
-            SecurityID=node.attrib["securityID"],
-            SecurityIDType=s.SecurityIDType(node.attrib["securityIDType"]),
-            CUSIP=node.attrib["cusip"],
-            ISIN=node.attrib["isin"],
-            FIGI=node.attrib["figi"],
-            ListingExchange=node.attrib["listingExchange"],
-            UnderlyingConid=node.attrib["underlyingConid"],
-            UnderlyingSymbol=node.attrib["underlyingSymbol"],
-            UnderlyingSecurityID=node.attrib["underlyingSecurityID"],
-            UnderlyingListingExchange=node.attrib["underlyingListingExchange"],
-            Issuer=node.attrib["issuer"],
-            IssuerCountryCode=node.attrib["issuerCountryCode"],
-            Multiplier=float(node.attrib["multiplier"]),
-            Strike=node.attrib["strike"],
-            Expiry=None,
-            PutOrCall=node.attrib["putCall"],
-            PrincipalAdjustFactor=None,
-            DateTime=safeDateParse(str(node.attrib["dateTime"])),
-            SettleDate=safeDateParse(str(node.attrib["settleDate"])),
-            Amount=float(node.attrib["amount"]),
-            Type=s.CashTransactionType(node.attrib["type"]),
-            TradeID=node.attrib["settleDate"],
-            Code=node.attrib["code"],
-            TransactionID=node.attrib["transactionID"],
-            ReportDate=safeDateParse(str(node.attrib["reportDate"])),
-            ClientReference=node.attrib["clientReference"],
-            ActionID=node.attrib["actionID"],
-            LevelOfDetail=s.LevelOfDetail(node.attrib["levelOfDetail"]),
-            SerialNumber=node.attrib["serialNumber"],
-            DeliveryType=node.attrib["deliveryType"],
-            CommodityType=node.attrib["commodityType"],
-            Fineness=float(node.attrib["fineness"]),
-            Weight=float(node.attrib["weight"])
-        )
+    optionTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.OPTION.value))
+    optionLotsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Lot[@assetCategory='{}']".format(s.AssetClass.OPTION.value))
+    optionTradeNodes = optionTradesFinder(root)
+    optionLotNodes = optionLotsFinder(root)
 
-    return list(map(lambda node: xmlNodeToCashTransaction(node), cashTransactionNodes))
-
-def mergeCashTransactions(transactions: list[list[s.CashTransaction]]) -> list[s.CashTransaction]:
-        return deduplicateList(transactions)
-
-
-
-
-def extractTradesFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
     stockTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.STOCK.value))
-    cashTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.CASH.value))
-    closeTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Lot")
+    stockLotsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Lot[@assetCategory='{}']".format(s.AssetClass.STOCK.value))
+    stockTradeNodes = stockTradesFinder(root)
+    stockLotNodes = stockLotsFinder(root)
 
-    openStockTradeNodes = stockTradesFinder(root)
-    closeTradeNodes = closeTradesFinder(root)
-    cashTradeNodes = cashTradesFinder(root)
 
-    def xmlNodeToStockTrade(node: etree.ElementBase) -> s.TradeStock:
-        notesAndCodes = str(node.attrib['notes']).split(";")
-        notesAndCodesParsed = list(map(lambda code: s.Codes(code), notesAndCodes)) if node.attrib['notes'] != "" else []
+    # cashTrades = list(map(extractCashTrade, cashTradeNodes))
+    cashTransactions = list(map(extractCashTransaction, cashTransactionNodes))
 
-        return s.TradeStock(
-                ClientAccountID = node.attrib['accountId'],
-                AccountAlias = valueOrNone(node.attrib['acctAlias']),
-                Model = s.Model(node.attrib['model']) if node.attrib['model'] != "" else None,
-                CurrencyPrimary = node.attrib['currency'],
-                FXRateToBase = float(node.attrib['fxRateToBase']),
-                AssetClass = s.AssetClass(node.attrib['assetCategory']),
-                SubCategory = s.SubCategory(node.attrib['subCategory']),
-                Symbol = node.attrib['symbol'],
-                Description = node.attrib['description'],
-                Conid = node.attrib['conid'],
-                SecurityID = node.attrib['securityID'],
-                SecurityIDType = s.SecurityIDType(node.attrib['securityIDType']),
-                CUSIP = valueOrNone(node.attrib['cusip']),
-                ISIN = node.attrib['isin'],
-                FIGI = node.attrib['figi'],
-                ListingExchange = node.attrib['listingExchange'],
-                UnderlyingConid = valueOrNone(node.attrib['underlyingConid']),
-                UnderlyingSymbol = valueOrNone(node.attrib['underlyingSymbol']),
-                UnderlyingSecurityID = valueOrNone(node.attrib['underlyingSecurityID']),
-                UnderlyingListingExchange = valueOrNone(node.attrib['underlyingListingExchange']),
-                Issuer = valueOrNone(node.attrib['issuer']),
-                IssuerCountryCode = valueOrNone(node.attrib['issuerCountryCode']),
-                TradeID = node.attrib['tradeID'],
-                Multiplier = float(node.attrib['multiplier']),
-                RelatedTradeID = node.attrib['relatedTradeID'],
-                Strike = float(node.attrib['strike']) if node.attrib['strike'] != "" else None,
-                ReportDate = safeDateParse(node.attrib['reportDate']),
-                Expiry = safeDateParse(node.attrib['expiry']) if node.attrib['expiry'] != "" else None,
-                DateTime = safeDateParse(node.attrib['dateTime']),
-                PutOrCall = valueOrNone(node.attrib['putCall']),
-                TradeDate = safeDateParse(node.attrib['tradeDate']),
-                PrincipalAdjustFactor = floatValueOrNone(node.attrib['principalAdjustFactor']),
-                SettleDateTarget = safeDateParse(node.attrib['settleDateTarget']),
-                TransactionType = s.TransactionType(node.attrib['transactionType']),
-                Exchange = valueOrNone(node.attrib['exchange']),
-                Quantity = float(node.attrib['quantity']),
-                TradePrice = float(node.attrib['tradePrice']),
-                TradeMoney = float(node.attrib['tradeMoney']),
-                Proceeds = float(node.attrib['proceeds']),
-                Taxes = float(node.attrib['taxes']),
-                IBCommission = float(node.attrib['ibCommission']),
-                IBCommissionCurrency = node.attrib['ibCommissionCurrency'],
-                NetCash = float(node.attrib['netCash']),
-                NetCashInBase = float(node.attrib['netCashInBase']),
-                ClosePrice = float(node.attrib['closePrice']),
-                OpenCloseIndicator = s.OpenCloseIndicator(node.attrib['openCloseIndicator']),
-                NotesAndCodes = notesAndCodesParsed,
-                CostBasis = float(node.attrib['cost']),
-                FifoProfitAndLossRealized = float(node.attrib['fifoPnlRealized']),
-                CapitalGainsProfitAndLoss = float(node.attrib['capitalGainsPnl']),
-                ForexProfitAndLoss = float(node.attrib['fxPnl']),
-                MarketToMarketProfitAndLoss = float(node.attrib['mtmPnl']),
-                OrigTradePrice = float(node.attrib['origTradePrice']),
-                OrigTradeDate = dateValueOrNone(node.attrib['origTradeDate']),
-                OrigTradeID = valueOrNone(node.attrib['origTradeID']),
-                OrigOrderID = node.attrib['origOrderID'],
-                OrigTransactionID = node.attrib['origTransactionID'],
-                BuyOrSell = s.BuyOrSell(node.attrib['buySell']),
-                ClearingFirmID = valueOrNone(node.attrib['clearingFirmID']),
-                IBOrderID = node.attrib['ibOrderID'],
-                TransactionID = node.attrib['transactionID'],
-                IBExecID = node.attrib['ibExecID'],
-                RelatedTransactionID = valueOrNone(node.attrib['relatedTransactionID']),
-                BrokerageOrderID = node.attrib['brokerageOrderID'],
-                OrderReference = valueOrNone(node.attrib['orderReference']),
-                VolatilityOrderLink = valueOrNone(node.attrib['volatilityOrderLink']),
-                ExchOrderID = node.attrib['exchOrderId'] if node.attrib['exchOrderId'] != "N/A" else None,
-                ExtExecID = node.attrib['extExecID'],
-                OrderTime = safeDateParse(node.attrib['orderTime']),
-                OpenDateTime = dateValueOrNone(node.attrib['openDateTime']),
-                HoldingPeriodDateTime = dateValueOrNone(node.attrib['holdingPeriodDateTime']),
-                WhenRealized = dateValueOrNone(node.attrib['whenRealized']),
-                WhenReopened = dateValueOrNone(node.attrib['whenReopened']),
-                LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
-                ChangeInPrice = float(node.attrib['changeInPrice']),
-                ChangeInQuantity = float(node.attrib['changeInQuantity']),
-                OrderType = s.OrderType(node.attrib['orderType']),
-                TraderID = valueOrNone(node.attrib['traderID']),
-                IsAPIOrder = str(node.attrib['traderID']).lower() == 'y',
-                AccruedInterest = float(node.attrib['accruedInt']),
-                SerialNumber = valueOrNone(node.attrib['serialNumber']),
-                DeliveryType = valueOrNone(node.attrib['deliveryType']),
-                CommodityType = valueOrNone(node.attrib['commodityType']),
-                Fineness = float(node.attrib['fineness']),
-                Weight = float(node.attrib['weight'])
-          )
+    stockTrades = list(map(extractStockTrade, stockTradeNodes))
+    stockLots = list(map(extractStockLot, stockLotNodes))
 
-    def xmlNodeToLotTrade(node: etree.ElementBase) -> s.TradeLot:
-        notesAndCodes = str(node.attrib['notes']).split(";")
-        notesAndCodesParsed = list(map(lambda code: s.Codes(code), notesAndCodes))  if node.attrib['notes'] != "" else []
+    optionTrades = list(map(extractOptionTrade, optionTradeNodes))
+    optionLots = list(map(extractOptionLot, optionLotNodes))
 
-        createdNode = s.TradeLot(
-                ClientAccountID = node.attrib['accountId'],
-                AccountAlias = valueOrNone(node.attrib['acctAlias']),
-                Model = s.Model(node.attrib['model']) if node.attrib['model'] != "" else None,
-                CurrencyPrimary = node.attrib['currency'],
-                FXRateToBase = float(node.attrib['fxRateToBase']),
-                AssetClass = s.AssetClass(node.attrib['assetCategory']),
-                SubCategory = s.SubCategory(node.attrib['subCategory']),
-                Symbol = node.attrib['symbol'],
-                Description = node.attrib['description'],
-                Conid = node.attrib['conid'],
-                SecurityID = node.attrib['securityID'],
-                SecurityIDType = s.SecurityIDType(node.attrib['securityIDType']),
-                CUSIP = valueOrNone(node.attrib['cusip']),
-                ISIN = node.attrib['isin'],
-                FIGI = node.attrib['figi'],
-                ListingExchange = node.attrib['listingExchange'],
-                UnderlyingConid = valueOrNone(node.attrib['underlyingConid']),
-                UnderlyingSymbol = valueOrNone(node.attrib['underlyingSymbol']),
-                UnderlyingSecurityID = valueOrNone(node.attrib['underlyingSecurityID']),
-                UnderlyingListingExchange = valueOrNone(node.attrib['underlyingListingExchange']),
-                Issuer = valueOrNone(node.attrib['issuer']),
-                IssuerCountryCode = valueOrNone(node.attrib['issuerCountryCode']),
-                TradeID = valueOrNone(node.attrib['tradeID']),
-                Multiplier = float(node.attrib['multiplier']),
-                RelatedTradeID = node.attrib['relatedTradeID'],
-                Strike = floatValueOrNone(node.attrib['strike']),
-                ReportDate = safeDateParse(node.attrib['reportDate']),
-                Expiry = dateValueOrNone(node.attrib['expiry']),
-                DateTime = safeDateParse(node.attrib['dateTime']),
-                PutOrCall = valueOrNone(node.attrib['putCall']),
-                TradeDate = safeDateParse(node.attrib['tradeDate']),
-                PrincipalAdjustFactor = floatValueOrNone(node.attrib['principalAdjustFactor']),
-                SettleDateTarget = dateValueOrNone(node.attrib['settleDateTarget']),
-                TransactionType = s.TransactionType(node.attrib['transactionType']) if node.attrib['transactionType'] != "" else None,
-                Exchange = valueOrNone(node.attrib['exchange']),
-                Quantity = float(node.attrib['quantity']),
-                TradePrice = float(node.attrib['tradePrice']),
-                TradeMoney = floatValueOrNone(node.attrib['tradeMoney']),
-                Proceeds = floatValueOrNone(node.attrib['proceeds']),
-                Taxes = floatValueOrNone(node.attrib['taxes']),
-                IBCommission = floatValueOrNone(node.attrib['ibCommission']),
-                IBCommissionCurrency = valueOrNone(node.attrib['ibCommissionCurrency']),
-                NetCash = floatValueOrNone(node.attrib['netCash']),
-                NetCashInBase = floatValueOrNone(node.attrib['netCashInBase']),
-                ClosePrice = floatValueOrNone(node.attrib['closePrice']),
-                OpenCloseIndicator = s.OpenCloseIndicator(node.attrib['openCloseIndicator']),
-                NotesAndCodes = notesAndCodesParsed,
-                CostBasis = float(node.attrib['cost']),
-                FifoProfitAndLossRealized = float(node.attrib['fifoPnlRealized']),
-                CapitalGainsProfitAndLoss = float(node.attrib['capitalGainsPnl']),
-                ForexProfitAndLoss = float(node.attrib['fxPnl']),
-                MarketToMarketProfitAndLoss = floatValueOrNone(node.attrib['mtmPnl']),
-                OrigTradePrice = floatValueOrNone(node.attrib['origTradePrice']),
-                OrigTradeDate = dateValueOrNone(node.attrib['origTradeDate']),
-                OrigTradeID = valueOrNone(node.attrib['origTradeID']),
-                OrigOrderID = valueOrNone(node.attrib['origOrderID']),
-                OrigTransactionID = valueOrNone(node.attrib['origTransactionID']),
-                BuyOrSell = s.BuyOrSell(node.attrib['buySell']),
-                ClearingFirmID = valueOrNone(node.attrib['clearingFirmID']),
-                IBOrderID = valueOrNone(node.attrib['ibOrderID']),
-                TransactionID = node.attrib['transactionID'],
-                IBExecID = valueOrNone(node.attrib['ibExecID']),
-                RelatedTransactionID = valueOrNone(node.attrib['relatedTransactionID']),
-                BrokerageOrderID = valueOrNone(node.attrib['brokerageOrderID']),
-                OrderReference = valueOrNone(node.attrib['orderReference']),
-                VolatilityOrderLink = valueOrNone(node.attrib['volatilityOrderLink']),
-                ExchOrderID = node.attrib['exchOrderId'] if node.attrib['exchOrderId'] != "N/A" else None,
-                ExtExecID = valueOrNone(node.attrib['extExecID']),
-                OrderTime = dateValueOrNone(node.attrib['orderTime']),
-                OpenDateTime = safeDateParse(node.attrib['openDateTime']),
-                HoldingPeriodDateTime = safeDateParse(node.attrib['holdingPeriodDateTime']),
-                WhenRealized = dateValueOrNone(node.attrib['whenRealized']),
-                WhenReopened = dateValueOrNone(node.attrib['whenReopened']),
-                LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
-                ChangeInPrice = floatValueOrNone(node.attrib['changeInPrice']),
-                ChangeInQuantity = floatValueOrNone(node.attrib['changeInQuantity']),
-                OrderType = s.OrderType(node.attrib['orderType']) if node.attrib['orderType'] != "" else None,
-                TraderID = valueOrNone(node.attrib['traderID']),
-                IsAPIOrder = str(node.attrib['traderID']).lower() == 'y' if node.attrib['traderID'] != "" else None,
-                AccruedInterest = floatValueOrNone(node.attrib['accruedInt']),
-                SerialNumber = valueOrNone(node.attrib['serialNumber']),
-                DeliveryType = valueOrNone(node.attrib['deliveryType']),
-                CommodityType = valueOrNone(node.attrib['commodityType']),
-                Fineness = float(node.attrib['fineness']),
-                Weight = float(node.attrib['weight'])
-          )
-
-        return createdNode
     
-    
-    def xmlNodeToCashTrade(node: etree.ElementBase) -> s.TradeCash:
-        notesAndCodes = str(node.attrib['notes']).split(";")
-        notesAndCodesParsed = list(map(lambda code: s.Codes(code), notesAndCodes))  if node.attrib['notes'] != "" else []
-
-        return s.TradeCash(
-             ClientAccountID = node.attrib['accountId'],
-                AccountAlias = valueOrNone(node.attrib['acctAlias']),
-                Model = s.Model(node.attrib['model']) if node.attrib['model'] != "" else None,
-                CurrencyPrimary = node.attrib['currency'],
-                FXRateToBase = float(node.attrib['fxRateToBase']),
-                AssetClass = s.AssetClass(node.attrib['assetCategory']),
-                SubCategory = s.SubCategory(node.attrib['subCategory']),
-                Symbol = node.attrib['symbol'],
-                Description = node.attrib['description'],
-                Conid = node.attrib['conid'],
-                SecurityID = None,
-                SecurityIDType = None,
-                CUSIP = None,
-                ISIN = None,
-                FIGI = None,
-                ListingExchange = None,
-                UnderlyingConid = None,
-                UnderlyingSymbol = None,
-                UnderlyingSecurityID = None,
-                UnderlyingListingExchange = None,
-                Issuer = None,
-                IssuerCountryCode = None,
-                TradeID = node.attrib['tradeID'],
-                Multiplier = float(node.attrib['multiplier']),
-                RelatedTradeID = None,
-                Strike = float(node.attrib['strike']) if node.attrib['strike'] != "" else None,
-                ReportDate = safeDateParse(node.attrib['reportDate']),
-                Expiry = safeDateParse(node.attrib['expiry']) if node.attrib['expiry'] != "" else None,
-                DateTime = safeDateParse(node.attrib['dateTime']),
-                PutOrCall = valueOrNone(node.attrib['putCall']),
-                TradeDate = safeDateParse(node.attrib['tradeDate']),
-                PrincipalAdjustFactor = floatValueOrNone(node.attrib['principalAdjustFactor']),
-                SettleDateTarget = safeDateParse(node.attrib['settleDateTarget']),
-                TransactionType = s.TransactionType(node.attrib['transactionType']),
-                Exchange = node.attrib['exchange'],
-                Quantity = float(node.attrib['quantity']),
-                TradePrice = float(node.attrib['tradePrice']),
-                TradeMoney = float(node.attrib['tradeMoney']),
-                Proceeds = float(node.attrib['proceeds']),
-                Taxes = float(node.attrib['taxes']),
-                IBCommission = float(node.attrib['ibCommission']),
-                IBCommissionCurrency = node.attrib['ibCommissionCurrency'],
-                NetCash = float(node.attrib['netCash']),
-                NetCashInBase = float(node.attrib['netCashInBase']),
-                ClosePrice = float(node.attrib['closePrice']),
-                OpenCloseIndicator = s.OpenCloseIndicator(node.attrib['openCloseIndicator']),
-                NotesAndCodes = notesAndCodesParsed,
-                CostBasis = float(node.attrib['cost']),
-                FifoProfitAndLossRealized = float(node.attrib['fifoPnlRealized']),
-                CapitalGainsProfitAndLoss = float(node.attrib['capitalGainsPnl']),
-                ForexProfitAndLoss = float(node.attrib['fxPnl']),
-                MarketToMarketProfitAndLoss = float(node.attrib['mtmPnl']),
-                OrigTradePrice = None,
-                OrigTradeDate = None,
-                OrigTradeID = None,
-                OrigOrderID = None,
-                OrigTransactionID = None,
-                BuyOrSell = s.BuyOrSell(node.attrib['buySell']),
-                ClearingFirmID = valueOrNone(node.attrib['clearingFirmID']),
-                IBOrderID = node.attrib['ibOrderID'],
-                TransactionID = node.attrib['transactionID'],
-                IBExecID = node.attrib['ibExecID'],
-                RelatedTransactionID = valueOrNone(node.attrib['relatedTransactionID']),
-                BrokerageOrderID = node.attrib['brokerageOrderID'],
-                OrderReference = valueOrNone(node.attrib['orderReference']),
-                VolatilityOrderLink = valueOrNone(node.attrib['volatilityOrderLink']),
-                ExchOrderID = node.attrib['exchOrderId'] if node.attrib['exchOrderId'] != "N/A" else None,
-                ExtExecID = node.attrib['extExecID'],
-                OrderTime = safeDateParse(node.attrib['orderTime']),
-                OpenDateTime = dateValueOrNone(node.attrib['openDateTime']),
-                HoldingPeriodDateTime = dateValueOrNone(node.attrib['holdingPeriodDateTime']),
-                WhenRealized = dateValueOrNone(node.attrib['whenRealized']),
-                WhenReopened = dateValueOrNone(node.attrib['whenReopened']),
-                LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
-                ChangeInPrice = float(node.attrib['changeInPrice']),
-                ChangeInQuantity = float(node.attrib['changeInQuantity']),
-                OrderType = s.OrderType(node.attrib['orderType']),
-                TraderID = valueOrNone(node.attrib['traderID']),
-                IsAPIOrder = str(node.attrib['traderID']).lower() == 'y',
-                AccruedInterest = float(node.attrib['accruedInt']),
-                SerialNumber = valueOrNone(node.attrib['serialNumber']),
-                DeliveryType = valueOrNone(node.attrib['deliveryType']),
-                CommodityType = valueOrNone(node.attrib['commodityType']),
-                Fineness = float(node.attrib['fineness']),
-                Weight = float(node.attrib['weight'])
-        )
-
-
-
-    stockTrades = list(map(xmlNodeToStockTrade, openStockTradeNodes))
-    closeTrades = list(map(xmlNodeToLotTrade, closeTradeNodes))
-    cashTrades = list(map(xmlNodeToCashTrade, cashTradeNodes))
 
     return s.SegmentedTrades(
-         stockTrades = stockTrades,
-         lots = closeTrades,
-         cashTrades = cashTrades
+        # cashTrades = cashTrades,
+        cashTransactions = cashTransactions,
+        stockTrades = stockTrades,
+        stockLots = stockLots,
+        derivativeTrades = optionTrades,
+        derivativeLots = optionLots,
     )
 
 
 
 def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
     stockTrades = list(map(lambda trade: trade.stockTrades, trades))
-    cashTrades = list(map(lambda trade: trade.cashTrades, trades))
-    lotTrades = list(map(lambda trade: trade.lots, trades))
+    optionTrades = list(map(lambda trade: trade.derivativeTrades, trades))
+    # cashTrades = list(map(lambda trade: trade.cashTrades, trades))
+    cashTransactions = list(map(lambda trade: trade.cashTransactions, trades))
+
+    stockLots = list(map(lambda trade: trade.stockLots, trades))
+    optionLots = list(map(lambda trade: trade.derivativeLots, trades))
 
     stockTrades = deduplicateList(stockTrades)
-    cashTrades = deduplicateList(cashTrades)
+    # cashTrades = deduplicateList(cashTrades)
+    optionTrades = deduplicateList(optionTrades)
+    cashTransactions = deduplicateList(cashTransactions)
 
-    lotTrades = [x for xs in lotTrades for x in xs]   # lots cannot be deduplicated, as there is no unique identifer
+    optionLots = [x for xs in optionLots for x in xs]   # lots cannot be deduplicated, as there is no unique identifer
+    stockLots = [x for xs in stockLots for x in xs]   # lots cannot be deduplicated, as there is no unique identifer
 
     return s.SegmentedTrades(
-         stockTrades=stockTrades,
-         cashTrades=cashTrades,
-         lots=lotTrades
+        # cashTrades = cashTrades,
+        cashTransactions = cashTransactions,
+        stockTrades = stockTrades,
+        stockLots = stockLots,
+        derivativeTrades = optionTrades,
+        derivativeLots = optionLots,
     )

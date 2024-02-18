@@ -450,6 +450,8 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
 
         return envelope
 
+
+
     def generateDataFrameReport(self, data: list[gf.GenericTradeReportItem]) -> pd.DataFrame:
         convertedTrades = self.convertTradesToKdvpItems(data)
 
@@ -477,3 +479,205 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
         combinedData = pd.concat(flattenedData)
 
         return combinedData
+    
+
+
+
+
+class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
+    SECURITY_MAPPING : dict[gf.GenericDerivativeReportAssetClassType, ss.EDavkiDerivativeSecurityType] = {
+        gf.GenericDerivativeReportAssetClassType.OPTION: ss.EDavkiDerivativeSecurityType.OPTION,
+        gf.GenericDerivativeReportAssetClassType.FUTURES_CONTRACT: ss.EDavkiDerivativeSecurityType.FUTURES_CONTRACT,
+        gf.GenericDerivativeReportAssetClassType.CONTRACT_FOR_DIFFERENCE: ss.EDavkiDerivativeSecurityType.CONTRACT_FOR_DIFFERENCE,
+        gf.GenericDerivativeReportAssetClassType.CERTIFICATE: ss.EDavkiDerivativeSecurityType.CERTIFICATE,
+        # gf.GenericDerivativeReportAssetClassType.OTHER: ss.EDavkiDerivativeReportItemType.DERIVATIVE_SHORT,
+    }
+
+    GAIN_MAPPINGS : dict[gf.GenericDerivativeReportItemGainType, ss.EDavkiDerivativeReportGainType] = {
+        gf.GenericDerivativeReportItemGainType.BOUGHT: ss.EDavkiDerivativeReportGainType.BOUGHT,
+        gf.GenericDerivativeReportItemGainType.CAPITAL_INVESTMENT: ss.EDavkiDerivativeReportGainType.CAPITAL_INVESTMENT,
+        gf.GenericDerivativeReportItemGainType.CAPITAL_RAISE: ss.EDavkiDerivativeReportGainType.CAPITAL_RAISE,
+        gf.GenericDerivativeReportItemGainType.CAPITAL_ASSET: ss.EDavkiDerivativeReportGainType.CAPITAL_ASSET,
+        gf.GenericDerivativeReportItemGainType.CAPITALIZATION_CHANGE: ss.EDavkiDerivativeReportGainType.CAPITALIZATION_CHANGE,
+        gf.GenericDerivativeReportItemGainType.INHERITENCE: ss.EDavkiDerivativeReportGainType.INHERITENCE,
+        gf.GenericDerivativeReportItemGainType.GIFT: ss.EDavkiDerivativeReportGainType.GIFT,
+        gf.GenericDerivativeReportItemGainType.OTHER: ss.EDavkiDerivativeReportGainType.OTHER,
+    }
+
+    documentType: EDavkiDocumentWorkflowType = EDavkiDocumentWorkflowType.ORIGINAL
+
+
+    def createReportEnvelope(self):
+        currentYear = int(arrow.Arrow.now().format("YYYY"))
+        lastYear = currentYear - 1
+        reportEndPeriod = int(self.baseReportConfig.toDate.shift(days = -1).format("YYYY"))
+        self.documentType = EDavkiDocumentWorkflowType.ORIGINAL
+        if reportEndPeriod < lastYear:
+            self.documentType = EDavkiDocumentWorkflowType.SELF_REPORT
+
+
+        return EDavkiReportWrapper.createReportEnvelope(self, self.documentType)  # type: ignore
+    
+
+
+
+    def convertTradesToIfiItems(self, data: list[gf.GenericDerivativeReportItem]) -> list[ss.EDavkiGenericDerivativeReportItem]:
+        converted: list[ss.EDavkiGenericDerivativeReportItem] = list()
+
+        ISINSegmented: dict[str, list[gf.GenericDerivativeReportItem]] = {}
+        for key, valuesiter in groupby(data, key=lambda item: item.ISIN):
+            ISINSegmented[key] = list(valuesiter)
+
+        for ISIN, entries in ISINSegmented.items():
+
+            securitySegmented: dict[gf.GenericDerivativeReportAssetClassType, list[gf.GenericDerivativeReportItem]] = {}
+            for key, valuesiter in groupby(entries, key=lambda item: item.AssetClass):
+                securitySegmented[key] = list(valuesiter)
+
+            for securityType, securityLines in securitySegmented.items():
+
+                for lots in securityLines:
+                    def convertBuy(line: gf.GenericDerivativeReportItemSecurityLineBought) -> ss.EDavkiDerivativeReportSecurityLineGenericEventBought:
+                        return ss.EDavkiDerivativeReportSecurityLineGenericEventBought(
+                            BoughtOn = line.AcquiredDate,
+                            GainType = self.GAIN_MAPPINGS[line.AcquiredHow],
+                            Quantity = line.NumberOfUnits,
+                            PricePerUnit = line.AmountPerUnit,
+                            TotalPrice = line.TotalAmountPaid,
+                            Leveraged = False
+                        )
+
+                    def convertSell(line: gf.GenericDerivativeReportItemSecurityLineSold) -> ss.EDavkiDerivativeReportSecurityLineGenericEventSold:
+                        return ss.EDavkiDerivativeReportSecurityLineGenericEventSold(
+                            SoldOn = line.SoldDate,
+                            Quantity = line.NumberOfUnitsSold,
+                            TotalPrice = line.TotalAmountSoldFor,
+                            PricePerUnit = line.AmountPerUnit,
+                            Leveraged = False
+                        )
+                    
+
+                    periodStart = self.baseReportConfig.fromDate
+                    periodEnd = self.baseReportConfig.toDate
+
+                    buyLines: list[gf.GenericDerivativeReportItemSecurityLineBought] = list(filter(lambda line: isinstance(line, gf.GenericDerivativeReportItemSecurityLineBought), lots.Lines)) # type: ignore
+                    sellLines: list[gf.GenericDerivativeReportItemSecurityLineSold] = list(filter(lambda line: isinstance(line, gf.GenericDerivativeReportItemSecurityLineSold), lots.Lines)) # type: ignore
+
+                    buyLines = list(filter(lambda line: line.AcquiredDate >= periodStart and line.AcquiredDate < periodEnd, buyLines))
+                    sellLines = list(filter(lambda line: line.SoldDate >= periodStart and line.SoldDate < periodEnd, sellLines))
+
+                    buys = list(map(convertBuy, buyLines)) # type: ignore
+                    sells = list(map(convertSell, sellLines)) # type: ignore
+
+                    buysAndSells : list[ss.EDavkiDerivativeReportSecurityLineGenericEventBought | ss.EDavkiDerivativeReportSecurityLineGenericEventSold] = buys + sells
+
+
+                    ForeignTaxPaid = sum(map(lambda entry: entry.ForeignTax or 0, entries))
+                    HasForeignTax = True
+                    if ForeignTaxPaid <= 0:
+                        ForeignTaxPaid = None
+                        HasForeignTax = False
+                    
+                    ISINEntry = ss.EDavkiGenericDerivativeReportItem(
+                        InventoryListType = self.SECURITY_MAPPING[securityType],
+                        ItemType = ss.EDavkiDerivativeReportItemType.DERIVATIVE,    # TODO: Actually check this for correct type
+                        Code = None,
+                        ISIN = ISIN,
+                        Name = None,
+                        HasForeignTax = HasForeignTax,
+                        ForeignTax = ForeignTaxPaid,
+                        FTCountryID = None,
+                        FTCountryName = None,
+                        Items = buysAndSells
+                    )
+
+                    converted.append(ISINEntry)
+
+
+
+        return converted
+
+
+
+    def generateDataFrameReport(self, data: list[gf.GenericDerivativeReportItem]) -> pd.DataFrame:
+        convertedTrades = self.convertTradesToIfiItems(data)
+
+
+        def getLinesFromData(entry: ss.EDavkiGenericDerivativeReportItem) -> pd.DataFrame:
+            
+            lines = pd.DataFrame(entry.Items)
+            lines['ISIN'] = entry.ISIN
+            lines['Ticker'] = entry.Code
+            lines['HasForeignTax'] = entry.HasForeignTax
+            lines['ForeignTax'] = entry.ForeignTax
+            lines['ForeignTaxCountryID'] = entry.FTCountryID
+            lines['ForeignTaxCountryName'] = entry.FTCountryName
+
+            return lines
+
+        mappedData = list(map(getLinesFromData, convertedTrades))
+
+        combinedData = pd.concat(mappedData)
+
+        return combinedData
+    
+
+
+
+    def generateXmlReport(self, data: list[gf.GenericDerivativeReportItem], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
+        convertedTrades = self.convertTradesToIfiItems(data)
+
+        nsmap = templateEnvelope.nsmap
+        nsmap[None] = "http://edavki.durs.si/Documents/Schemas/D_IFI_4.xsd"
+        envelope = etree.Element(templateEnvelope.tag, attrib=templateEnvelope.attrib, nsmap=nsmap)
+        envelope[:] = templateEnvelope[:]
+
+        body = etree.SubElement(envelope, "body")
+        etree.SubElement(body, etree.QName(nsmap['edp'], 'bodyContent'))
+
+        D_IFI = etree.SubElement(body, "D_IFI")
+        etree.SubElement(D_IFI, "PeriodStart").text = self.baseReportConfig.fromDate.format("YYYY-MM-DD")
+        etree.SubElement(D_IFI, "PeriodEnd").text = self.baseReportConfig.toDate.shift(days=-1).format("YYYY-MM-DD")
+        # etree.SubElement(KDVP, "CountryOfResidenceID").text = self.taxPayerInfo.countryID
+        # etree.SubElement(D_IFI, "TelephoneNumber").text = self.taxPayerInfo.PhoneNumber
+        # etree.SubElement(D_IFI, "Email").text = self.taxPayerInfo.email
+
+        for DIFI_item_entry in convertedTrades:
+            DIFI_ITEM = etree.SubElement(D_IFI, "TItem")
+
+            etree.SubElement(DIFI_ITEM, "TypeId").text = DIFI_item_entry.ItemType.value
+            etree.SubElement(DIFI_ITEM, "Type").text = DIFI_item_entry.InventoryListType.value
+            etree.SubElement(DIFI_ITEM, "ISIN").text = DIFI_item_entry.ISIN
+
+            etree.SubElement(DIFI_ITEM, "HasForeignTax").text = str(DIFI_item_entry.HasForeignTax).lower()
+            if DIFI_item_entry.ForeignTax is not None:
+                etree.SubElement(DIFI_ITEM, "ForeignTax").text = str(DIFI_item_entry.ForeignTax.__round__(8))
+            
+            if DIFI_item_entry.FTCountryID is not None:
+                etree.SubElement(DIFI_ITEM, "FTCountryID").text = DIFI_item_entry.FTCountryID
+            if DIFI_item_entry.FTCountryName is not None:
+                etree.SubElement(DIFI_ITEM, "FTCountryName").text = DIFI_item_entry.FTCountryName
+
+
+            if DIFI_item_entry.ItemType == ss.EDavkiDerivativeReportItemType.DERIVATIVE:
+
+                for entryLine in DIFI_item_entry.Items:
+                    entry = etree.SubElement(DIFI_ITEM, "TSubItem")
+                    
+                    if isinstance(entryLine, ss.EDavkiDerivativeReportSecurityLineGenericEventBought):
+                        purchase = etree.SubElement(entry, "Purchase")
+                        etree.SubElement(purchase, "F1").text = entryLine.BoughtOn.format('YYYY-MM-DD')
+                        etree.SubElement(purchase, "F2").text = entryLine.GainType.value
+                        etree.SubElement(purchase, "F3").text = str(entryLine.Quantity.__round__(8))
+                        etree.SubElement(purchase, "F4").text = str(entryLine.PricePerUnit.__round__(8))
+                        etree.SubElement(purchase, "F9").text = str(entryLine.Leveraged).lower()
+
+                    
+                    if isinstance(entryLine, ss.EDavkiDerivativeReportSecurityLineGenericEventSold):
+                        sale = etree.SubElement(entry, "Sale")
+                        etree.SubElement(sale, "F5").text = entryLine.SoldOn.format('YYYY-MM-DD')
+                        etree.SubElement(sale, "F6").text = str(entryLine.Quantity.__round__(8))
+                        etree.SubElement(sale, "F7").text = str(entryLine.PricePerUnit.__abs__().__round__(8))
+
+
+        return envelope
