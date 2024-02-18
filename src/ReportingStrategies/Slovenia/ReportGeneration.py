@@ -594,3 +594,26 @@ class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
 
         return converted
 
+
+
+    def generateDataFrameReport(self, data: list[gf.GenericDerivativeReportItem]) -> pd.DataFrame:
+        convertedTrades = self.convertTradesToIfiItems(data)
+
+
+        def getLinesFromData(entry: ss.EDavkiGenericDerivativeReportItem) -> pd.DataFrame:
+            
+            lines = pd.DataFrame(entry.Items)
+            lines['ISIN'] = entry.ISIN
+            lines['Ticker'] = entry.Code
+            lines['HasForeignTax'] = entry.HasForeignTax
+            lines['ForeignTax'] = entry.ForeignTax
+            lines['ForeignTaxCountryID'] = entry.FTCountryID
+            lines['ForeignTaxCountryName'] = entry.FTCountryName
+
+            return lines
+
+        mappedData = list(map(getLinesFromData, convertedTrades))
+
+        combinedData = pd.concat(mappedData)
+
+        return combinedData
