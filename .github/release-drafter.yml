@@ -3,6 +3,10 @@ template: |
 
   $CHANGES
 
+
+name-template: v$RESOLVED_VERSION
+tag-template: v$RESOLVED_VERSION
+
 version-resolver:
   major:
     labels:
