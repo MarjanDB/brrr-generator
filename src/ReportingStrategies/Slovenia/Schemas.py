@@ -152,6 +152,7 @@ class EDavkiDerivativeReportSecurityLineGenericEventSold:
 @dataclass
 class EDavkiGenericDerivativeReportItem:
     InventoryListType: EDavkiDerivativeSecurityType
+    ItemType: EDavkiDerivativeReportItemType
     Name: str | None
     Code: str | None
     ISIN: str
