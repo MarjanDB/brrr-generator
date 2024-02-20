@@ -1,4 +1,4 @@
-import src.ExportProvider.IBRK.Schemas as s
+import src.ExportProvider.IBKR.Schemas as s
 import src.ReportingStrategies.GenericFormats as gf
 from itertools import groupby
 import arrow
