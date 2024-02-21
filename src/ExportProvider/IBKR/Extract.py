@@ -1,5 +1,5 @@
 from lxml import etree
-import src.ExportProvider.IBRK.Schemas as s
+import src.ExportProvider.IBKR.Schemas as s
 import arrow
 from typing import Any
 
