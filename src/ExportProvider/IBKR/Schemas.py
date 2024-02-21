@@ -17,7 +17,6 @@ class SubCategory(str, Enum):
     ETF = "ETF" # Exchange Traded Fund -> https://www.investopedia.com/terms/e/etf.asp
 
 class OpenCloseIndicator(str, Enum):
-    NONE = ""   # CASH positions cannot be closed or opened
     OPEN = "O"
     CLOSE = "C"
 
@@ -25,7 +24,6 @@ class TransactionType(str, Enum):
     EXCHANGE_TRADE = "ExchTrade"
 
 class SecurityIDType(str, Enum):
-    NONE = "" # CASH
     ISIN = "ISIN"
 
 class BuyOrSell(str, Enum):
@@ -111,7 +109,6 @@ class LevelOfDetail(str, Enum):
     CLOSED_LOT = "CLOSED_LOT"
 
 class OrderType(str, Enum):
-    UNKNOWN = ""
     LIMIT = "LMT"
     MARKET = "MKT"
     MID_POINT = "MIDPX"
@@ -132,8 +129,6 @@ class TradeGeneric:
     """
         Generic class for copy paste when making new Trade/Lot Types
     """
-
-
     ClientAccountID: str
     AccountAlias: str | None
     Model: Model | None
