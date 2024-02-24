@@ -1,13 +1,18 @@
 from enum import Enum
 from dataclasses import dataclass
 from arrow import Arrow
+from typing import Generic, TypeVar
 
 class GenericAssetClass(str, Enum):
     STOCK = "STOCK"
     ROYALTY_TRUST = "ROYALTY_TRUST"
-    CASH = "CASH"
+    CASH_AND_CASH_EQUIVALENTS = "CASH_AND_CASH_EQUIVALENTS"
     OPTION = "OPTION"
+    BOND = "BOND"
 
+class GenericShortLong(str, Enum):
+    SHORT = "SHORT"
+    LONG = "LONG"
 
 # https://www.racunovodstvo.net/zakonodaja/zdoh/90-clen
 class GenericDividendType(str, Enum):
@@ -66,6 +71,45 @@ class GenericTradeReportItemGainType(str, Enum):
     GIFT = "GIFT"
     OTHER = "OTHER"
     RIGHT_TO_NEWLY_ISSUED_STOCK = "RIGHT_TO_NEWLY_ISSUED_STOCK" # guessing
+
+
+
+
+@dataclass
+class GenericTradeEvent:
+    ID: str
+    AssetClass: GenericAssetClass       # Trades can have to do with different Asset Classes (Stock, Options, ...)
+    Date: Arrow
+    Quantity: float
+    AmountPerQuantity: float
+    TotalAmount: float
+    TaxTotal: float
+    ShortLongType: GenericShortLong     # Some trades can be SHORTING, meaning you first sell and then buy back
+    Multiplier: float                   # for Leveraged trades
+
+
+GenericTaxLotAcquiredEvent = TypeVar("GenericTaxLotAcquiredEvent")
+GenericTaxLotSoldEvent = TypeVar("GenericTaxLotSoldEvent")
+
+@dataclass
+class GenericTaxLot(Generic[GenericTaxLotAcquiredEvent, GenericTaxLotSoldEvent]):
+    ID: str
+    Quantity: float
+    Acquired: GenericTaxLotAcquiredEvent
+    Sold: GenericTaxLotSoldEvent
+
+
+@dataclass
+class GenericTradeEventStockAcquired(GenericTradeEvent):
+    AcquiredReason: GenericTradeReportItemGainType
+    # Related: ??       # connect with corporate actions for better generation of reports
+
+
+@dataclass
+class GenericTradeEventStockSold(GenericTradeEvent):
+    HasTradesToUnderlyingRecently: bool         # Used for Wash Sale rules
+    # Related: ??       # connect with corporate actions for better generation of reports (mergers can lead to "sold" stocks)
+
 
 
 
