@@ -14,7 +14,9 @@ class TreatyType(str, Enum):
 class Country:
     name: str
     shortCode2: str
-    treaties: dict[TreatyType, str] # https://www.gov.si/drzavni-organi/ministrstva/ministrstvo-za-finance/o-ministrstvu/direktorat-za-sistem-davcnih-carinskih-in-drugih-javnih-prihodkov/seznam-veljavnih-konvencij-o-izogibanju-dvojnega-obdavcevanja-dohodka-in-premozenja/
+    treaties: dict[TreatyType, str] 
+    # https://www.gov.si/drzavni-organi/ministrstva/ministrstvo-za-finance/o-ministrstvu/direktorat-za-sistem-davcnih-carinskih-in-drugih-javnih-prihodkov/seznam-veljavnih-konvencij-o-izogibanju-dvojnega-obdavcevanja-dohodka-in-premozenja/
+    # https://www.fu.gov.si/davki_in_druge_dajatve/podrocja/mednarodno_obdavcenje/#c78
 
     def __init__(self, name: str, shortCode2: str, treaties: dict[TreatyType, str]):
         self.name = name
