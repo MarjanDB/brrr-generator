@@ -113,8 +113,10 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
     
     def segmentLotByLambda(lots: list[s.LotStock], callback: Callable[[s.LotStock], str]) -> dict[str, list[s.LotStock]]:
         segmented: dict[str, list[s.LotStock]] = {}
+        lots.sort(key=callback)
         for key, valuesiter in groupby(lots, key=callback):
-            segmented[key] = list(v for v in valuesiter)
+            groupValue = list(valuesiter)
+            segmented[key] = groupValue
         return segmented
 
     def segmentLotsByIsin(lots: list[s.LotStock]) -> dict[str, list[s.LotStock]]:
@@ -172,7 +174,7 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
 
             genericLot = gf.GenericTradeReportLotMatches(
                 TransactionID = lotTransactionId,
-                Quantitiy = lot.Quantity,
+                Quantity = lot.Quantity,
                 LotOriginalBuy = buyLine,
                 LotOriginalSell = sellLine
             )
@@ -191,7 +193,7 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
             buyTransaction = buyLine.TransactionID
             sellLine = lot.LotOriginalSell
             selltransaction = sellLine.TransactionID
-            lotResponsibleForQuantity = lot.Quantitiy
+            lotResponsibleForQuantity = lot.Quantity
 
             existingBuyEntry = buyCounts.get(buyTransaction)
             if existingBuyEntry is None:

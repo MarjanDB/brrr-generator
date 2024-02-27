@@ -350,11 +350,17 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                     periodStart = self.baseReportConfig.fromDate
                     periodEnd = self.baseReportConfig.toDate
 
+                    
+
                     buyLines: list[gf.GenericTradeReportItemSecurityLineBought] = list(filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineBought), lots.Lines)) # type: ignore
                     sellLines: list[gf.GenericTradeReportItemSecurityLineSold] = list(filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineSold), lots.Lines)) # type: ignore
 
                     # buyLines = list(filter(lambda line: line.AcquiredDate >= periodStart and line.AcquiredDate < periodEnd, buyLines))
                     sellLines = list(filter(lambda line: line.SoldDate >= periodStart and line.SoldDate < periodEnd, sellLines))
+
+                    if sellLines.__len__() == 0:
+                        continue
+
 
                     buys = list(map(convertBuy, buyLines)) # type: ignore
                     sells = list(map(convertSell, sellLines)) # type: ignore
