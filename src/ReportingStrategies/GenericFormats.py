@@ -94,7 +94,7 @@ class GenericTradeReportItemSecurityLineSold:
 @dataclass
 class GenericTradeReportLotMatches:
     TransactionID: str
-    Quantitiy: float
+    Quantity: float
     LotOriginalBuy: GenericTradeReportItemSecurityLineBought
     LotOriginalSell: GenericTradeReportItemSecurityLineSold
 
