@@ -3,28 +3,12 @@ import src.ReportingStrategies.GenericFormats as gf
 from itertools import groupby
 import arrow
 from dataclasses import dataclass
-from typing import Any, Callable, TypeVar, Generic
+from typing import Any, Callable, TypeVar, Generic, Sequence
 
 LINE_GENERIC_BUY = TypeVar('LINE_GENERIC_BUY')
 LINE_GENERIC_SELL = TypeVar('LINE_GENERIC_SELL')
 
 
-
-TRADE_REPORT_ITEM_TYPE_MAPPING = {
-    s.AssetClass.STOCK: gf.GenericTradeReportItemType.STOCK,
-    s.AssetClass.OPTION: gf.GenericTradeReportItemType.OPTION
-}
-
-
-
-ASSET_CLASS_MAPPING = {
-    s.AssetClass.STOCK: gf.GenericAssetClass.STOCK,
-    s.AssetClass.OPTION: gf.GenericAssetClass.OPTION
-}
-
-ASSET_CLASS_MAPPING_DERIVATIVE = {
-    s.AssetClass.OPTION: gf.GenericDerivativeReportAssetClassType.OPTION
-}
 
 @dataclass
 class SegmentedBuyEvent(Generic[LINE_GENERIC_BUY]):
@@ -534,3 +518,149 @@ def getGenericDerivativeTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> l
 
 
     return genericTradeReportItems
+
+
+
+
+
+
+
+def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequence[gf.GenericTradeEventStockAcquired | gf.GenericTradeEventStockSold]:
+
+    def convertAcquiredTradeToAcquiredEvent(trade: s.TradeStock) -> gf.GenericTradeEventStockAcquired:
+        converted = gf.GenericTradeEventStockAcquired(
+            ID = trade.TransactionID,
+            ISIN = trade.ISIN,
+            AssetClass = gf.GenericAssetClass.STOCK,
+            Date = trade.DateTime,
+            Quantity = trade.Quantity,
+            AmountPerQuantity = trade.TradePrice,
+            TotalAmount = trade.TradeMoney,
+            TaxTotal = trade.Taxes,
+            Multiplier = 1,
+            AcquiredReason = gf.GenericTradeReportItemGainType.BOUGHT,  # TODO: Determine reason for acquire
+        )
+        return converted
+
+    def convertSoldTradeToSoldEvent(trade: s.TradeStock) -> gf.GenericTradeEventStockSold:
+        converted = gf.GenericTradeEventStockSold(
+            ID = trade.TransactionID,
+            ISIN = trade.ISIN,
+            AssetClass = gf.GenericAssetClass.STOCK,
+            Date = trade.DateTime,
+            Quantity = trade.Quantity,
+            AmountPerQuantity = trade.TradePrice,
+            TotalAmount = trade.TradeMoney,
+            TaxTotal = trade.Taxes,
+            Multiplier = 1,
+            HasTradesToUnderlyingRecently = False
+        )
+        return converted
+
+    def convertTradeToTradeEvent(trade: s.TradeStock) -> gf.GenericTradeEventStockSold | gf.GenericTradeEventStockAcquired:
+        buyEvent = trade.Quantity > 0
+        if buyEvent:
+            return convertAcquiredTradeToAcquiredEvent(trade)
+        else:
+            return convertSoldTradeToSoldEvent(trade)
+
+    tradeEvents = list(map(convertTradeToTradeEvent, trades))
+    return tradeEvents
+
+def convertStockLotsToStockLotEvents(lots: Sequence[s.LotStock]) -> Sequence[gf.GenericTradeTaxLotStock]:
+    return []
+
+
+
+def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDerivative]) -> Sequence[gf.GenericTradeEventDerivativeAcquired | gf.GenericTradeEventDerivativeSold]:
+    
+    def convertAcquiredTradeToAcquiredEvent(trade: s.TradeDerivative) -> gf.GenericTradeEventDerivativeAcquired:
+        converted = gf.GenericTradeEventDerivativeAcquired(
+            ID = trade.TransactionID,
+            ISIN = trade.UnderlyingSecurityID,
+            AssetClass = gf.GenericAssetClass.OPTION,   # TODO: Could also be stock but leveraged (multiplier)
+            Date = trade.DateTime,
+            Quantity = trade.Quantity,
+            AmountPerQuantity = trade.TradePrice,
+            TotalAmount = trade.TradeMoney,
+            TaxTotal = trade.Taxes,
+            Multiplier = trade.Multiplier,
+            AcquiredReason = gf.GenericTradeReportItemGainType.BOUGHT,  # TODO: Determine reason for acquire
+        )
+        return converted
+
+    def convertSoldTradeToSoldEvent(trade: s.TradeDerivative) -> gf.GenericTradeEventDerivativeSold:
+        converted = gf.GenericTradeEventDerivativeSold(
+            ID = trade.TransactionID,
+            ISIN = trade.UnderlyingSecurityID,
+            AssetClass = gf.GenericAssetClass.OPTION,
+            Date = trade.DateTime,
+            Quantity = trade.Quantity,
+            AmountPerQuantity = trade.TradePrice,
+            TotalAmount = trade.TradeMoney,
+            TaxTotal = trade.Taxes,
+            Multiplier = trade.Multiplier,
+            HasTradesToUnderlyingRecently = False
+        )
+        return converted
+
+    def convertTradeToTradeEvent(trade: s.TradeDerivative) -> gf.GenericTradeEventDerivativeSold | gf.GenericTradeEventDerivativeAcquired:
+        buyEvent = trade.Quantity > 0
+        if buyEvent:
+            return convertAcquiredTradeToAcquiredEvent(trade)
+        else:
+            return convertSoldTradeToSoldEvent(trade)
+
+    tradeEvents = list(map(convertTradeToTradeEvent, trades))
+    return tradeEvents
+
+def convertDerivativeLotsToDerivativeLotEvents(lots: Sequence[s.LotDerivative]) -> Sequence[gf.GenericTradeTaxLotDerivative]:
+    return []
+
+
+
+
+
+def convertSegmentedTradesToGenericUnderlyingGroups(segmented: s.SegmentedTrades) -> Sequence[gf.GenericUnderlyingGrouping]:
+    stockTrades = segmented.stockTrades
+    stockLots = segmented.stockLots
+
+    derivativeTrades = segmented.derivativeTrades
+    derivativeLots = segmented.derivativeLots
+
+
+    stockTradeEvents = convertStockTradesToStockTradeEvents(stockTrades)
+    stockLotEvents = convertStockLotsToStockLotEvents(stockLots)
+
+
+    derivativeTradeEvents = convertDerivativeTradesToDerivativeTradeEvents(derivativeTrades)
+    derivativeLotEvents = convertDerivativeLotsToDerivativeLotEvents(derivativeLots)
+
+
+    def segmentTradeByIsin(trades: list[gf.GenericTradeEvent]) -> dict[str, Sequence[gf.GenericTradeEvent]]:
+        segmented: dict[str, Sequence[gf.GenericTradeEvent]] = {}
+        for key, valuesiter in groupby(trades, key=lambda trade: trade.ISIN):
+            segmented[key] = list(v for v in valuesiter)
+        return segmented
+
+    stocksSegmented = segmentTradeByIsin(stockTradeEvents) # type: ignore
+    derivativesSegmented = segmentTradeByIsin(derivativeTradeEvents) # type: ignore
+
+    allIsinsPresent = list(set(list(stocksSegmented.keys()) + list(derivativesSegmented.keys())))
+
+    generatedUnderlyingGroups : Sequence[gf.GenericUnderlyingGrouping] = list()
+    for isin in allIsinsPresent:
+        wrapper = gf.GenericUnderlyingGrouping(
+            ISIN = isin,
+            CountryOfOrigin = None,
+            UnderlyingCategory = gf.GenericCategory.REGULAR,
+            StockTrades = stocksSegmented.get(isin, []),    # type: ignore
+            StockTaxLots = [],
+            DerivativeTrades = derivativesSegmented.get(isin, []),  # type: ignore
+            DerivativeTaxLots = [],
+            Dividends = []
+        )
+        generatedUnderlyingGroups.append(wrapper)
+
+
+    return generatedUnderlyingGroups;

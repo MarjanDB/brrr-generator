@@ -5,10 +5,13 @@ from typing import Generic, TypeVar
 
 class GenericAssetClass(str, Enum):
     STOCK = "STOCK"
-    ROYALTY_TRUST = "ROYALTY_TRUST"
-    CASH_AND_CASH_EQUIVALENTS = "CASH_AND_CASH_EQUIVALENTS"
     OPTION = "OPTION"
+    CASH_AND_CASH_EQUIVALENTS = "CASH_AND_CASH_EQUIVALENTS"
     BOND = "BOND"
+
+class GenericCategory(str, Enum):
+    REGULAR = "REGULAR"
+    TRUST_FUND = "TRUST_FUND"
 
 class GenericShortLong(str, Enum):
     SHORT = "SHORT"
@@ -78,13 +81,13 @@ class GenericTradeReportItemGainType(str, Enum):
 @dataclass
 class GenericTradeEvent:
     ID: str
+    ISIN: str
     AssetClass: GenericAssetClass       # Trades can have to do with different Asset Classes (Stock, Options, ...)
     Date: Arrow
     Quantity: float
     AmountPerQuantity: float
     TotalAmount: float
     TaxTotal: float
-    ShortLongType: GenericShortLong     # Some trades can be SHORTING, meaning you first sell and then buy back
     Multiplier: float                   # for Leveraged trades
 
 
@@ -98,64 +101,52 @@ class GenericTaxLot(Generic[GenericTaxLotAcquiredEvent, GenericTaxLotSoldEvent])
     Acquired: GenericTaxLotAcquiredEvent
     Sold: GenericTaxLotSoldEvent
 
+    ShortLongType: GenericShortLong     # Some trades can be SHORTING, meaning you first sell and then buy back
+
 
 @dataclass
 class GenericTradeEventStockAcquired(GenericTradeEvent):
     AcquiredReason: GenericTradeReportItemGainType
     # Related: ??       # connect with corporate actions for better generation of reports
 
-
 @dataclass
 class GenericTradeEventStockSold(GenericTradeEvent):
     HasTradesToUnderlyingRecently: bool         # Used for Wash Sale rules
     # Related: ??       # connect with corporate actions for better generation of reports (mergers can lead to "sold" stocks)
 
+@dataclass
+class GenericTradeTaxLotStock(GenericTaxLot[GenericTradeEventStockAcquired, GenericTradeEventStockSold]):
+    ...
 
+@dataclass
+class GenericTradeEventDerivativeAcquired(GenericTradeEvent):
+    AcquiredReason: GenericTradeReportItemGainType
+    # Related: ??       # connect with corporate actions for better generation of reports
 
+@dataclass
+class GenericTradeEventDerivativeSold(GenericTradeEvent):
+    HasTradesToUnderlyingRecently: bool         # Used for Wash Sale rules
+    # Related: ??       # connect with corporate actions for better generation of reports (mergers can lead to "sold" stocks)
+
+@dataclass
+class GenericTradeTaxLotDerivative(GenericTaxLot[GenericTradeEventDerivativeAcquired, GenericTradeEventDerivativeSold]):
+    ...
 
 
 @dataclass
-class GenericTradeReportItemSecurityLineBought:
-    AcquiredDate: Arrow
-    AcquiredHow: GenericTradeReportItemGainType
-    NumberOfUnits: float
-    AmountPerUnit: float
-    TotalAmountPaid: float  # to avoid rounding errors in case of % purchases
-    TaxPaidForPurchase: float
-    TransactionID: str
-
-
-@dataclass
-class GenericTradeReportItemSecurityLineSold:
-    SoldDate: Arrow
-    NumberOfUnitsSold: float
-    AmountPerUnit: float
-    TotalAmountSoldFor: float
-    TransactionID: str
-    WashSale: bool  # no trades 30 days before and after, and sold for loss
-    SoldForProfit: bool
-
-@dataclass
-class GenericTradeReportLotMatches:
-    TransactionID: str
-    Quantitiy: float
-    LotOriginalBuy: GenericTradeReportItemSecurityLineBought
-    LotOriginalSell: GenericTradeReportItemSecurityLineSold
-
-
-@dataclass
-class GenericTradeReportItem:
-    InventoryListType: GenericTradeReportItemType
-    AssetClass: GenericAssetClass
+class GenericUnderlyingGrouping:
     ISIN: str
-    Ticker: str
-    HasForeignTax: bool
-    ForeignTax: float | None
-    ForeignTaxCountryID: str | None
-    ForeignTaxCountryName: str | None
+    CountryOfOrigin: str | None   # None for unknown
+    
+    UnderlyingCategory: GenericCategory
 
-    Lines: list[GenericTradeReportItemSecurityLineBought | GenericTradeReportItemSecurityLineSold]
+    StockTrades: list[GenericTradeEventStockAcquired | GenericTradeEventStockSold]
+    StockTaxLots: list[GenericTradeTaxLotStock]
+    
+    DerivativeTrades: list[GenericTradeEventDerivativeAcquired | GenericTradeEventDerivativeSold]
+    DerivativeTaxLots: list[GenericTradeTaxLotDerivative]
 
+    Dividends: list[GenericDividendLine]
 
 
 
