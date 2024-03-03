@@ -75,7 +75,7 @@ def getGenericDividendLineFromIBRKCashTransactions(cashTransactions: list[s.Tran
 
 
 
-
+'''
 
 def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.GenericTradeReportItem]:
     allTrades = trades.stockTrades
@@ -295,7 +295,7 @@ def getGenericTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> list[gf.Gen
 
 
 
-
+'''
 
 
 
