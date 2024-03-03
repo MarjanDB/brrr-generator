@@ -110,7 +110,7 @@ class GenericTaxLotMatchingDetails:
     DateTime: Arrow | None
 
 @dataclass
-class GenericTaxLotEvent:
+class GenericTaxLotEventStaging:
     ID: str
     ISIN: str
     Quantity: float
@@ -157,10 +157,10 @@ class GenericUnderlyingGroupingStaging:
     UnderlyingCategory: GenericCategory
 
     StockTrades: Sequence[GenericTradeEventStockAcquired | GenericTradeEventStockSold]
-    StockTaxLots: Sequence[GenericTaxLotEvent]
+    StockTaxLots: Sequence[GenericTaxLotEventStaging]
     
     DerivativeTrades: Sequence[GenericTradeEventDerivativeAcquired | GenericTradeEventDerivativeSold]
-    DerivativeTaxLots: Sequence[GenericTaxLotEvent]
+    DerivativeTaxLots: Sequence[GenericTaxLotEventStaging]
 
     Dividends: Sequence[GenericDividendLine]
 

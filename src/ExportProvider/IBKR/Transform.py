@@ -567,9 +567,9 @@ def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequ
     tradeEvents = list(map(convertTradeToTradeEvent, trades))
     return tradeEvents
 
-def convertStockLotsToStockLotEvents(lots: Sequence[s.LotStock]) -> Sequence[gf.GenericTaxLotEvent]:
-    def convertSingleLot(lot: s.LotStock) -> gf.GenericTaxLotEvent:
-        converted = gf.GenericTaxLotEvent(
+def convertStockLotsToStockLotEvents(lots: Sequence[s.LotStock]) -> Sequence[gf.GenericTaxLotEventStaging]:
+    def convertSingleLot(lot: s.LotStock) -> gf.GenericTaxLotEventStaging:
+        converted = gf.GenericTaxLotEventStaging(
             lot.TransactionID,
             ISIN = lot.ISIN,
             Quantity = lot.Quantity,
@@ -632,9 +632,9 @@ def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDeriv
     tradeEvents = list(map(convertTradeToTradeEvent, trades))
     return tradeEvents
 
-def convertDerivativeLotsToDerivativeLotEvents(lots: Sequence[s.LotDerivative]) -> Sequence[gf.GenericTaxLotEvent]:
-    def convertSingleLot(lot: s.LotDerivative) -> gf.GenericTaxLotEvent:
-        converted = gf.GenericTaxLotEvent(
+def convertDerivativeLotsToDerivativeLotEvents(lots: Sequence[s.LotDerivative]) -> Sequence[gf.GenericTaxLotEventStaging]:
+    def convertSingleLot(lot: s.LotDerivative) -> gf.GenericTaxLotEventStaging:
+        converted = gf.GenericTaxLotEventStaging(
             lot.TransactionID,
             ISIN = lot.UnderlyingSecurityID,
             Quantity = lot.Quantity,
@@ -679,8 +679,8 @@ def convertSegmentedTradesToGenericUnderlyingGroups(segmented: s.SegmentedTrades
             segmented[key] = list(v for v in valuesiter)
         return segmented
     
-    def segmentLotByIsin(lots: list[gf.GenericTaxLotEvent]) -> dict[str, Sequence[gf.GenericTaxLotEvent]]:
-        segmented: dict[str, Sequence[gf.GenericTaxLotEvent]] = {}
+    def segmentLotByIsin(lots: list[gf.GenericTaxLotEventStaging]) -> dict[str, Sequence[gf.GenericTaxLotEventStaging]]:
+        segmented: dict[str, Sequence[gf.GenericTaxLotEventStaging]] = {}
         for key, valuesiter in groupby(lots, key=lambda trade: trade.ISIN):
             segmented[key] = list(v for v in valuesiter)
         return segmented
