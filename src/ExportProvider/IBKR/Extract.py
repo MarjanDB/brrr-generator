@@ -260,7 +260,7 @@ def extractCashTransaction(node: etree.ElementBase) -> s.TransactionCash:
 
 
 
-def extractFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
+def extractFromXML(root: etree._Element) -> s.SegmentedTrades:
     # cashTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.CASH.value))
     # cashTradeNodes = cashTradesFinder(root)
     cashTransactionsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/CashTransactions/*")

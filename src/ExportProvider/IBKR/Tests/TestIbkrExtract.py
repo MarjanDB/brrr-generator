@@ -9,11 +9,11 @@ singleTradeXml = os.path.join(locationOfFiles, "SingleTrade.xml")
 
 with open(singleTradeXml) as fobj:
     singleTradeString = fobj.read()
-    singleTrade: etree.ElementBase = etree.fromstring(singleTradeString)
+    singleTrade: etree._Element = etree.fromstring(singleTradeString)
 
 
 
-class TestIbkr:
+class TestIbkrExtract:
     def test_SegmentedTradesReturnTradesAndLot(self):
         segmented = ex.extractFromXML(singleTrade)
 
