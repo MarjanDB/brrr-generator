@@ -2,7 +2,7 @@ import src.ReportingStrategies.GenericFormats as gf
 import src.ReportingStrategies.GenericUtilities as gu
 import arrow as ar
 
-simpleBuy = gf.GenericTradeEventStockAcquired(
+simpleBuy = gf.TradeEventStagingStockAcquired(
     ID = "StockBought",
     ISIN = "US123",
     AssetClass = gf.GenericAssetClass.STOCK,
@@ -15,7 +15,7 @@ simpleBuy = gf.GenericTradeEventStockAcquired(
     AcquiredReason = gf.GenericTradeReportItemGainType.BOUGHT
 )
 
-simpleSold = gf.GenericTradeEventStockSold(
+simpleSold = gf.TradeEventStagingStockSold(
     ID = "StockSold",
     ISIN = "US123",
     AssetClass = gf.GenericAssetClass.STOCK,
@@ -24,8 +24,7 @@ simpleSold = gf.GenericTradeEventStockSold(
     AmountPerQuantity = 15,
     TotalAmount = 15,
     TaxTotal = 0,
-    Multiplier = 1,
-    HasTradesToUnderlyingRecently = False
+    Multiplier = 1
 )
 
 simpleLot = gf.GenericTaxLotEventStaging(

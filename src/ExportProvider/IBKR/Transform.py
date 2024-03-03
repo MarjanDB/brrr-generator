@@ -525,10 +525,10 @@ def getGenericDerivativeTradeLinesFromIBRKTrades(trades: s.SegmentedTrades) -> l
 
 
 
-def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequence[gf.GenericTradeEventStockAcquired | gf.GenericTradeEventStockSold]:
+def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequence[gf.TradeEventStagingStockAcquired | gf.TradeEventStagingStockSold]:
 
-    def convertAcquiredTradeToAcquiredEvent(trade: s.TradeStock) -> gf.GenericTradeEventStockAcquired:
-        converted = gf.GenericTradeEventStockAcquired(
+    def convertAcquiredTradeToAcquiredEvent(trade: s.TradeStock) -> gf.TradeEventStagingStockAcquired:
+        converted = gf.TradeEventStagingStockAcquired(
             ID = trade.TransactionID,
             ISIN = trade.ISIN,
             AssetClass = gf.GenericAssetClass.STOCK,
@@ -542,8 +542,8 @@ def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequ
         )
         return converted
 
-    def convertSoldTradeToSoldEvent(trade: s.TradeStock) -> gf.GenericTradeEventStockSold:
-        converted = gf.GenericTradeEventStockSold(
+    def convertSoldTradeToSoldEvent(trade: s.TradeStock) -> gf.TradeEventStagingStockSold:
+        converted = gf.TradeEventStagingStockSold(
             ID = trade.TransactionID,
             ISIN = trade.ISIN,
             AssetClass = gf.GenericAssetClass.STOCK,
@@ -557,7 +557,7 @@ def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequ
         )
         return converted
 
-    def convertTradeToTradeEvent(trade: s.TradeStock) -> gf.GenericTradeEventStockSold | gf.GenericTradeEventStockAcquired:
+    def convertTradeToTradeEvent(trade: s.TradeStock) -> gf.TradeEventStagingStockSold | gf.TradeEventStagingStockAcquired:
         buyEvent = trade.Quantity > 0
         if buyEvent:
             return convertAcquiredTradeToAcquiredEvent(trade)
@@ -590,10 +590,10 @@ def convertStockLotsToStockLotEvents(lots: Sequence[s.LotStock]) -> Sequence[gf.
 
 
 
-def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDerivative]) -> Sequence[gf.GenericTradeEventDerivativeAcquired | gf.GenericTradeEventDerivativeSold]:
+def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDerivative]) -> Sequence[gf.TradeEventStagingDerivativeAcquired | gf.TradeEventStagingDerivativeSold]:
     
-    def convertAcquiredTradeToAcquiredEvent(trade: s.TradeDerivative) -> gf.GenericTradeEventDerivativeAcquired:
-        converted = gf.GenericTradeEventDerivativeAcquired(
+    def convertAcquiredTradeToAcquiredEvent(trade: s.TradeDerivative) -> gf.TradeEventStagingDerivativeAcquired:
+        converted = gf.TradeEventStagingDerivativeAcquired(
             ID = trade.TransactionID,
             ISIN = trade.UnderlyingSecurityID,
             AssetClass = gf.GenericAssetClass.OPTION,   # TODO: Could also be stock but leveraged (multiplier)
@@ -607,8 +607,8 @@ def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDeriv
         )
         return converted
 
-    def convertSoldTradeToSoldEvent(trade: s.TradeDerivative) -> gf.GenericTradeEventDerivativeSold:
-        converted = gf.GenericTradeEventDerivativeSold(
+    def convertSoldTradeToSoldEvent(trade: s.TradeDerivative) -> gf.TradeEventStagingDerivativeSold:
+        converted = gf.TradeEventStagingDerivativeSold(
             ID = trade.TransactionID,
             ISIN = trade.UnderlyingSecurityID,
             AssetClass = gf.GenericAssetClass.OPTION,
@@ -622,7 +622,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDeriv
         )
         return converted
 
-    def convertTradeToTradeEvent(trade: s.TradeDerivative) -> gf.GenericTradeEventDerivativeSold | gf.GenericTradeEventDerivativeAcquired:
+    def convertTradeToTradeEvent(trade: s.TradeDerivative) -> gf.TradeEventStagingDerivativeSold | gf.TradeEventStagingDerivativeAcquired:
         buyEvent = trade.Quantity > 0
         if buyEvent:
             return convertAcquiredTradeToAcquiredEvent(trade)
@@ -673,8 +673,8 @@ def convertSegmentedTradesToGenericUnderlyingGroups(segmented: s.SegmentedTrades
     derivativeLotEvents = convertDerivativeLotsToDerivativeLotEvents(derivativeLots)
 
 
-    def segmentTradeByIsin(trades: list[gf.GenericTradeEvent]) -> dict[str, Sequence[gf.GenericTradeEvent]]:
-        segmented: dict[str, Sequence[gf.GenericTradeEvent]] = {}
+    def segmentTradeByIsin(trades: list[gf.GenericTradeEventStaging]) -> dict[str, Sequence[gf.GenericTradeEventStaging]]:
+        segmented: dict[str, Sequence[gf.GenericTradeEventStaging]] = {}
         for key, valuesiter in groupby(trades, key=lambda trade: trade.ISIN):
             segmented[key] = list(v for v in valuesiter)
         return segmented
