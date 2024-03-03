@@ -1,7 +1,7 @@
 from enum import Enum
 from dataclasses import dataclass
 from arrow import Arrow
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Sequence
 
 class GenericAssetClass(str, Enum):
     STOCK = "STOCK"
@@ -97,11 +97,27 @@ GenericTaxLotSoldEvent = TypeVar("GenericTaxLotSoldEvent")
 @dataclass
 class GenericTaxLot(Generic[GenericTaxLotAcquiredEvent, GenericTaxLotSoldEvent]):
     ID: str
+    ISIN: str
     Quantity: float
     Acquired: GenericTaxLotAcquiredEvent
     Sold: GenericTaxLotSoldEvent
-
     ShortLongType: GenericShortLong     # Some trades can be SHORTING, meaning you first sell and then buy back
+
+
+@dataclass
+class GenericTaxLotMatchingDetails:
+    ID: str | None
+    DateTime: Arrow | None
+
+@dataclass
+class GenericTaxLotEvent:
+    ID: str
+    ISIN: str
+    Quantity: float
+    Acquired: GenericTaxLotMatchingDetails
+    Sold: GenericTaxLotMatchingDetails
+    ShortLongType: GenericShortLong     # Some trades can be SHORTING, meaning you first sell and then buy back
+
 
 
 @dataclass
@@ -115,7 +131,7 @@ class GenericTradeEventStockSold(GenericTradeEvent):
     # Related: ??       # connect with corporate actions for better generation of reports (mergers can lead to "sold" stocks)
 
 @dataclass
-class GenericTradeTaxLotStock(GenericTaxLot[GenericTradeEventStockAcquired, GenericTradeEventStockSold]):
+class GenericTradeTaxLotEventStock(GenericTaxLot[GenericTradeEventStockAcquired, GenericTradeEventStockSold]):
     ...
 
 @dataclass
@@ -129,8 +145,24 @@ class GenericTradeEventDerivativeSold(GenericTradeEvent):
     # Related: ??       # connect with corporate actions for better generation of reports (mergers can lead to "sold" stocks)
 
 @dataclass
-class GenericTradeTaxLotDerivative(GenericTaxLot[GenericTradeEventDerivativeAcquired, GenericTradeEventDerivativeSold]):
+class GenericTradeTaxLotEventDerivative(GenericTaxLot[GenericTradeEventDerivativeAcquired, GenericTradeEventDerivativeSold]):
     ...
+
+
+@dataclass
+class GenericUnderlyingGroupingStaging:
+    ISIN: str
+    CountryOfOrigin: str | None   # None for unknown
+    
+    UnderlyingCategory: GenericCategory
+
+    StockTrades: Sequence[GenericTradeEventStockAcquired | GenericTradeEventStockSold]
+    StockTaxLots: Sequence[GenericTaxLotEvent]
+    
+    DerivativeTrades: Sequence[GenericTradeEventDerivativeAcquired | GenericTradeEventDerivativeSold]
+    DerivativeTaxLots: Sequence[GenericTaxLotEvent]
+
+    Dividends: Sequence[GenericDividendLine]
 
 
 @dataclass
@@ -140,13 +172,13 @@ class GenericUnderlyingGrouping:
     
     UnderlyingCategory: GenericCategory
 
-    StockTrades: list[GenericTradeEventStockAcquired | GenericTradeEventStockSold]
-    StockTaxLots: list[GenericTradeTaxLotStock]
+    StockTrades: Sequence[GenericTradeEventStockAcquired | GenericTradeEventStockSold]
+    StockTaxLots: Sequence[GenericTradeTaxLotEventStock]
     
-    DerivativeTrades: list[GenericTradeEventDerivativeAcquired | GenericTradeEventDerivativeSold]
-    DerivativeTaxLots: list[GenericTradeTaxLotDerivative]
+    DerivativeTrades: Sequence[GenericTradeEventDerivativeAcquired | GenericTradeEventDerivativeSold]
+    DerivativeTaxLots: Sequence[GenericTradeTaxLotEventDerivative]
 
-    Dividends: list[GenericDividendLine]
+    Dividends: Sequence[GenericDividendLine]
 
 
 

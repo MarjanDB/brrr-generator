@@ -567,8 +567,26 @@ def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequ
     tradeEvents = list(map(convertTradeToTradeEvent, trades))
     return tradeEvents
 
-def convertStockLotsToStockLotEvents(lots: Sequence[s.LotStock]) -> Sequence[gf.GenericTradeTaxLotStock]:
-    return []
+def convertStockLotsToStockLotEvents(lots: Sequence[s.LotStock]) -> Sequence[gf.GenericTaxLotEvent]:
+    def convertSingleLot(lot: s.LotStock) -> gf.GenericTaxLotEvent:
+        converted = gf.GenericTaxLotEvent(
+            lot.TransactionID,
+            ISIN = lot.ISIN,
+            Quantity = lot.Quantity,
+            Acquired = gf.GenericTaxLotMatchingDetails(
+                ID = lot.TransactionID,
+                DateTime = None
+            ),
+            Sold = gf.GenericTaxLotMatchingDetails(
+                ID = None,
+                DateTime = lot.DateTime
+            ),
+            ShortLongType = gf.GenericShortLong.LONG    # TODO: Determine long / short if possible
+        )
+        return converted
+
+    lotEvents = list(map(convertSingleLot, lots))
+    return lotEvents
 
 
 
@@ -614,14 +632,32 @@ def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDeriv
     tradeEvents = list(map(convertTradeToTradeEvent, trades))
     return tradeEvents
 
-def convertDerivativeLotsToDerivativeLotEvents(lots: Sequence[s.LotDerivative]) -> Sequence[gf.GenericTradeTaxLotDerivative]:
-    return []
+def convertDerivativeLotsToDerivativeLotEvents(lots: Sequence[s.LotDerivative]) -> Sequence[gf.GenericTaxLotEvent]:
+    def convertSingleLot(lot: s.LotDerivative) -> gf.GenericTaxLotEvent:
+        converted = gf.GenericTaxLotEvent(
+            lot.TransactionID,
+            ISIN = lot.UnderlyingSecurityID,
+            Quantity = lot.Quantity,
+            Acquired = gf.GenericTaxLotMatchingDetails(
+                ID = lot.TransactionID,
+                DateTime = None
+            ),
+            Sold = gf.GenericTaxLotMatchingDetails(
+                ID = None,
+                DateTime = lot.DateTime
+            ),
+            ShortLongType = gf.GenericShortLong.LONG    # TODO: Determine long / short if possible
+        )
+        return converted
+
+    lotEvents = list(map(convertSingleLot, lots))
+    return lotEvents
 
 
 
 
 
-def convertSegmentedTradesToGenericUnderlyingGroups(segmented: s.SegmentedTrades) -> Sequence[gf.GenericUnderlyingGrouping]:
+def convertSegmentedTradesToGenericUnderlyingGroups(segmented: s.SegmentedTrades) -> Sequence[gf.GenericUnderlyingGroupingStaging]:
     stockTrades = segmented.stockTrades
     stockLots = segmented.stockLots
 
@@ -642,22 +678,30 @@ def convertSegmentedTradesToGenericUnderlyingGroups(segmented: s.SegmentedTrades
         for key, valuesiter in groupby(trades, key=lambda trade: trade.ISIN):
             segmented[key] = list(v for v in valuesiter)
         return segmented
+    
+    def segmentLotByIsin(lots: list[gf.GenericTaxLotEvent]) -> dict[str, Sequence[gf.GenericTaxLotEvent]]:
+        segmented: dict[str, Sequence[gf.GenericTaxLotEvent]] = {}
+        for key, valuesiter in groupby(lots, key=lambda trade: trade.ISIN):
+            segmented[key] = list(v for v in valuesiter)
+        return segmented
 
     stocksSegmented = segmentTradeByIsin(stockTradeEvents) # type: ignore
+    stockLotsSegmented = segmentLotByIsin(stockLotEvents) # type: ignore
     derivativesSegmented = segmentTradeByIsin(derivativeTradeEvents) # type: ignore
+    derivativeLotsSegmented = segmentLotByIsin(derivativeLotEvents) # type: ignore
 
-    allIsinsPresent = list(set(list(stocksSegmented.keys()) + list(derivativesSegmented.keys())))
+    allIsinsPresent = list(set(list(stocksSegmented.keys()) + list(derivativesSegmented.keys()) + list(stockLotsSegmented.keys()) + list(derivativeLotsSegmented.keys())))
 
-    generatedUnderlyingGroups : Sequence[gf.GenericUnderlyingGrouping] = list()
+    generatedUnderlyingGroups : Sequence[gf.GenericUnderlyingGroupingStaging] = list()
     for isin in allIsinsPresent:
-        wrapper = gf.GenericUnderlyingGrouping(
+        wrapper = gf.GenericUnderlyingGroupingStaging(
             ISIN = isin,
             CountryOfOrigin = None,
             UnderlyingCategory = gf.GenericCategory.REGULAR,
             StockTrades = stocksSegmented.get(isin, []),    # type: ignore
-            StockTaxLots = [],
+            StockTaxLots = stockLotsSegmented.get(isin, []),
             DerivativeTrades = derivativesSegmented.get(isin, []),  # type: ignore
-            DerivativeTaxLots = [],
+            DerivativeTaxLots = derivativeLotsSegmented.get(isin, []),
             Dividends = []
         )
         generatedUnderlyingGroups.append(wrapper)
