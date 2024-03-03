@@ -14,14 +14,14 @@ with open(singleTradeXml) as fobj:
 
 
 class TestIbkrExtract:
-    def test_SegmentedTradesReturnTradesAndLot(self):
+    def testSegmentedTradesReturnTradesAndLot(self):
         segmented = ex.extractFromXML(singleTrade)
 
         assert isinstance(segmented, es.SegmentedTrades)
         assert len(segmented.stockTrades) == 2
         assert len(segmented.stockLots) == 1
 
-    def test_SegmentedTradesContainBuyAndSellEvent(self):
+    def testSegmentedTradesContainBuyAndSellEvent(self):
         segmented = ex.extractFromXML(singleTrade)
 
         buyTrade = segmented.stockTrades[0]
@@ -36,7 +36,7 @@ class TestIbkrExtract:
         assert sellTrade.Quantity == -5
         assert sellTrade.TransactionID == "262720557"
 
-    def test_BuyEventTransactionRelatesToLot(self):
+    def testBuyEventTransactionRelatesToLot(self):
         segmented = ex.extractFromXML(singleTrade)
 
         buyTrade = segmented.stockTrades[0]
