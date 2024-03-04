@@ -1,7 +1,7 @@
 from lxml import etree
 import pandas as pd
 from abc import abstractmethod
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Sequence
 import src.ConfigurationProvider.Configuration as conf
 import src.InfoProviders.InfoLookupProvider as ilp
 import src.ReportingStrategies.GenericFormats as gf
@@ -25,7 +25,7 @@ class GenericReportWrapper:
         ...
     
 
-class GenericReportProvider(GenericReportWrapper, Generic[INPUT_DATA, REPORT_CONFIG]):
+class GenericReportProvider(GenericReportWrapper, Generic[REPORT_CONFIG]):
     companyLookupProvider = ilp.CompanyLookupProvider()
     countryLookupProvider = ilp.CountryLookupProvider()
 
@@ -34,22 +34,22 @@ class GenericReportProvider(GenericReportWrapper, Generic[INPUT_DATA, REPORT_CON
 
 
     @abstractmethod
-    def generateXmlReport(self, data: list[INPUT_DATA], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
+    def generateXmlReport(self, data: Sequence[gf.UnderlyingGrouping], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
         ...
 
     @abstractmethod
-    def generateDataFrameReport(self, data: list[INPUT_DATA]) -> pd.DataFrame:
+    def generateDataFrameReport(self, data: list[gf.UnderlyingGrouping]) -> pd.DataFrame:
         ...
 
 
 
-class GenericDividendReport(GenericReportProvider[gf.GenericDividendLine, REPORT_CONFIG]):
+class GenericDividendReport(GenericReportProvider[REPORT_CONFIG], Generic[REPORT_CONFIG]):
     ...
 
 
-class GenericTradesReport(GenericReportProvider[gf.GenericTradeReportItem, REPORT_CONFIG]):
+class GenericTradesReport(GenericReportProvider[REPORT_CONFIG], Generic[REPORT_CONFIG]):
     ...
 
 
-class GenericDerivativeReport(GenericReportProvider[gf.GenericDerivativeReportItem, REPORT_CONFIG]):
+class GenericDerivativeReport(GenericReportProvider[REPORT_CONFIG], Generic[REPORT_CONFIG]):
     ...

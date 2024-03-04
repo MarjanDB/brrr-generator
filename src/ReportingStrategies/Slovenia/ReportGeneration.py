@@ -1,6 +1,7 @@
 from lxml import etree
 from enum import Enum
 import pandas as pd
+from typing import Sequence
 import src.ReportingStrategies.GenericFormats as gf
 import src.ReportingStrategies.Slovenia.Schemas as ss
 import src.InfoProviders.InfoLookupProvider as ilp
@@ -273,7 +274,7 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
         return EDavkiReportWrapper.createReportEnvelope(self, self.documentType)  # type: ignore
 
 
-    def convertTradesToKdvpItems(self, data: list[gf.GenericTradeReportItem]) -> list[ss.EDavkiGenericTradeReportItem]:
+    def convertTradesToKdvpItems(self, data: Sequence[gf.UnderlyingGrouping]) -> list[ss.EDavkiGenericTradeReportItem]:
         converted: list[ss.EDavkiGenericTradeReportItem] = list()
 
         ISINSegmented: dict[str, list[gf.GenericTradeReportItem]] = {}
@@ -362,7 +363,7 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
 
 
 
-    def generateXmlReport(self, data: list[gf.GenericTradeReportItem], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
+    def generateXmlReport(self, data: Sequence[gf.UnderlyingGrouping], templateEnvelope: etree._Element) -> etree.ElementBase:
         convertedTrades = self.convertTradesToKdvpItems(data)
 
         nsmap = templateEnvelope.nsmap
@@ -452,7 +453,7 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
 
 
 
-    def generateDataFrameReport(self, data: list[gf.GenericTradeReportItem]) -> pd.DataFrame:
+    def generateDataFrameReport(self, data: Sequence[gf.UnderlyingGrouping]) -> pd.DataFrame:
         convertedTrades = self.convertTradesToKdvpItems(data)
 
 

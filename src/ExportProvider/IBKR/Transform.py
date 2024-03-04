@@ -553,7 +553,6 @@ def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequ
             TotalAmount = trade.TradeMoney,
             TaxTotal = trade.Taxes,
             Multiplier = 1,
-            HasTradesToUnderlyingRecently = False
         )
         return converted
 
@@ -618,7 +617,6 @@ def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDeriv
             TotalAmount = trade.TradeMoney,
             TaxTotal = trade.Taxes,
             Multiplier = trade.Multiplier,
-            HasTradesToUnderlyingRecently = False
         )
         return converted
 
