@@ -54,8 +54,11 @@ class GenericUtilities:
 
         # TODO: Validate returns since buys and sells are merged
         # TODO: What to do when no match is found?
-        matchingBuyById : gf.TradeEventStockAcquired = self.findStockEventById(lot.Acquired.ID or "", allTrades)
-        matchingSoldByDate : gf.TradeEventStockSold = self.findStockEventByDate(lot.Sold.DateTime or ar.get("1-0-0"), allTrades)
+        try:
+            matchingBuyById : gf.TradeEventStockAcquired = self.findStockEventById(lot.Acquired.ID or "", allTrades)
+            matchingSoldByDate : gf.TradeEventStockSold = self.findStockEventByDate(lot.Sold.DateTime or ar.get("1-0-0"), allTrades)
+        except Exception:
+            print("Failed processing stock lot {}".format(lot.ID))
 
         processed = gf.TradeTaxLotEventStock(
             ID = lot.ID,
