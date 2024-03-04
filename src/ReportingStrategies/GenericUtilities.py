@@ -16,6 +16,10 @@ class GenericUtilities:
     def createMissingStockTradesFromCorporateActions(self) -> Sequence[gf.TradeEventStockAcquired | gf.TradeEventStockSold]:
         return []
     
+    # TODO: Create trade events based on corporate events
+    def createMissingDerivativeTradesFromCorporateActions(self) -> Sequence[gf.TradeEventDerivativeAcquired | gf.TradeEventDerivativeSold]:
+        return []
+    
 
     def processStockTrade(self, trade: gf.GenericTradeEventStaging) -> gf.TradeEventStockAcquired | gf.TradeEventStockSold:
         if isinstance(trade, gf.TradeEventStagingStockAcquired):
@@ -64,6 +68,53 @@ class GenericUtilities:
 
         return processed
 
+    def processDerivativeTrade(self, trade: gf.GenericTradeEventStaging) -> gf.TradeEventDerivativeAcquired | gf.TradeEventDerivativeSold:
+        if isinstance(trade, gf.TradeEventDerivativeAcquired):
+            converted = gf.TradeEventDerivativeAcquired(
+                ID = trade.ID,
+                ISIN = trade.ISIN,
+                AssetClass = trade.AssetClass,
+                Date = trade.Date,
+                Quantity = trade.Quantity,
+                AmountPerQuantity = trade.AmountPerQuantity,
+                TotalAmount = trade.TotalAmount,
+                TaxTotal = trade.TaxTotal,
+                Multiplier = trade.Multiplier,
+                AcquiredReason = trade.AcquiredReason
+            )
+            return converted
+        
+        converted = gf.TradeEventDerivativeSold(
+            ID = trade.ID,
+            ISIN = trade.ISIN,
+            AssetClass = trade.AssetClass,
+            Date = trade.Date,
+            Quantity = trade.Quantity,
+            AmountPerQuantity = trade.AmountPerQuantity,
+            TotalAmount = trade.TotalAmount,
+            TaxTotal = trade.TaxTotal,
+            Multiplier = trade.Multiplier
+        )
+        return converted
+
+    def processDerivativeLot(self, lot: gf.GenericTaxLotEventStaging, allTrades: Sequence[gf.TradeEventDerivativeAcquired | gf.TradeEventDerivativeSold]) -> gf.TradeTaxLotEventDerivative:
+
+        # TODO: Validate returns since buys and sells are merged
+        # TODO: What to do when no match is found?
+        matchingBuyById : gf.TradeEventDerivativeAcquired = self.findStockEventById(lot.Acquired.ID or "", allTrades)
+        matchingSoldByDate : gf.TradeEventDerivativeSold = self.findStockEventByDate(lot.Sold.DateTime or ar.get("1-0-0"), allTrades)
+
+        processed = gf.TradeTaxLotEventDerivative(
+            ID = lot.ID,
+            ISIN = lot.ISIN,
+            Quantity = lot.Quantity,
+            Acquired = matchingBuyById, 
+            Sold = matchingSoldByDate,
+            ShortLongType = gf.GenericShortLong.LONG
+        )
+
+        return processed
+
 
 
     def processGenericGrouping(self, grouping: gf.GenericUnderlyingGroupingStaging) -> gf.UnderlyingGrouping:
@@ -77,6 +128,13 @@ class GenericUtilities:
         processedStockLots = list(map(lambda lot: self.processStockLot(lot, allTrades), stockLots))
 
 
+        derivativeTrades = grouping.DerivativeTrades
+        processedDerivatives = list(map(self.processDerivativeTrade, derivativeTrades))
+        derivativeCausedByCorporateActions = list(self.createMissingDerivativeTradesFromCorporateActions())
+        allDerivativeTrades = processedDerivatives + derivativeCausedByCorporateActions
+
+        derivativeLots = grouping.DerivativeTaxLots
+        porcessedDerivativeLots = list(map(lambda lot: self.processDerivativeLot(lot, allDerivativeTrades), derivativeLots))
 
 
         processed = gf.UnderlyingGrouping(
@@ -85,8 +143,8 @@ class GenericUtilities:
             UnderlyingCategory = grouping.UnderlyingCategory,
             StockTrades = allTrades,
             StockTaxLots = processedStockLots,
-            DerivativeTrades = [],
-            DerivativeTaxLots = [],
+            DerivativeTrades = allDerivativeTrades,
+            DerivativeTaxLots = porcessedDerivativeLots,
             Dividends = []
         )
         return processed
