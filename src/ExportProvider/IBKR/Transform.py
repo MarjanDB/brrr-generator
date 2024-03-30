@@ -662,6 +662,11 @@ def convertSegmentedTradesToGenericUnderlyingGroups(segmented: s.SegmentedTrades
     derivativeTrades = segmented.derivativeTrades
     derivativeLots = segmented.derivativeLots
 
+    stockTrades.sort(key=lambda entry: entry.ISIN)
+    stockLots.sort(key=lambda entry: entry.ISIN)
+    derivativeTrades.sort(key=lambda entry: entry.UnderlyingSecurityID)
+    derivativeLots.sort(key=lambda entry: entry.UnderlyingSecurityID)
+
 
     stockTradeEvents = convertStockTradesToStockTradeEvents(stockTrades)
     stockLotEvents = convertStockLotsToStockLotEvents(stockLots)

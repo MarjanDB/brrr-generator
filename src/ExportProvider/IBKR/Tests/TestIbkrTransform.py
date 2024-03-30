@@ -122,3 +122,5 @@ class TestIbkrTransform:
 
         assert extracted.ISIN == "US21212112", "Underlying group ISIN should match the lot ISIN"
         assert extracted.StockTaxLots[0].ISIN == "US21212112", "The lot ISIN should match the ISIN of the group"
+
+    # TODO: Add test for groupby, where the trade events are ISIN1, ISIN2, ISIN1
