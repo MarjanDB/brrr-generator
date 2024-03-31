@@ -276,87 +276,94 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
 
     def convertTradesToKdvpItems(self, data: Sequence[gf.UnderlyingGrouping]) -> list[ss.EDavkiGenericTradeReportItem]:
         converted: list[ss.EDavkiGenericTradeReportItem] = list()
+        periodStart = self.baseReportConfig.fromDate
+        periodEnd = self.baseReportConfig.toDate
 
-        ISINSegmented: dict[str, list[gf.GenericTradeReportItem]] = {}
-        for key, valuesiter in groupby(data, key=lambda item: item.ISIN):
-            ISINSegmented[key] = list(valuesiter)
+        for isinGrouping in data:
+            ISIN = isinGrouping.ISIN
 
-        for ISIN, entries in ISINSegmented.items():
+            def convertStockBuy(line: gf.TradeEventStockAcquired) -> ss.EDavkiTradeReportSecurityLineGenericEventBought:
+                return ss.EDavkiTradeReportSecurityLineGenericEventBought(
+                    BoughtOn = line.Date,
+                    GainType = self.GAIN_MAPPINGS[line.AcquiredReason],
+                    Quantity = line.Quantity,
+                    PricePerUnit = line.AmountPerQuantity,
+                    TotalPrice = line.TotalAmount,
+                    InheritanceAndGiftTaxPaid = None,
+                    BaseTaxReduction = None
+                )
 
-            securitySegmented: dict[gf.GenericTradeReportItemType, list[gf.GenericTradeReportItem]] = {}
-            for key, valuesiter in groupby(entries, key=lambda item: item.InventoryListType):
-                securitySegmented[key] = list(valuesiter)
+            def convertStockSell(line: gf.TradeEventStockSold) -> ss.EDavkiTradeReportSecurityLineGenericEventSold:
+                return ss.EDavkiTradeReportSecurityLineGenericEventSold(
+                    SoldOn = line.Date,
+                    Quantity = line.Quantity,
+                    TotalPrice = line.TotalAmount,
+                    PricePerUnit = line.AmountPerQuantity,
+                    SatisfiesTaxBasisReduction = False # TODO: Wash sale handling
+                )
+            
+            def convertStock(line: gf.TradeEventStockAcquired | gf.TradeEventStockSold) -> ss.EDavkiTradeReportSecurityLineGenericEventBought | ss.EDavkiTradeReportSecurityLineGenericEventSold:
+                if isinstance(line, gf.TradeEventStockAcquired):
+                    return convertStockBuy(line)
+                
+                return convertStockSell(line)
+            
+            buyLines : list[gf.TradeEventStockAcquired] = []
+            sellLines : list[gf.TradeEventStockSold] = []
+            lots = isinGrouping.StockTaxLots
 
-            for securityType, securityLines in securitySegmented.items():
+            for lot in lots:
+                closedOn = lot.Sold.Date
 
-                for lots in securityLines:
-                    def convertBuy(line: gf.GenericTradeReportItemSecurityLineBought) -> ss.EDavkiTradeReportSecurityLineGenericEventBought:
-                        return ss.EDavkiTradeReportSecurityLineGenericEventBought(
-                            BoughtOn = line.AcquiredDate,
-                            GainType = self.GAIN_MAPPINGS[line.AcquiredHow],
-                            Quantity = line.NumberOfUnits,
-                            PricePerUnit = line.AmountPerUnit,
-                            TotalPrice = line.TotalAmountPaid,
-                            InheritanceAndGiftTaxPaid = None,
-                            BaseTaxReduction = None
-                        )
-
-                    def convertSell(line: gf.GenericTradeReportItemSecurityLineSold) -> ss.EDavkiTradeReportSecurityLineGenericEventSold:
-                        return ss.EDavkiTradeReportSecurityLineGenericEventSold(
-                            SoldOn = line.SoldDate,
-                            Quantity = line.NumberOfUnitsSold,
-                            TotalPrice = line.TotalAmountSoldFor,
-                            PricePerUnit = line.AmountPerUnit,
-                            SatisfiesTaxBasisReduction = (not line.WashSale) and not line.SoldForProfit
-                        )
-                    
-
-                    periodStart = self.baseReportConfig.fromDate
-                    periodEnd = self.baseReportConfig.toDate
-
-                    buyLines: list[gf.GenericTradeReportItemSecurityLineBought] = list(filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineBought), lots.Lines)) # type: ignore
-                    sellLines: list[gf.GenericTradeReportItemSecurityLineSold] = list(filter(lambda line: isinstance(line, gf.GenericTradeReportItemSecurityLineSold), lots.Lines)) # type: ignore
-
-                    buyLines = list(filter(lambda line: line.AcquiredDate >= periodStart and line.AcquiredDate < periodEnd, buyLines))
-                    sellLines = list(filter(lambda line: line.SoldDate >= periodStart and line.SoldDate < periodEnd, sellLines))
-
-                    buys = list(map(convertBuy, buyLines)) # type: ignore
-                    sells = list(map(convertSell, sellLines)) # type: ignore
-
-                    reportItem = ss.EDavkiTradeReportSecurityLineEvent(
-                        ISIN = ISIN,
-                        Code = lots.Ticker,
-                        Name = None,
-                        IsFund = lots.AssetClass == gf.GenericAssetClass.ROYALTY_TRUST,
-                        Resolution = None,
-                        ResolutionDate = None,
-                        Events = buys + sells
-                    )
+                # lot was not closed during the reporting period, so its trades should not be included in the generated report
+                if closedOn < periodStart or closedOn > periodEnd:
+                    continue
+                
+                buyLines.append(lot.Acquired)
+                sellLines.append(lot.Sold)
 
 
-                    ForeignTaxPaid = sum(map(lambda entry: entry.ForeignTax or 0, entries))
-                    HasForeignTax = True
-                    if ForeignTaxPaid <= 0:
-                        ForeignTaxPaid = None
-                        HasForeignTax = False
-                    
-                    ISINEntry = ss.EDavkiGenericTradeReportItem(
-                        ItemID = None,
-                        InventoryListType = self.SECURITY_MAPPING[securityType],
-                        Name = None,
-                        HasForeignTax = HasForeignTax,
-                        ForeignTax = ForeignTaxPaid,
-                        FTCountryID = None,
-                        FTCountryName = None,
-                        HasLossTransfer = None,
-                        ForeignTransfer = None,
-                        TaxDecreaseConformance = False,    
-                        Items=[reportItem]
-                    )
 
-                    converted.append(ISINEntry)
+            allLines = buyLines + sellLines
+            allLines.sort(key=lambda line: line.Date)
+
+            convertedLines = list(map(convertStock, allLines))
+
+            
+            isTrustFund = isinGrouping.UnderlyingCategory == gf.GenericCategory.TRUST_FUND
 
 
+            reportItem = ss.EDavkiTradeReportSecurityLineEvent(
+                ISIN = ISIN,
+                Code = "", # TODO: Add ticker
+                Name = None,
+                IsFund = isTrustFund,
+                Resolution = None,
+                ResolutionDate = None,
+                Events = convertedLines
+            )
+
+            ForeignTaxPaid = sum(map(lambda entry: entry.TaxTotal or 0, allLines))
+            HasForeignTax = True
+            if ForeignTaxPaid <= 0:
+                ForeignTaxPaid = None
+                HasForeignTax = False
+            
+            ISINEntry = ss.EDavkiGenericTradeReportItem(
+                ItemID = None,
+                InventoryListType = ss.EDavkiTradeSecurityType.SECURITY,    # TODO: Respect listing type
+                Name = None,
+                HasForeignTax = HasForeignTax,
+                ForeignTax = ForeignTaxPaid,
+                FTCountryID = None,
+                FTCountryName = None,
+                HasLossTransfer = None,
+                ForeignTransfer = None,
+                TaxDecreaseConformance = False,    
+                Items=[reportItem]
+            )
+
+            converted.append(ISINEntry)
 
         return converted
 
