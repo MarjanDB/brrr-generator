@@ -531,6 +531,7 @@ def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequ
         converted = gf.TradeEventStagingStockAcquired(
             ID = trade.TransactionID,
             ISIN = trade.ISIN,
+            Ticker = trade.Symbol,
             AssetClass = gf.GenericAssetClass.STOCK,
             Date = trade.DateTime,
             Quantity = trade.Quantity,
@@ -546,6 +547,7 @@ def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequ
         converted = gf.TradeEventStagingStockSold(
             ID = trade.TransactionID,
             ISIN = trade.ISIN,
+            Ticker = trade.Symbol,
             AssetClass = gf.GenericAssetClass.STOCK,
             Date = trade.DateTime,
             Quantity = trade.Quantity,
@@ -571,6 +573,7 @@ def convertStockLotsToStockLotEvents(lots: Sequence[s.LotStock]) -> Sequence[gf.
         converted = gf.GenericTaxLotEventStaging(
             lot.TransactionID,
             ISIN = lot.ISIN,
+            Ticker = lot.Symbol,
             Quantity = lot.Quantity,
             Acquired = gf.GenericTaxLotMatchingDetails(
                 ID = lot.TransactionID,
@@ -595,6 +598,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDeriv
         converted = gf.TradeEventStagingDerivativeAcquired(
             ID = trade.TransactionID,
             ISIN = trade.UnderlyingSecurityID,
+            Ticker = trade.UnderlyingSymbol,
             AssetClass = gf.GenericAssetClass.OPTION,   # TODO: Could also be stock but leveraged (multiplier)
             Date = trade.DateTime,
             Quantity = trade.Quantity,
@@ -610,6 +614,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDeriv
         converted = gf.TradeEventStagingDerivativeSold(
             ID = trade.TransactionID,
             ISIN = trade.UnderlyingSecurityID,
+            Ticker = trade.UnderlyingSymbol,
             AssetClass = gf.GenericAssetClass.OPTION,
             Date = trade.DateTime,
             Quantity = trade.Quantity,
@@ -635,6 +640,7 @@ def convertDerivativeLotsToDerivativeLotEvents(lots: Sequence[s.LotDerivative]) 
         converted = gf.GenericTaxLotEventStaging(
             lot.TransactionID,
             ISIN = lot.UnderlyingSecurityID,
+            Ticker = lot.UnderlyingSymbol,
             Quantity = lot.Quantity,
             Acquired = gf.GenericTaxLotMatchingDetails(
                 ID = lot.TransactionID,

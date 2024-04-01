@@ -327,15 +327,20 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
             allLines = buyLines + sellLines
             allLines.sort(key=lambda line: line.Date)
 
+            # If there are no lines to report on, do not add it to the ISIN to be reported
+            if len(allLines) == 0:
+                continue
+
             convertedLines = list(map(convertStock, allLines))
 
             
             isTrustFund = isinGrouping.UnderlyingCategory == gf.GenericCategory.TRUST_FUND
 
+            tickerSymbols = list(map(lambda line: line.Ticker, allLines)).pop() # TODO: Maybe something better than just taking the last one?
 
             reportItem = ss.EDavkiTradeReportSecurityLineEvent(
                 ISIN = ISIN,
-                Code = "", # TODO: Add ticker
+                Code = tickerSymbols,
                 Name = None,
                 IsFund = isTrustFund,
                 Resolution = None,
@@ -449,12 +454,6 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                             etree.SubElement(sale, "F7").text = str(entryLine.Quantity.__round__(5))
                             etree.SubElement(sale, "F9").text = str(entryLine.PricePerUnit.__abs__().__round__(5))
                             etree.SubElement(sale, "F10").text = str(entryLine.SatisfiesTaxBasisReduction).lower()
-
-
-
-
-
-
 
         return envelope
 

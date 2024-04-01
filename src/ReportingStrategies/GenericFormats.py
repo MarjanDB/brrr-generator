@@ -83,6 +83,7 @@ class GenericTradeReportItemGainType(str, Enum):
 class GenericTradeEventStaging:
     ID: str
     ISIN: str
+    Ticker: str | None
     AssetClass: GenericAssetClass       # Trades can have to do with different Asset Classes (Stock, Options, ...)
     Date: Arrow
     Quantity: float
@@ -122,6 +123,7 @@ class GenericTaxLotMatchingDetails:
 class GenericTaxLotEventStaging:
     ID: str
     ISIN: str
+    Ticker: str | None
     Quantity: float
     Acquired: GenericTaxLotMatchingDetails
     Sold: GenericTaxLotMatchingDetails
@@ -155,6 +157,7 @@ class GenericUnderlyingGroupingStaging:
 class GenericTradeEvent:
     ID: str
     ISIN: str
+    Ticker: str
     AssetClass: GenericAssetClass       # Trades can have to do with different Asset Classes (Stock, Options, ...)
     Date: Arrow
     Quantity: float

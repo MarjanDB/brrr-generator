@@ -26,6 +26,7 @@ class GenericUtilities:
             converted = gf.TradeEventStockAcquired(
                 ID = trade.ID,
                 ISIN = trade.ISIN,
+                Ticker = trade.Ticker or "",
                 AssetClass = trade.AssetClass,
                 Date = trade.Date,
                 Quantity = trade.Quantity,
@@ -40,6 +41,7 @@ class GenericUtilities:
         converted = gf.TradeEventStockSold(
             ID = trade.ID,
             ISIN = trade.ISIN,
+            Ticker = trade.Ticker or "",
             AssetClass = trade.AssetClass,
             Date = trade.Date,
             Quantity = trade.Quantity,
@@ -77,6 +79,7 @@ class GenericUtilities:
             converted = gf.TradeEventDerivativeAcquired(
                 ID = trade.ID,
                 ISIN = trade.ISIN,
+                Ticker = trade.Ticker or "",
                 AssetClass = trade.AssetClass,
                 Date = trade.Date,
                 Quantity = trade.Quantity,
@@ -91,6 +94,7 @@ class GenericUtilities:
         converted = gf.TradeEventDerivativeSold(
             ID = trade.ID,
             ISIN = trade.ISIN,
+            Ticker = trade.Ticker or "",
             AssetClass = trade.AssetClass,
             Date = trade.Date,
             Quantity = trade.Quantity,
@@ -125,6 +129,7 @@ class GenericUtilities:
 
 
 
+    # TODO: Handle trades being referenced in multiple lots, so a many to many lots <-> trades relationships
     def processGenericGrouping(self, grouping: gf.GenericUnderlyingGroupingStaging) -> gf.UnderlyingGrouping:
         stockTrades = grouping.StockTrades
         processedTrades = list(map(self.processStockTrade, stockTrades))
