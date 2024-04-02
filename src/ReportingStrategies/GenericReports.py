@@ -5,6 +5,7 @@ from typing import TypeVar, Generic, Sequence
 import src.ConfigurationProvider.Configuration as conf
 import src.InfoProviders.InfoLookupProvider as ilp
 import src.ReportingStrategies.GenericFormats as gf
+import src.ReportingStrategies.GenericUtilities as gu
 
 from src.ConfigurationProvider.Configuration import ReportBaseConfig
 
@@ -28,6 +29,7 @@ class GenericReportWrapper:
 class GenericReportProvider(GenericReportWrapper, Generic[REPORT_CONFIG]):
     companyLookupProvider = ilp.CompanyLookupProvider()
     countryLookupProvider = ilp.CountryLookupProvider()
+    gUtils = gu.GenericUtilities()
 
     def __init__(self, taxPayerInfo: conf.TaxPayerInfo, reportConfig: REPORT_CONFIG) -> None:
         super().__init__(taxPayerInfo, reportConfig)

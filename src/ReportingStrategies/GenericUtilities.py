@@ -200,10 +200,12 @@ class GenericUtilities:
             acquiredTrade = lot.Acquired
             existingEvent = tradeAcquiredLotMatches.get(acquiredTrade.ID, TradeEventTrackingWrapper(0, acquiredTrade))
             existingEvent.Quantity += lot.Quantity
+            tradeAcquiredLotMatches[acquiredTrade.ID] = existingEvent
             
             soldTrade = lot.Sold
             existingEvent = tradeSoldLotMatches.get(soldTrade.ID, TradeEventTrackingWrapper(0, soldTrade))
             existingEvent.Quantity += lot.Quantity
+            tradeSoldLotMatches[soldTrade.ID] = existingEvent
 
         
         def convertBuyTrade(trade: TradeEventTrackingWrapper[gf.TradeEventStockAcquired]) -> gf.TradeEventStockAcquired:

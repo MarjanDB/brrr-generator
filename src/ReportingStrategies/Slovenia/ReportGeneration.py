@@ -6,6 +6,7 @@ import src.ReportingStrategies.GenericFormats as gf
 import src.ReportingStrategies.Slovenia.Schemas as ss
 import src.InfoProviders.InfoLookupProvider as ilp
 import src.ReportingStrategies.GenericReports as gr
+
 from itertools import groupby
 from src.ConfigurationProvider.Configuration import ReportBaseConfig
 from dataclasses import dataclass
@@ -282,6 +283,19 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
         for isinGrouping in data:
             ISIN = isinGrouping.ISIN
 
+
+            def isLotClosedInReportingPeriod(lot: gf.TradeTaxLotEventStock) -> bool:
+                closedOn = lot.Sold.Date
+
+                # lot was not closed during the reporting period, so its trades should not be included in the generated report
+                return not (closedOn < periodStart or closedOn > periodEnd)
+
+            validLots = list(filter(isLotClosedInReportingPeriod, isinGrouping.StockTaxLots))
+            isinGrouping.StockTaxLots = validLots
+
+            interestingGrouping = self.gUtils.generateInterestingUnderlyingGrouping(isinGrouping)
+
+
             def convertStockBuy(line: gf.TradeEventStockAcquired) -> ss.EDavkiTradeReportSecurityLineGenericEventBought:
                 return ss.EDavkiTradeReportSecurityLineGenericEventBought(
                     BoughtOn = line.Date,
@@ -307,24 +321,9 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                     return convertStockBuy(line)
                 
                 return convertStockSell(line)
+
             
-            buyLines : list[gf.TradeEventStockAcquired] = []
-            sellLines : list[gf.TradeEventStockSold] = []
-            lots = isinGrouping.StockTaxLots
-
-            for lot in lots:
-                closedOn = lot.Sold.Date
-
-                # lot was not closed during the reporting period, so its trades should not be included in the generated report
-                if closedOn < periodStart or closedOn > periodEnd:
-                    continue
-                
-                buyLines.append(lot.Acquired)
-                sellLines.append(lot.Sold)
-
-
-
-            allLines = buyLines + sellLines
+            allLines = list(interestingGrouping.StockTrades)
             allLines.sort(key=lambda line: line.Date)
 
             # If there are no lines to report on, do not add it to the ISIN to be reported
@@ -462,6 +461,17 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
     def generateDataFrameReport(self, data: Sequence[gf.UnderlyingGrouping]) -> pd.DataFrame:
         convertedTrades = self.convertTradesToKdvpItems(data)
 
+        # since the csv export is mainly used for validating outside of the EDavki platform, we can say buys subtract money, sells add money
+        for trade in convertedTrades:
+            for items in trade.Items:
+                for events in items.Events:
+                    if isinstance(events, ss.EDavkiTradeReportSecurityLineGenericEventBought):
+                        events.TotalPrice = - events.TotalPrice
+                        events.PricePerUnit = - events.PricePerUnit
+
+                    if isinstance(events, ss.EDavkiTradeReportSecurityLineGenericEventSold):
+                        events.Quantity = - events.Quantity
+
 
         def getLinesFromData(entry: ss.EDavkiGenericTradeReportItem) -> list[pd.DataFrame]:
             
@@ -481,6 +491,9 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
             return list(map(getLinesDataFromEvents, entry.Items))
 
         mappedData = list(map(getLinesFromData, convertedTrades))
+        if len(mappedData) == 0:
+            return pd.DataFrame()
+
         flattenedData = [x for xn in mappedData for x in xn]
 
         combinedData = pd.concat(flattenedData)
