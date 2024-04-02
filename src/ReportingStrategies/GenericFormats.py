@@ -233,6 +233,22 @@ class UnderlyingGrouping:
 
 
 
+@dataclass
+class UnderlyingGroupingWithTradesOfInterest:
+    ISIN: str
+    CountryOfOrigin: str | None   # None for unknown
+    
+    UnderlyingCategory: GenericCategory
+
+    StockTrades: Sequence[TradeEventStockAcquired | TradeEventStockSold]
+    
+    DerivativeTrades: Sequence[TradeEventDerivativeAcquired | TradeEventDerivativeSold]
+
+    Dividends: Sequence[GenericDividendLine]
+
+
+
+
 
 
 

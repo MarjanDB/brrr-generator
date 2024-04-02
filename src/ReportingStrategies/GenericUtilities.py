@@ -2,6 +2,18 @@ import src.InfoProviders.InfoLookupProvider as ilp
 import src.ReportingStrategies.GenericFormats as gf
 from typing import Sequence
 import arrow as ar
+from dataclasses import dataclass
+from typing import TypeVar, Generic
+
+
+
+TRADE_EVENT_TYPE = TypeVar("TRADE_EVENT_TYPE")
+@dataclass
+class TradeEventTrackingWrapper(Generic[TRADE_EVENT_TYPE]):
+    Quantity: float
+    Trade: TRADE_EVENT_TYPE
+
+
 
 class GenericUtilities:
     def findStockEventById(self, id: str, allStocks: Sequence[gf.GenericTradeEvent]) -> gf.GenericTradeEvent:
@@ -128,7 +140,6 @@ class GenericUtilities:
         return processed
 
 
-
     # TODO: Handle trades being referenced in multiple lots, so a many to many lots <-> trades relationships
     def processGenericGrouping(self, grouping: gf.GenericUnderlyingGroupingStaging) -> gf.UnderlyingGrouping:
         stockTrades = grouping.StockTrades
@@ -139,7 +150,6 @@ class GenericUtilities:
         
         stockLots = grouping.StockTaxLots
         processedStockLots = list(map(lambda lot: self.processStockLot(lot, allTrades), stockLots))
-
 
         derivativeTrades = grouping.DerivativeTrades
         processedDerivatives = list(map(self.processDerivativeTrade, derivativeTrades))
@@ -162,13 +172,99 @@ class GenericUtilities:
         )
         return processed
 
-
-
-
-
-
-
-    def processGenericGroupings(self, groupings: Sequence[gf.GenericUnderlyingGroupingStaging]) -> Sequence[gf.UnderlyingGrouping]:
+    def generateGenericGroupings(self, groupings: Sequence[gf.GenericUnderlyingGroupingStaging]) -> Sequence[gf.UnderlyingGrouping]:
         processedGroupings = list(map(self.processGenericGrouping, groupings))
         return processedGroupings
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def getTradeLotMatchesWithQuantity(self, lots: Sequence[gf.TradeTaxLotEventStock], trades: Sequence[gf.TradeEventStockAcquired | gf.TradeEventStockSold]):
+        tradeAcquiredLotMatches: dict[str, TradeEventTrackingWrapper[gf.TradeEventStockAcquired]] = dict()
+        tradeSoldLotMatches: dict[str, TradeEventTrackingWrapper[gf.TradeEventStockSold]] = dict()
+        
+
+        # TODO: Keep track of invalid Quantities
+        for lot in lots:
+            acquiredTrade = lot.Acquired
+            existingEvent = tradeAcquiredLotMatches.get(acquiredTrade.ID, TradeEventTrackingWrapper(0, acquiredTrade))
+            existingEvent.Quantity += lot.Quantity
+            
+            soldTrade = lot.Sold
+            existingEvent = tradeSoldLotMatches.get(soldTrade.ID, TradeEventTrackingWrapper(0, soldTrade))
+            existingEvent.Quantity += lot.Quantity
+
+        
+        def convertBuyTrade(trade: TradeEventTrackingWrapper[gf.TradeEventStockAcquired]) -> gf.TradeEventStockAcquired:
+            converted = gf.TradeEventStockAcquired(
+                ID = trade.Trade.ID,
+                ISIN = trade.Trade.ISIN,
+                Ticker = trade.Trade.Ticker,
+                AssetClass = trade.Trade.AssetClass,
+                Date = trade.Trade.Date,
+                Quantity = trade.Quantity,
+                AmountPerQuantity = trade.Trade.AmountPerQuantity,
+                TotalAmount = trade.Trade.AmountPerQuantity * trade.Quantity,
+                TaxTotal = trade.Trade.TaxTotal, # TODO: Handle taxes?
+                Multiplier = trade.Trade.Multiplier,
+                AcquiredReason = trade.Trade.AcquiredReason
+            )
+            return converted
+        
+        def convertSellTrade(trade: TradeEventTrackingWrapper[gf.TradeEventStockSold]) -> gf.TradeEventStockSold:
+            converted = gf.TradeEventStockSold(
+                ID = trade.Trade.ID,
+                ISIN = trade.Trade.ISIN,
+                Ticker = trade.Trade.Ticker,
+                AssetClass = trade.Trade.AssetClass,
+                Date = trade.Trade.Date,
+                Quantity = trade.Quantity,
+                AmountPerQuantity = trade.Trade.AmountPerQuantity,
+                TotalAmount = trade.Trade.AmountPerQuantity * trade.Quantity,
+                TaxTotal = trade.Trade.TaxTotal, # TODO: Handle taxes?
+                Multiplier = trade.Trade.Multiplier
+            )
+            return converted
+
+        convertedBuyTrades = list(map(convertBuyTrade, tradeAcquiredLotMatches.values()))
+        convertedSellTrades = list(map(convertSellTrade, tradeSoldLotMatches.values()))
+
+        allTrades = convertedBuyTrades + convertedSellTrades
+
+        return allTrades
+
+
+    def generateInterestingUnderlyingGrouping(self, grouping: gf.UnderlyingGrouping) -> gf.UnderlyingGroupingWithTradesOfInterest:
+        stockTrades = grouping.StockTrades
+        stockLots = grouping.StockTaxLots
+
+        stockTradesOfInterest = self.getTradeLotMatchesWithQuantity(stockLots, stockTrades)
+
+
+        interestingGrouping = gf.UnderlyingGroupingWithTradesOfInterest(
+            ISIN = grouping.ISIN,
+            CountryOfOrigin = grouping.CountryOfOrigin,
+            UnderlyingCategory = grouping.UnderlyingCategory,
+            StockTrades = stockTradesOfInterest,
+            DerivativeTrades = [],
+            Dividends = grouping.Dividends
+        )
+
+        return interestingGrouping
+
+
+
+    def generateInterestingUnderlyingGroupings(self, groupings: Sequence[gf.UnderlyingGrouping]) -> Sequence[gf.UnderlyingGroupingWithTradesOfInterest]:
+        processedGroupings = list(map(self.generateInterestingUnderlyingGrouping, groupings))
+        return processedGroupings

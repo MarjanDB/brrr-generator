@@ -88,7 +88,7 @@ class TestGenericGroupingsProcessing:
 
         utils = gu.GenericUtilities()
 
-        results = utils.processGenericGroupings(groupings)
+        results = utils.generateGenericGroupings(groupings)
 
         assert len(results) == 1
 
@@ -109,7 +109,7 @@ class TestGenericGroupingsProcessing:
 
         utils = gu.GenericUtilities()
 
-        results = utils.processGenericGroupings(groupings)
+        results = utils.generateGenericGroupings(groupings)
 
         assert len(results) == 1
 
