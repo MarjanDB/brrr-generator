@@ -458,6 +458,8 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
 
 
 
+    # NOTE: When comparing with exports from IBKR, take the realized P/L and add comissions. EDavki does reporting based on Trade Price, not Cost Basis !!!
+    # The generated reports are going to show you made more money than you really did because Slovenia recognizes 1% of the Trade Price as the costs associated with buying/selling of the underlying.
     def generateDataFrameReport(self, data: Sequence[gf.UnderlyingGrouping]) -> pd.DataFrame:
         convertedTrades = self.convertTradesToKdvpItems(data)
 
