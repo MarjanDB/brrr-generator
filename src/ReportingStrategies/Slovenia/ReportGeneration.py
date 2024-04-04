@@ -300,9 +300,9 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                 return ss.EDavkiTradeReportSecurityLineGenericEventBought(
                     BoughtOn = line.Date,
                     GainType = self.GAIN_MAPPINGS[line.AcquiredReason],
-                    Quantity = line.Quantity,
-                    PricePerUnit = line.AmountPerQuantity,
-                    TotalPrice = line.TotalAmount,
+                    Quantity = line.ExchangedMoney.UnderlyingQuantity,
+                    PricePerUnit = line.ExchangedMoney.UnderlyingTradePrice,
+                    TotalPrice = line.ExchangedMoney.UnderlyingQuantity * line.ExchangedMoney.UnderlyingTradePrice,
                     InheritanceAndGiftTaxPaid = None,
                     BaseTaxReduction = None
                 )
@@ -310,9 +310,9 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
             def convertStockSell(line: gf.TradeEventStockSold) -> ss.EDavkiTradeReportSecurityLineGenericEventSold:
                 return ss.EDavkiTradeReportSecurityLineGenericEventSold(
                     SoldOn = line.Date,
-                    Quantity = line.Quantity,
-                    TotalPrice = line.TotalAmount,
-                    PricePerUnit = line.AmountPerQuantity,
+                    Quantity = line.ExchangedMoney.UnderlyingQuantity,
+                    PricePerUnit = line.ExchangedMoney.UnderlyingTradePrice,
+                    TotalPrice = line.ExchangedMoney.UnderlyingQuantity * line.ExchangedMoney.UnderlyingTradePrice,
                     SatisfiesTaxBasisReduction = False # TODO: Wash sale handling
                 )
             
@@ -347,7 +347,7 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                 Events = convertedLines
             )
 
-            ForeignTaxPaid = sum(map(lambda entry: entry.TaxTotal or 0, allLines))
+            ForeignTaxPaid = sum(map(lambda entry: entry.ExchangedMoney.TaxTotal or 0, allLines))
             HasForeignTax = True
             if ForeignTaxPaid <= 0:
                 ForeignTaxPaid = None
@@ -468,11 +468,11 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
             for items in trade.Items:
                 for events in items.Events:
                     if isinstance(events, ss.EDavkiTradeReportSecurityLineGenericEventBought):
-                        events.TotalPrice = - events.TotalPrice
-                        events.PricePerUnit = - events.PricePerUnit
+                      events.TotalPrice =  events.TotalPrice
+                      events.PricePerUnit =  events.PricePerUnit
 
                     if isinstance(events, ss.EDavkiTradeReportSecurityLineGenericEventSold):
-                        events.Quantity = - events.Quantity
+                       events.Quantity =  events.Quantity
 
 
         def getLinesFromData(entry: ss.EDavkiGenericTradeReportItem) -> list[pd.DataFrame]:

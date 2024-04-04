@@ -91,7 +91,7 @@ def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequ
             ExchangedMoney = gf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency = trade.Currency,
                 UnderlyingQuantity = trade.Quantity,
-                UnderlyingTradePrice = trade.TradePrice,
+                UnderlyingTradePrice = trade.TradePrice * trade.FXRateToBase,   # TODO: Remove in favor of currency conversion provider
                 ComissionCurrency = trade.IBCommissionCurrency,
                 ComissionTotal = trade.IBCommission,
                 TaxCurrency = trade.Currency,   # NOTE: Taxes Currency == Trade Currency ??
@@ -111,7 +111,7 @@ def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequ
             ExchangedMoney = gf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency = trade.Currency,
                 UnderlyingQuantity = trade.Quantity,
-                UnderlyingTradePrice = trade.TradePrice,
+                UnderlyingTradePrice = trade.TradePrice * trade.FXRateToBase,   # TODO: Remove in favor of currency conversion provider
                 ComissionCurrency = trade.IBCommissionCurrency,
                 ComissionTotal = trade.IBCommission,
                 TaxCurrency = trade.Currency,   # NOTE: Taxes Currency == Trade Currency ??
@@ -168,7 +168,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDeriv
             ExchangedMoney = gf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency = trade.Currency,
                 UnderlyingQuantity = trade.Quantity,
-                UnderlyingTradePrice = trade.TradePrice,
+                UnderlyingTradePrice = trade.TradePrice * trade.FXRateToBase,   # TODO: Remove in favor of currency conversion provider
                 ComissionCurrency = trade.IBCommissionCurrency,
                 ComissionTotal = trade.IBCommission,
                 TaxCurrency = trade.Currency,   # NOTE: Taxes Currency == Trade Currency ??
@@ -188,7 +188,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDeriv
             ExchangedMoney = gf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency = trade.Currency,
                 UnderlyingQuantity = trade.Quantity,
-                UnderlyingTradePrice = trade.TradePrice,
+                UnderlyingTradePrice = trade.TradePrice * trade.FXRateToBase,   # TODO: Remove in favor of currency conversion provider
                 ComissionCurrency = trade.IBCommissionCurrency,
                 ComissionTotal = trade.IBCommission,
                 TaxCurrency = trade.Currency,   # NOTE: Taxes Currency == Trade Currency ??
