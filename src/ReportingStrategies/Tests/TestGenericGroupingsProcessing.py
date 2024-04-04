@@ -5,30 +5,43 @@ import arrow as ar
 simpleStockBuy = gf.TradeEventStagingStockAcquired(
     ID = "StockBought",
     ISIN = "US123",
+    Ticker = "AAPL",
     AssetClass = gf.GenericAssetClass.STOCK,
     Date = ar.get("2023-01-01"),
-    Quantity = 1,
-    AmountPerQuantity = 10,
-    TotalAmount = 10,
-    TaxTotal = 0,
     Multiplier = 1,
-    AcquiredReason = gf.GenericTradeReportItemGainType.BOUGHT
+    AcquiredReason = gf.GenericTradeReportItemGainType.BOUGHT,
+    ExchangedMoney = gf.GenericMonetaryExchangeInformation(
+        UnderlyingCurrency = "EUR",
+        UnderlyingQuantity = 1,
+        UnderlyingTradePrice = 10,
+        ComissionCurrency = "EUR",
+        ComissionTotal = 0,
+        TaxCurrency = "EUR",
+        TaxTotal = 0
+    )
 )
 
 simpleStockSold = gf.TradeEventStagingStockSold(
     ID = "StockSold",
     ISIN = "US123",
+    Ticker = "AAPL",
     AssetClass = gf.GenericAssetClass.STOCK,
     Date = ar.get("2023-01-02"),
-    Quantity = 1,
-    AmountPerQuantity = 15,
-    TotalAmount = 15,
-    TaxTotal = 0,
-    Multiplier = 1
+    Multiplier = 1,
+    ExchangedMoney = gf.GenericMonetaryExchangeInformation(
+        UnderlyingCurrency = "EUR",
+        UnderlyingQuantity = 1,
+        UnderlyingTradePrice = 15,
+        ComissionCurrency = "EUR",
+        ComissionTotal = 0,
+        TaxCurrency = "EUR",
+        TaxTotal = 0
+    )
 )
 
 simpleStockLot = gf.GenericTaxLotEventStaging(
     ID = "Lot",
+    Ticker = "AAPL",
     ISIN = "US123",
     Quantity = 1,
     Acquired = gf.GenericTaxLotMatchingDetails(ID = "StockBought", DateTime = None),
@@ -40,31 +53,44 @@ simpleStockLot = gf.GenericTaxLotEventStaging(
 simpleDerivativeBuy = gf.TradeEventStagingDerivativeAcquired(
     ID = "DerivativeBought",
     ISIN = "US123",
+    Ticker = "AAPL",
     AssetClass = gf.GenericAssetClass.STOCK,
     Date = ar.get("2023-01-01"),
-    Quantity = 1,
-    AmountPerQuantity = 10,
-    TotalAmount = 10,
-    TaxTotal = 0,
     Multiplier = 100,
-    AcquiredReason = gf.GenericTradeReportItemGainType.BOUGHT
+    AcquiredReason = gf.GenericTradeReportItemGainType.BOUGHT,
+    ExchangedMoney = gf.GenericMonetaryExchangeInformation(
+        UnderlyingCurrency = "EUR",
+        UnderlyingQuantity = 1,
+        UnderlyingTradePrice = 10,
+        ComissionCurrency = "EUR",
+        ComissionTotal = 0,
+        TaxCurrency = "EUR",
+        TaxTotal = 0
+    )
 )
 
 simpleDerivativeSold = gf.TradeEventStagingDerivativeSold(
     ID = "DerivativeSold",
     ISIN = "US123",
+    Ticker = "AAPL",
     AssetClass = gf.GenericAssetClass.STOCK,
     Date = ar.get("2023-01-02"),
-    Quantity = 1,
-    AmountPerQuantity = 15,
-    TotalAmount = 15,
-    TaxTotal = 0,
-    Multiplier = 1
+    Multiplier = 1,
+    ExchangedMoney = gf.GenericMonetaryExchangeInformation(
+        UnderlyingCurrency = "EUR",
+        UnderlyingQuantity = 1,
+        UnderlyingTradePrice = 15,
+        ComissionCurrency = "EUR",
+        ComissionTotal = 0,
+        TaxCurrency = "EUR",
+        TaxTotal = 0
+    )
 )
 
 simpleDerivativeLot = gf.GenericTaxLotEventStaging(
     ID = "Lot",
     ISIN = "US123",
+    Ticker = "AAPL",
     Quantity = 1,
     Acquired = gf.GenericTaxLotMatchingDetails(ID = "DerivativeBought", DateTime = None),
     Sold = gf.GenericTaxLotMatchingDetails(ID = None, DateTime = ar.get("2023-01-02")),

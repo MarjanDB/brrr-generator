@@ -5,7 +5,7 @@ import arrow as ar
 
 simpleTradeBuy = es.TradeStock(
     ClientAccountID = "test",
-    CurrencyPrimary = "EUR",
+    Currency = "EUR",
     FXRateToBase = 1,
     AssetClass = es.AssetClass.STOCK,
     SubCategory = es.SubCategory.COMMON,
@@ -52,7 +52,7 @@ simpleTradeBuy = es.TradeStock(
 
 simpleTradeSell = es.TradeStock(
     ClientAccountID = "test",
-    CurrencyPrimary = "EUR",
+    Currency = "EUR",
     FXRateToBase = 1,
     AssetClass = es.AssetClass.STOCK,
     SubCategory = es.SubCategory.COMMON,
@@ -100,7 +100,7 @@ simpleTradeSell = es.TradeStock(
 
 simpleStockLot = es.LotStock(
     ClientAccountID = "test",
-    CurrencyPrimary = "EUR",
+    Currency = "EUR",
     FXRateToBase = 1,
     AssetClass = es.AssetClass.STOCK,
     SubCategory = es.SubCategory.COMMON,
@@ -151,7 +151,7 @@ class TestIbkrTransform:
 
         assert extracted.ISIN == "US21212112", "Underlying group ISIN should match the trade ISIN"
         assert extracted.StockTrades[0].ISIN == "US21212112", "The trade ISIN should match the ISIN of the group"
-        assert extracted.StockTrades[0].Quantity == 2, "The trade quantity should be 2"
+        assert extracted.StockTrades[0].ExchangedMoney.UnderlyingQuantity == 2, "The trade quantity should be 2"
 
     def testSingleStockTradeSell(self):
         segmented = es.SegmentedTrades(
@@ -170,7 +170,7 @@ class TestIbkrTransform:
 
         assert extracted.ISIN == "US21212112", "Underlying group ISIN should match the trade ISIN"
         assert extracted.StockTrades[0].ISIN == "US21212112", "The trade ISIN should match the ISIN of the group"
-        assert extracted.StockTrades[0].Quantity == -2, "The trade quantity should be -2"
+        assert extracted.StockTrades[0].ExchangedMoney.UnderlyingQuantity == -2, "The trade quantity should be -2"
 
     def testSingleStockLot(self):
         segmented = es.SegmentedTrades(

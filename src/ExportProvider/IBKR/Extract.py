@@ -25,7 +25,7 @@ def extractStockTrade(node: etree.ElementBase) -> s.TradeStock:
     
     trade = s.TradeStock(
         ClientAccountID = node.attrib['accountId'],
-        CurrencyPrimary = node.attrib['currency'],
+        Currency = node.attrib['currency'],
         FXRateToBase = float(node.attrib['fxRateToBase']),
         AssetClass = s.AssetClass(node.attrib['assetCategory']),
         SubCategory = s.SubCategory(node.attrib['subCategory']),
@@ -78,7 +78,7 @@ def extractStockLot(node: etree.ElementBase) -> s.LotStock:
     
     trade = s.LotStock(
         ClientAccountID = node.attrib['accountId'],
-        CurrencyPrimary = node.attrib['currency'],
+        Currency = node.attrib['currency'],
         FXRateToBase = float(node.attrib['fxRateToBase']),
         AssetClass = s.AssetClass(node.attrib['assetCategory']),
         SubCategory = s.SubCategory(node.attrib['subCategory']),
@@ -118,7 +118,7 @@ def extractOptionTrade(node: etree.ElementBase) -> s.TradeDerivative:
     
     trade = s.TradeDerivative(
         ClientAccountID = node.attrib['accountId'],
-        CurrencyPrimary = node.attrib['currency'],
+        Currency = node.attrib['currency'],
         FXRateToBase = float(node.attrib['fxRateToBase']),
         AssetClass = s.AssetClass(node.attrib['assetCategory']),
         SubCategory = s.SubCategory(node.attrib['subCategory']),
@@ -174,7 +174,7 @@ def extractOptionLot(node: etree.ElementBase) -> s.LotDerivative:
     
     trade = s.LotDerivative(
         ClientAccountID = node.attrib['accountId'],
-        CurrencyPrimary = node.attrib['currency'],
+        Currency = node.attrib['currency'],
         FXRateToBase = float(node.attrib['fxRateToBase']),
         AssetClass = s.AssetClass(node.attrib['assetCategory']),
         SubCategory = s.SubCategory(node.attrib['subCategory']),
@@ -216,7 +216,7 @@ def extractOptionLot(node: etree.ElementBase) -> s.LotDerivative:
 def extractCashTransaction(node: etree.ElementBase) -> s.TransactionCash:
     trade = s.TransactionCash(
         ClientAccountID=node.attrib["accountId"],
-        CurrencyPrimary=node.attrib["currency"],
+        Currency=node.attrib["currency"],
         FXRateToBase=float(node.attrib["fxRateToBase"]),
         AssetClass=s.AssetClass(node.attrib["assetCategory"]),
         SubCategory=s.SubCategory(node.attrib["subCategory"]),

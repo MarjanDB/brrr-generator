@@ -1,9 +1,8 @@
 import src.ExportProvider.IBKR.Schemas as s
 import src.ReportingStrategies.GenericFormats as gf
 from itertools import groupby
-import arrow
 from dataclasses import dataclass
-from typing import Any, Callable, TypeVar, Generic, Sequence
+from typing import Any, TypeVar, Generic, Sequence
 
 LINE_GENERIC_BUY = TypeVar('LINE_GENERIC_BUY')
 LINE_GENERIC_SELL = TypeVar('LINE_GENERIC_SELL')
@@ -58,9 +57,9 @@ def getGenericDividendLineFromIBRKCashTransactions(cashTransactions: list[s.Tran
 
         return gf.GenericDividendLine(
             AccountID = transaction.ClientAccountID,
-            LineCurrency = transaction.CurrencyPrimary,
+            LineCurrency = transaction.Currency,
             ConversionToBaseAccountCurrency = transaction.FXRateToBase,
-            AccountCurrency = transaction.CurrencyPrimary,
+            AccountCurrency = transaction.Currency,
             ReceivedDateTime = transaction.DateTime,
             AmountInCurrency = transaction.Amount,
             DividendActionID = transaction.ActionID,
@@ -87,12 +86,17 @@ def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequ
             Ticker = trade.Symbol,
             AssetClass = gf.GenericAssetClass.STOCK,
             Date = trade.DateTime,
-            Quantity = trade.Quantity,
-            AmountPerQuantity = trade.TradePrice,
-            TotalAmount = trade.TradeMoney,
-            TaxTotal = trade.Taxes,
-            Multiplier = 1,
             AcquiredReason = gf.GenericTradeReportItemGainType.BOUGHT,  # TODO: Determine reason for acquire
+            Multiplier = 1,
+            ExchangedMoney = gf.GenericMonetaryExchangeInformation(
+                UnderlyingCurrency = trade.Currency,
+                UnderlyingQuantity = trade.Quantity,
+                UnderlyingTradePrice = trade.TradePrice,
+                ComissionCurrency = trade.IBCommissionCurrency,
+                ComissionTotal = trade.IBCommission,
+                TaxCurrency = trade.Currency,   # NOTE: Taxes Currency == Trade Currency ??
+                TaxTotal = trade.Taxes
+            )
         )
         return converted
 
@@ -103,11 +107,16 @@ def convertStockTradesToStockTradeEvents(trades: Sequence[s.TradeStock]) -> Sequ
             Ticker = trade.Symbol,
             AssetClass = gf.GenericAssetClass.STOCK,
             Date = trade.DateTime,
-            Quantity = trade.Quantity,
-            AmountPerQuantity = trade.TradePrice,
-            TotalAmount = trade.TradeMoney,
-            TaxTotal = trade.Taxes,
             Multiplier = 1,
+            ExchangedMoney = gf.GenericMonetaryExchangeInformation(
+                UnderlyingCurrency = trade.Currency,
+                UnderlyingQuantity = trade.Quantity,
+                UnderlyingTradePrice = trade.TradePrice,
+                ComissionCurrency = trade.IBCommissionCurrency,
+                ComissionTotal = trade.IBCommission,
+                TaxCurrency = trade.Currency,   # NOTE: Taxes Currency == Trade Currency ??
+                TaxTotal = trade.Taxes
+            )
         )
         return converted
 
@@ -153,13 +162,18 @@ def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDeriv
             ISIN = trade.UnderlyingSecurityID,
             Ticker = trade.UnderlyingSymbol,
             AssetClass = gf.GenericAssetClass.OPTION,   # TODO: Could also be stock but leveraged (multiplier)
-            Date = trade.DateTime,
-            Quantity = trade.Quantity,
-            AmountPerQuantity = trade.TradePrice,
-            TotalAmount = trade.TradeMoney,
-            TaxTotal = trade.Taxes,
             Multiplier = trade.Multiplier,
             AcquiredReason = gf.GenericTradeReportItemGainType.BOUGHT,  # TODO: Determine reason for acquire
+            Date = trade.DateTime,
+            ExchangedMoney = gf.GenericMonetaryExchangeInformation(
+                UnderlyingCurrency = trade.Currency,
+                UnderlyingQuantity = trade.Quantity,
+                UnderlyingTradePrice = trade.TradePrice,
+                ComissionCurrency = trade.IBCommissionCurrency,
+                ComissionTotal = trade.IBCommission,
+                TaxCurrency = trade.Currency,   # NOTE: Taxes Currency == Trade Currency ??
+                TaxTotal = trade.Taxes
+            )
         )
         return converted
 
@@ -169,12 +183,17 @@ def convertDerivativeTradesToDerivativeTradeEvents(trades: Sequence[s.TradeDeriv
             ISIN = trade.UnderlyingSecurityID,
             Ticker = trade.UnderlyingSymbol,
             AssetClass = gf.GenericAssetClass.OPTION,
-            Date = trade.DateTime,
-            Quantity = trade.Quantity,
-            AmountPerQuantity = trade.TradePrice,
-            TotalAmount = trade.TradeMoney,
-            TaxTotal = trade.Taxes,
             Multiplier = trade.Multiplier,
+            Date = trade.DateTime,
+            ExchangedMoney = gf.GenericMonetaryExchangeInformation(
+                UnderlyingCurrency = trade.Currency,
+                UnderlyingQuantity = trade.Quantity,
+                UnderlyingTradePrice = trade.TradePrice,
+                ComissionCurrency = trade.IBCommissionCurrency,
+                ComissionTotal = trade.IBCommission,
+                TaxCurrency = trade.Currency,   # NOTE: Taxes Currency == Trade Currency ??
+                TaxTotal = trade.Taxes
+            )
         )
         return converted
 

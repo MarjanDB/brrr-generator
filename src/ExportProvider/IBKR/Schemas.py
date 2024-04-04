@@ -132,7 +132,7 @@ class TradeGeneric:
     ClientAccountID: str
     AccountAlias: str | None
     Model: Model | None
-    CurrencyPrimary: str
+    Currency: str
     FXRateToBase: float
     AssetClass: AssetClass
     SubCategory: SubCategory
@@ -219,7 +219,7 @@ class TradeGeneric:
 @dataclass
 class TransactionCash:
     ClientAccountID: str
-    CurrencyPrimary: str
+    Currency: str
     FXRateToBase: float
     AssetClass: AssetClass
     SubCategory: SubCategory
@@ -245,7 +245,7 @@ class TransactionCash:
 @dataclass
 class TradeStock:
     ClientAccountID: str
-    CurrencyPrimary: str
+    Currency: str
     FXRateToBase: float
     AssetClass: AssetClass
     SubCategory: SubCategory
@@ -293,7 +293,7 @@ class TradeStock:
 @dataclass
 class LotStock:
     ClientAccountID: str
-    CurrencyPrimary: str
+    Currency: str
     FXRateToBase: float
     AssetClass: AssetClass
     SubCategory: SubCategory
@@ -329,7 +329,7 @@ class LotStock:
 @dataclass
 class TradeDerivative:
     ClientAccountID: str
-    CurrencyPrimary: str
+    Currency: str
     FXRateToBase: float
     AssetClass: AssetClass
     SubCategory: SubCategory
@@ -380,7 +380,7 @@ class TradeDerivative:
 @dataclass
 class LotDerivative:
     ClientAccountID: str
-    CurrencyPrimary: str
+    Currency: str
     FXRateToBase: float
     AssetClass: AssetClass
     SubCategory: SubCategory

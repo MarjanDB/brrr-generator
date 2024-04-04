@@ -77,6 +77,19 @@ class GenericTradeReportItemGainType(str, Enum):
     RIGHT_TO_NEWLY_ISSUED_STOCK = "RIGHT_TO_NEWLY_ISSUED_STOCK" # guessing
 
 
+@dataclass
+class GenericMonetaryExchangeInformation:
+    UnderlyingCurrency: str
+    UnderlyingQuantity: float
+    UnderlyingTradePrice: float
+    
+    ComissionCurrency: str
+    ComissionTotal: float
+
+    TaxCurrency: str
+    TaxTotal: float
+
+
 
 
 @dataclass
@@ -86,11 +99,9 @@ class GenericTradeEventStaging:
     Ticker: str | None
     AssetClass: GenericAssetClass       # Trades can have to do with different Asset Classes (Stock, Options, ...)
     Date: Arrow
-    Quantity: float
-    AmountPerQuantity: float
-    TotalAmount: float
-    TaxTotal: float
     Multiplier: float                   # for Leveraged trades
+    ExchangedMoney: GenericMonetaryExchangeInformation
+    
 
 @dataclass
 class TradeEventStagingStockAcquired(GenericTradeEventStaging):
@@ -160,11 +171,8 @@ class GenericTradeEvent:
     Ticker: str
     AssetClass: GenericAssetClass       # Trades can have to do with different Asset Classes (Stock, Options, ...)
     Date: Arrow
-    Quantity: float
-    AmountPerQuantity: float
-    TotalAmount: float
-    TaxTotal: float
     Multiplier: float                   # for Leveraged trades
+    ExchangedMoney: GenericMonetaryExchangeInformation
 
 
 @dataclass

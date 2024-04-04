@@ -41,12 +41,9 @@ class GenericUtilities:
                 Ticker = trade.Ticker or "",
                 AssetClass = trade.AssetClass,
                 Date = trade.Date,
-                Quantity = trade.Quantity,
-                AmountPerQuantity = trade.AmountPerQuantity,
-                TotalAmount = trade.TotalAmount,
-                TaxTotal = trade.TaxTotal,
                 Multiplier = trade.Multiplier,
-                AcquiredReason = trade.AcquiredReason
+                AcquiredReason = trade.AcquiredReason,
+                ExchangedMoney = trade.ExchangedMoney
             )
             return converted
         
@@ -56,11 +53,8 @@ class GenericUtilities:
             Ticker = trade.Ticker or "",
             AssetClass = trade.AssetClass,
             Date = trade.Date,
-            Quantity = trade.Quantity,
-            AmountPerQuantity = trade.AmountPerQuantity,
-            TotalAmount = trade.TotalAmount,
-            TaxTotal = trade.TaxTotal,
-            Multiplier = trade.Multiplier
+            Multiplier = trade.Multiplier,
+            ExchangedMoney = trade.ExchangedMoney
         )
         return converted
 
@@ -94,12 +88,9 @@ class GenericUtilities:
                 Ticker = trade.Ticker or "",
                 AssetClass = trade.AssetClass,
                 Date = trade.Date,
-                Quantity = trade.Quantity,
-                AmountPerQuantity = trade.AmountPerQuantity,
-                TotalAmount = trade.TotalAmount,
-                TaxTotal = trade.TaxTotal,
                 Multiplier = trade.Multiplier,
-                AcquiredReason = trade.AcquiredReason
+                AcquiredReason = trade.AcquiredReason,
+                ExchangedMoney = trade.ExchangedMoney
             )
             return converted
         
@@ -109,11 +100,8 @@ class GenericUtilities:
             Ticker = trade.Ticker or "",
             AssetClass = trade.AssetClass,
             Date = trade.Date,
-            Quantity = trade.Quantity,
-            AmountPerQuantity = trade.AmountPerQuantity,
-            TotalAmount = trade.TotalAmount,
-            TaxTotal = trade.TaxTotal,
-            Multiplier = trade.Multiplier
+            Multiplier = trade.Multiplier,
+            ExchangedMoney = trade.ExchangedMoney
         )
         return converted
 
@@ -215,12 +203,9 @@ class GenericUtilities:
                 Ticker = trade.Trade.Ticker,
                 AssetClass = trade.Trade.AssetClass,
                 Date = trade.Trade.Date,
-                Quantity = trade.Quantity,
-                AmountPerQuantity = trade.Trade.AmountPerQuantity,
-                TotalAmount = trade.Trade.AmountPerQuantity * trade.Quantity,
-                TaxTotal = trade.Trade.TaxTotal, # TODO: Handle taxes?
                 Multiplier = trade.Trade.Multiplier,
-                AcquiredReason = trade.Trade.AcquiredReason
+                AcquiredReason = trade.Trade.AcquiredReason,
+                ExchangedMoney = trade.Trade.ExchangedMoney
             )
             return converted
         
@@ -231,11 +216,8 @@ class GenericUtilities:
                 Ticker = trade.Trade.Ticker,
                 AssetClass = trade.Trade.AssetClass,
                 Date = trade.Trade.Date,
-                Quantity = trade.Quantity,
-                AmountPerQuantity = trade.Trade.AmountPerQuantity,
-                TotalAmount = trade.Trade.AmountPerQuantity * trade.Quantity,
-                TaxTotal = trade.Trade.TaxTotal, # TODO: Handle taxes?
-                Multiplier = trade.Trade.Multiplier
+                Multiplier = trade.Trade.Multiplier,
+                ExchangedMoney = trade.Trade.ExchangedMoney
             )
             return converted
 
