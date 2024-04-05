@@ -30,7 +30,7 @@ simpleStockSold = gf.TradeEventStagingStockSold(
     Multiplier = 1,
     ExchangedMoney = gf.GenericMonetaryExchangeInformation(
         UnderlyingCurrency = "EUR",
-        UnderlyingQuantity = 1,
+        UnderlyingQuantity = -1,
         UnderlyingTradePrice = 15,
         ComissionCurrency = "EUR",
         ComissionTotal = 0,
@@ -78,7 +78,7 @@ simpleDerivativeSold = gf.TradeEventStagingDerivativeSold(
     Multiplier = 1,
     ExchangedMoney = gf.GenericMonetaryExchangeInformation(
         UnderlyingCurrency = "EUR",
-        UnderlyingQuantity = 1,
+        UnderlyingQuantity = -1,
         UnderlyingTradePrice = 15,
         ComissionCurrency = "EUR",
         ComissionTotal = 0,
@@ -119,7 +119,9 @@ class TestGenericGroupingsProcessing:
         assert len(results) == 1
 
         assert results[0].StockTaxLots[0].Acquired == results[0].StockTrades[0]
+        assert results[0].StockTaxLots[0].Acquired.ExchangedMoney.UnderlyingQuantity == 1
         assert results[0].StockTaxLots[0].Sold == results[0].StockTrades[1]
+        assert results[0].StockTaxLots[0].Sold.ExchangedMoney.UnderlyingQuantity == -1
 
     def testSingleDerivativeLotMatching(self):
         groupings = [gf.GenericUnderlyingGroupingStaging(
@@ -140,5 +142,7 @@ class TestGenericGroupingsProcessing:
         assert len(results) == 1
 
         assert results[0].DerivativeTaxLots[0].Acquired == results[0].DerivativeTrades[0]
+        assert results[0].DerivativeTaxLots[0].Acquired.ExchangedMoney.UnderlyingQuantity == 1
         assert results[0].DerivativeTaxLots[0].Sold == results[0].DerivativeTrades[1]
+        assert results[0].DerivativeTaxLots[0].Sold.ExchangedMoney.UnderlyingQuantity == -1
 

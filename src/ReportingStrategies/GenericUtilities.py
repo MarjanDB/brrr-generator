@@ -20,9 +20,9 @@ class GenericUtilities:
         filtered = filter(lambda trade: trade.ID == id, allStocks)
         return next(filtered)
     
-    def findStockEventByDate(self, date: ar.Arrow, allStocks: Sequence[gf.GenericTradeEvent]) -> gf.GenericTradeEvent:
+    def findStockEventByDate(self, date: ar.Arrow, allStocks: Sequence[gf.GenericTradeEvent]) -> Sequence[gf.GenericTradeEvent]:
         filtered = filter(lambda trade: trade.Date == date, allStocks)
-        return next(filtered)
+        return list(filtered)
 
     # TODO: Create trade events based on corporate events
     def createMissingStockTradesFromCorporateActions(self) -> Sequence[gf.TradeEventStockAcquired | gf.TradeEventStockSold]:
@@ -59,12 +59,16 @@ class GenericUtilities:
         return converted
 
     def processStockLot(self, lot: gf.GenericTaxLotEventStaging, allTrades: Sequence[gf.TradeEventStockAcquired | gf.TradeEventStockSold]) -> gf.TradeTaxLotEventStock:
+        print("Processing stock lot (ID: {})".format(lot.ID))
 
         # TODO: Validate returns since buys and sells are merged
         # TODO: What to do when no match is found?
         try:
             matchingBuyById : gf.TradeEventStockAcquired = self.findStockEventById(lot.Acquired.ID or "", allTrades)
-            matchingSoldByDate : gf.TradeEventStockSold = self.findStockEventByDate(lot.Sold.DateTime or ar.get("1-0-0"), allTrades)
+            matchingSoldByDate : gf.TradeEventStockSold = self.findStockEventByDate(lot.Sold.DateTime or ar.get("1-0-0"), allTrades)[0]
+
+            print("Matched Buy with trade (ID: {}, DateTime: {})".format(matchingBuyById.ID, matchingBuyById.Date))
+            print("Matched Sell with trade (ID: {}, DateTime: {})".format(matchingSoldByDate.ID, matchingSoldByDate.Date))
         except StopIteration:
             print("Failed processing stock lot (ID: {}, ISIN: {}), found no match".format(lot.ID, lot.ISIN))
             raise StopIteration
@@ -111,7 +115,7 @@ class GenericUtilities:
         # TODO: What to do when no match is found?
         try:
             matchingBuyById : gf.TradeEventDerivativeAcquired = self.findStockEventById(lot.Acquired.ID or "", allTrades)
-            matchingSoldByDate : gf.TradeEventDerivativeSold = self.findStockEventByDate(lot.Sold.DateTime or ar.get("1-0-0"), allTrades)
+            matchingSoldByDate : gf.TradeEventDerivativeSold = self.findStockEventByDate(lot.Sold.DateTime or ar.get("1-0-0"), allTrades)[0]
         except StopIteration:
             print("Failed processing stock lot (ID: {}, ISIN: {}), found no match".format(lot.ID, lot.ISIN))
             raise StopIteration
@@ -190,9 +194,10 @@ class GenericUtilities:
             existingEvent.Quantity += lot.Quantity
             tradeAcquiredLotMatches[acquiredTrade.ID] = existingEvent
             
+            # NOTE: Lots subtract, as sells remove from holding
             soldTrade = lot.Sold
             existingEvent = tradeSoldLotMatches.get(soldTrade.ID, TradeEventTrackingWrapper(0, soldTrade))
-            existingEvent.Quantity += lot.Quantity
+            existingEvent.Quantity += -lot.Quantity 
             tradeSoldLotMatches[soldTrade.ID] = existingEvent
 
         
@@ -219,6 +224,11 @@ class GenericUtilities:
                 Multiplier = trade.Trade.Multiplier,
                 ExchangedMoney = trade.Trade.ExchangedMoney
             )
+
+            # TODO: Because IBKR does not provide IDs for what closed the lot, we come across a problem where if multiple lots closed at the same time, we're unable to distinguish between closing trades
+            # I'm just using this hack for now, but this needs to be fixed specifically for IBKR so that imports for other brokers will work properly
+            converted.ExchangedMoney.UnderlyingQuantity = trade.Quantity
+
             return converted
 
         convertedBuyTrades = list(map(convertBuyTrade, tradeAcquiredLotMatches.values()))
