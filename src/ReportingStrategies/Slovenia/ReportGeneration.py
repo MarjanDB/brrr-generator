@@ -12,6 +12,8 @@ from src.ConfigurationProvider.Configuration import ReportBaseConfig
 from dataclasses import dataclass
 import arrow
 
+
+
 # https://edavki.durs.si/EdavkiPortal/PersonalPortal/[360253]/Pages/Help/sl/WorkflowType1.htm
 class EDavkiDocumentWorkflowType(str, Enum):
     ORIGINAL = "O"
@@ -84,6 +86,39 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
             gf.GenericDividendLineType.DIVIDEND: dividendLines,
             gf.GenericDividendLineType.WITHOLDING_TAX: witholdingTax
         }
+    
+    def mergeSameDividendsForUniqueDayIsinType(self, dividends: list[ss.EDavkiDividendReportLine]) -> list[ss.EDavkiDividendReportLine]:
+        segmented: dict[str, list[ss.EDavkiDividendReportLine]] = {}
+        for key, valuesiter in groupby(dividends, key=lambda dividend: "{}-{}-{}".format(dividend.DateReceived, dividend.DividendType, dividend.DividendPayerAddress)):
+            segmented[key] = list(v for v in valuesiter)
+
+        mergedDividends: list[ss.EDavkiDividendReportLine] = list()
+
+        for dividendList in segmented.values():
+            combinedTotal = sum(map(lambda dividend: dividend.DividendAmount, dividendList))
+            combinedTotalTax = sum(map(lambda dividend: dividend.ForeignTaxPaid, dividendList))
+
+            combinedTracking = '-'.join(list(map(lambda dividend: dividend.DividendIdentifierForTracking, dividendList)))
+
+            generatedMerged = ss.EDavkiDividendReportLine(
+                DateReceived = dividendList[0].DateReceived,
+                TaxNumberForDividendPayer = dividendList[0].TaxNumberForDividendPayer,
+                DividendPayerIdentificationNumber = dividendList[0].DividendPayerIdentificationNumber,
+                DividendPayerTitle = dividendList[0].DividendPayerTitle,
+                DividendPayerAddress = dividendList[0].DividendPayerAddress,
+                DividendPayerCountryOfOrigin = dividendList[0].DividendPayerCountryOfOrigin,
+                DividendType = dividendList[0].DividendType,
+                CountryOfOrigin = dividendList[0].CountryOfOrigin,
+                DividendIdentifierForTracking = combinedTracking,
+                TaxReliefParagraphInInternationalTreaty = dividendList[0].TaxReliefParagraphInInternationalTreaty,
+                DividendAmount = combinedTotal,
+                ForeignTaxPaid = combinedTotalTax
+            )
+
+            mergedDividends.append(generatedMerged)
+
+        return mergedDividends
+
     
     def calculateLines(self, data: list[gf.GenericDividendLine]) -> list[ss.EDavkiDividendReportLine]:
         actionToDividendMapping : dict[str, ss.EDavkiDividendReportLine] = dict()
@@ -173,7 +208,9 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
                 print("Failed for ISIN: " + dividendLine.DividendPayerIdentificationNumber)
                 print(e)
 
-        return createdLines
+        combinedLines = self.mergeSameDividendsForUniqueDayIsinType(createdLines)
+
+        return combinedLines
 
     def generateDataFrameReport(self, data: list[gf.GenericDividendLine]) -> pd.DataFrame:
         lines = self.calculateLines(data)
