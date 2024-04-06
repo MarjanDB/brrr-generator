@@ -1,8 +1,9 @@
 import src.ReportingStrategies.GenericFormats as gf
 import src.ReportingStrategies.GenericUtilities as gu
 import arrow as ar
+import pytest
 
-simpleStockBuy = gf.TradeEventStagingStockAcquired(
+simpleStagingStockBuy = gf.TradeEventStagingStockAcquired(
     ID = "StockBought",
     ISIN = "US123",
     Ticker = "AAPL",
@@ -21,7 +22,18 @@ simpleStockBuy = gf.TradeEventStagingStockAcquired(
     )
 )
 
-simpleStockSold = gf.TradeEventStagingStockSold(
+simpleStockBuy = gf.TradeEventStockAcquired(
+    ID = simpleStagingStockBuy.ID,
+    ISIN = simpleStagingStockBuy.ISIN,
+    Ticker = simpleStagingStockBuy.Ticker or "AAPL",
+    AssetClass = simpleStagingStockBuy.AssetClass,
+    Date = simpleStagingStockBuy.Date,
+    Multiplier = simpleStagingStockBuy.Multiplier,
+    AcquiredReason = simpleStagingStockBuy.AcquiredReason,
+    ExchangedMoney = simpleStagingStockBuy.ExchangedMoney,
+)
+
+simpleStagingStockSold = gf.TradeEventStagingStockSold(
     ID = "StockSold",
     ISIN = "US123",
     Ticker = "AAPL",
@@ -39,7 +51,17 @@ simpleStockSold = gf.TradeEventStagingStockSold(
     )
 )
 
-simpleStockLot = gf.GenericTaxLotEventStaging(
+simpleStockSold = gf.TradeEventStockSold(
+    ID = simpleStagingStockSold.ID,
+    ISIN = simpleStagingStockSold.ISIN,
+    Ticker = simpleStagingStockSold.Ticker or "AAPL",
+    AssetClass = simpleStagingStockSold.AssetClass,
+    Date = simpleStagingStockSold.Date,
+    Multiplier = simpleStagingStockSold.Multiplier,
+    ExchangedMoney = simpleStagingStockSold.ExchangedMoney,
+)
+
+simpleStagingStockLot = gf.GenericTaxLotEventStaging(
     ID = "Lot",
     Ticker = "AAPL",
     ISIN = "US123",
@@ -49,8 +71,17 @@ simpleStockLot = gf.GenericTaxLotEventStaging(
     ShortLongType = gf.GenericShortLong.LONG
 )
 
+simpleStockLot = gf.TradeTaxLotEventStock(
+    ID = simpleStagingStockLot.ID,
+    ISIN = simpleStagingStockLot.ISIN,
+    Quantity = simpleStagingStockLot.Quantity,
+    Acquired = simpleStockBuy,
+    Sold = simpleStockSold,
+    ShortLongType = simpleStagingStockLot.ShortLongType
+)
 
-simpleDerivativeBuy = gf.TradeEventStagingDerivativeAcquired(
+
+simpleStagingDerivativeBuy = gf.TradeEventStagingDerivativeAcquired(
     ID = "DerivativeBought",
     ISIN = "US123",
     Ticker = "AAPL",
@@ -69,7 +100,7 @@ simpleDerivativeBuy = gf.TradeEventStagingDerivativeAcquired(
     )
 )
 
-simpleDerivativeSold = gf.TradeEventStagingDerivativeSold(
+simpleStagingDerivativeSold = gf.TradeEventStagingDerivativeSold(
     ID = "DerivativeSold",
     ISIN = "US123",
     Ticker = "AAPL",
@@ -87,7 +118,7 @@ simpleDerivativeSold = gf.TradeEventStagingDerivativeSold(
     )
 )
 
-simpleDerivativeLot = gf.GenericTaxLotEventStaging(
+simpleStagingDerivativeLot = gf.GenericTaxLotEventStaging(
     ID = "Lot",
     ISIN = "US123",
     Ticker = "AAPL",
@@ -100,13 +131,13 @@ simpleDerivativeLot = gf.GenericTaxLotEventStaging(
 
 
 class TestGenericGroupingsProcessing:
-    def testSingleStockLotMatching(self):
+    def testSimpleStockLotMatching(self):
         groupings = [gf.GenericUnderlyingGroupingStaging(
             ISIN = "US123",
             CountryOfOrigin = None,
             UnderlyingCategory = gf.GenericCategory.REGULAR,
-            StockTrades = [simpleStockBuy, simpleStockSold],
-            StockTaxLots = [simpleStockLot],
+            StockTrades = [simpleStagingStockBuy, simpleStagingStockSold],
+            StockTaxLots = [simpleStagingStockLot],
             DerivativeTrades = [],
             DerivativeTaxLots = [],
             Dividends = []
@@ -123,15 +154,32 @@ class TestGenericGroupingsProcessing:
         assert results[0].StockTaxLots[0].Sold == results[0].StockTrades[1]
         assert results[0].StockTaxLots[0].Sold.ExchangedMoney.UnderlyingQuantity == -1
 
-    def testSingleDerivativeLotMatching(self):
+    def testPartialStockLotMatching(self):
+        groupings = [gf.GenericUnderlyingGroupingStaging(
+            ISIN = "US123",
+            CountryOfOrigin = None,
+            UnderlyingCategory = gf.GenericCategory.REGULAR,
+            StockTrades = [simpleStagingStockBuy],
+            StockTaxLots = [simpleStagingStockLot],
+            DerivativeTrades = [],
+            DerivativeTaxLots = [],
+            Dividends = []
+        )]
+
+        utils = gu.GenericUtilities()
+
+        with pytest.raises(LookupError):
+            utils.generateGenericGroupings(groupings)
+
+    def testSimpleDerivativeLotMatching(self):
         groupings = [gf.GenericUnderlyingGroupingStaging(
             ISIN = "US123",
             CountryOfOrigin = None,
             UnderlyingCategory = gf.GenericCategory.REGULAR,
             StockTrades = [],
             StockTaxLots = [],
-            DerivativeTrades = [simpleDerivativeBuy, simpleDerivativeSold],
-            DerivativeTaxLots = [simpleDerivativeLot],
+            DerivativeTrades = [simpleStagingDerivativeBuy, simpleStagingDerivativeSold],
+            DerivativeTaxLots = [simpleStagingDerivativeLot],
             Dividends = []
         )]
 
@@ -146,3 +194,57 @@ class TestGenericGroupingsProcessing:
         assert results[0].DerivativeTaxLots[0].Sold == results[0].DerivativeTrades[1]
         assert results[0].DerivativeTaxLots[0].Sold.ExchangedMoney.UnderlyingQuantity == -1
 
+
+
+
+
+
+class TestInterestingGroupingsProcessing:
+    def testSingleStockLotMatching(self):
+        grouping = gf.UnderlyingGrouping(
+            ISIN = "US123",
+            CountryOfOrigin = "US",
+            UnderlyingCategory = gf.GenericCategory.REGULAR,
+            StockTrades = [simpleStockBuy, simpleStockSold],
+            StockTaxLots = [simpleStockLot],
+            DerivativeTrades = [],
+            DerivativeTaxLots = [],
+            Dividends = []
+        )
+
+
+        utils = gu.GenericUtilities()
+
+        interesting = utils.generateInterestingUnderlyingGroupings([grouping])
+
+        assert len(interesting) == 1, "There should only be one grouping generated when given one grouping"
+
+        iGrouping = interesting[0]
+
+        assert len(iGrouping.StockTrades) == 2, "There should only be 2 trades after matching trades with lots, as there were only 2 trades and 1 lot to which they belong to"
+        assert len(iGrouping.DerivativeTrades) == 0, "There should be no derivative trades, since there were no derivative trades whatsoever"
+    
+    
+    def testNoStockTradesMatching(self):
+        grouping = gf.UnderlyingGrouping(
+            ISIN = "US123",
+            CountryOfOrigin = "US",
+            UnderlyingCategory = gf.GenericCategory.REGULAR,
+            StockTrades = [simpleStockBuy, simpleStockSold],
+            StockTaxLots = [],
+            DerivativeTrades = [],
+            DerivativeTaxLots = [],
+            Dividends = []
+        )
+
+
+        utils = gu.GenericUtilities()
+
+        interesting = utils.generateInterestingUnderlyingGroupings([grouping])
+
+        assert len(interesting) == 1, "There should only be one grouping generated when given one grouping"
+
+        iGrouping = interesting[0]
+
+        assert len(iGrouping.StockTrades) == 0, "There should be no stock trades, since there were no trade lots matching them"
+        assert len(iGrouping.DerivativeTrades) == 0, "There should be no derivative trades, since there were no derivative trades whatsoever"

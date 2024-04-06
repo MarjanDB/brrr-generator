@@ -30,11 +30,6 @@ class SegmentedTrades(Generic[LINE_GENERIC_BUY, LINE_GENERIC_SELL]):
     Sells: list[LINE_GENERIC_SELL]
 
 
-def deduplicateList(lines: list[Any]):
-    uniqueTransactionRows = list({row.TransactionID: row for row in lines}.values())
-    return uniqueTransactionRows
-
-
 
 def getGenericDividendLineFromIBRKCashTransactions(cashTransactions: list[s.TransactionCash]) -> list[gf.GenericDividendLine]:
     def mapToGenericDividendLine(transaction: s.TransactionCash) -> gf.GenericDividendLine:

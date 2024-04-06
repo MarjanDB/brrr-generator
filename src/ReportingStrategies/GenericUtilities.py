@@ -71,7 +71,7 @@ class GenericUtilities:
             print("Matched Sell with trade (ID: {}, DateTime: {})".format(matchingSoldByDate.ID, matchingSoldByDate.Date))
         except StopIteration:
             print("Failed processing stock lot (ID: {}, ISIN: {}), found no match".format(lot.ID, lot.ISIN))
-            raise StopIteration
+            raise LookupError
 
         processed = gf.TradeTaxLotEventStock(
             ID = lot.ID,
@@ -118,7 +118,7 @@ class GenericUtilities:
             matchingSoldByDate : gf.TradeEventDerivativeSold = self.findStockEventByDate(lot.Sold.DateTime or ar.get("1-0-0"), allTrades)[0]
         except StopIteration:
             print("Failed processing stock lot (ID: {}, ISIN: {}), found no match".format(lot.ID, lot.ISIN))
-            raise StopIteration
+            raise LookupError
 
         processed = gf.TradeTaxLotEventDerivative(
             ID = lot.ID,
