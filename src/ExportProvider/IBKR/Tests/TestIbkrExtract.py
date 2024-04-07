@@ -22,7 +22,6 @@ with open(simpleCorporateActionXml) as fobj:
     simpleCorporateAction: etree._Element = etree.fromstring(tradeString)
 
 
-
 class TestIbkrExtractStockTrades:
     def testSegmentedTradesReturnTradesAndLot(self):
         segmented = ex.extractFromXML(simpleStockTrade)
@@ -61,7 +60,9 @@ class TestIbkrExtractStockTrades:
 
         merged = ex.mergeTrades([segmented1, segmented2])
 
-        assert len(merged.stockTrades) == 2, "There should only be one trade when merging 2 SegmentedTrades containing the same trade"
+        assert (
+            len(merged.stockTrades) == 2
+        ), "There should only be one trade when merging 2 SegmentedTrades containing the same trade"
 
 
 class TestIbkrExtractOptionTrades:
@@ -98,15 +99,15 @@ class TestIbkrExtractOptionTrades:
         lot = segmented.derivativeLots[0]
         assert lot.TransactionID == "635331370"
 
-
     def testStockTradeMerging(self):
         segmented1 = ex.extractFromXML(simpleOptionTrade)
         segmented2 = ex.extractFromXML(simpleOptionTrade)
 
         merged = ex.mergeTrades([segmented1, segmented2])
 
-        assert len(merged.derivativeTrades) == 2, "There should only be one trade when merging 2 SegmentedTrades containing the same trade"
-
+        assert (
+            len(merged.derivativeTrades) == 2
+        ), "There should only be one trade when merging 2 SegmentedTrades containing the same trade"
 
 
 class TestIbkrExtractCorporateActions:
@@ -124,8 +125,6 @@ class TestIbkrExtractCorporateActions:
 
         merged = ex.mergeTrades([segmented1, segmented2])
 
-        assert len(merged.corporateActions) == 1, "There should only be one Corporate Action when merging 2 SegmentedTrades containing the same Corporate Action"
-
-    
-
-
+        assert (
+            len(merged.corporateActions) == 1
+        ), "There should only be one Corporate Action when merging 2 SegmentedTrades containing the same Corporate Action"
