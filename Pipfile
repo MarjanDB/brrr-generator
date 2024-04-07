@@ -18,6 +18,7 @@ pytest = "8.0.*"
 types-lxml = "2024.2.*"
 pytest-cov = "4.1.*"
 pytest-md = "0.2.*"
+black = "24.3.*"
 
 [requires]
 python_version = "3.11"
