@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from itertools import groupby
-from typing import Any, Generic, Sequence, TypeVar
+from typing import Generic, Sequence, TypeVar
 
-import src.ExportProvider.IBKR.Schemas as s
+import src.BrokerageExportProviders.Brokerages.IBKR.Schemas as s
 import src.ReportingStrategies.GenericFormats as gf
 
 LINE_GENERIC_BUY = TypeVar("LINE_GENERIC_BUY")

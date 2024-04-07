@@ -1,7 +1,7 @@
-import src.ExportProvider.IBKR.Transform as t
-import src.ExportProvider.IBKR.Schemas as es
 import arrow as ar
 
+import src.BrokerageExportProviders.Brokerages.IBKR.Schemas as es
+import src.BrokerageExportProviders.Brokerages.IBKR.Transform as t
 
 simpleTradeBuy = es.TradeStock(
     ClientAccountID="test",
