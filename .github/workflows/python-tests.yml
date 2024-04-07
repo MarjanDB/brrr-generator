@@ -3,9 +3,11 @@ name: Run Python tests
 on: [push]
 
 jobs:
-  build:
+  pytest:
     name: Run tests
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -33,5 +35,5 @@ jobs:
         with:
           pytest-xml-coverage-path: ./coverage.xml
           junitxml-path: ./pytest.xml
-          
+
             
