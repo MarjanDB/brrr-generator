@@ -90,8 +90,7 @@ def convertStockTradesToStockTradeEvents(
             ExchangedMoney=gf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency=trade.Currency,
                 UnderlyingQuantity=trade.Quantity,
-                UnderlyingTradePrice=trade.TradePrice
-                * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
+                UnderlyingTradePrice=trade.TradePrice * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
                 ComissionCurrency=trade.IBCommissionCurrency,
                 ComissionTotal=trade.IBCommission,
                 TaxCurrency=trade.Currency,  # NOTE: Taxes Currency == Trade Currency ??
@@ -113,8 +112,7 @@ def convertStockTradesToStockTradeEvents(
             ExchangedMoney=gf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency=trade.Currency,
                 UnderlyingQuantity=trade.Quantity,
-                UnderlyingTradePrice=trade.TradePrice
-                * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
+                UnderlyingTradePrice=trade.TradePrice * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
                 ComissionCurrency=trade.IBCommissionCurrency,
                 ComissionTotal=trade.IBCommission,
                 TaxCurrency=trade.Currency,  # NOTE: Taxes Currency == Trade Currency ??
@@ -145,9 +143,7 @@ def convertStockLotsToStockLotEvents(
             ISIN=lot.ISIN,
             Ticker=lot.Symbol,
             Quantity=lot.Quantity,
-            Acquired=gf.GenericTaxLotMatchingDetails(
-                ID=lot.TransactionID, DateTime=None
-            ),
+            Acquired=gf.GenericTaxLotMatchingDetails(ID=lot.TransactionID, DateTime=None),
             Sold=gf.GenericTaxLotMatchingDetails(ID=None, DateTime=lot.DateTime),
             ShortLongType=gf.GenericShortLong.LONG,  # TODO: Determine long / short if possible
         )
@@ -159,9 +155,7 @@ def convertStockLotsToStockLotEvents(
 
 def convertDerivativeTradesToDerivativeTradeEvents(
     trades: Sequence[s.TradeDerivative],
-) -> Sequence[
-    gf.TradeEventStagingDerivativeAcquired | gf.TradeEventStagingDerivativeSold
-]:
+) -> Sequence[gf.TradeEventStagingDerivativeAcquired | gf.TradeEventStagingDerivativeSold]:
 
     def convertAcquiredTradeToAcquiredEvent(
         trade: s.TradeDerivative,
@@ -177,8 +171,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(
             ExchangedMoney=gf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency=trade.Currency,
                 UnderlyingQuantity=trade.Quantity,
-                UnderlyingTradePrice=trade.TradePrice
-                * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
+                UnderlyingTradePrice=trade.TradePrice * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
                 ComissionCurrency=trade.IBCommissionCurrency,
                 ComissionTotal=trade.IBCommission,
                 TaxCurrency=trade.Currency,  # NOTE: Taxes Currency == Trade Currency ??
@@ -200,8 +193,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(
             ExchangedMoney=gf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency=trade.Currency,
                 UnderlyingQuantity=trade.Quantity,
-                UnderlyingTradePrice=trade.TradePrice
-                * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
+                UnderlyingTradePrice=trade.TradePrice * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
                 ComissionCurrency=trade.IBCommissionCurrency,
                 ComissionTotal=trade.IBCommission,
                 TaxCurrency=trade.Currency,  # NOTE: Taxes Currency == Trade Currency ??
@@ -232,9 +224,7 @@ def convertDerivativeLotsToDerivativeLotEvents(
             ISIN=lot.UnderlyingSecurityID,
             Ticker=lot.UnderlyingSymbol,
             Quantity=lot.Quantity,
-            Acquired=gf.GenericTaxLotMatchingDetails(
-                ID=lot.TransactionID, DateTime=None
-            ),
+            Acquired=gf.GenericTaxLotMatchingDetails(ID=lot.TransactionID, DateTime=None),
             Sold=gf.GenericTaxLotMatchingDetails(ID=None, DateTime=lot.DateTime),
             ShortLongType=gf.GenericShortLong.LONG,  # TODO: Determine long / short if possible
         )
@@ -261,9 +251,7 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
     stockTradeEvents = convertStockTradesToStockTradeEvents(stockTrades)
     stockLotEvents = convertStockLotsToStockLotEvents(stockLots)
 
-    derivativeTradeEvents = convertDerivativeTradesToDerivativeTradeEvents(
-        derivativeTrades
-    )
+    derivativeTradeEvents = convertDerivativeTradesToDerivativeTradeEvents(derivativeTrades)
     derivativeLotEvents = convertDerivativeLotsToDerivativeLotEvents(derivativeLots)
 
     def segmentTradeByIsin(

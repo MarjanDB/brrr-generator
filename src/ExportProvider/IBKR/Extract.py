@@ -16,9 +16,7 @@ def deduplicateList(lines: list[list[Any]]):
 
 def parseNotes(notes: str) -> list[s.Codes]:
     notesAndCodes = notes.split(";")
-    notesAndCodesParsed = (
-        list(map(lambda code: s.Codes(code), notesAndCodes)) if notes != "" else []
-    )
+    notesAndCodesParsed = list(map(lambda code: s.Codes(code), notesAndCodes)) if notes != "" else []
     return notesAndCodesParsed
 
 
@@ -45,24 +43,14 @@ def extractCorporateActions(node: etree.ElementBase) -> s.CorporateAction:
         UnderlyingConid=utils.valueOrNone(node.attrib["underlyingConid"]),
         UnderlyingSymbol=utils.valueOrNone(node.attrib["underlyingSymbol"]),
         UnderlyingSecurityID=utils.valueOrNone(node.attrib["underlyingSecurityID"]),
-        UnderlyingListingExchange=utils.valueOrNone(
-            node.attrib["underlyingListingExchange"]
-        ),
+        UnderlyingListingExchange=utils.valueOrNone(node.attrib["underlyingListingExchange"]),
         Multiplier=float(node.attrib["multiplier"]),
         Strike=utils.floatValueOrNone(node.attrib["strike"]),
-        Expiry=(
-            utils.safeDateParse(node.attrib["expiry"])
-            if node.attrib["expiry"] != ""
-            else None
-        ),
+        Expiry=(utils.safeDateParse(node.attrib["expiry"]) if node.attrib["expiry"] != "" else None),
         PutOrCall=(
-            s.PutOrCall(utils.valueOrNone(node.attrib["putCall"]))
-            if utils.valueOrNone(node.attrib["putCall"]) is not None
-            else None
+            s.PutOrCall(utils.valueOrNone(node.attrib["putCall"])) if utils.valueOrNone(node.attrib["putCall"]) is not None else None
         ),
-        PrincipalAdjustFactor=utils.floatValueOrNone(
-            node.attrib["principalAdjustFactor"]
-        ),
+        PrincipalAdjustFactor=utils.floatValueOrNone(node.attrib["principalAdjustFactor"]),
         ReportDate=utils.safeDateParse(node.attrib["reportDate"]),
         DateTime=utils.safeDateParse(node.attrib["dateTime"]),
         ActionDescription=node.attrib["actionDescription"],
@@ -310,38 +298,26 @@ def extractCashTransaction(node: etree.ElementBase) -> s.TransactionCash:
 def extractFromXML(root: etree._Element) -> s.SegmentedTrades:
     # cashTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.CASH.value))
     # cashTradeNodes = cashTradesFinder(root)
-    cashTransactionsFinder = etree.XPath(
-        "/FlexQueryResponse/FlexStatements/FlexStatement/CashTransactions/*"
-    )
+    cashTransactionsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/CashTransactions/*")
     cashTransactionNodes = cashTransactionsFinder(root)
 
-    corporateActionsFinder = etree.XPath(
-        "/FlexQueryResponse/FlexStatements/FlexStatement/CorporateActions/*"
-    )
+    corporateActionsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/CorporateActions/*")
     corporateActionsNodes = corporateActionsFinder(root)
 
     optionTradesFinder = etree.XPath(
-        "/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(
-            s.AssetClass.OPTION.value
-        )
+        "/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.OPTION.value)
     )
     optionLotsFinder = etree.XPath(
-        "/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Lot[@assetCategory='{}']".format(
-            s.AssetClass.OPTION.value
-        )
+        "/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Lot[@assetCategory='{}']".format(s.AssetClass.OPTION.value)
     )
     optionTradeNodes = optionTradesFinder(root)
     optionLotNodes = optionLotsFinder(root)
 
     stockTradesFinder = etree.XPath(
-        "/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(
-            s.AssetClass.STOCK.value
-        )
+        "/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.STOCK.value)
     )
     stockLotsFinder = etree.XPath(
-        "/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Lot[@assetCategory='{}']".format(
-            s.AssetClass.STOCK.value
-        )
+        "/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Lot[@assetCategory='{}']".format(s.AssetClass.STOCK.value)
     )
     stockTradeNodes = stockTradesFinder(root)
     stockLotNodes = stockLotsFinder(root)
@@ -384,12 +360,8 @@ def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
     optionTrades = deduplicateList(optionTrades)
     cashTransactions = deduplicateList(cashTransactions)
 
-    optionLots = [
-        x for xs in optionLots for x in xs
-    ]  # lots cannot be deduplicated, as there is no unique identifer
-    stockLots = [
-        x for xs in stockLots for x in xs
-    ]  # lots cannot be deduplicated, as there is no unique identifer
+    optionLots = [x for xs in optionLots for x in xs]  # lots cannot be deduplicated, as there is no unique identifer
+    stockLots = [x for xs in stockLots for x in xs]  # lots cannot be deduplicated, as there is no unique identifer
 
     return s.SegmentedTrades(
         # cashTrades = cashTrades,

@@ -51,9 +51,7 @@ class ConfigurationProvider:
 
         self.generatedConfig = TaxPayerInfo(
             taxNumber=str(tempInfo.get("taxNumber") or "Tax #"),
-            taxpayerType=TaxPayerType(
-                tempInfo.get("taxPayerType") or TaxPayerType.PHYSICAL_SUBJECT
-            ),
+            taxpayerType=TaxPayerType(tempInfo.get("taxPayerType") or TaxPayerType.PHYSICAL_SUBJECT),
             name=str(tempInfo.get("name") or "Ime Priimek"),
             address1=str(tempInfo.get("address1") or "Naslov"),
             address2=tempInfo.get("address2"),
@@ -61,11 +59,7 @@ class ConfigurationProvider:
             postNumber=str(tempInfo.get("postOfficeNumber") or "Post Office #"),
             postName=str(tempInfo.get("postOfficeName") or "Post Office Name"),
             municipalityName=str(tempInfo.get("municipality") or "Municipality"),
-            birthDate=(
-                arrow.get(tempInfo.get("birthday") or "")
-                if tempInfo.get("birthday") is not None
-                else Arrow.now()
-            ),
+            birthDate=(arrow.get(tempInfo.get("birthday") or "") if tempInfo.get("birthday") is not None else Arrow.now()),
             maticnaStevilka=str(tempInfo.get("identity") or "Identify #"),
             invalidskoPodjetje=bool(tempInfo.get("company") or False),
             resident=bool(tempInfo.get("resident") or True),
