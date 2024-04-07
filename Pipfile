@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-ib-insync = "0.9.*"
 pandas = "2.1.*"
 numpy = "1.26.*"
 arrow = "1.3.*"
