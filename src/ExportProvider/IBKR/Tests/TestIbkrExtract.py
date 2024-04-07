@@ -7,6 +7,7 @@ import src.ExportProvider.IBKR.Schemas as es
 locationOfFiles = pathlib.Path(__file__).parent
 simpleStockTradeXml = os.path.join(locationOfFiles, "SimpleStockTrade.xml")
 simpleOptionTradeXml = os.path.join(locationOfFiles, "SimpleOptionTrade.xml")
+simpleCorporateActionXml = os.path.join(locationOfFiles, "SimpleCorporateAction.xml")
 
 with open(simpleStockTradeXml) as fobj:
     tradeString = fobj.read()
@@ -15,6 +16,10 @@ with open(simpleStockTradeXml) as fobj:
 with open(simpleOptionTradeXml) as fobj:
     tradeString = fobj.read()
     simpleOptionTrade: etree._Element = etree.fromstring(tradeString)
+
+with open(simpleCorporateActionXml) as fobj:
+    tradeString = fobj.read()
+    simpleCorporateAction: etree._Element = etree.fromstring(tradeString)
 
 
 
@@ -101,6 +106,25 @@ class TestIbkrExtractOptionTrades:
         merged = ex.mergeTrades([segmented1, segmented2])
 
         assert len(merged.derivativeTrades) == 2, "There should only be one trade when merging 2 SegmentedTrades containing the same trade"
+
+
+
+class TestIbkrExtractCorporateActions:
+    def testSegmentedTradesReturnCorporateAction(self):
+        segmented = ex.extractFromXML(simpleCorporateAction)
+
+        assert isinstance(segmented, es.SegmentedTrades)
+        assert len(segmented.derivativeTrades) == 0
+        assert len(segmented.derivativeLots) == 0
+        assert len(segmented.corporateActions) == 1
+
+    def testCorporateActionMerging(self):
+        segmented1 = ex.extractFromXML(simpleCorporateAction)
+        segmented2 = ex.extractFromXML(simpleCorporateAction)
+
+        merged = ex.mergeTrades([segmented1, segmented2])
+
+        assert len(merged.corporateActions) == 1, "There should only be one Corporate Action when merging 2 SegmentedTrades containing the same Corporate Action"
 
     
 

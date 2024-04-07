@@ -19,6 +19,60 @@ def parseNotes(notes: str) -> list[s.Codes]:
     return notesAndCodesParsed
 
 
+def extractCorporateActions(node: etree.ElementBase) -> s.CorporateAction:
+    notesAndCodesParsed = parseNotes(node.attrib['code'])
+
+    corporateAction = s.CorporateAction(
+        ClientAccountID = node.attrib['accountId'],
+        AccountAlias = node.attrib['acctAlias'],
+        Currency = node.attrib['currency'],
+        Model = s.Model(node.attrib['model']) if node.attrib['model'] != "" else None,
+        FXRateToBase = float(node.attrib['fxRateToBase']),
+        AssetClass = s.AssetClass(node.attrib['assetCategory']),
+        SubCategory = s.SubCategory(node.attrib['subCategory']),
+        Symbol = node.attrib['symbol'],
+        Description = node.attrib['description'],
+        Conid = node.attrib['conid'],
+        SecurityID = node.attrib['securityID'],
+        SecurityIDType = s.SecurityIDType(node.attrib['securityIDType']),
+        CUSIP = utils.valueOrNone(node.attrib['cusip']),
+        ISIN = node.attrib['isin'],
+        FIGI = node.attrib['figi'],
+        ListingExchange = node.attrib['listingExchange'],
+        UnderlyingConid = utils.valueOrNone(node.attrib['underlyingConid']),
+        UnderlyingSymbol = utils.valueOrNone(node.attrib['underlyingSymbol']),
+        UnderlyingSecurityID = utils.valueOrNone(node.attrib['underlyingSecurityID']),
+        UnderlyingListingExchange = utils.valueOrNone(node.attrib['underlyingListingExchange']),
+        Multiplier = float(node.attrib['multiplier']),
+        Strike = utils.floatValueOrNone(node.attrib['strike']),
+        Expiry = utils.safeDateParse(node.attrib['expiry']) if node.attrib['expiry'] != "" else None,
+        PutOrCall = s.PutOrCall(utils.valueOrNone(node.attrib['putCall'])) if utils.valueOrNone(node.attrib['putCall']) is not None else None,
+        PrincipalAdjustFactor = utils.floatValueOrNone(node.attrib['principalAdjustFactor']),
+        ReportDate = utils.safeDateParse(node.attrib['reportDate']),
+        DateTime = utils.safeDateParse(node.attrib['dateTime']),
+        ActionDescription = node.attrib['actionDescription'],
+        Amount = float(node.attrib['amount']),
+        Proceeds = float(node.attrib['proceeds']),
+        Value = float(node.attrib['value']),
+        Quantity = float(node.attrib['quantity']),
+        FifoProfitAndLossRealized = float(node.attrib['fifoPnlRealized']),
+        CapitalGainsProfitAndLoss = float(node.attrib['capitalGainsPnl']),
+        ForexProfitAndLoss = float(node.attrib['fxPnl']),
+        MarketToMarketProfitAndLoss = float(node.attrib['mtmPnl']),
+        NotesAndCodes = notesAndCodesParsed,
+        Type = node.attrib['type'],
+        TransactionID = node.attrib['transactionID'],
+        ActionID = node.attrib['actionID'],
+        LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
+        SerialNumber = utils.valueOrNone(node.attrib['serialNumber']),
+        DeliveryType = utils.valueOrNone(node.attrib['deliveryType']),
+        CommodityType = utils.valueOrNone(node.attrib['commodityType']),
+        Fineness = float(node.attrib['fineness']),
+        Weight = float(node.attrib['weight']),
+    )
+
+    return corporateAction
+
 
 def extractStockTrade(node: etree.ElementBase) -> s.TradeStock:
     notesAndCodesParsed = parseNotes(node.attrib['notes'])
@@ -249,6 +303,9 @@ def extractFromXML(root: etree._Element) -> s.SegmentedTrades:
     cashTransactionsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/CashTransactions/*")
     cashTransactionNodes = cashTransactionsFinder(root)
 
+    corporateActionsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/CorporateActions/*")
+    corporateActionsNodes = corporateActionsFinder(root)
+
     optionTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.OPTION.value))
     optionLotsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Lot[@assetCategory='{}']".format(s.AssetClass.OPTION.value))
     optionTradeNodes = optionTradesFinder(root)
@@ -263,6 +320,8 @@ def extractFromXML(root: etree._Element) -> s.SegmentedTrades:
     # cashTrades = list(map(extractCashTrade, cashTradeNodes))
     cashTransactions = list(map(extractCashTransaction, cashTransactionNodes))
 
+    corporateActions = list(map(extractCorporateActions, corporateActionsNodes))
+
     stockTrades = list(map(extractStockTrade, stockTradeNodes))
     stockLots = list(map(extractStockLot, stockLotNodes))
 
@@ -274,6 +333,7 @@ def extractFromXML(root: etree._Element) -> s.SegmentedTrades:
     return s.SegmentedTrades(
         # cashTrades = cashTrades,
         cashTransactions = cashTransactions,
+        corporateActions = corporateActions,
         stockTrades = stockTrades,
         stockLots = stockLots,
         derivativeTrades = optionTrades,
@@ -287,11 +347,13 @@ def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
     optionTrades = list(map(lambda trade: trade.derivativeTrades, trades))
     # cashTrades = list(map(lambda trade: trade.cashTrades, trades))
     cashTransactions = list(map(lambda trade: trade.cashTransactions, trades))
+    corporateActions = list(map(lambda trade: trade.corporateActions, trades))
 
     stockLots = list(map(lambda trade: trade.stockLots, trades))
     optionLots = list(map(lambda trade: trade.derivativeLots, trades))
 
     stockTrades = deduplicateList(stockTrades)
+    corporateActions = deduplicateList(corporateActions)
     # cashTrades = deduplicateList(cashTrades)
     optionTrades = deduplicateList(optionTrades)
     cashTransactions = deduplicateList(cashTransactions)
@@ -303,6 +365,7 @@ def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
         # cashTrades = cashTrades,
         cashTransactions = cashTransactions,
         stockTrades = stockTrades,
+        corporateActions = corporateActions,
         stockLots = stockLots,
         derivativeTrades = optionTrades,
         derivativeLots = optionLots,

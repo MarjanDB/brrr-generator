@@ -137,6 +137,7 @@ class TestIbkrTransform:
     def testSingleStockTrade(self):
         segmented = es.SegmentedTrades(
             cashTransactions=[],
+            corporateActions=[],
             stockTrades=[simpleTradeBuy],
             stockLots=[],
             derivativeTrades=[],
@@ -156,6 +157,7 @@ class TestIbkrTransform:
     def testSingleStockTradeSell(self):
         segmented = es.SegmentedTrades(
             cashTransactions=[],
+            corporateActions=[],
             stockTrades=[simpleTradeSell],
             stockLots=[],
             derivativeTrades=[],
@@ -175,6 +177,7 @@ class TestIbkrTransform:
     def testSingleStockLot(self):
         segmented = es.SegmentedTrades(
             cashTransactions=[],
+            corporateActions=[],
             stockTrades=[],
             stockLots=[simpleStockLot],
             derivativeTrades=[],
