@@ -1,27 +1,10 @@
 from lxml import etree
 import src.ExportProvider.IBKR.Schemas as s
-import arrow
+import src.ExportProvider.Utils as utils
 from typing import Any
 
 
-def safeDateParse(dateString: str) -> arrow.Arrow:
-     safeDateString = dateString.replace('EDT', 'UTC-4').replace('EST', 'UTC-5')
-     return arrow.get(safeDateString, ['YYYY-MM-DD HH:mm:ss ZZZ', 'YYYY-MM-DD;HH:mm:ss ZZZ', 'YYYY-MM-DD'])
 
-def valueOrNone(value: str) -> str | None:
-    if value == "":
-         return None
-    return value
-
-def floatValueOrNone(value: str) -> float | None:
-    if value == "":
-         return None
-    return float(value)
-
-def dateValueOrNone(value: str) -> arrow.Arrow | None:
-    if value == "":
-         return None
-    return safeDateParse(value)
 
 def deduplicateList(lines: list[list[Any]]):
     allRows = [x for xs in lines for x in xs]
@@ -36,13 +19,14 @@ def parseNotes(notes: str) -> list[s.Codes]:
     return notesAndCodesParsed
 
 
+def extractCorporateActions(node: etree.ElementBase) -> s.CorporateAction:
+    notesAndCodesParsed = parseNotes(node.attrib['code'])
 
-def extractStockTrade(node: etree.ElementBase) -> s.TradeStock:
-    notesAndCodesParsed = parseNotes(node.attrib['notes'])
-    
-    trade = s.TradeStock(
+    corporateAction = s.CorporateAction(
         ClientAccountID = node.attrib['accountId'],
-        CurrencyPrimary = node.attrib['currency'],
+        AccountAlias = node.attrib['acctAlias'],
+        Currency = node.attrib['currency'],
+        Model = s.Model(node.attrib['model']) if node.attrib['model'] != "" else None,
         FXRateToBase = float(node.attrib['fxRateToBase']),
         AssetClass = s.AssetClass(node.attrib['assetCategory']),
         SubCategory = s.SubCategory(node.attrib['subCategory']),
@@ -51,13 +35,66 @@ def extractStockTrade(node: etree.ElementBase) -> s.TradeStock:
         Conid = node.attrib['conid'],
         SecurityID = node.attrib['securityID'],
         SecurityIDType = s.SecurityIDType(node.attrib['securityIDType']),
-        CUSIP = valueOrNone(node.attrib['cusip']),
+        CUSIP = utils.valueOrNone(node.attrib['cusip']),
         ISIN = node.attrib['isin'],
         FIGI = node.attrib['figi'],
         ListingExchange = node.attrib['listingExchange'],
-        ReportDate = safeDateParse(node.attrib['reportDate']),
-        DateTime = safeDateParse(node.attrib['dateTime']),
-        TradeDate = safeDateParse(node.attrib['tradeDate']),
+        UnderlyingConid = utils.valueOrNone(node.attrib['underlyingConid']),
+        UnderlyingSymbol = utils.valueOrNone(node.attrib['underlyingSymbol']),
+        UnderlyingSecurityID = utils.valueOrNone(node.attrib['underlyingSecurityID']),
+        UnderlyingListingExchange = utils.valueOrNone(node.attrib['underlyingListingExchange']),
+        Multiplier = float(node.attrib['multiplier']),
+        Strike = utils.floatValueOrNone(node.attrib['strike']),
+        Expiry = utils.safeDateParse(node.attrib['expiry']) if node.attrib['expiry'] != "" else None,
+        PutOrCall = s.PutOrCall(utils.valueOrNone(node.attrib['putCall'])) if utils.valueOrNone(node.attrib['putCall']) is not None else None,
+        PrincipalAdjustFactor = utils.floatValueOrNone(node.attrib['principalAdjustFactor']),
+        ReportDate = utils.safeDateParse(node.attrib['reportDate']),
+        DateTime = utils.safeDateParse(node.attrib['dateTime']),
+        ActionDescription = node.attrib['actionDescription'],
+        Amount = float(node.attrib['amount']),
+        Proceeds = float(node.attrib['proceeds']),
+        Value = float(node.attrib['value']),
+        Quantity = float(node.attrib['quantity']),
+        FifoProfitAndLossRealized = float(node.attrib['fifoPnlRealized']),
+        CapitalGainsProfitAndLoss = float(node.attrib['capitalGainsPnl']),
+        ForexProfitAndLoss = float(node.attrib['fxPnl']),
+        MarketToMarketProfitAndLoss = float(node.attrib['mtmPnl']),
+        NotesAndCodes = notesAndCodesParsed,
+        Type = node.attrib['type'],
+        TransactionID = node.attrib['transactionID'],
+        ActionID = node.attrib['actionID'],
+        LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
+        SerialNumber = utils.valueOrNone(node.attrib['serialNumber']),
+        DeliveryType = utils.valueOrNone(node.attrib['deliveryType']),
+        CommodityType = utils.valueOrNone(node.attrib['commodityType']),
+        Fineness = float(node.attrib['fineness']),
+        Weight = float(node.attrib['weight']),
+    )
+
+    return corporateAction
+
+
+def extractStockTrade(node: etree.ElementBase) -> s.TradeStock:
+    notesAndCodesParsed = parseNotes(node.attrib['notes'])
+    
+    trade = s.TradeStock(
+        ClientAccountID = node.attrib['accountId'],
+        Currency = node.attrib['currency'],
+        FXRateToBase = float(node.attrib['fxRateToBase']),
+        AssetClass = s.AssetClass(node.attrib['assetCategory']),
+        SubCategory = s.SubCategory(node.attrib['subCategory']),
+        Symbol = node.attrib['symbol'],
+        Description = node.attrib['description'],
+        Conid = node.attrib['conid'],
+        SecurityID = node.attrib['securityID'],
+        SecurityIDType = s.SecurityIDType(node.attrib['securityIDType']),
+        CUSIP = utils.valueOrNone(node.attrib['cusip']),
+        ISIN = node.attrib['isin'],
+        FIGI = node.attrib['figi'],
+        ListingExchange = node.attrib['listingExchange'],
+        ReportDate = utils.safeDateParse(node.attrib['reportDate']),
+        DateTime = utils.safeDateParse(node.attrib['dateTime']),
+        TradeDate = utils.safeDateParse(node.attrib['tradeDate']),
         TransactionType = s.TransactionType(node.attrib['transactionType']),
         Exchange = node.attrib['exchange'],
         Quantity = float(node.attrib['quantity']),
@@ -79,7 +116,7 @@ def extractStockTrade(node: etree.ElementBase) -> s.TradeStock:
         MarketToMarketProfitAndLoss = float(node.attrib['mtmPnl']),
         BuyOrSell = s.BuyOrSell(node.attrib['buySell']),
         TransactionID = node.attrib['transactionID'],
-        OrderTime = safeDateParse(node.attrib['orderTime']),
+        OrderTime = utils.safeDateParse(node.attrib['orderTime']),
         LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
         ChangeInPrice = float(node.attrib['changeInPrice']),
         ChangeInQuantity = float(node.attrib['changeInQuantity']),
@@ -95,7 +132,7 @@ def extractStockLot(node: etree.ElementBase) -> s.LotStock:
     
     trade = s.LotStock(
         ClientAccountID = node.attrib['accountId'],
-        CurrencyPrimary = node.attrib['currency'],
+        Currency = node.attrib['currency'],
         FXRateToBase = float(node.attrib['fxRateToBase']),
         AssetClass = s.AssetClass(node.attrib['assetCategory']),
         SubCategory = s.SubCategory(node.attrib['subCategory']),
@@ -104,14 +141,14 @@ def extractStockLot(node: etree.ElementBase) -> s.LotStock:
         Conid = node.attrib['conid'],
         SecurityID = node.attrib['securityID'],
         SecurityIDType = s.SecurityIDType(node.attrib['securityIDType']),
-        CUSIP = valueOrNone(node.attrib['cusip']),
+        CUSIP = utils.valueOrNone(node.attrib['cusip']),
         ISIN = node.attrib['isin'],
         FIGI = node.attrib['figi'],
         ListingExchange = node.attrib['listingExchange'],
         Multiplier = float(node.attrib['multiplier']),
-        ReportDate = safeDateParse(node.attrib['reportDate']),
-        DateTime = safeDateParse(node.attrib['dateTime']),
-        TradeDate = safeDateParse(node.attrib['tradeDate']),
+        ReportDate = utils.safeDateParse(node.attrib['reportDate']),
+        DateTime = utils.safeDateParse(node.attrib['dateTime']),
+        TradeDate = utils.safeDateParse(node.attrib['tradeDate']),
         Exchange = node.attrib['exchange'],
         Quantity = float(node.attrib['quantity']),
         TradePrice = float(node.attrib['tradePrice']),
@@ -123,8 +160,8 @@ def extractStockLot(node: etree.ElementBase) -> s.LotStock:
         ForexProfitAndLoss = float(node.attrib['fxPnl']),
         BuyOrSell = s.BuyOrSell(node.attrib['buySell']),
         TransactionID = node.attrib['transactionID'],
-        OpenDateTime = safeDateParse(node.attrib['openDateTime']),
-        HoldingPeriodDateTime = safeDateParse(node.attrib['holdingPeriodDateTime']),
+        OpenDateTime = utils.safeDateParse(node.attrib['openDateTime']),
+        HoldingPeriodDateTime = utils.safeDateParse(node.attrib['holdingPeriodDateTime']),
         LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
     )
     return trade
@@ -135,7 +172,7 @@ def extractOptionTrade(node: etree.ElementBase) -> s.TradeDerivative:
     
     trade = s.TradeDerivative(
         ClientAccountID = node.attrib['accountId'],
-        CurrencyPrimary = node.attrib['currency'],
+        Currency = node.attrib['currency'],
         FXRateToBase = float(node.attrib['fxRateToBase']),
         AssetClass = s.AssetClass(node.attrib['assetCategory']),
         SubCategory = s.SubCategory(node.attrib['subCategory']),
@@ -151,12 +188,12 @@ def extractOptionTrade(node: etree.ElementBase) -> s.TradeDerivative:
         TradeID = node.attrib['tradeID'],
         Multiplier = float(node.attrib['multiplier']),
         Strike = float(node.attrib['strike']),
-        ReportDate = safeDateParse(node.attrib['reportDate']),
-        Expiry = safeDateParse(node.attrib['expiry']),
-        DateTime = safeDateParse(node.attrib['dateTime']),
+        ReportDate = utils.safeDateParse(node.attrib['reportDate']),
+        Expiry = utils.safeDateParse(node.attrib['expiry']),
+        DateTime = utils.safeDateParse(node.attrib['dateTime']),
         PutOrCall = s.PutOrCall(node.attrib['putCall']),
-        TradeDate = safeDateParse(node.attrib['tradeDate']),
-        SettleDateTarget = safeDateParse(node.attrib['settleDateTarget']),
+        TradeDate = utils.safeDateParse(node.attrib['tradeDate']),
+        SettleDateTarget = utils.safeDateParse(node.attrib['settleDateTarget']),
         TransactionType = s.TransactionType(node.attrib['transactionType']),
         Exchange = node.attrib['exchange'],
         Quantity = float(node.attrib['quantity']),
@@ -178,7 +215,7 @@ def extractOptionTrade(node: etree.ElementBase) -> s.TradeDerivative:
         MarketToMarketProfitAndLoss = float(node.attrib['mtmPnl']),
         BuyOrSell = s.BuyOrSell(node.attrib['buySell']),
         TransactionID = node.attrib['transactionID'],
-        OrderTime = safeDateParse(node.attrib['orderTime']),
+        OrderTime = utils.safeDateParse(node.attrib['orderTime']),
         LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
         OrderType = s.OrderType(node.attrib['orderType']),
     )
@@ -191,7 +228,7 @@ def extractOptionLot(node: etree.ElementBase) -> s.LotDerivative:
     
     trade = s.LotDerivative(
         ClientAccountID = node.attrib['accountId'],
-        CurrencyPrimary = node.attrib['currency'],
+        Currency = node.attrib['currency'],
         FXRateToBase = float(node.attrib['fxRateToBase']),
         AssetClass = s.AssetClass(node.attrib['assetCategory']),
         SubCategory = s.SubCategory(node.attrib['subCategory']),
@@ -206,11 +243,11 @@ def extractOptionLot(node: etree.ElementBase) -> s.LotDerivative:
         UnderlyingListingExchange = node.attrib['underlyingListingExchange'],
         Multiplier = float(node.attrib['multiplier']),
         Strike = float(node.attrib['strike']),
-        ReportDate = safeDateParse(node.attrib['reportDate']),
-        Expiry = safeDateParse(node.attrib['expiry']),
-        DateTime = safeDateParse(node.attrib['dateTime']),
+        ReportDate = utils.safeDateParse(node.attrib['reportDate']),
+        Expiry = utils.safeDateParse(node.attrib['expiry']),
+        DateTime = utils.safeDateParse(node.attrib['dateTime']),
         PutOrCall = s.PutOrCall(node.attrib['putCall']),
-        TradeDate = safeDateParse(node.attrib['tradeDate']),
+        TradeDate = utils.safeDateParse(node.attrib['tradeDate']),
         Exchange = node.attrib['exchange'],
         Quantity = float(node.attrib['quantity']),
         TradePrice = float(node.attrib['tradePrice']),
@@ -222,8 +259,8 @@ def extractOptionLot(node: etree.ElementBase) -> s.LotDerivative:
         ForexProfitAndLoss = float(node.attrib['fxPnl']),
         BuyOrSell = s.BuyOrSell(node.attrib['buySell']),
         TransactionID = node.attrib['transactionID'],
-        OpenDateTime = safeDateParse(node.attrib['openDateTime']),
-        HoldingPeriodDateTime = safeDateParse(node.attrib['holdingPeriodDateTime']),
+        OpenDateTime = utils.safeDateParse(node.attrib['openDateTime']),
+        HoldingPeriodDateTime = utils.safeDateParse(node.attrib['holdingPeriodDateTime']),
         LevelOfDetail = s.LevelOfDetail(node.attrib['levelOfDetail']),
     )
     return trade
@@ -233,7 +270,7 @@ def extractOptionLot(node: etree.ElementBase) -> s.LotDerivative:
 def extractCashTransaction(node: etree.ElementBase) -> s.TransactionCash:
     trade = s.TransactionCash(
         ClientAccountID=node.attrib["accountId"],
-        CurrencyPrimary=node.attrib["currency"],
+        Currency=node.attrib["currency"],
         FXRateToBase=float(node.attrib["fxRateToBase"]),
         AssetClass=s.AssetClass(node.attrib["assetCategory"]),
         SubCategory=s.SubCategory(node.attrib["subCategory"]),
@@ -246,13 +283,13 @@ def extractCashTransaction(node: etree.ElementBase) -> s.TransactionCash:
         ISIN=node.attrib["isin"],
         FIGI=node.attrib["figi"],
         ListingExchange=node.attrib["listingExchange"],
-        DateTime=safeDateParse(str(node.attrib["dateTime"])),
-        SettleDate=safeDateParse(str(node.attrib["settleDate"])),
+        DateTime=utils.safeDateParse(str(node.attrib["dateTime"])),
+        SettleDate=utils.safeDateParse(str(node.attrib["settleDate"])),
         Amount=float(node.attrib["amount"]),
         Type=s.CashTransactionType(node.attrib["type"]),
         Code=node.attrib["code"],
         TransactionID=node.attrib["transactionID"],
-        ReportDate=safeDateParse(str(node.attrib["reportDate"])),
+        ReportDate=utils.safeDateParse(str(node.attrib["reportDate"])),
         ActionID=node.attrib["actionID"]
     )
     return trade
@@ -260,11 +297,14 @@ def extractCashTransaction(node: etree.ElementBase) -> s.TransactionCash:
 
 
 
-def extractFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
+def extractFromXML(root: etree._Element) -> s.SegmentedTrades:
     # cashTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.CASH.value))
     # cashTradeNodes = cashTradesFinder(root)
     cashTransactionsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/CashTransactions/*")
     cashTransactionNodes = cashTransactionsFinder(root)
+
+    corporateActionsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/CorporateActions/*")
+    corporateActionsNodes = corporateActionsFinder(root)
 
     optionTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.OPTION.value))
     optionLotsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Lot[@assetCategory='{}']".format(s.AssetClass.OPTION.value))
@@ -280,6 +320,8 @@ def extractFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
     # cashTrades = list(map(extractCashTrade, cashTradeNodes))
     cashTransactions = list(map(extractCashTransaction, cashTransactionNodes))
 
+    corporateActions = list(map(extractCorporateActions, corporateActionsNodes))
+
     stockTrades = list(map(extractStockTrade, stockTradeNodes))
     stockLots = list(map(extractStockLot, stockLotNodes))
 
@@ -291,6 +333,7 @@ def extractFromXML(root: etree.ElementBase) -> s.SegmentedTrades:
     return s.SegmentedTrades(
         # cashTrades = cashTrades,
         cashTransactions = cashTransactions,
+        corporateActions = corporateActions,
         stockTrades = stockTrades,
         stockLots = stockLots,
         derivativeTrades = optionTrades,
@@ -304,11 +347,13 @@ def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
     optionTrades = list(map(lambda trade: trade.derivativeTrades, trades))
     # cashTrades = list(map(lambda trade: trade.cashTrades, trades))
     cashTransactions = list(map(lambda trade: trade.cashTransactions, trades))
+    corporateActions = list(map(lambda trade: trade.corporateActions, trades))
 
     stockLots = list(map(lambda trade: trade.stockLots, trades))
     optionLots = list(map(lambda trade: trade.derivativeLots, trades))
 
     stockTrades = deduplicateList(stockTrades)
+    corporateActions = deduplicateList(corporateActions)
     # cashTrades = deduplicateList(cashTrades)
     optionTrades = deduplicateList(optionTrades)
     cashTransactions = deduplicateList(cashTransactions)
@@ -320,6 +365,7 @@ def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
         # cashTrades = cashTrades,
         cashTransactions = cashTransactions,
         stockTrades = stockTrades,
+        corporateActions = corporateActions,
         stockLots = stockLots,
         derivativeTrades = optionTrades,
         derivativeLots = optionLots,

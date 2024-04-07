@@ -1,6 +1,8 @@
 cache
 .venv
+.coverage
 BrokerExports
 GeneratedReports
 
 config/*
+.pytest_cache

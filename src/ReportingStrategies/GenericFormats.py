@@ -1,13 +1,22 @@
+from __future__ import annotations
 from enum import Enum
 from dataclasses import dataclass
 from arrow import Arrow
+from typing import Generic, TypeVar, Sequence
 
 class GenericAssetClass(str, Enum):
     STOCK = "STOCK"
-    ROYALTY_TRUST = "ROYALTY_TRUST"
-    CASH = "CASH"
     OPTION = "OPTION"
+    CASH_AND_CASH_EQUIVALENTS = "CASH_AND_CASH_EQUIVALENTS"
+    BOND = "BOND"
 
+class GenericCategory(str, Enum):
+    REGULAR = "REGULAR"
+    TRUST_FUND = "TRUST_FUND"
+
+class GenericShortLong(str, Enum):
+    SHORT = "SHORT"
+    LONG = "LONG"
 
 # https://www.racunovodstvo.net/zakonodaja/zdoh/90-clen
 class GenericDividendType(str, Enum):
@@ -68,50 +77,182 @@ class GenericTradeReportItemGainType(str, Enum):
     RIGHT_TO_NEWLY_ISSUED_STOCK = "RIGHT_TO_NEWLY_ISSUED_STOCK" # guessing
 
 
+@dataclass
+class GenericMonetaryExchangeInformation:
+    UnderlyingCurrency: str
+    UnderlyingQuantity: float
+    UnderlyingTradePrice: float
+    
+    ComissionCurrency: str
+    ComissionTotal: float
+
+    TaxCurrency: str
+    TaxTotal: float
+
+
 
 
 @dataclass
-class GenericTradeReportItemSecurityLineBought:
-    AcquiredDate: Arrow
-    AcquiredHow: GenericTradeReportItemGainType
-    NumberOfUnits: float
-    AmountPerUnit: float
-    TotalAmountPaid: float  # to avoid rounding errors in case of % purchases
-    TaxPaidForPurchase: float
-    TransactionID: str
+class GenericTradeEventStaging:
+    ID: str
+    ISIN: str
+    Ticker: str | None
+    AssetClass: GenericAssetClass       # Trades can have to do with different Asset Classes (Stock, Options, ...)
+    Date: Arrow
+    Multiplier: float                   # for Leveraged trades
+    ExchangedMoney: GenericMonetaryExchangeInformation
+    
+
+@dataclass
+class TradeEventStagingStockAcquired(GenericTradeEventStaging):
+    AcquiredReason: GenericTradeReportItemGainType
+    # Related: ??       # connect with corporate actions for better generation of reports
+
+@dataclass
+class TradeEventStagingStockSold(GenericTradeEventStaging):
+    ...
+    # Related: ??       # connect with corporate actions for better generation of reports (mergers can lead to "sold" stocks)
+
+@dataclass
+class TradeEventStagingDerivativeAcquired(GenericTradeEventStaging):
+    AcquiredReason: GenericTradeReportItemGainType
+    # Related: ??       # connect with corporate actions for better generation of reports
+
+@dataclass
+class TradeEventStagingDerivativeSold(GenericTradeEventStaging):
+    ...
+    # Related: ??       # connect with corporate actions for better generation of reports (mergers can lead to "sold" stocks)
+
 
 
 @dataclass
-class GenericTradeReportItemSecurityLineSold:
-    SoldDate: Arrow
-    NumberOfUnitsSold: float
-    AmountPerUnit: float
-    TotalAmountSoldFor: float
-    TransactionID: str
-    WashSale: bool  # no trades 30 days before and after, and sold for loss
-    SoldForProfit: bool
+class GenericTaxLotMatchingDetails:
+    ID: str | None
+    DateTime: Arrow | None
 
 @dataclass
-class GenericTradeReportLotMatches:
-    TransactionID: str
+class GenericTaxLotEventStaging:
+    ID: str
+    ISIN: str
+    Ticker: str | None
     Quantity: float
-    LotOriginalBuy: GenericTradeReportItemSecurityLineBought
-    LotOriginalSell: GenericTradeReportItemSecurityLineSold
+    Acquired: GenericTaxLotMatchingDetails
+    Sold: GenericTaxLotMatchingDetails
+    ShortLongType: GenericShortLong     # Some trades can be SHORTING, meaning you first sell and then buy back
+
 
 
 @dataclass
-class GenericTradeReportItem:
-    InventoryListType: GenericTradeReportItemType
-    AssetClass: GenericAssetClass
+class GenericUnderlyingGroupingStaging:
+    ISIN: str
+    CountryOfOrigin: str | None   # None for unknown
+    
+    UnderlyingCategory: GenericCategory
+
+    StockTrades: Sequence[TradeEventStagingStockAcquired | TradeEventStagingStockSold]
+    StockTaxLots: Sequence[GenericTaxLotEventStaging]
+    
+    DerivativeTrades: Sequence[TradeEventStagingDerivativeAcquired | TradeEventStagingDerivativeSold]
+    DerivativeTaxLots: Sequence[GenericTaxLotEventStaging]
+
+    Dividends: Sequence[GenericDividendLine]
+
+
+
+
+
+
+
+
+@dataclass
+class GenericTradeEvent:
+    ID: str
     ISIN: str
     Ticker: str
-    HasForeignTax: bool
-    ForeignTax: float | None
-    ForeignTaxCountryID: str | None
-    ForeignTaxCountryName: str | None
+    AssetClass: GenericAssetClass       # Trades can have to do with different Asset Classes (Stock, Options, ...)
+    Date: Arrow
+    Multiplier: float                   # for Leveraged trades
+    ExchangedMoney: GenericMonetaryExchangeInformation
 
-    Lines: list[GenericTradeReportItemSecurityLineBought | GenericTradeReportItemSecurityLineSold]
 
+@dataclass
+class TradeEventStockAcquired(GenericTradeEvent):
+    AcquiredReason: GenericTradeReportItemGainType
+    # Related: ??       # connect with corporate actions for better generation of reports
+
+@dataclass
+class TradeEventStockSold(GenericTradeEvent):
+    ...
+    # Related: ??       # connect with corporate actions for better generation of reports (mergers can lead to "sold" stocks)
+
+@dataclass
+class TradeEventDerivativeAcquired(GenericTradeEvent):
+    AcquiredReason: GenericTradeReportItemGainType
+    # Related: ??       # connect with corporate actions for better generation of reports
+
+@dataclass
+class TradeEventDerivativeSold(GenericTradeEvent):
+    ...
+    # Related: ??       # connect with corporate actions for better generation of reports (mergers can lead to "sold" stocks)
+
+
+
+
+GenericTaxLotAcquiredEvent = TypeVar("GenericTaxLotAcquiredEvent")
+GenericTaxLotSoldEvent = TypeVar("GenericTaxLotSoldEvent")
+
+@dataclass
+class GenericTaxLot(Generic[GenericTaxLotAcquiredEvent, GenericTaxLotSoldEvent]):
+    ID: str
+    ISIN: str
+    Quantity: float
+    Acquired: GenericTaxLotAcquiredEvent
+    Sold: GenericTaxLotSoldEvent
+    ShortLongType: GenericShortLong     # Some trades can be SHORTING, meaning you first sell and then buy back
+
+
+@dataclass
+class TradeTaxLotEventStock(GenericTaxLot[TradeEventStockAcquired, TradeEventStockSold]):
+    ...
+
+
+@dataclass
+class TradeTaxLotEventDerivative(GenericTaxLot[TradeEventDerivativeAcquired, TradeEventDerivativeSold]):
+    ...
+
+
+
+
+@dataclass
+class UnderlyingGrouping:
+    ISIN: str
+    CountryOfOrigin: str | None   # None for unknown
+    
+    UnderlyingCategory: GenericCategory
+
+    StockTrades: Sequence[TradeEventStockAcquired | TradeEventStockSold]
+    StockTaxLots: Sequence[TradeTaxLotEventStock]
+    
+    DerivativeTrades: Sequence[TradeEventDerivativeAcquired | TradeEventDerivativeSold]
+    DerivativeTaxLots: Sequence[TradeTaxLotEventDerivative]
+
+    Dividends: Sequence[GenericDividendLine]
+
+
+
+
+@dataclass
+class UnderlyingGroupingWithTradesOfInterest:
+    ISIN: str
+    CountryOfOrigin: str | None   # None for unknown
+    
+    UnderlyingCategory: GenericCategory
+
+    StockTrades: Sequence[TradeEventStockAcquired | TradeEventStockSold]
+    
+    DerivativeTrades: Sequence[TradeEventDerivativeAcquired | TradeEventDerivativeSold]
+
+    Dividends: Sequence[GenericDividendLine]
 
 
 

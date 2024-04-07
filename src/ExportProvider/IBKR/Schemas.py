@@ -132,7 +132,7 @@ class TradeGeneric:
     ClientAccountID: str
     AccountAlias: str | None
     Model: Model | None
-    CurrencyPrimary: str
+    Currency: str
     FXRateToBase: float
     AssetClass: AssetClass
     SubCategory: SubCategory
@@ -158,7 +158,7 @@ class TradeGeneric:
     ReportDate: Arrow
     Expiry: Arrow | None
     DateTime: Arrow
-    PutOrCall: str | None
+    PutOrCall: PutOrCall | None
     TradeDate: Arrow
     PrincipalAdjustFactor: float | None
     SettleDateTarget: Arrow | None
@@ -217,9 +217,59 @@ class TradeGeneric:
 
 
 @dataclass
+class CorporateAction:
+    ClientAccountID: str
+    AccountAlias: str | None
+    Model: Model | None
+    Currency: str
+    FXRateToBase: float
+    AssetClass: AssetClass
+    SubCategory: SubCategory
+    Symbol: str
+    Description: str
+    Conid: str
+    SecurityID: str
+    SecurityIDType: SecurityIDType
+    CUSIP: str | None
+    ISIN: str
+    FIGI: str | None
+    ListingExchange: str
+    UnderlyingConid: str | None
+    UnderlyingSymbol: str | None
+    UnderlyingSecurityID: str | None
+    UnderlyingListingExchange: str | None
+    Multiplier: float
+    Strike: float | None
+    Expiry: Arrow | None
+    PutOrCall: PutOrCall | None
+    PrincipalAdjustFactor: float | None
+    ReportDate: Arrow
+    DateTime: Arrow
+    ActionDescription: str
+    Amount: float
+    Proceeds: float
+    Value: float
+    Quantity: float
+    FifoProfitAndLossRealized: float
+    CapitalGainsProfitAndLoss: float
+    ForexProfitAndLoss: float
+    MarketToMarketProfitAndLoss: float | None
+    NotesAndCodes: list[Codes]
+    Type: str # TODO: Enum
+    TransactionID: str
+    ActionID: str
+    LevelOfDetail: LevelOfDetail
+    SerialNumber: str | None
+    DeliveryType: str  | None # enum
+    CommodityType: str  | None # enum
+    Fineness: float
+    Weight: float
+
+
+@dataclass
 class TransactionCash:
     ClientAccountID: str
-    CurrencyPrimary: str
+    Currency: str
     FXRateToBase: float
     AssetClass: AssetClass
     SubCategory: SubCategory
@@ -245,7 +295,7 @@ class TransactionCash:
 @dataclass
 class TradeStock:
     ClientAccountID: str
-    CurrencyPrimary: str
+    Currency: str
     FXRateToBase: float
     AssetClass: AssetClass
     SubCategory: SubCategory
@@ -293,7 +343,7 @@ class TradeStock:
 @dataclass
 class LotStock:
     ClientAccountID: str
-    CurrencyPrimary: str
+    Currency: str
     FXRateToBase: float
     AssetClass: AssetClass
     SubCategory: SubCategory
@@ -329,7 +379,7 @@ class LotStock:
 @dataclass
 class TradeDerivative:
     ClientAccountID: str
-    CurrencyPrimary: str
+    Currency: str
     FXRateToBase: float
     AssetClass: AssetClass
     SubCategory: SubCategory
@@ -380,7 +430,7 @@ class TradeDerivative:
 @dataclass
 class LotDerivative:
     ClientAccountID: str
-    CurrencyPrimary: str
+    Currency: str
     FXRateToBase: float
     AssetClass: AssetClass
     SubCategory: SubCategory
@@ -422,6 +472,8 @@ class LotDerivative:
 class SegmentedTrades:
     # cashTrades: list[TransactionCash]
     cashTransactions: list[TransactionCash]
+
+    corporateActions: list[CorporateAction]
 
     stockTrades: list[TradeStock]
     stockLots: list[LotStock]
