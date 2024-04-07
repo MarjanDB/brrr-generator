@@ -25,8 +25,12 @@ jobs:
       - name: Install dependencies
         run: pipenv sync -d
 
-      - uses: pavelzw/pytest-action@v2
+      - name: Run PyTest
+        run: pipenv run pytest --cov=src src --cov-report="xml:coverage.xml" --junitxml=pytest.xml
+
+      - name: Pytest Coverage Comment
+        uses: MishaKav/pytest-coverage-comment@v1.1.51
         with:
-          emoji: false
-          verbose: false
-          job-summary: true
+          pytest-xml-coverage-path: ./coverage.xml
+          junitxml-path: ./pytest.xml
+            
