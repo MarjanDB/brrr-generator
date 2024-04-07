@@ -18,8 +18,7 @@ ipykernel = "6.29.*"
 pytest = "8.0.*"
 types-lxml = "2024.2.*"
 pytest-cov = "4.1.*"
-pytest-md = "*"
-pytest-emoji = "*"
+pytest-md = "0.2.*"
 
 [requires]
 python_version = "3.11"
