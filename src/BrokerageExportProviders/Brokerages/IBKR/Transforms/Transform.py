@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from itertools import groupby
 from typing import Generic, Sequence, TypeVar
 
-import src.BrokerageExportProviders.Brokerages.IBKR.Schemas as s
+import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as s
+import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
 import src.ReportingStrategies.GenericFormats as gf
 
 LINE_GENERIC_BUY = TypeVar("LINE_GENERIC_BUY")
@@ -235,7 +236,7 @@ def convertDerivativeLotsToDerivativeLotEvents(
 
 
 def convertSegmentedTradesToGenericUnderlyingGroups(
-    segmented: s.SegmentedTrades,
+    segmented: st.SegmentedTrades,
 ) -> Sequence[gf.GenericUnderlyingGroupingStaging]:
     stockTrades = segmented.stockTrades
     stockLots = segmented.stockLots

@@ -2,7 +2,8 @@ from typing import Any
 
 from lxml import etree
 
-import src.BrokerageExportProviders.Brokerages.IBKR.Schemas as s
+import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as s
+import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
 import src.BrokerageExportProviders.Utils.ValueParsingUtils as utils
 
 
@@ -295,7 +296,7 @@ def extractCashTransaction(node: etree.ElementBase) -> s.TransactionCash:
     return trade
 
 
-def extractFromXML(root: etree._Element) -> s.SegmentedTrades:
+def extractFromXML(root: etree._Element) -> st.SegmentedTrades:
     # cashTradesFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/Trades/Trade[@assetCategory='{}']".format(s.AssetClass.CASH.value))
     # cashTradeNodes = cashTradesFinder(root)
     cashTransactionsFinder = etree.XPath("/FlexQueryResponse/FlexStatements/FlexStatement/CashTransactions/*")
@@ -333,7 +334,7 @@ def extractFromXML(root: etree._Element) -> s.SegmentedTrades:
     optionTrades = list(map(extractOptionTrade, optionTradeNodes))
     optionLots = list(map(extractOptionLot, optionLotNodes))
 
-    return s.SegmentedTrades(
+    return st.SegmentedTrades(
         # cashTrades = cashTrades,
         cashTransactions=cashTransactions,
         corporateActions=corporateActions,
@@ -344,7 +345,7 @@ def extractFromXML(root: etree._Element) -> s.SegmentedTrades:
     )
 
 
-def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
+def mergeTrades(trades: list[st.SegmentedTrades]) -> st.SegmentedTrades:
     stockTrades = list(map(lambda trade: trade.stockTrades, trades))
     optionTrades = list(map(lambda trade: trade.derivativeTrades, trades))
     # cashTrades = list(map(lambda trade: trade.cashTrades, trades))
@@ -363,7 +364,7 @@ def mergeTrades(trades: list[s.SegmentedTrades]) -> s.SegmentedTrades:
     optionLots = [x for xs in optionLots for x in xs]  # lots cannot be deduplicated, as there is no unique identifer
     stockLots = [x for xs in stockLots for x in xs]  # lots cannot be deduplicated, as there is no unique identifer
 
-    return s.SegmentedTrades(
+    return st.SegmentedTrades(
         # cashTrades = cashTrades,
         cashTransactions=cashTransactions,
         stockTrades=stockTrades,

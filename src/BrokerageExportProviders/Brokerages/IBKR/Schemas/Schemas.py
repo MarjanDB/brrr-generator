@@ -481,17 +481,3 @@ class LotDerivative:
     OpenDateTime: Arrow
     HoldingPeriodDateTime: Arrow
     LevelOfDetail: LevelOfDetail
-
-
-@dataclass
-class SegmentedTrades:
-    # cashTrades: list[TransactionCash]
-    cashTransactions: list[TransactionCash]
-
-    corporateActions: list[CorporateAction]
-
-    stockTrades: list[TradeStock]
-    stockLots: list[LotStock]
-
-    derivativeTrades: list[TradeDerivative]
-    derivativeLots: list[LotDerivative]

@@ -3,8 +3,9 @@ import pathlib
 
 from lxml import etree
 
-import src.BrokerageExportProviders.Brokerages.IBKR.Extract as ex
-import src.BrokerageExportProviders.Brokerages.IBKR.Schemas as es
+import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as es
+import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
+import src.BrokerageExportProviders.Brokerages.IBKR.Transforms.Extract as ex
 
 locationOfFiles = pathlib.Path(__file__).parent
 simpleStockTradeXml = os.path.join(locationOfFiles, "SimpleStockTrade.xml")
@@ -28,7 +29,7 @@ class TestIbkrExtractStockTrades:
     def testSegmentedTradesReturnTradesAndLot(self):
         segmented = ex.extractFromXML(simpleStockTrade)
 
-        assert isinstance(segmented, es.SegmentedTrades)
+        assert isinstance(segmented, st.SegmentedTrades)
         assert len(segmented.stockTrades) == 2
         assert len(segmented.stockLots) == 1
 
@@ -69,7 +70,7 @@ class TestIbkrExtractOptionTrades:
     def testSegmentedTradesReturnTradesAndLot(self):
         segmented = ex.extractFromXML(simpleOptionTrade)
 
-        assert isinstance(segmented, es.SegmentedTrades)
+        assert isinstance(segmented, st.SegmentedTrades)
         assert len(segmented.derivativeTrades) == 2
         assert len(segmented.derivativeLots) == 1
 
@@ -112,7 +113,7 @@ class TestIbkrExtractCorporateActions:
     def testSegmentedTradesReturnCorporateAction(self):
         segmented = ex.extractFromXML(simpleCorporateAction)
 
-        assert isinstance(segmented, es.SegmentedTrades)
+        assert isinstance(segmented, st.SegmentedTrades)
         assert len(segmented.derivativeTrades) == 0
         assert len(segmented.derivativeLots) == 0
         assert len(segmented.corporateActions) == 1

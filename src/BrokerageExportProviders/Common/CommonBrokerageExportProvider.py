@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Any, Generic, Sequence, TypeVar
 
 from src.BrokerageExportProviders.Contracts.CommonBrokerageEvents import (
@@ -8,7 +8,7 @@ from src.BrokerageExportProviders.Contracts.CommonBrokerageEvents import (
 BROKERAGE_EVENTS_TYPE = TypeVar("BROKERAGE_EVENTS_TYPE", bound=CommonBrokerageEvents[Any, Any, Any, Any, Any, Any])
 
 
-class CommonBrokerageExportProvider(Generic[BROKERAGE_EVENTS_TYPE]):
+class CommonBrokerageExportProvider(ABC, Generic[BROKERAGE_EVENTS_TYPE]):
 
     @abstractmethod
     def getListOfReportsAvailableForBroker(self, pathToFolderContainingExports: str) -> Sequence[str]:
