@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generic, Sequence, TypeVar
 
+import src.ReportingStrategies.GenericFormats as gf
 from src.BrokerageExportProviders.Contracts.CommonBrokerageEvents import (
     CommonBrokerageEvents,
 )
@@ -22,4 +23,19 @@ class CommonBrokerageExportProvider(ABC, Generic[BROKERAGE_EVENTS_TYPE]):
         """
         The argument brokerExportFileLocation will be the path to a single exported report for this broker.
         The return should be an instance of all the broker events contained inside this export.
+        """
+
+    @abstractmethod
+    def mergeBrokerEvents(self, events: Sequence[BROKERAGE_EVENTS_TYPE]) -> BROKERAGE_EVENTS_TYPE:
+        """
+        The argument events will be multiple a sequence of Broker Events that require merging.
+        The return will be a Broker Events, which contain no duplicate Broker Events.
+        """
+
+    # TODO: These shouldn't already be grouped by ISIN, but instead only segmented. Grouping is common to all brokerages.
+    @abstractmethod
+    def transformBrokerEventsToBrokerAgnosticEvents(self, events: BROKERAGE_EVENTS_TYPE) -> Sequence[gf.GenericUnderlyingGroupingStaging]:
+        """
+        The argument events will contain the Events specific to this Brokerage Provider.
+        The return will be Broker Events which are agnostic to any one Brokerage.
         """

@@ -1,11 +1,14 @@
 import os
 from glob import glob
+from typing import Sequence
 
 from lxml import etree
 
 import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
 import src.BrokerageExportProviders.Brokerages.IBKR.Transforms.Extract as e
+import src.BrokerageExportProviders.Brokerages.IBKR.Transforms.Transform as t
 import src.BrokerageExportProviders.Common.CommonBrokerageExportProvider as cbep
+import src.ReportingStrategies.GenericFormats as gf
 
 
 class IbkrBrokerageExportProvider(cbep.CommonBrokerageExportProvider[st.SegmentedTrades]):
@@ -24,3 +27,9 @@ class IbkrBrokerageExportProvider(cbep.CommonBrokerageExportProvider[st.Segmente
         transactions = e.extractFromXML(root)
 
         return transactions
+
+    def mergeBrokerEvents(self, events: Sequence[st.SegmentedTrades]) -> st.SegmentedTrades:
+        return e.mergeTrades(list(events))
+
+    def transformBrokerEventsToBrokerAgnosticEvents(self, events: st.SegmentedTrades) -> Sequence[gf.GenericUnderlyingGroupingStaging]:
+        return t.convertSegmentedTradesToGenericUnderlyingGroups(events)
