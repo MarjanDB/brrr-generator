@@ -60,9 +60,7 @@ class TestIbkrExtractStockTrades:
 
         merged = ex.mergeTrades([segmented1, segmented2])
 
-        assert (
-            len(merged.stockTrades) == 2
-        ), "There should only be one trade when merging 2 SegmentedTrades containing the same trade"
+        assert len(merged.stockTrades) == 2, "There should only be one trade when merging 2 SegmentedTrades containing the same trade"
 
 
 class TestIbkrExtractOptionTrades:
@@ -105,9 +103,7 @@ class TestIbkrExtractOptionTrades:
 
         merged = ex.mergeTrades([segmented1, segmented2])
 
-        assert (
-            len(merged.derivativeTrades) == 2
-        ), "There should only be one trade when merging 2 SegmentedTrades containing the same trade"
+        assert len(merged.derivativeTrades) == 2, "There should only be one trade when merging 2 SegmentedTrades containing the same trade"
 
 
 class TestIbkrExtractCorporateActions:

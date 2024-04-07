@@ -44,38 +44,22 @@ class EDavkiReportWrapper(gr.GenericReportWrapper):
 
         Header = etree.SubElement(Envelope, etree.QName(edp, "Header"))
         Taxpayer = etree.SubElement(Header, etree.QName(edp, "taxpayer"))
-        etree.SubElement(Taxpayer, etree.QName(edp, "taxNumber")).text = (
-            self.taxPayerInfo.taxNumber
-        )
+        etree.SubElement(Taxpayer, etree.QName(edp, "taxNumber")).text = self.taxPayerInfo.taxNumber
         etree.SubElement(Taxpayer, etree.QName(edp, "taxpayerType")).text = (
             self.taxPayerInfo.taxpayerType.value
         )  # "FO" see EDP-Common-1 schema
-        etree.SubElement(Taxpayer, etree.QName(edp, "name")).text = (
-            self.taxPayerInfo.name
-        )
-        etree.SubElement(Taxpayer, etree.QName(edp, "address1")).text = (
-            self.taxPayerInfo.address1
-        )
-        etree.SubElement(Taxpayer, etree.QName(edp, "address2")).text = (
-            self.taxPayerInfo.address2 if self.taxPayerInfo.address2 else ""
-        )
-        etree.SubElement(Taxpayer, etree.QName(edp, "city")).text = (
-            self.taxPayerInfo.city
-        )
-        etree.SubElement(Taxpayer, etree.QName(edp, "postNumber")).text = (
-            self.taxPayerInfo.postNumber
-        )
-        etree.SubElement(Taxpayer, etree.QName(edp, "postName")).text = (
-            self.taxPayerInfo.postName
-        )
+        etree.SubElement(Taxpayer, etree.QName(edp, "name")).text = self.taxPayerInfo.name
+        etree.SubElement(Taxpayer, etree.QName(edp, "address1")).text = self.taxPayerInfo.address1
+        etree.SubElement(Taxpayer, etree.QName(edp, "address2")).text = self.taxPayerInfo.address2 if self.taxPayerInfo.address2 else ""
+        etree.SubElement(Taxpayer, etree.QName(edp, "city")).text = self.taxPayerInfo.city
+        etree.SubElement(Taxpayer, etree.QName(edp, "postNumber")).text = self.taxPayerInfo.postNumber
+        etree.SubElement(Taxpayer, etree.QName(edp, "postName")).text = self.taxPayerInfo.postName
         etree.SubElement(Envelope, etree.QName(edp, "AttachmentList"))
         etree.SubElement(Envelope, etree.QName(edp, "Signatures"))
 
         workflow = etree.SubElement(Header, etree.QName(edp, "Workflow"))
 
-        etree.SubElement(workflow, etree.QName(edp, "DocumentWorkflowID")).text = (
-            documentType
-        )
+        etree.SubElement(workflow, etree.QName(edp, "DocumentWorkflowID")).text = documentType
 
         return Envelope
 
@@ -86,20 +70,14 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
     def createReportEnvelope(self):
         currentYear = int(arrow.Arrow.now().format("YYYY"))
         lastYear = currentYear - 1
-        reportEndPeriod = int(
-            self.baseReportConfig.toDate.shift(days=-1).format("YYYY")
-        )
+        reportEndPeriod = int(self.baseReportConfig.toDate.shift(days=-1).format("YYYY"))
         if reportEndPeriod < lastYear:
             self.shouldSelfReport = True
 
         return EDavkiReportWrapper.createReportEnvelope(self)  # type: ignore
 
     def segmentDataBasedOnLineType(self, data: list[gf.GenericDividendLine]):
-        dividendLines = list(
-            filter(
-                lambda line: line.LineType == gf.GenericDividendLineType.DIVIDEND, data
-            )
-        )
+        dividendLines = list(filter(lambda line: line.LineType == gf.GenericDividendLineType.DIVIDEND, data))
         witholdingTax = list(
             filter(
                 lambda line: line.LineType == gf.GenericDividendLineType.WITHOLDING_TAX,
@@ -112,9 +90,7 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
             gf.GenericDividendLineType.WITHOLDING_TAX: witholdingTax,
         }
 
-    def mergeSameDividendsForUniqueDayIsinType(
-        self, dividends: list[ss.EDavkiDividendReportLine]
-    ) -> list[ss.EDavkiDividendReportLine]:
+    def mergeSameDividendsForUniqueDayIsinType(self, dividends: list[ss.EDavkiDividendReportLine]) -> list[ss.EDavkiDividendReportLine]:
         segmented: dict[str, list[ss.EDavkiDividendReportLine]] = {}
         for key, valuesiter in groupby(
             dividends,
@@ -129,12 +105,8 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
         mergedDividends: list[ss.EDavkiDividendReportLine] = list()
 
         for dividendList in segmented.values():
-            combinedTotal = sum(
-                map(lambda dividend: dividend.DividendAmount, dividendList)
-            )
-            combinedTotalTax = sum(
-                map(lambda dividend: dividend.ForeignTaxPaid, dividendList)
-            )
+            combinedTotal = sum(map(lambda dividend: dividend.DividendAmount, dividendList))
+            combinedTotalTax = sum(map(lambda dividend: dividend.ForeignTaxPaid, dividendList))
 
             combinedTracking = "-".join(
                 list(
@@ -148,20 +120,14 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
             generatedMerged = ss.EDavkiDividendReportLine(
                 DateReceived=dividendList[0].DateReceived,
                 TaxNumberForDividendPayer=dividendList[0].TaxNumberForDividendPayer,
-                DividendPayerIdentificationNumber=dividendList[
-                    0
-                ].DividendPayerIdentificationNumber,
+                DividendPayerIdentificationNumber=dividendList[0].DividendPayerIdentificationNumber,
                 DividendPayerTitle=dividendList[0].DividendPayerTitle,
                 DividendPayerAddress=dividendList[0].DividendPayerAddress,
-                DividendPayerCountryOfOrigin=dividendList[
-                    0
-                ].DividendPayerCountryOfOrigin,
+                DividendPayerCountryOfOrigin=dividendList[0].DividendPayerCountryOfOrigin,
                 DividendType=dividendList[0].DividendType,
                 CountryOfOrigin=dividendList[0].CountryOfOrigin,
                 DividendIdentifierForTracking=combinedTracking,
-                TaxReliefParagraphInInternationalTreaty=dividendList[
-                    0
-                ].TaxReliefParagraphInInternationalTreaty,
+                TaxReliefParagraphInInternationalTreaty=dividendList[0].TaxReliefParagraphInInternationalTreaty,
                 DividendAmount=combinedTotal,
                 ForeignTaxPaid=combinedTotalTax,
             )
@@ -170,9 +136,7 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
 
         return mergedDividends
 
-    def calculateLines(
-        self, data: list[gf.GenericDividendLine]
-    ) -> list[ss.EDavkiDividendReportLine]:
+    def calculateLines(self, data: list[gf.GenericDividendLine]) -> list[ss.EDavkiDividendReportLine]:
         actionToDividendMapping: dict[str, ss.EDavkiDividendReportLine] = dict()
         segmentedLines = self.segmentDataBasedOnLineType(data)
 
@@ -181,15 +145,13 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
 
         segmentedLines[gf.GenericDividendLineType.DIVIDEND] = list(
             filter(
-                lambda line: line.ReceivedDateTime >= periodStart
-                and line.ReceivedDateTime < periodEnd,
+                lambda line: line.ReceivedDateTime >= periodStart and line.ReceivedDateTime < periodEnd,
                 segmentedLines[gf.GenericDividendLineType.DIVIDEND],
             )
         )
         segmentedLines[gf.GenericDividendLineType.WITHOLDING_TAX] = list(
             filter(
-                lambda line: line.ReceivedDateTime >= periodStart
-                and line.ReceivedDateTime < periodEnd,
+                lambda line: line.ReceivedDateTime >= periodStart and line.ReceivedDateTime < periodEnd,
                 segmentedLines[gf.GenericDividendLineType.WITHOLDING_TAX],
             )
         )
@@ -216,9 +178,7 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
                 actionToDividendMapping[actionId] = thisDividendLine
                 continue
 
-            actionToDividendMapping[
-                actionId
-            ].DividendAmount += dividend.getAmountInBaseCurrency()
+            actionToDividendMapping[actionId].DividendAmount += dividend.getAmountInBaseCurrency()
 
         for withheldTax in segmentedLines[gf.GenericDividendLineType.WITHOLDING_TAX]:
             actionId = withheldTax.DividendActionID
@@ -243,9 +203,7 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
                 actionToDividendMapping[actionId] = thisDividendLine
                 continue
 
-            actionToDividendMapping[
-                actionId
-            ].ForeignTaxPaid += withheldTax.getAmountInBaseCurrency()
+            actionToDividendMapping[actionId].ForeignTaxPaid += withheldTax.getAmountInBaseCurrency()
 
         createdLines = list(actionToDividendMapping.values())
 
@@ -253,48 +211,32 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
 
         for dividendLine in createdLines:
             dividendLine.DividendAmount = dividendLine.DividendAmount.__round__(2)
-            dividendLine.ForeignTaxPaid = (
-                dividendLine.ForeignTaxPaid.__abs__().__round__(2)
-            )
+            dividendLine.ForeignTaxPaid = dividendLine.ForeignTaxPaid.__abs__().__round__(2)
 
             try:
-                responsibleCompany = self.companyLookupProvider.getCompanyInfo(
-                    dividendLine.DividendPayerIdentificationNumber
-                )
+                responsibleCompany = self.companyLookupProvider.getCompanyInfo(dividendLine.DividendPayerIdentificationNumber)
 
                 dividendLine.DividendPayerTitle = responsibleCompany.LongName
 
-                dividendLine.DividendPayerCountryOfOrigin = (
-                    responsibleCompany.Location.ShortCodeCountry2
-                )
-                dividendLine.CountryOfOrigin = (
-                    responsibleCompany.Location.ShortCodeCountry2
-                )
+                dividendLine.DividendPayerCountryOfOrigin = responsibleCompany.Location.ShortCodeCountry2
+                dividendLine.CountryOfOrigin = responsibleCompany.Location.ShortCodeCountry2
 
-                dividendLine.DividendPayerAddress = (
-                    responsibleCompany.Location.formatAsUnternationalAddress()
-                )
+                dividendLine.DividendPayerAddress = responsibleCompany.Location.formatAsUnternationalAddress()
 
-                relevantCountry = self.countryLookupProvider.getCountry(
-                    responsibleCompany.Location.Country
-                )
+                relevantCountry = self.countryLookupProvider.getCountry(responsibleCompany.Location.Country)
                 treaty = relevantCountry.treaties.get(ilp.TreatyType.TaxRelief)
 
                 dividendLine.TaxReliefParagraphInInternationalTreaty = treaty
 
             except Exception as e:
-                print(
-                    "Failed for ISIN: " + dividendLine.DividendPayerIdentificationNumber
-                )
+                print("Failed for ISIN: " + dividendLine.DividendPayerIdentificationNumber)
                 print(e)
 
         combinedLines = self.mergeSameDividendsForUniqueDayIsinType(createdLines)
 
         return combinedLines
 
-    def generateDataFrameReport(
-        self, data: list[gf.GenericDividendLine]
-    ) -> pd.DataFrame:
+    def generateDataFrameReport(self, data: list[gf.GenericDividendLine]) -> pd.DataFrame:
         lines = self.calculateLines(data)
 
         def convertToDict(data: ss.EDavkiDividendReportLine):
@@ -318,59 +260,37 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
         dataframe = pd.DataFrame.from_records(dataAsDict)
         return dataframe
 
-    def generateXmlReport(
-        self, data: list[gf.GenericDividendLine], templateEnvelope: etree.ElementBase
-    ) -> etree.ElementBase:
+    def generateXmlReport(self, data: list[gf.GenericDividendLine], templateEnvelope: etree.ElementBase) -> etree.ElementBase:
         lines = self.calculateLines(data)
 
         nsmap = templateEnvelope.nsmap
         nsmap[None] = "http://edavki.durs.si/Documents/Schemas/Doh_Div_3.xsd"
-        envelope = etree.Element(
-            templateEnvelope.tag, attrib=templateEnvelope.attrib, nsmap=nsmap
-        )
+        envelope = etree.Element(templateEnvelope.tag, attrib=templateEnvelope.attrib, nsmap=nsmap)
         envelope[:] = templateEnvelope[:]
 
         body = etree.SubElement(envelope, "body")
 
         Doh_Div = etree.SubElement(body, "Doh_Div")
-        etree.SubElement(Doh_Div, "Period").text = (
-            self.baseReportConfig.fromDate.format("YYYY")
-        )
+        etree.SubElement(Doh_Div, "Period").text = self.baseReportConfig.fromDate.format("YYYY")
         etree.SubElement(Doh_Div, "EmailAddress").text = "email"
         etree.SubElement(Doh_Div, "PhoneNumber").text = "telefonska"
         etree.SubElement(Doh_Div, "ResidentCountry").text = self.taxPayerInfo.countryID
-        etree.SubElement(Doh_Div, "IsResident").text = str(
-            self.taxPayerInfo.countryID == "SI"
-        ).lower()
-        etree.SubElement(Doh_Div, "SelfReport").text = str(
-            self.shouldSelfReport
-        ).lower()
+        etree.SubElement(Doh_Div, "IsResident").text = str(self.taxPayerInfo.countryID == "SI").lower()
+        etree.SubElement(Doh_Div, "SelfReport").text = str(self.shouldSelfReport).lower()
 
         def transformDividendLineToXML(line: ss.EDavkiDividendReportLine):
             dividendLine = etree.SubElement(body, "Dividend")
-            etree.SubElement(dividendLine, "Date").text = line.DateReceived.format(
-                "YYYY-MM-DD"
-            )
-            etree.SubElement(dividendLine, "PayerTaxNumber").text = (
-                line.TaxNumberForDividendPayer
-            )
-            etree.SubElement(dividendLine, "PayerIdentificationNumber").text = (
-                line.DividendPayerIdentificationNumber
-            )
+            etree.SubElement(dividendLine, "Date").text = line.DateReceived.format("YYYY-MM-DD")
+            etree.SubElement(dividendLine, "PayerTaxNumber").text = line.TaxNumberForDividendPayer
+            etree.SubElement(dividendLine, "PayerIdentificationNumber").text = line.DividendPayerIdentificationNumber
             etree.SubElement(dividendLine, "PayerName").text = line.DividendPayerTitle
-            etree.SubElement(dividendLine, "PayerAddress").text = (
-                line.DividendPayerAddress
-            )
-            etree.SubElement(dividendLine, "PayerCountry").text = (
-                line.DividendPayerCountryOfOrigin
-            )
+            etree.SubElement(dividendLine, "PayerAddress").text = line.DividendPayerAddress
+            etree.SubElement(dividendLine, "PayerCountry").text = line.DividendPayerCountryOfOrigin
             etree.SubElement(dividendLine, "Type").text = line.DividendType.value
             etree.SubElement(dividendLine, "Value").text = str(line.DividendAmount)
             etree.SubElement(dividendLine, "ForeignTax").text = str(line.ForeignTaxPaid)
             etree.SubElement(dividendLine, "SourceCountry").text = line.CountryOfOrigin
-            etree.SubElement(dividendLine, "ReliefStatement").text = (
-                line.TaxReliefParagraphInInternationalTreaty
-            )
+            etree.SubElement(dividendLine, "ReliefStatement").text = line.TaxReliefParagraphInInternationalTreaty
 
         for line in lines:
             transformDividendLineToXML(line)
@@ -379,9 +299,7 @@ class EDavkiDividendReport(gr.GenericDividendReport[EDavkiReportConfig]):
 
 
 class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
-    SECURITY_MAPPING: dict[
-        gf.GenericTradeReportItemType, ss.EDavkiTradeSecurityType
-    ] = {
+    SECURITY_MAPPING: dict[gf.GenericTradeReportItemType, ss.EDavkiTradeSecurityType] = {
         gf.GenericTradeReportItemType.STOCK: ss.EDavkiTradeSecurityType.SECURITY,
         gf.GenericTradeReportItemType.STOCK_SHORT: ss.EDavkiTradeSecurityType.SECURITY_SHORT,
         gf.GenericTradeReportItemType.STOCK_CONTRACT: ss.EDavkiTradeSecurityType.SECURITY_WITH_CONTRACT,
@@ -390,9 +308,7 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
         gf.GenericTradeReportItemType.PLVPZOK: ss.EDavkiTradeSecurityType.SECURITY_WITH_CAPITAL_REDUCTION,
     }
 
-    GAIN_MAPPINGS: dict[
-        gf.GenericTradeReportItemGainType, ss.EDavkiTradeReportGainType
-    ] = {
+    GAIN_MAPPINGS: dict[gf.GenericTradeReportItemGainType, ss.EDavkiTradeReportGainType] = {
         gf.GenericTradeReportItemGainType.BOUGHT: ss.EDavkiTradeReportGainType.BOUGHT,
         gf.GenericTradeReportItemGainType.CAPITAL_INVESTMENT: ss.EDavkiTradeReportGainType.CAPITAL_INVESTMENT,
         gf.GenericTradeReportItemGainType.CAPITAL_RAISE: ss.EDavkiTradeReportGainType.CAPITAL_RAISE,
@@ -409,18 +325,14 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
     def createReportEnvelope(self):
         currentYear = int(arrow.Arrow.now().format("YYYY"))
         lastYear = currentYear - 1
-        reportEndPeriod = int(
-            self.baseReportConfig.toDate.shift(days=-1).format("YYYY")
-        )
+        reportEndPeriod = int(self.baseReportConfig.toDate.shift(days=-1).format("YYYY"))
         self.documentType = EDavkiDocumentWorkflowType.ORIGINAL
         if reportEndPeriod < lastYear:
             self.documentType = EDavkiDocumentWorkflowType.SELF_REPORT
 
         return EDavkiReportWrapper.createReportEnvelope(self, self.documentType)  # type: ignore
 
-    def convertTradesToKdvpItems(
-        self, data: Sequence[gf.UnderlyingGrouping]
-    ) -> list[ss.EDavkiGenericTradeReportItem]:
+    def convertTradesToKdvpItems(self, data: Sequence[gf.UnderlyingGrouping]) -> list[ss.EDavkiGenericTradeReportItem]:
         converted: list[ss.EDavkiGenericTradeReportItem] = list()
         periodStart = self.baseReportConfig.fromDate
         periodEnd = self.baseReportConfig.toDate
@@ -434,14 +346,10 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                 # lot was not closed during the reporting period, so its trades should not be included in the generated report
                 return not (closedOn < periodStart or closedOn > periodEnd)
 
-            validLots = list(
-                filter(isLotClosedInReportingPeriod, isinGrouping.StockTaxLots)
-            )
+            validLots = list(filter(isLotClosedInReportingPeriod, isinGrouping.StockTaxLots))
             isinGrouping.StockTaxLots = validLots
 
-            interestingGrouping = self.gUtils.generateInterestingUnderlyingGrouping(
-                isinGrouping
-            )
+            interestingGrouping = self.gUtils.generateInterestingUnderlyingGrouping(isinGrouping)
 
             def convertStockBuy(
                 line: gf.TradeEventStockAcquired,
@@ -451,8 +359,7 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                     GainType=self.GAIN_MAPPINGS[line.AcquiredReason],
                     Quantity=line.ExchangedMoney.UnderlyingQuantity,
                     PricePerUnit=line.ExchangedMoney.UnderlyingTradePrice,
-                    TotalPrice=line.ExchangedMoney.UnderlyingQuantity
-                    * line.ExchangedMoney.UnderlyingTradePrice,
+                    TotalPrice=line.ExchangedMoney.UnderlyingQuantity * line.ExchangedMoney.UnderlyingTradePrice,
                     InheritanceAndGiftTaxPaid=None,
                     BaseTaxReduction=None,
                 )
@@ -464,17 +371,13 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                     SoldOn=line.Date,
                     Quantity=line.ExchangedMoney.UnderlyingQuantity,
                     PricePerUnit=line.ExchangedMoney.UnderlyingTradePrice,
-                    TotalPrice=line.ExchangedMoney.UnderlyingQuantity
-                    * line.ExchangedMoney.UnderlyingTradePrice,
+                    TotalPrice=line.ExchangedMoney.UnderlyingQuantity * line.ExchangedMoney.UnderlyingTradePrice,
                     SatisfiesTaxBasisReduction=False,  # TODO: Wash sale handling
                 )
 
             def convertStock(
                 line: gf.TradeEventStockAcquired | gf.TradeEventStockSold,
-            ) -> (
-                ss.EDavkiTradeReportSecurityLineGenericEventBought
-                | ss.EDavkiTradeReportSecurityLineGenericEventSold
-            ):
+            ) -> ss.EDavkiTradeReportSecurityLineGenericEventBought | ss.EDavkiTradeReportSecurityLineGenericEventSold:
                 if isinstance(line, gf.TradeEventStockAcquired):
                     return convertStockBuy(line)
 
@@ -489,9 +392,7 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
 
             convertedLines = list(map(convertStock, allLines))
 
-            isTrustFund = (
-                isinGrouping.UnderlyingCategory == gf.GenericCategory.TRUST_FUND
-            )
+            isTrustFund = isinGrouping.UnderlyingCategory == gf.GenericCategory.TRUST_FUND
 
             tickerSymbols = list(
                 map(lambda line: line.Ticker, allLines)
@@ -507,9 +408,7 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                 Events=convertedLines,
             )
 
-            ForeignTaxPaid = sum(
-                map(lambda entry: entry.ExchangedMoney.TaxTotal or 0, allLines)
-            )
+            ForeignTaxPaid = sum(map(lambda entry: entry.ExchangedMoney.TaxTotal or 0, allLines))
             HasForeignTax = True
             if ForeignTaxPaid <= 0:
                 ForeignTaxPaid = None
@@ -533,16 +432,12 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
 
         return converted
 
-    def generateXmlReport(
-        self, data: Sequence[gf.UnderlyingGrouping], templateEnvelope: etree._Element
-    ) -> etree.ElementBase:
+    def generateXmlReport(self, data: Sequence[gf.UnderlyingGrouping], templateEnvelope: etree._Element) -> etree.ElementBase:
         convertedTrades = self.convertTradesToKdvpItems(data)
 
         nsmap = templateEnvelope.nsmap
         nsmap[None] = "http://edavki.durs.si/Documents/Schemas/Doh_KDVP_9.xsd"
-        envelope = etree.Element(
-            templateEnvelope.tag, attrib=templateEnvelope.attrib, nsmap=nsmap
-        )
+        envelope = etree.Element(templateEnvelope.tag, attrib=templateEnvelope.attrib, nsmap=nsmap)
         envelope[:] = templateEnvelope[:]
 
         body = etree.SubElement(envelope, "body")
@@ -551,18 +446,10 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
         Doh_KDVP = etree.SubElement(body, "Doh_KDVP")
         KDVP = etree.SubElement(Doh_KDVP, "KDVP")
         etree.SubElement(KDVP, "DocumentWorkflowID").text = self.documentType.value
-        etree.SubElement(KDVP, "Year").text = self.baseReportConfig.fromDate.format(
-            "YYYY"
-        )
-        etree.SubElement(KDVP, "PeriodStart").text = (
-            self.baseReportConfig.fromDate.format("YYYY-MM-DD")
-        )
-        etree.SubElement(KDVP, "PeriodEnd").text = self.baseReportConfig.toDate.shift(
-            days=-1
-        ).format("YYYY-MM-DD")
-        etree.SubElement(KDVP, "IsResident").text = str(
-            self.taxPayerInfo.countryID == "SI"
-        ).lower()
+        etree.SubElement(KDVP, "Year").text = self.baseReportConfig.fromDate.format("YYYY")
+        etree.SubElement(KDVP, "PeriodStart").text = self.baseReportConfig.fromDate.format("YYYY-MM-DD")
+        etree.SubElement(KDVP, "PeriodEnd").text = self.baseReportConfig.toDate.shift(days=-1).format("YYYY-MM-DD")
+        etree.SubElement(KDVP, "IsResident").text = str(self.taxPayerInfo.countryID == "SI").lower()
         etree.SubElement(KDVP, "SecurityCount").text = "0"
         etree.SubElement(KDVP, "SecurityShortCount").text = "0"
         etree.SubElement(KDVP, "SecurityWithContractCount").text = "0"
@@ -575,34 +462,18 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
         for KDVP_item_entry in convertedTrades:
             KDVP_ITEM = etree.SubElement(Doh_KDVP, "KDVPItem")
 
-            etree.SubElement(KDVP_ITEM, "InventoryListType").text = (
-                KDVP_item_entry.InventoryListType.value
-            )
-            etree.SubElement(KDVP_ITEM, "HasForeignTax").text = str(
-                KDVP_item_entry.HasForeignTax
-            ).lower()
+            etree.SubElement(KDVP_ITEM, "InventoryListType").text = KDVP_item_entry.InventoryListType.value
+            etree.SubElement(KDVP_ITEM, "HasForeignTax").text = str(KDVP_item_entry.HasForeignTax).lower()
             if KDVP_item_entry.ForeignTax is not None:
-                etree.SubElement(KDVP_ITEM, "ForeignTax").text = str(
-                    KDVP_item_entry.ForeignTax.__round__(5)
-                )
+                etree.SubElement(KDVP_ITEM, "ForeignTax").text = str(KDVP_item_entry.ForeignTax.__round__(5))
 
             if KDVP_item_entry.FTCountryID is not None:
-                etree.SubElement(KDVP_ITEM, "FTCountryID").text = (
-                    KDVP_item_entry.FTCountryID
-                )
+                etree.SubElement(KDVP_ITEM, "FTCountryID").text = KDVP_item_entry.FTCountryID
             if KDVP_item_entry.FTCountryName is not None:
-                etree.SubElement(KDVP_ITEM, "FTCountryName").text = (
-                    KDVP_item_entry.FTCountryName
-                )
-            etree.SubElement(KDVP_ITEM, "HasLossTransfer").text = str(
-                KDVP_item_entry.HasLossTransfer or False
-            ).lower()
-            etree.SubElement(KDVP_ITEM, "ForeignTransfer").text = str(
-                KDVP_item_entry.ForeignTransfer or False
-            ).lower()
-            etree.SubElement(KDVP_ITEM, "TaxDecreaseConformance").text = str(
-                KDVP_item_entry.TaxDecreaseConformance or False
-            ).lower()
+                etree.SubElement(KDVP_ITEM, "FTCountryName").text = KDVP_item_entry.FTCountryName
+            etree.SubElement(KDVP_ITEM, "HasLossTransfer").text = str(KDVP_item_entry.HasLossTransfer or False).lower()
+            etree.SubElement(KDVP_ITEM, "ForeignTransfer").text = str(KDVP_item_entry.ForeignTransfer or False).lower()
+            etree.SubElement(KDVP_ITEM, "TaxDecreaseConformance").text = str(KDVP_item_entry.TaxDecreaseConformance or False).lower()
 
             if KDVP_item_entry.InventoryListType == ss.EDavkiTradeSecurityType.SECURITY:
                 for securityEntry in KDVP_item_entry.Items:
@@ -611,19 +482,13 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                     etree.SubElement(entry, "ISIN").text = securityEntry.ISIN
                     etree.SubElement(entry, "Code").text = securityEntry.Code
                     # etree.SubElement(entry, "Name").text = securityEntry.Name
-                    etree.SubElement(entry, "IsFond").text = str(
-                        securityEntry.IsFund
-                    ).lower()
+                    etree.SubElement(entry, "IsFond").text = str(securityEntry.IsFund).lower()
 
                     if securityEntry.Resolution is not None:
-                        etree.SubElement(entry, "Resolution").text = (
-                            securityEntry.Resolution
-                        )
+                        etree.SubElement(entry, "Resolution").text = securityEntry.Resolution
 
                     if securityEntry.ResolutionDate is not None:
-                        etree.SubElement(entry, "ResolutionDate").text = (
-                            securityEntry.ResolutionDate.format("YYYY-MM-DD")
-                        )
+                        etree.SubElement(entry, "ResolutionDate").text = securityEntry.ResolutionDate.format("YYYY-MM-DD")
 
                     for id, entryLine in enumerate(securityEntry.Events):
                         row = etree.SubElement(entry, "Row")
@@ -635,68 +500,40 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
                             ss.EDavkiTradeReportSecurityLineGenericEventBought,
                         ):
                             purchase = etree.SubElement(row, "Purchase")
-                            etree.SubElement(purchase, "F1").text = (
-                                entryLine.BoughtOn.format("YYYY-MM-DD")
-                            )
-                            etree.SubElement(purchase, "F2").text = (
-                                entryLine.GainType.value
-                            )
-                            etree.SubElement(purchase, "F3").text = str(
-                                entryLine.Quantity.__round__(5)
-                            )
-                            etree.SubElement(purchase, "F4").text = str(
-                                entryLine.PricePerUnit.__round__(5)
-                            )
+                            etree.SubElement(purchase, "F1").text = entryLine.BoughtOn.format("YYYY-MM-DD")
+                            etree.SubElement(purchase, "F2").text = entryLine.GainType.value
+                            etree.SubElement(purchase, "F3").text = str(entryLine.Quantity.__round__(5))
+                            etree.SubElement(purchase, "F4").text = str(entryLine.PricePerUnit.__round__(5))
                             etree.SubElement(purchase, "F5").text = str(
-                                entryLine.InheritanceAndGiftTaxPaid.__round__(5)
-                                if entryLine.InheritanceAndGiftTaxPaid is not None
-                                else "0"
+                                entryLine.InheritanceAndGiftTaxPaid.__round__(5) if entryLine.InheritanceAndGiftTaxPaid is not None else "0"
                             )
                             etree.SubElement(purchase, "F11").text = str(
-                                entryLine.BaseTaxReduction.__round__(5)
-                                if entryLine.BaseTaxReduction is not None
-                                else "0"
+                                entryLine.BaseTaxReduction.__round__(5) if entryLine.BaseTaxReduction is not None else "0"
                             )
 
-                        if isinstance(
-                            entryLine, ss.EDavkiTradeReportSecurityLineGenericEventSold
-                        ):
+                        if isinstance(entryLine, ss.EDavkiTradeReportSecurityLineGenericEventSold):
                             sale = etree.SubElement(row, "Sale")
-                            etree.SubElement(sale, "F6").text = entryLine.SoldOn.format(
-                                "YYYY-MM-DD"
-                            )
-                            etree.SubElement(sale, "F7").text = str(
-                                entryLine.Quantity.__round__(5)
-                            )
-                            etree.SubElement(sale, "F9").text = str(
-                                entryLine.PricePerUnit.__abs__().__round__(5)
-                            )
-                            etree.SubElement(sale, "F10").text = str(
-                                entryLine.SatisfiesTaxBasisReduction
-                            ).lower()
+                            etree.SubElement(sale, "F6").text = entryLine.SoldOn.format("YYYY-MM-DD")
+                            etree.SubElement(sale, "F7").text = str(entryLine.Quantity.__round__(5))
+                            etree.SubElement(sale, "F9").text = str(entryLine.PricePerUnit.__abs__().__round__(5))
+                            etree.SubElement(sale, "F10").text = str(entryLine.SatisfiesTaxBasisReduction).lower()
 
         return envelope
 
     # NOTE: When comparing with exports from IBKR, take the realized P/L and add comissions. EDavki does reporting based on Trade Price, not Cost Basis !!!
     # The generated reports are going to show you made more money than you really did because Slovenia recognizes 1% of the Trade Price as the costs associated with buying/selling of the underlying.
-    def generateDataFrameReport(
-        self, data: Sequence[gf.UnderlyingGrouping]
-    ) -> pd.DataFrame:
+    def generateDataFrameReport(self, data: Sequence[gf.UnderlyingGrouping]) -> pd.DataFrame:
         convertedTrades = self.convertTradesToKdvpItems(data)
 
         # since the csv export is mainly used for validating outside of the EDavki platform, we can say buys subtract money, sells add money
         for trade in convertedTrades:
             for items in trade.Items:
                 for events in items.Events:
-                    if isinstance(
-                        events, ss.EDavkiTradeReportSecurityLineGenericEventBought
-                    ):
+                    if isinstance(events, ss.EDavkiTradeReportSecurityLineGenericEventBought):
                         events.TotalPrice = events.TotalPrice
                         events.PricePerUnit = events.PricePerUnit
 
-                    if isinstance(
-                        events, ss.EDavkiTradeReportSecurityLineGenericEventSold
-                    ):
+                    if isinstance(events, ss.EDavkiTradeReportSecurityLineGenericEventSold):
                         events.Quantity = events.Quantity
 
         def getLinesFromData(
@@ -728,9 +565,7 @@ class EDavkiTradesReport(gr.GenericTradesReport[EDavkiReportConfig]):
 
 
 class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
-    SECURITY_MAPPING: dict[
-        gf.GenericDerivativeReportAssetClassType, ss.EDavkiDerivativeSecurityType
-    ] = {
+    SECURITY_MAPPING: dict[gf.GenericDerivativeReportAssetClassType, ss.EDavkiDerivativeSecurityType] = {
         gf.GenericDerivativeReportAssetClassType.OPTION: ss.EDavkiDerivativeSecurityType.OPTION,
         gf.GenericDerivativeReportAssetClassType.FUTURES_CONTRACT: ss.EDavkiDerivativeSecurityType.FUTURES_CONTRACT,
         gf.GenericDerivativeReportAssetClassType.CONTRACT_FOR_DIFFERENCE: ss.EDavkiDerivativeSecurityType.CONTRACT_FOR_DIFFERENCE,
@@ -738,9 +573,7 @@ class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
         # gf.GenericDerivativeReportAssetClassType.OTHER: ss.EDavkiDerivativeReportItemType.DERIVATIVE_SHORT,
     }
 
-    GAIN_MAPPINGS: dict[
-        gf.GenericDerivativeReportItemGainType, ss.EDavkiDerivativeReportGainType
-    ] = {
+    GAIN_MAPPINGS: dict[gf.GenericDerivativeReportItemGainType, ss.EDavkiDerivativeReportGainType] = {
         gf.GenericDerivativeReportItemGainType.BOUGHT: ss.EDavkiDerivativeReportGainType.BOUGHT,
         gf.GenericDerivativeReportItemGainType.CAPITAL_INVESTMENT: ss.EDavkiDerivativeReportGainType.CAPITAL_INVESTMENT,
         gf.GenericDerivativeReportItemGainType.CAPITAL_RAISE: ss.EDavkiDerivativeReportGainType.CAPITAL_RAISE,
@@ -756,18 +589,14 @@ class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
     def createReportEnvelope(self):
         currentYear = int(arrow.Arrow.now().format("YYYY"))
         lastYear = currentYear - 1
-        reportEndPeriod = int(
-            self.baseReportConfig.toDate.shift(days=-1).format("YYYY")
-        )
+        reportEndPeriod = int(self.baseReportConfig.toDate.shift(days=-1).format("YYYY"))
         self.documentType = EDavkiDocumentWorkflowType.ORIGINAL
         if reportEndPeriod < lastYear:
             self.documentType = EDavkiDocumentWorkflowType.SELF_REPORT
 
         return EDavkiReportWrapper.createReportEnvelope(self, self.documentType)  # type: ignore
 
-    def convertTradesToIfiItems(
-        self, data: list[gf.GenericDerivativeReportItem]
-    ) -> list[ss.EDavkiGenericDerivativeReportItem]:
+    def convertTradesToIfiItems(self, data: list[gf.GenericDerivativeReportItem]) -> list[ss.EDavkiGenericDerivativeReportItem]:
         converted: list[ss.EDavkiGenericDerivativeReportItem] = list()
 
         ISINSegmented: dict[str, list[gf.GenericDerivativeReportItem]] = {}
@@ -818,15 +647,13 @@ class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
 
                     buyLines = list(
                         filter(
-                            lambda line: line.AcquiredDate >= periodStart
-                            and line.AcquiredDate < periodEnd,
+                            lambda line: line.AcquiredDate >= periodStart and line.AcquiredDate < periodEnd,
                             buyLines,
                         )
                     )
                     sellLines = list(
                         filter(
-                            lambda line: line.SoldDate >= periodStart
-                            and line.SoldDate < periodEnd,
+                            lambda line: line.SoldDate >= periodStart and line.SoldDate < periodEnd,
                             sellLines,
                         )
                     )
@@ -835,13 +662,10 @@ class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
                     sells = list(map(convertSell, sellLines))  # type: ignore
 
                     buysAndSells: list[
-                        ss.EDavkiDerivativeReportSecurityLineGenericEventBought
-                        | ss.EDavkiDerivativeReportSecurityLineGenericEventSold
+                        ss.EDavkiDerivativeReportSecurityLineGenericEventBought | ss.EDavkiDerivativeReportSecurityLineGenericEventSold
                     ] = (buys + sells)
 
-                    ForeignTaxPaid = sum(
-                        map(lambda entry: entry.ForeignTax or 0, entries)
-                    )
+                    ForeignTaxPaid = sum(map(lambda entry: entry.ForeignTax or 0, entries))
                     HasForeignTax = True
                     if ForeignTaxPaid <= 0:
                         ForeignTaxPaid = None
@@ -864,9 +688,7 @@ class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
 
         return converted
 
-    def generateDataFrameReport(
-        self, data: list[gf.GenericDerivativeReportItem]
-    ) -> pd.DataFrame:
+    def generateDataFrameReport(self, data: list[gf.GenericDerivativeReportItem]) -> pd.DataFrame:
         convertedTrades = self.convertTradesToIfiItems(data)
 
         def getLinesFromData(
@@ -898,21 +720,15 @@ class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
 
         nsmap = templateEnvelope.nsmap
         nsmap[None] = "http://edavki.durs.si/Documents/Schemas/D_IFI_4.xsd"
-        envelope = etree.Element(
-            templateEnvelope.tag, attrib=templateEnvelope.attrib, nsmap=nsmap
-        )
+        envelope = etree.Element(templateEnvelope.tag, attrib=templateEnvelope.attrib, nsmap=nsmap)
         envelope[:] = templateEnvelope[:]
 
         body = etree.SubElement(envelope, "body")
         etree.SubElement(body, etree.QName(nsmap["edp"], "bodyContent"))
 
         D_IFI = etree.SubElement(body, "D_IFI")
-        etree.SubElement(D_IFI, "PeriodStart").text = (
-            self.baseReportConfig.fromDate.format("YYYY-MM-DD")
-        )
-        etree.SubElement(D_IFI, "PeriodEnd").text = self.baseReportConfig.toDate.shift(
-            days=-1
-        ).format("YYYY-MM-DD")
+        etree.SubElement(D_IFI, "PeriodStart").text = self.baseReportConfig.fromDate.format("YYYY-MM-DD")
+        etree.SubElement(D_IFI, "PeriodEnd").text = self.baseReportConfig.toDate.shift(days=-1).format("YYYY-MM-DD")
         # etree.SubElement(KDVP, "CountryOfResidenceID").text = self.taxPayerInfo.countryID
         # etree.SubElement(D_IFI, "TelephoneNumber").text = self.taxPayerInfo.PhoneNumber
         # etree.SubElement(D_IFI, "Email").text = self.taxPayerInfo.email
@@ -921,27 +737,17 @@ class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
             DIFI_ITEM = etree.SubElement(D_IFI, "TItem")
 
             etree.SubElement(DIFI_ITEM, "TypeId").text = DIFI_item_entry.ItemType.value
-            etree.SubElement(DIFI_ITEM, "Type").text = (
-                DIFI_item_entry.InventoryListType.value
-            )
+            etree.SubElement(DIFI_ITEM, "Type").text = DIFI_item_entry.InventoryListType.value
             etree.SubElement(DIFI_ITEM, "ISIN").text = DIFI_item_entry.ISIN
 
-            etree.SubElement(DIFI_ITEM, "HasForeignTax").text = str(
-                DIFI_item_entry.HasForeignTax
-            ).lower()
+            etree.SubElement(DIFI_ITEM, "HasForeignTax").text = str(DIFI_item_entry.HasForeignTax).lower()
             if DIFI_item_entry.ForeignTax is not None:
-                etree.SubElement(DIFI_ITEM, "ForeignTax").text = str(
-                    DIFI_item_entry.ForeignTax.__round__(8)
-                )
+                etree.SubElement(DIFI_ITEM, "ForeignTax").text = str(DIFI_item_entry.ForeignTax.__round__(8))
 
             if DIFI_item_entry.FTCountryID is not None:
-                etree.SubElement(DIFI_ITEM, "FTCountryID").text = (
-                    DIFI_item_entry.FTCountryID
-                )
+                etree.SubElement(DIFI_ITEM, "FTCountryID").text = DIFI_item_entry.FTCountryID
             if DIFI_item_entry.FTCountryName is not None:
-                etree.SubElement(DIFI_ITEM, "FTCountryName").text = (
-                    DIFI_item_entry.FTCountryName
-                )
+                etree.SubElement(DIFI_ITEM, "FTCountryName").text = DIFI_item_entry.FTCountryName
 
             if DIFI_item_entry.ItemType == ss.EDavkiDerivativeReportItemType.DERIVATIVE:
 
@@ -953,32 +759,16 @@ class EDavkiDerivativeReport(gr.GenericDerivativeReport[EDavkiReportConfig]):
                         ss.EDavkiDerivativeReportSecurityLineGenericEventBought,
                     ):
                         purchase = etree.SubElement(entry, "Purchase")
-                        etree.SubElement(purchase, "F1").text = (
-                            entryLine.BoughtOn.format("YYYY-MM-DD")
-                        )
+                        etree.SubElement(purchase, "F1").text = entryLine.BoughtOn.format("YYYY-MM-DD")
                         etree.SubElement(purchase, "F2").text = entryLine.GainType.value
-                        etree.SubElement(purchase, "F3").text = str(
-                            entryLine.Quantity.__round__(8)
-                        )
-                        etree.SubElement(purchase, "F4").text = str(
-                            entryLine.PricePerUnit.__round__(8)
-                        )
-                        etree.SubElement(purchase, "F9").text = str(
-                            entryLine.Leveraged
-                        ).lower()
+                        etree.SubElement(purchase, "F3").text = str(entryLine.Quantity.__round__(8))
+                        etree.SubElement(purchase, "F4").text = str(entryLine.PricePerUnit.__round__(8))
+                        etree.SubElement(purchase, "F9").text = str(entryLine.Leveraged).lower()
 
-                    if isinstance(
-                        entryLine, ss.EDavkiDerivativeReportSecurityLineGenericEventSold
-                    ):
+                    if isinstance(entryLine, ss.EDavkiDerivativeReportSecurityLineGenericEventSold):
                         sale = etree.SubElement(entry, "Sale")
-                        etree.SubElement(sale, "F5").text = entryLine.SoldOn.format(
-                            "YYYY-MM-DD"
-                        )
-                        etree.SubElement(sale, "F6").text = str(
-                            entryLine.Quantity.__round__(8)
-                        )
-                        etree.SubElement(sale, "F7").text = str(
-                            entryLine.PricePerUnit.__abs__().__round__(8)
-                        )
+                        etree.SubElement(sale, "F5").text = entryLine.SoldOn.format("YYYY-MM-DD")
+                        etree.SubElement(sale, "F6").text = str(entryLine.Quantity.__round__(8))
+                        etree.SubElement(sale, "F7").text = str(entryLine.PricePerUnit.__abs__().__round__(8))
 
         return envelope

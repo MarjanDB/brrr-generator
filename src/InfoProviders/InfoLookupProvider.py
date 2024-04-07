@@ -31,12 +31,8 @@ class CountryLookupProvider:
     problematicCountryMappings: dict[str, str]
 
     def __init__(self):
-        definitionsPath = os.path.join(
-            os.getcwd(), "src", "InfoProviders", "internationalTreaties.json"
-        )
-        problematicCountryMappingsFile = os.path.join(
-            os.getcwd(), "src", "InfoProviders", "specialCountryMappings.json"
-        )
+        definitionsPath = os.path.join(os.getcwd(), "src", "InfoProviders", "internationalTreaties.json")
+        problematicCountryMappingsFile = os.path.join(os.getcwd(), "src", "InfoProviders", "specialCountryMappings.json")
 
         with open(definitionsPath, "r") as read_file:
             self.definitions = json.load(read_file)
@@ -125,16 +121,12 @@ class CompanyLookupProvider:
     isinToCompanyLookup: dict[str, dict[str, str]]
 
     def __init__(self):
-        definitionsPath = os.path.join(
-            os.getcwd(), "src", "InfoProviders", "missingISINLookup.json"
-        )
+        definitionsPath = os.path.join(os.getcwd(), "src", "InfoProviders", "missingISINLookup.json")
 
         with open(definitionsPath, "r") as read_file:
             self.isinToTickerLookup = dict(json.load(read_file))
 
-        definitionsPath = os.path.join(
-            os.getcwd(), "src", "InfoProviders", "missingCompaniesLookup.json"
-        )
+        definitionsPath = os.path.join(os.getcwd(), "src", "InfoProviders", "missingCompaniesLookup.json")
 
         with open(definitionsPath, "r") as read_file:
             self.isinToCompanyLookup = dict(json.load(read_file))
@@ -146,11 +138,7 @@ class CompanyLookupProvider:
             if companyInfo.values().__len__() == 0:
                 raise ValueError("Empty Company Data for ISIN ({})".format(isin))
         except Exception:
-            print(
-                "Failed online lookup of ISIN ({}), falling back to hardcoded company definitions".format(
-                    isin
-                )
-            )
+            print("Failed online lookup of ISIN ({}), falling back to hardcoded company definitions".format(isin))
 
             if self.isinToCompanyLookup.get(isin) is None:
                 raise ValueError("Failed lookup of ISIN ({})".format(isin))
@@ -163,9 +151,7 @@ class CompanyLookupProvider:
         state = companyInfo.get("state")
         zipCode = companyInfo.get("zip")
         country = companyInfo.get("country")
-        locationInfo = CompanyLocationInfo(
-            country, address1, address2, zipCode, city, state
-        )
+        locationInfo = CompanyLocationInfo(country, address1, address2, zipCode, city, state)
 
         shortName = companyInfo.get("shortName")
         longName = companyInfo.get("longName")
@@ -184,11 +170,7 @@ class CompanyLookupProvider:
         try:
             return self.getInfoByTicker(isin)
         except Exception as e:
-            print(
-                "Failed lookup using ISIN ({}), trying again with ISIN mapping if exists".format(
-                    isin
-                )
-            )
+            print("Failed lookup using ISIN ({}), trying again with ISIN mapping if exists".format(isin))
             print("Cause: {}".format(e))
 
         if self.isinToTickerLookup.get(isin) is None:

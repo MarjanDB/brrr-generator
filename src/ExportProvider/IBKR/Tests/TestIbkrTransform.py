@@ -147,21 +147,13 @@ class TestIbkrTransform:
 
         extract = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
 
-        assert (
-            len(extract) == 1
-        ), "Given a single trade, there should only be a single underlying group"
+        assert len(extract) == 1, "Given a single trade, there should only be a single underlying group"
 
         extracted = extract[0]
 
-        assert (
-            extracted.ISIN == "US21212112"
-        ), "Underlying group ISIN should match the trade ISIN"
-        assert (
-            extracted.StockTrades[0].ISIN == "US21212112"
-        ), "The trade ISIN should match the ISIN of the group"
-        assert (
-            extracted.StockTrades[0].ExchangedMoney.UnderlyingQuantity == 2
-        ), "The trade quantity should be 2"
+        assert extracted.ISIN == "US21212112", "Underlying group ISIN should match the trade ISIN"
+        assert extracted.StockTrades[0].ISIN == "US21212112", "The trade ISIN should match the ISIN of the group"
+        assert extracted.StockTrades[0].ExchangedMoney.UnderlyingQuantity == 2, "The trade quantity should be 2"
 
     def testSingleStockTradeSell(self):
         segmented = es.SegmentedTrades(
@@ -175,21 +167,13 @@ class TestIbkrTransform:
 
         extract = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
 
-        assert (
-            len(extract) == 1
-        ), "Given a single trade, there should only be a single underlying group"
+        assert len(extract) == 1, "Given a single trade, there should only be a single underlying group"
 
         extracted = extract[0]
 
-        assert (
-            extracted.ISIN == "US21212112"
-        ), "Underlying group ISIN should match the trade ISIN"
-        assert (
-            extracted.StockTrades[0].ISIN == "US21212112"
-        ), "The trade ISIN should match the ISIN of the group"
-        assert (
-            extracted.StockTrades[0].ExchangedMoney.UnderlyingQuantity == -2
-        ), "The trade quantity should be -2"
+        assert extracted.ISIN == "US21212112", "Underlying group ISIN should match the trade ISIN"
+        assert extracted.StockTrades[0].ISIN == "US21212112", "The trade ISIN should match the ISIN of the group"
+        assert extracted.StockTrades[0].ExchangedMoney.UnderlyingQuantity == -2, "The trade quantity should be -2"
 
     def testSingleStockLot(self):
         segmented = es.SegmentedTrades(
@@ -203,17 +187,11 @@ class TestIbkrTransform:
 
         extract = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
 
-        assert (
-            len(extract) == 1
-        ), "Given a single trade, there should only be a single underlying group"
+        assert len(extract) == 1, "Given a single trade, there should only be a single underlying group"
 
         extracted = extract[0]
 
-        assert (
-            extracted.ISIN == "US21212112"
-        ), "Underlying group ISIN should match the lot ISIN"
-        assert (
-            extracted.StockTaxLots[0].ISIN == "US21212112"
-        ), "The lot ISIN should match the ISIN of the group"
+        assert extracted.ISIN == "US21212112", "Underlying group ISIN should match the lot ISIN"
+        assert extracted.StockTaxLots[0].ISIN == "US21212112", "The lot ISIN should match the ISIN of the group"
 
     # TODO: Add test for groupby, where the trade events are ISIN1, ISIN2, ISIN1

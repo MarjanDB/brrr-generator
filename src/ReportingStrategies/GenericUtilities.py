@@ -16,15 +16,11 @@ class TradeEventTrackingWrapper(Generic[TRADE_EVENT_TYPE]):
 
 
 class GenericUtilities:
-    def findStockEventById(
-        self, id: str, allStocks: Sequence[gf.GenericTradeEvent]
-    ) -> gf.GenericTradeEvent:
+    def findStockEventById(self, id: str, allStocks: Sequence[gf.GenericTradeEvent]) -> gf.GenericTradeEvent:
         filtered = filter(lambda trade: trade.ID == id, allStocks)
         return next(filtered)
 
-    def findStockEventByDate(
-        self, date: ar.Arrow, allStocks: Sequence[gf.GenericTradeEvent]
-    ) -> Sequence[gf.GenericTradeEvent]:
+    def findStockEventByDate(self, date: ar.Arrow, allStocks: Sequence[gf.GenericTradeEvent]) -> Sequence[gf.GenericTradeEvent]:
         filtered = filter(lambda trade: trade.Date == date, allStocks)
         return list(filtered)
 
@@ -40,9 +36,7 @@ class GenericUtilities:
     ) -> Sequence[gf.TradeEventDerivativeAcquired | gf.TradeEventDerivativeSold]:
         return []
 
-    def processStockTrade(
-        self, trade: gf.GenericTradeEventStaging
-    ) -> gf.TradeEventStockAcquired | gf.TradeEventStockSold:
+    def processStockTrade(self, trade: gf.GenericTradeEventStaging) -> gf.TradeEventStockAcquired | gf.TradeEventStockSold:
         if isinstance(trade, gf.TradeEventStagingStockAcquired):
             converted = gf.TradeEventStockAcquired(
                 ID=trade.ID,
@@ -77,29 +71,13 @@ class GenericUtilities:
         # TODO: Validate returns since buys and sells are merged
         # TODO: What to do when no match is found?
         try:
-            matchingBuyById: gf.TradeEventStockAcquired = self.findStockEventById(
-                lot.Acquired.ID or "", allTrades
-            )
-            matchingSoldByDate: gf.TradeEventStockSold = self.findStockEventByDate(
-                lot.Sold.DateTime or ar.get("1-0-0"), allTrades
-            )[0]
+            matchingBuyById: gf.TradeEventStockAcquired = self.findStockEventById(lot.Acquired.ID or "", allTrades)
+            matchingSoldByDate: gf.TradeEventStockSold = self.findStockEventByDate(lot.Sold.DateTime or ar.get("1-0-0"), allTrades)[0]
 
-            print(
-                "Matched Buy with trade (ID: {}, DateTime: {})".format(
-                    matchingBuyById.ID, matchingBuyById.Date
-                )
-            )
-            print(
-                "Matched Sell with trade (ID: {}, DateTime: {})".format(
-                    matchingSoldByDate.ID, matchingSoldByDate.Date
-                )
-            )
+            print("Matched Buy with trade (ID: {}, DateTime: {})".format(matchingBuyById.ID, matchingBuyById.Date))
+            print("Matched Sell with trade (ID: {}, DateTime: {})".format(matchingSoldByDate.ID, matchingSoldByDate.Date))
         except StopIteration:
-            print(
-                "Failed processing stock lot (ID: {}, ISIN: {}), found no match".format(
-                    lot.ID, lot.ISIN
-                )
-            )
+            print("Failed processing stock lot (ID: {}, ISIN: {}), found no match".format(lot.ID, lot.ISIN))
             raise LookupError
 
         processed = gf.TradeTaxLotEventStock(
@@ -113,9 +91,7 @@ class GenericUtilities:
 
         return processed
 
-    def processDerivativeTrade(
-        self, trade: gf.GenericTradeEventStaging
-    ) -> gf.TradeEventDerivativeAcquired | gf.TradeEventDerivativeSold:
+    def processDerivativeTrade(self, trade: gf.GenericTradeEventStaging) -> gf.TradeEventDerivativeAcquired | gf.TradeEventDerivativeSold:
         if isinstance(trade, gf.TradeEventDerivativeAcquired):
             converted = gf.TradeEventDerivativeAcquired(
                 ID=trade.ID,
@@ -143,26 +119,16 @@ class GenericUtilities:
     def processDerivativeLot(
         self,
         lot: gf.GenericTaxLotEventStaging,
-        allTrades: Sequence[
-            gf.TradeEventDerivativeAcquired | gf.TradeEventDerivativeSold
-        ],
+        allTrades: Sequence[gf.TradeEventDerivativeAcquired | gf.TradeEventDerivativeSold],
     ) -> gf.TradeTaxLotEventDerivative:
 
         # TODO: Validate returns since buys and sells are merged
         # TODO: What to do when no match is found?
         try:
-            matchingBuyById: gf.TradeEventDerivativeAcquired = self.findStockEventById(
-                lot.Acquired.ID or "", allTrades
-            )
-            matchingSoldByDate: gf.TradeEventDerivativeSold = self.findStockEventByDate(
-                lot.Sold.DateTime or ar.get("1-0-0"), allTrades
-            )[0]
+            matchingBuyById: gf.TradeEventDerivativeAcquired = self.findStockEventById(lot.Acquired.ID or "", allTrades)
+            matchingSoldByDate: gf.TradeEventDerivativeSold = self.findStockEventByDate(lot.Sold.DateTime or ar.get("1-0-0"), allTrades)[0]
         except StopIteration:
-            print(
-                "Failed processing stock lot (ID: {}, ISIN: {}), found no match".format(
-                    lot.ID, lot.ISIN
-                )
-            )
+            print("Failed processing stock lot (ID: {}, ISIN: {}), found no match".format(lot.ID, lot.ISIN))
             raise LookupError
 
         processed = gf.TradeTaxLotEventDerivative(
@@ -177,27 +143,19 @@ class GenericUtilities:
         return processed
 
     # TODO: Handle trades being referenced in multiple lots, so a many to many lots <-> trades relationships
-    def processGenericGrouping(
-        self, grouping: gf.GenericUnderlyingGroupingStaging
-    ) -> gf.UnderlyingGrouping:
+    def processGenericGrouping(self, grouping: gf.GenericUnderlyingGroupingStaging) -> gf.UnderlyingGrouping:
         stockTrades = grouping.StockTrades
         processedTrades = list(map(self.processStockTrade, stockTrades))
-        tradesCausedByCorporateActions = list(
-            self.createMissingStockTradesFromCorporateActions()
-        )
+        tradesCausedByCorporateActions = list(self.createMissingStockTradesFromCorporateActions())
 
         allTrades = processedTrades + tradesCausedByCorporateActions
 
         stockLots = grouping.StockTaxLots
-        processedStockLots = list(
-            map(lambda lot: self.processStockLot(lot, allTrades), stockLots)
-        )
+        processedStockLots = list(map(lambda lot: self.processStockLot(lot, allTrades), stockLots))
 
         derivativeTrades = grouping.DerivativeTrades
         processedDerivatives = list(map(self.processDerivativeTrade, derivativeTrades))
-        derivativeCausedByCorporateActions = list(
-            self.createMissingDerivativeTradesFromCorporateActions()
-        )
+        derivativeCausedByCorporateActions = list(self.createMissingDerivativeTradesFromCorporateActions())
         allDerivativeTrades = processedDerivatives + derivativeCausedByCorporateActions
 
         derivativeLots = grouping.DerivativeTaxLots
@@ -220,9 +178,7 @@ class GenericUtilities:
         )
         return processed
 
-    def generateGenericGroupings(
-        self, groupings: Sequence[gf.GenericUnderlyingGroupingStaging]
-    ) -> Sequence[gf.UnderlyingGrouping]:
+    def generateGenericGroupings(self, groupings: Sequence[gf.GenericUnderlyingGroupingStaging]) -> Sequence[gf.UnderlyingGrouping]:
         processedGroupings = list(map(self.processGenericGrouping, groupings))
         return processedGroupings
 
@@ -231,27 +187,19 @@ class GenericUtilities:
         lots: Sequence[gf.TradeTaxLotEventStock],
         trades: Sequence[gf.TradeEventStockAcquired | gf.TradeEventStockSold],
     ):
-        tradeAcquiredLotMatches: dict[
-            str, TradeEventTrackingWrapper[gf.TradeEventStockAcquired]
-        ] = dict()
-        tradeSoldLotMatches: dict[
-            str, TradeEventTrackingWrapper[gf.TradeEventStockSold]
-        ] = dict()
+        tradeAcquiredLotMatches: dict[str, TradeEventTrackingWrapper[gf.TradeEventStockAcquired]] = dict()
+        tradeSoldLotMatches: dict[str, TradeEventTrackingWrapper[gf.TradeEventStockSold]] = dict()
 
         # TODO: Keep track of invalid Quantities
         for lot in lots:
             acquiredTrade = lot.Acquired
-            existingEvent = tradeAcquiredLotMatches.get(
-                acquiredTrade.ID, TradeEventTrackingWrapper(0, acquiredTrade)
-            )
+            existingEvent = tradeAcquiredLotMatches.get(acquiredTrade.ID, TradeEventTrackingWrapper(0, acquiredTrade))
             existingEvent.Quantity += lot.Quantity
             tradeAcquiredLotMatches[acquiredTrade.ID] = existingEvent
 
             # NOTE: Lots subtract, as sells remove from holding
             soldTrade = lot.Sold
-            existingEvent = tradeSoldLotMatches.get(
-                soldTrade.ID, TradeEventTrackingWrapper(0, soldTrade)
-            )
+            existingEvent = tradeSoldLotMatches.get(soldTrade.ID, TradeEventTrackingWrapper(0, soldTrade))
             existingEvent.Quantity += -lot.Quantity
             tradeSoldLotMatches[soldTrade.ID] = existingEvent
 
@@ -289,24 +237,18 @@ class GenericUtilities:
 
             return converted
 
-        convertedBuyTrades = list(
-            map(convertBuyTrade, tradeAcquiredLotMatches.values())
-        )
+        convertedBuyTrades = list(map(convertBuyTrade, tradeAcquiredLotMatches.values()))
         convertedSellTrades = list(map(convertSellTrade, tradeSoldLotMatches.values()))
 
         allTrades = convertedBuyTrades + convertedSellTrades
 
         return allTrades
 
-    def generateInterestingUnderlyingGrouping(
-        self, grouping: gf.UnderlyingGrouping
-    ) -> gf.UnderlyingGroupingWithTradesOfInterest:
+    def generateInterestingUnderlyingGrouping(self, grouping: gf.UnderlyingGrouping) -> gf.UnderlyingGroupingWithTradesOfInterest:
         stockTrades = grouping.StockTrades
         stockLots = grouping.StockTaxLots
 
-        stockTradesOfInterest = self.getTradeLotMatchesWithQuantity(
-            stockLots, stockTrades
-        )
+        stockTradesOfInterest = self.getTradeLotMatchesWithQuantity(stockLots, stockTrades)
 
         interestingGrouping = gf.UnderlyingGroupingWithTradesOfInterest(
             ISIN=grouping.ISIN,
@@ -322,7 +264,5 @@ class GenericUtilities:
     def generateInterestingUnderlyingGroupings(
         self, groupings: Sequence[gf.UnderlyingGrouping]
     ) -> Sequence[gf.UnderlyingGroupingWithTradesOfInterest]:
-        processedGroupings = list(
-            map(self.generateInterestingUnderlyingGrouping, groupings)
-        )
+        processedGroupings = list(map(self.generateInterestingUnderlyingGrouping, groupings))
         return processedGroupings

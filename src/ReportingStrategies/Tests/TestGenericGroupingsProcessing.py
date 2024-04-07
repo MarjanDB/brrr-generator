@@ -152,9 +152,7 @@ class TestGenericGroupingsProcessing:
         assert len(results) == 1
 
         assert results[0].StockTaxLots[0].Acquired == results[0].StockTrades[0]
-        assert (
-            results[0].StockTaxLots[0].Acquired.ExchangedMoney.UnderlyingQuantity == 1
-        )
+        assert results[0].StockTaxLots[0].Acquired.ExchangedMoney.UnderlyingQuantity == 1
         assert results[0].StockTaxLots[0].Sold == results[0].StockTrades[1]
         assert results[0].StockTaxLots[0].Sold.ExchangedMoney.UnderlyingQuantity == -1
 
@@ -200,17 +198,10 @@ class TestGenericGroupingsProcessing:
 
         assert len(results) == 1
 
-        assert (
-            results[0].DerivativeTaxLots[0].Acquired == results[0].DerivativeTrades[0]
-        )
-        assert (
-            results[0].DerivativeTaxLots[0].Acquired.ExchangedMoney.UnderlyingQuantity
-            == 1
-        )
+        assert results[0].DerivativeTaxLots[0].Acquired == results[0].DerivativeTrades[0]
+        assert results[0].DerivativeTaxLots[0].Acquired.ExchangedMoney.UnderlyingQuantity == 1
         assert results[0].DerivativeTaxLots[0].Sold == results[0].DerivativeTrades[1]
-        assert (
-            results[0].DerivativeTaxLots[0].Sold.ExchangedMoney.UnderlyingQuantity == -1
-        )
+        assert results[0].DerivativeTaxLots[0].Sold.ExchangedMoney.UnderlyingQuantity == -1
 
 
 class TestInterestingGroupingsProcessing:
@@ -230,9 +221,7 @@ class TestInterestingGroupingsProcessing:
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping])
 
-        assert (
-            len(interesting) == 1
-        ), "There should only be one grouping generated when given one grouping"
+        assert len(interesting) == 1, "There should only be one grouping generated when given one grouping"
 
         iGrouping = interesting[0]
 
@@ -259,15 +248,11 @@ class TestInterestingGroupingsProcessing:
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping])
 
-        assert (
-            len(interesting) == 1
-        ), "There should only be one grouping generated when given one grouping"
+        assert len(interesting) == 1, "There should only be one grouping generated when given one grouping"
 
         iGrouping = interesting[0]
 
-        assert (
-            len(iGrouping.StockTrades) == 0
-        ), "There should be no stock trades, since there were no trade lots matching them"
+        assert len(iGrouping.StockTrades) == 0, "There should be no stock trades, since there were no trade lots matching them"
         assert (
             len(iGrouping.DerivativeTrades) == 0
         ), "There should be no derivative trades, since there were no derivative trades whatsoever"
