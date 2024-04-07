@@ -1,7 +1,8 @@
-import src.ExportProvider.IBKR.Transform as t
-import src.ExportProvider.IBKR.Schemas as es
 import arrow as ar
 
+import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as es
+import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
+import src.BrokerageExportProviders.Brokerages.IBKR.Transforms.Transform as t
 
 simpleTradeBuy = es.TradeStock(
     ClientAccountID="test",
@@ -136,7 +137,7 @@ simpleStockLot = es.LotStock(
 
 class TestIbkrTransform:
     def testSingleStockTrade(self):
-        segmented = es.SegmentedTrades(
+        segmented = st.SegmentedTrades(
             cashTransactions=[],
             corporateActions=[],
             stockTrades=[simpleTradeBuy],
@@ -156,7 +157,7 @@ class TestIbkrTransform:
         assert extracted.StockTrades[0].ExchangedMoney.UnderlyingQuantity == 2, "The trade quantity should be 2"
 
     def testSingleStockTradeSell(self):
-        segmented = es.SegmentedTrades(
+        segmented = st.SegmentedTrades(
             cashTransactions=[],
             corporateActions=[],
             stockTrades=[simpleTradeSell],
@@ -176,7 +177,7 @@ class TestIbkrTransform:
         assert extracted.StockTrades[0].ExchangedMoney.UnderlyingQuantity == -2, "The trade quantity should be -2"
 
     def testSingleStockLot(self):
-        segmented = es.SegmentedTrades(
+        segmented = st.SegmentedTrades(
             cashTransactions=[],
             corporateActions=[],
             stockTrades=[],
