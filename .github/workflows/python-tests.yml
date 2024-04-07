@@ -1,20 +1,26 @@
 name: Run Python tests
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 
 jobs:
-  build:
+  pytest:
     name: Run tests
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     strategy:
       matrix:
         python-version: ["3.11"]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pipenv'
@@ -23,10 +29,15 @@ jobs:
         run: pip install pipenv
 
       - name: Install dependencies
-        run: pipenv sync
+        run: pipenv sync -d
 
-      - uses: pavelzw/pytest-action@v2
+      - name: Run PyTest
+        run: pipenv run pytest --cov=src src --cov-report="xml:coverage.xml" --junitxml=pytest.xml
+
+      - name: Pytest Coverage Comment
+        uses: MishaKav/pytest-coverage-comment@v1.1.51
         with:
-          emoji: false
-          verbose: false
-          job-summary: true
+          pytest-xml-coverage-path: ./coverage.xml
+          junitxml-path: ./pytest.xml
+
+            
