@@ -1,8 +1,8 @@
 import arrow as ar
 import pytest
 
-import src.ReportingStrategies.GenericFormats as gf
-import src.ReportingStrategies.GenericUtilities as gu
+import src.TaxAuthorityProvider.Schemas.GenericFormats as gf
+import src.TaxAuthorityProvider.Utils.GenericUtilities as gu
 
 simpleStagingStockBuy = gf.TradeEventStagingStockAcquired(
     ID="StockBought",

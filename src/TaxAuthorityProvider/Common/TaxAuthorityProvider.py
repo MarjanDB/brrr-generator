@@ -6,8 +6,8 @@ from lxml import etree
 
 import src.ConfigurationProvider.Configuration as conf
 import src.InfoProviders.InfoLookupProvider as ilp
-import src.ReportingStrategies.GenericFormats as gf
-import src.ReportingStrategies.GenericUtilities as gu
+import src.TaxAuthorityProvider.Schemas.GenericFormats as gf
+import src.TaxAuthorityProvider.Utils.GenericUtilities as gu
 from src.ConfigurationProvider.Configuration import ReportBaseConfig
 
 INPUT_DATA = TypeVar("INPUT_DATA")

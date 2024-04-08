@@ -8,9 +8,9 @@ import pandas as pd
 from lxml import etree
 
 import src.InfoProviders.InfoLookupProvider as ilp
-import src.ReportingStrategies.GenericFormats as gf
-import src.ReportingStrategies.GenericReports as gr
-import src.ReportingStrategies.Slovenia.Schemas as ss
+import src.TaxAuthorityProvider.Common.TaxAuthorityProvider as gr
+import src.TaxAuthorityProvider.Schemas.GenericFormats as gf
+import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas as ss
 from src.ConfigurationProvider.Configuration import ReportBaseConfig
 
 

@@ -4,7 +4,7 @@ from typing import Generic, Sequence, TypeVar
 import arrow as ar
 
 import src.InfoProviders.InfoLookupProvider as ilp
-import src.ReportingStrategies.GenericFormats as gf
+import src.TaxAuthorityProvider.Schemas.GenericFormats as gf
 
 TRADE_EVENT_TYPE = TypeVar("TRADE_EVENT_TYPE")
 
