@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generic, Sequence, TypeVar
 
-import src.ReportingStrategies.GenericFormats as gf
+import src.TaxAuthorityProvider.Schemas.GenericFormats as gf
 from src.BrokerageExportProviders.Contracts.CommonBrokerageEvents import (
     CommonBrokerageEvents,
 )

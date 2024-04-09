@@ -2,11 +2,11 @@
     "xml.fileAssociations": [
         {
             "pattern": "exports/GeneratedReports/Doh_Div_3.xml",
-            "systemId": "src/ReportingStrategies/Slovenia/Schemas/Doh_Div_3.xsd"
+            "systemId": "src/TaxAuthorityProvider/TaxAuthorities/Slovenia/XmlSchemas/Doh_Div_3.xsd"
         },
         {
             "pattern": "exports/GeneratedReports/Doh_KDVP_9.xml",
-            "systemId": "src/ReportingStrategies/Slovenia/Schemas/Doh_KDVP_9.xsd"
+            "systemId": "src/TaxAuthorityProvider/TaxAuthorities/Slovenia/XmlSchemas/Doh_KDVP_9.xsd"
         },
     ],
     "python.analysis.diagnosticSeverityOverrides": {

@@ -34,12 +34,6 @@ class TaxPayerInfo:
     countryName: str
 
 
-@dataclass
-class ReportBaseConfig:
-    fromDate: Arrow
-    toDate: Arrow
-
-
 class ConfigurationProvider:
     generatedConfig: TaxPayerInfo
 
