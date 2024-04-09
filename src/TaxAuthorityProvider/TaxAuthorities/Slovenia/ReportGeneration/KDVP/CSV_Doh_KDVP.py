@@ -13,17 +13,6 @@ import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 def generateDataFrameReport(reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[gf.UnderlyingGrouping]) -> pd.DataFrame:
     convertedTrades = common.convertTradesToKdvpItems(reportConfig, data)
 
-    # since the csv export is mainly used for validating outside of the EDavki platform, we can say buys subtract money, sells add money
-    for trade in convertedTrades:
-        for items in trade.Items:
-            for events in items.Events:
-                if isinstance(events, ss.EDavkiTradeReportSecurityLineGenericEventBought):
-                    events.TotalPrice = events.TotalPrice
-                    events.PricePerUnit = events.PricePerUnit
-
-                if isinstance(events, ss.EDavkiTradeReportSecurityLineGenericEventSold):
-                    events.Quantity = events.Quantity
-
     def getLinesFromData(
         entry: ss.EDavkiGenericTradeReportItem,
     ) -> list[pd.DataFrame]:

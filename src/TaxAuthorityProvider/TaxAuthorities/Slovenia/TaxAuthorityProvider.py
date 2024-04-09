@@ -53,12 +53,6 @@ class SlovenianTaxAuthorityProvider(
         return Envelope
 
     def generateExportForTaxAuthority(self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[gf.UnderlyingGrouping]) -> Any:
-        """
-        The reportType argument represents a report type to be generated.
-        The data argument is the UnderlyingGrouping that the report can be generated off of.
-        The return should be a structure that can be saved.
-        TODO: Perhaps add a layer of indirection where a type of ReportWrapper is returned, which will wrap around whatever is being used to hold/store the data (lxml, pandas, ...).
-        """
         envelope = self.createReportEnvelope()
 
         if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP:
@@ -67,12 +61,6 @@ class SlovenianTaxAuthorityProvider(
     def generateSpreadsheetExport(
         self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[gf.UnderlyingGrouping]
     ) -> pd.DataFrame:
-        """
-        The reportType argument represents a report type to be generated.
-        The data argument is the UnderlyingGrouping that the report can be generated off of.
-        The return should be a DataFrame that can be used for validating reports using a spreadsheet program.
-        """
-
         if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP:
             return csv_kdvp.generateDataFrameReport(self.reportConfig, data)
 
