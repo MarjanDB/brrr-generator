@@ -5,9 +5,9 @@ import pandas as pd
 from lxml import etree
 
 import src.ConfigurationProvider.Configuration as cpc
+import src.Core.Schemas.ProcessedGenericFormats as pgf
 import src.TaxAuthorityProvider.Common.TaxAuthorityProvider as tap
 import src.TaxAuthorityProvider.Schemas.Configuration as c
-import src.TaxAuthorityProvider.Schemas.GenericFormats as gf
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.CSV_Doh_KDVP as csv_kdvp
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.XML_Doh_KDVP as xml_kdvp
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
@@ -52,14 +52,14 @@ class SlovenianTaxAuthorityProvider(
 
         return Envelope
 
-    def generateExportForTaxAuthority(self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[gf.UnderlyingGrouping]) -> Any:
+    def generateExportForTaxAuthority(self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[pgf.UnderlyingGrouping]) -> Any:
         envelope = self.createReportEnvelope()
 
         if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP:
             return xml_kdvp.generateXmlReport(self.reportConfig, self.taxPayerInfo, rt.EDavkiDocumentWorkflowType.ORIGINAL, data, envelope)
 
     def generateSpreadsheetExport(
-        self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[gf.UnderlyingGrouping]
+        self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[pgf.UnderlyingGrouping]
     ) -> pd.DataFrame:
         if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP:
             return csv_kdvp.generateDataFrameReport(self.reportConfig, data)

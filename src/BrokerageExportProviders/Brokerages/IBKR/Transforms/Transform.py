@@ -4,7 +4,8 @@ from typing import Generic, Sequence, TypeVar
 
 import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as s
 import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
-import src.TaxAuthorityProvider.Schemas.GenericFormats as gf
+import src.Core.Schemas.CommonFormats as cf
+import src.Core.Schemas.StagingGenericFormats as sgf
 
 LINE_GENERIC_BUY = TypeVar("LINE_GENERIC_BUY")
 LINE_GENERIC_SELL = TypeVar("LINE_GENERIC_SELL")
@@ -36,27 +37,27 @@ class SegmentedTrades(Generic[LINE_GENERIC_BUY, LINE_GENERIC_SELL]):
 
 def getGenericDividendLineFromIBRKCashTransactions(
     cashTransactions: list[s.TransactionCash],
-) -> list[gf.GenericDividendLine]:
+) -> list[sgf.GenericDividendLine]:
     def mapToGenericDividendLine(
         transaction: s.TransactionCash,
-    ) -> gf.GenericDividendLine:
-        edavkiDividendType = gf.GenericDividendType.UNKNOWN
+    ) -> sgf.GenericDividendLine:
+        edavkiDividendType = cf.GenericDividendType.UNKNOWN
 
         ordinaryDividend = transaction.Description.__contains__("Ordinary Dividend")
         bonusDividend = transaction.Description.__contains__("Bonus Dividend")
 
         if ordinaryDividend:
-            edavkiDividendType = gf.GenericDividendType.ORDINARY
+            edavkiDividendType = cf.GenericDividendType.ORDINARY
 
         if bonusDividend:
-            edavkiDividendType = gf.GenericDividendType.BONUS
+            edavkiDividendType = cf.GenericDividendType.BONUS
 
         dividendMapping = {
-            s.CashTransactionType.DIVIDEND: gf.GenericDividendLineType.DIVIDEND,
-            s.CashTransactionType.WITHOLDING_TAX: gf.GenericDividendLineType.WITHOLDING_TAX,
+            s.CashTransactionType.DIVIDEND: cf.GenericDividendLineType.DIVIDEND,
+            s.CashTransactionType.WITHOLDING_TAX: cf.GenericDividendLineType.WITHOLDING_TAX,
         }
 
-        return gf.GenericDividendLine(
+        return sgf.GenericDividendLine(
             AccountID=transaction.ClientAccountID,
             LineCurrency=transaction.Currency,
             ConversionToBaseAccountCurrency=transaction.FXRateToBase,
@@ -75,20 +76,20 @@ def getGenericDividendLineFromIBRKCashTransactions(
 
 def convertStockTradesToStockTradeEvents(
     trades: Sequence[s.TradeStock],
-) -> Sequence[gf.TradeEventStagingStockAcquired | gf.TradeEventStagingStockSold]:
+) -> Sequence[sgf.TradeEventStagingStockAcquired | sgf.TradeEventStagingStockSold]:
 
     def convertAcquiredTradeToAcquiredEvent(
         trade: s.TradeStock,
-    ) -> gf.TradeEventStagingStockAcquired:
-        converted = gf.TradeEventStagingStockAcquired(
+    ) -> sgf.TradeEventStagingStockAcquired:
+        converted = sgf.TradeEventStagingStockAcquired(
             ID=trade.TransactionID,
             ISIN=trade.ISIN,
             Ticker=trade.Symbol,
-            AssetClass=gf.GenericAssetClass.STOCK,
+            AssetClass=cf.GenericAssetClass.STOCK,
             Date=trade.DateTime,
-            AcquiredReason=gf.GenericTradeReportItemGainType.BOUGHT,  # TODO: Determine reason for acquire
+            AcquiredReason=cf.GenericTradeReportItemGainType.BOUGHT,  # TODO: Determine reason for acquire
             Multiplier=1,
-            ExchangedMoney=gf.GenericMonetaryExchangeInformation(
+            ExchangedMoney=cf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency=trade.Currency,
                 UnderlyingQuantity=trade.Quantity,
                 UnderlyingTradePrice=trade.TradePrice * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
@@ -102,15 +103,15 @@ def convertStockTradesToStockTradeEvents(
 
     def convertSoldTradeToSoldEvent(
         trade: s.TradeStock,
-    ) -> gf.TradeEventStagingStockSold:
-        converted = gf.TradeEventStagingStockSold(
+    ) -> sgf.TradeEventStagingStockSold:
+        converted = sgf.TradeEventStagingStockSold(
             ID=trade.TransactionID,
             ISIN=trade.ISIN,
             Ticker=trade.Symbol,
-            AssetClass=gf.GenericAssetClass.STOCK,
+            AssetClass=cf.GenericAssetClass.STOCK,
             Date=trade.DateTime,
             Multiplier=1,
-            ExchangedMoney=gf.GenericMonetaryExchangeInformation(
+            ExchangedMoney=cf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency=trade.Currency,
                 UnderlyingQuantity=trade.Quantity,
                 UnderlyingTradePrice=trade.TradePrice * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
@@ -124,7 +125,7 @@ def convertStockTradesToStockTradeEvents(
 
     def convertTradeToTradeEvent(
         trade: s.TradeStock,
-    ) -> gf.TradeEventStagingStockSold | gf.TradeEventStagingStockAcquired:
+    ) -> sgf.TradeEventStagingStockSold | sgf.TradeEventStagingStockAcquired:
         buyEvent = trade.Quantity > 0
         if buyEvent:
             return convertAcquiredTradeToAcquiredEvent(trade)
@@ -137,16 +138,16 @@ def convertStockTradesToStockTradeEvents(
 
 def convertStockLotsToStockLotEvents(
     lots: Sequence[s.LotStock],
-) -> Sequence[gf.GenericTaxLotEventStaging]:
-    def convertSingleLot(lot: s.LotStock) -> gf.GenericTaxLotEventStaging:
-        converted = gf.GenericTaxLotEventStaging(
+) -> Sequence[sgf.GenericTaxLotEventStaging]:
+    def convertSingleLot(lot: s.LotStock) -> sgf.GenericTaxLotEventStaging:
+        converted = sgf.GenericTaxLotEventStaging(
             lot.TransactionID,
             ISIN=lot.ISIN,
             Ticker=lot.Symbol,
             Quantity=lot.Quantity,
-            Acquired=gf.GenericTaxLotMatchingDetails(ID=lot.TransactionID, DateTime=None),
-            Sold=gf.GenericTaxLotMatchingDetails(ID=None, DateTime=lot.DateTime),
-            ShortLongType=gf.GenericShortLong.LONG,  # TODO: Determine long / short if possible
+            Acquired=sgf.GenericTaxLotMatchingDetails(ID=lot.TransactionID, DateTime=None),
+            Sold=sgf.GenericTaxLotMatchingDetails(ID=None, DateTime=lot.DateTime),
+            ShortLongType=cf.GenericShortLong.LONG,  # TODO: Determine long / short if possible
         )
         return converted
 
@@ -156,20 +157,20 @@ def convertStockLotsToStockLotEvents(
 
 def convertDerivativeTradesToDerivativeTradeEvents(
     trades: Sequence[s.TradeDerivative],
-) -> Sequence[gf.TradeEventStagingDerivativeAcquired | gf.TradeEventStagingDerivativeSold]:
+) -> Sequence[sgf.TradeEventStagingDerivativeAcquired | sgf.TradeEventStagingDerivativeSold]:
 
     def convertAcquiredTradeToAcquiredEvent(
         trade: s.TradeDerivative,
-    ) -> gf.TradeEventStagingDerivativeAcquired:
-        converted = gf.TradeEventStagingDerivativeAcquired(
+    ) -> sgf.TradeEventStagingDerivativeAcquired:
+        converted = sgf.TradeEventStagingDerivativeAcquired(
             ID=trade.TransactionID,
             ISIN=trade.UnderlyingSecurityID,
             Ticker=trade.UnderlyingSymbol,
-            AssetClass=gf.GenericAssetClass.OPTION,  # TODO: Could also be stock but leveraged (multiplier)
+            AssetClass=cf.GenericAssetClass.OPTION,  # TODO: Could also be stock but leveraged (multiplier)
             Multiplier=trade.Multiplier,
-            AcquiredReason=gf.GenericTradeReportItemGainType.BOUGHT,  # TODO: Determine reason for acquire
+            AcquiredReason=cf.GenericTradeReportItemGainType.BOUGHT,  # TODO: Determine reason for acquire
             Date=trade.DateTime,
-            ExchangedMoney=gf.GenericMonetaryExchangeInformation(
+            ExchangedMoney=cf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency=trade.Currency,
                 UnderlyingQuantity=trade.Quantity,
                 UnderlyingTradePrice=trade.TradePrice * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
@@ -183,15 +184,15 @@ def convertDerivativeTradesToDerivativeTradeEvents(
 
     def convertSoldTradeToSoldEvent(
         trade: s.TradeDerivative,
-    ) -> gf.TradeEventStagingDerivativeSold:
-        converted = gf.TradeEventStagingDerivativeSold(
+    ) -> sgf.TradeEventStagingDerivativeSold:
+        converted = sgf.TradeEventStagingDerivativeSold(
             ID=trade.TransactionID,
             ISIN=trade.UnderlyingSecurityID,
             Ticker=trade.UnderlyingSymbol,
-            AssetClass=gf.GenericAssetClass.OPTION,
+            AssetClass=cf.GenericAssetClass.OPTION,
             Multiplier=trade.Multiplier,
             Date=trade.DateTime,
-            ExchangedMoney=gf.GenericMonetaryExchangeInformation(
+            ExchangedMoney=cf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency=trade.Currency,
                 UnderlyingQuantity=trade.Quantity,
                 UnderlyingTradePrice=trade.TradePrice * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
@@ -205,7 +206,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(
 
     def convertTradeToTradeEvent(
         trade: s.TradeDerivative,
-    ) -> gf.TradeEventStagingDerivativeSold | gf.TradeEventStagingDerivativeAcquired:
+    ) -> sgf.TradeEventStagingDerivativeSold | sgf.TradeEventStagingDerivativeAcquired:
         buyEvent = trade.Quantity > 0
         if buyEvent:
             return convertAcquiredTradeToAcquiredEvent(trade)
@@ -218,16 +219,16 @@ def convertDerivativeTradesToDerivativeTradeEvents(
 
 def convertDerivativeLotsToDerivativeLotEvents(
     lots: Sequence[s.LotDerivative],
-) -> Sequence[gf.GenericTaxLotEventStaging]:
-    def convertSingleLot(lot: s.LotDerivative) -> gf.GenericTaxLotEventStaging:
-        converted = gf.GenericTaxLotEventStaging(
+) -> Sequence[sgf.GenericTaxLotEventStaging]:
+    def convertSingleLot(lot: s.LotDerivative) -> sgf.GenericTaxLotEventStaging:
+        converted = sgf.GenericTaxLotEventStaging(
             lot.TransactionID,
             ISIN=lot.UnderlyingSecurityID,
             Ticker=lot.UnderlyingSymbol,
             Quantity=lot.Quantity,
-            Acquired=gf.GenericTaxLotMatchingDetails(ID=lot.TransactionID, DateTime=None),
-            Sold=gf.GenericTaxLotMatchingDetails(ID=None, DateTime=lot.DateTime),
-            ShortLongType=gf.GenericShortLong.LONG,  # TODO: Determine long / short if possible
+            Acquired=sgf.GenericTaxLotMatchingDetails(ID=lot.TransactionID, DateTime=None),
+            Sold=sgf.GenericTaxLotMatchingDetails(ID=None, DateTime=lot.DateTime),
+            ShortLongType=cf.GenericShortLong.LONG,  # TODO: Determine long / short if possible
         )
         return converted
 
@@ -237,7 +238,7 @@ def convertDerivativeLotsToDerivativeLotEvents(
 
 def convertSegmentedTradesToGenericUnderlyingGroups(
     segmented: st.SegmentedTrades,
-) -> Sequence[gf.GenericUnderlyingGroupingStaging]:
+) -> Sequence[sgf.GenericUnderlyingGroupingStaging]:
     stockTrades = segmented.stockTrades
     stockLots = segmented.stockLots
 
@@ -256,17 +257,17 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
     derivativeLotEvents = convertDerivativeLotsToDerivativeLotEvents(derivativeLots)
 
     def segmentTradeByIsin(
-        trades: list[gf.GenericTradeEventStaging],
-    ) -> dict[str, Sequence[gf.GenericTradeEventStaging]]:
-        segmented: dict[str, Sequence[gf.GenericTradeEventStaging]] = {}
+        trades: list[sgf.GenericTradeEventStaging],
+    ) -> dict[str, Sequence[sgf.GenericTradeEventStaging]]:
+        segmented: dict[str, Sequence[sgf.GenericTradeEventStaging]] = {}
         for key, valuesiter in groupby(trades, key=lambda trade: trade.ISIN):
             segmented[key] = list(v for v in valuesiter)
         return segmented
 
     def segmentLotByIsin(
-        lots: list[gf.GenericTaxLotEventStaging],
-    ) -> dict[str, Sequence[gf.GenericTaxLotEventStaging]]:
-        segmented: dict[str, Sequence[gf.GenericTaxLotEventStaging]] = {}
+        lots: list[sgf.GenericTaxLotEventStaging],
+    ) -> dict[str, Sequence[sgf.GenericTaxLotEventStaging]]:
+        segmented: dict[str, Sequence[sgf.GenericTaxLotEventStaging]] = {}
         for key, valuesiter in groupby(lots, key=lambda trade: trade.ISIN):
             segmented[key] = list(v for v in valuesiter)
         return segmented
@@ -285,12 +286,12 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
         )
     )
 
-    generatedUnderlyingGroups: Sequence[gf.GenericUnderlyingGroupingStaging] = list()
+    generatedUnderlyingGroups: Sequence[sgf.GenericUnderlyingGroupingStaging] = list()
     for isin in allIsinsPresent:
-        wrapper = gf.GenericUnderlyingGroupingStaging(
+        wrapper = sgf.GenericUnderlyingGroupingStaging(
             ISIN=isin,
             CountryOfOrigin=None,
-            UnderlyingCategory=gf.GenericCategory.REGULAR,
+            UnderlyingCategory=cf.GenericCategory.REGULAR,
             StockTrades=stocksSegmented.get(isin, []),  # type: ignore
             StockTaxLots=stockLotsSegmented.get(isin, []),
             DerivativeTrades=derivativesSegmented.get(isin, []),  # type: ignore

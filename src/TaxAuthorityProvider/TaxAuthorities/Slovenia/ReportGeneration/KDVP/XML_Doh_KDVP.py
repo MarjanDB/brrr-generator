@@ -3,8 +3,8 @@ from typing import Sequence
 from lxml import etree
 
 import src.ConfigurationProvider.Configuration as c
+import src.Core.Schemas.ProcessedGenericFormats as pgf
 import src.TaxAuthorityProvider.Schemas.Configuration as tc
-import src.TaxAuthorityProvider.Schemas.GenericFormats as gf
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.Common as common
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
@@ -14,7 +14,7 @@ def generateXmlReport(
     reportConfig: tc.TaxAuthorityConfiguration,
     userConfig: c.TaxPayerInfo,
     documentType: rt.EDavkiDocumentWorkflowType,
-    data: Sequence[gf.UnderlyingGrouping],
+    data: Sequence[pgf.UnderlyingGrouping],
     templateEnvelope: etree._Element,
 ) -> etree._Element:
     convertedTrades = common.convertTradesToKdvpItems(reportConfig, data)
