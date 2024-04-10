@@ -1,18 +1,20 @@
 import arrow as ar
 import pytest
 
-import src.TaxAuthorityProvider.Schemas.GenericFormats as gf
+import src.Core.Schemas.CommonFormats as cf
+import src.Core.Schemas.ProcessedGenericFormats as pgf
+import src.Core.Schemas.StagingGenericFormats as sgf
 import src.TaxAuthorityProvider.Utils.GenericUtilities as gu
 
-simpleStagingStockBuy = gf.TradeEventStagingStockAcquired(
+simpleStagingStockBuy = sgf.TradeEventStagingStockAcquired(
     ID="StockBought",
     ISIN="US123",
     Ticker="AAPL",
-    AssetClass=gf.GenericAssetClass.STOCK,
+    AssetClass=cf.GenericAssetClass.STOCK,
     Date=ar.get("2023-01-01"),
     Multiplier=1,
-    AcquiredReason=gf.GenericTradeReportItemGainType.BOUGHT,
-    ExchangedMoney=gf.GenericMonetaryExchangeInformation(
+    AcquiredReason=cf.GenericTradeReportItemGainType.BOUGHT,
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
         UnderlyingCurrency="EUR",
         UnderlyingQuantity=1,
         UnderlyingTradePrice=10,
@@ -23,7 +25,7 @@ simpleStagingStockBuy = gf.TradeEventStagingStockAcquired(
     ),
 )
 
-simpleStockBuy = gf.TradeEventStockAcquired(
+simpleStockBuy = pgf.TradeEventStockAcquired(
     ID=simpleStagingStockBuy.ID,
     ISIN=simpleStagingStockBuy.ISIN,
     Ticker=simpleStagingStockBuy.Ticker or "AAPL",
@@ -34,14 +36,14 @@ simpleStockBuy = gf.TradeEventStockAcquired(
     ExchangedMoney=simpleStagingStockBuy.ExchangedMoney,
 )
 
-simpleStagingStockSold = gf.TradeEventStagingStockSold(
+simpleStagingStockSold = sgf.TradeEventStagingStockSold(
     ID="StockSold",
     ISIN="US123",
     Ticker="AAPL",
-    AssetClass=gf.GenericAssetClass.STOCK,
+    AssetClass=cf.GenericAssetClass.STOCK,
     Date=ar.get("2023-01-02"),
     Multiplier=1,
-    ExchangedMoney=gf.GenericMonetaryExchangeInformation(
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
         UnderlyingCurrency="EUR",
         UnderlyingQuantity=-1,
         UnderlyingTradePrice=15,
@@ -52,7 +54,7 @@ simpleStagingStockSold = gf.TradeEventStagingStockSold(
     ),
 )
 
-simpleStockSold = gf.TradeEventStockSold(
+simpleStockSold = pgf.TradeEventStockSold(
     ID=simpleStagingStockSold.ID,
     ISIN=simpleStagingStockSold.ISIN,
     Ticker=simpleStagingStockSold.Ticker or "AAPL",
@@ -62,17 +64,17 @@ simpleStockSold = gf.TradeEventStockSold(
     ExchangedMoney=simpleStagingStockSold.ExchangedMoney,
 )
 
-simpleStagingStockLot = gf.GenericTaxLotEventStaging(
+simpleStagingStockLot = sgf.GenericTaxLotEventStaging(
     ID="Lot",
     Ticker="AAPL",
     ISIN="US123",
     Quantity=1,
-    Acquired=gf.GenericTaxLotMatchingDetails(ID="StockBought", DateTime=None),
-    Sold=gf.GenericTaxLotMatchingDetails(ID=None, DateTime=ar.get("2023-01-02")),
-    ShortLongType=gf.GenericShortLong.LONG,
+    Acquired=sgf.GenericTaxLotMatchingDetails(ID="StockBought", DateTime=None),
+    Sold=sgf.GenericTaxLotMatchingDetails(ID=None, DateTime=ar.get("2023-01-02")),
+    ShortLongType=cf.GenericShortLong.LONG,
 )
 
-simpleStockLot = gf.TradeTaxLotEventStock(
+simpleStockLot = pgf.TradeTaxLotEventStock(
     ID=simpleStagingStockLot.ID,
     ISIN=simpleStagingStockLot.ISIN,
     Quantity=simpleStagingStockLot.Quantity,
@@ -82,15 +84,15 @@ simpleStockLot = gf.TradeTaxLotEventStock(
 )
 
 
-simpleStagingDerivativeBuy = gf.TradeEventStagingDerivativeAcquired(
+simpleStagingDerivativeBuy = sgf.TradeEventStagingDerivativeAcquired(
     ID="DerivativeBought",
     ISIN="US123",
     Ticker="AAPL",
-    AssetClass=gf.GenericAssetClass.STOCK,
+    AssetClass=cf.GenericAssetClass.STOCK,
     Date=ar.get("2023-01-01"),
     Multiplier=100,
-    AcquiredReason=gf.GenericTradeReportItemGainType.BOUGHT,
-    ExchangedMoney=gf.GenericMonetaryExchangeInformation(
+    AcquiredReason=cf.GenericTradeReportItemGainType.BOUGHT,
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
         UnderlyingCurrency="EUR",
         UnderlyingQuantity=1,
         UnderlyingTradePrice=10,
@@ -101,14 +103,14 @@ simpleStagingDerivativeBuy = gf.TradeEventStagingDerivativeAcquired(
     ),
 )
 
-simpleStagingDerivativeSold = gf.TradeEventStagingDerivativeSold(
+simpleStagingDerivativeSold = sgf.TradeEventStagingDerivativeSold(
     ID="DerivativeSold",
     ISIN="US123",
     Ticker="AAPL",
-    AssetClass=gf.GenericAssetClass.STOCK,
+    AssetClass=cf.GenericAssetClass.STOCK,
     Date=ar.get("2023-01-02"),
     Multiplier=1,
-    ExchangedMoney=gf.GenericMonetaryExchangeInformation(
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
         UnderlyingCurrency="EUR",
         UnderlyingQuantity=-1,
         UnderlyingTradePrice=15,
@@ -119,24 +121,24 @@ simpleStagingDerivativeSold = gf.TradeEventStagingDerivativeSold(
     ),
 )
 
-simpleStagingDerivativeLot = gf.GenericTaxLotEventStaging(
+simpleStagingDerivativeLot = sgf.GenericTaxLotEventStaging(
     ID="Lot",
     ISIN="US123",
     Ticker="AAPL",
     Quantity=1,
-    Acquired=gf.GenericTaxLotMatchingDetails(ID="DerivativeBought", DateTime=None),
-    Sold=gf.GenericTaxLotMatchingDetails(ID=None, DateTime=ar.get("2023-01-02")),
-    ShortLongType=gf.GenericShortLong.LONG,
+    Acquired=sgf.GenericTaxLotMatchingDetails(ID="DerivativeBought", DateTime=None),
+    Sold=sgf.GenericTaxLotMatchingDetails(ID=None, DateTime=ar.get("2023-01-02")),
+    ShortLongType=cf.GenericShortLong.LONG,
 )
 
 
 class TestGenericGroupingsProcessing:
     def testSimpleStockLotMatching(self):
         groupings = [
-            gf.GenericUnderlyingGroupingStaging(
+            sgf.GenericUnderlyingGroupingStaging(
                 ISIN="US123",
                 CountryOfOrigin=None,
-                UnderlyingCategory=gf.GenericCategory.REGULAR,
+                UnderlyingCategory=cf.GenericCategory.REGULAR,
                 StockTrades=[simpleStagingStockBuy, simpleStagingStockSold],
                 StockTaxLots=[simpleStagingStockLot],
                 DerivativeTrades=[],
@@ -158,10 +160,10 @@ class TestGenericGroupingsProcessing:
 
     def testPartialStockLotMatching(self):
         groupings = [
-            gf.GenericUnderlyingGroupingStaging(
+            sgf.GenericUnderlyingGroupingStaging(
                 ISIN="US123",
                 CountryOfOrigin=None,
-                UnderlyingCategory=gf.GenericCategory.REGULAR,
+                UnderlyingCategory=cf.GenericCategory.REGULAR,
                 StockTrades=[simpleStagingStockBuy],
                 StockTaxLots=[simpleStagingStockLot],
                 DerivativeTrades=[],
@@ -177,10 +179,10 @@ class TestGenericGroupingsProcessing:
 
     def testSimpleDerivativeLotMatching(self):
         groupings = [
-            gf.GenericUnderlyingGroupingStaging(
+            sgf.GenericUnderlyingGroupingStaging(
                 ISIN="US123",
                 CountryOfOrigin=None,
-                UnderlyingCategory=gf.GenericCategory.REGULAR,
+                UnderlyingCategory=cf.GenericCategory.REGULAR,
                 StockTrades=[],
                 StockTaxLots=[],
                 DerivativeTrades=[
@@ -206,10 +208,10 @@ class TestGenericGroupingsProcessing:
 
 class TestInterestingGroupingsProcessing:
     def testSingleStockLotMatching(self):
-        grouping = gf.UnderlyingGrouping(
+        grouping = pgf.UnderlyingGrouping(
             ISIN="US123",
             CountryOfOrigin="US",
-            UnderlyingCategory=gf.GenericCategory.REGULAR,
+            UnderlyingCategory=cf.GenericCategory.REGULAR,
             StockTrades=[simpleStockBuy, simpleStockSold],
             StockTaxLots=[simpleStockLot],
             DerivativeTrades=[],
@@ -233,10 +235,10 @@ class TestInterestingGroupingsProcessing:
         ), "There should be no derivative trades, since there were no derivative trades whatsoever"
 
     def testNoStockTradesMatching(self):
-        grouping = gf.UnderlyingGrouping(
+        grouping = pgf.UnderlyingGrouping(
             ISIN="US123",
             CountryOfOrigin="US",
-            UnderlyingCategory=gf.GenericCategory.REGULAR,
+            UnderlyingCategory=cf.GenericCategory.REGULAR,
             StockTrades=[simpleStockBuy, simpleStockSold],
             StockTaxLots=[],
             DerivativeTrades=[],

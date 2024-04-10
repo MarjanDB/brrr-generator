@@ -2,8 +2,9 @@ import arrow
 from lxml import etree
 
 import src.ConfigurationProvider.Configuration as cpc
+import src.Core.Schemas.CommonFormats as cf
+import src.Core.Schemas.ProcessedGenericFormats as pgf
 import src.TaxAuthorityProvider.Schemas.Configuration as tapc
-import src.TaxAuthorityProvider.Schemas.GenericFormats as gf
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.TaxAuthorityProvider as tap
 
@@ -28,14 +29,14 @@ simpleTaxPayer = cpc.TaxPayerInfo(
 )
 
 
-stockAcquired = gf.TradeEventStockAcquired(
+stockAcquired = pgf.TradeEventStockAcquired(
     ID="ID1",
     ISIN="ISIN",
     Ticker="Ticker",
-    AssetClass=gf.GenericAssetClass.STOCK,
+    AssetClass=cf.GenericAssetClass.STOCK,
     Date=arrow.get("2023-06-06"),
     Multiplier=1.0,
-    ExchangedMoney=gf.GenericMonetaryExchangeInformation(
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
         UnderlyingCurrency="EUR",
         UnderlyingQuantity=1.0,
         UnderlyingTradePrice=1.0,
@@ -44,17 +45,17 @@ stockAcquired = gf.TradeEventStockAcquired(
         TaxCurrency="EUR",
         TaxTotal=0.0,
     ),
-    AcquiredReason=gf.GenericTradeReportItemGainType.BOUGHT,
+    AcquiredReason=cf.GenericTradeReportItemGainType.BOUGHT,
 )
 
-stockSold = gf.TradeEventStockSold(
+stockSold = pgf.TradeEventStockSold(
     ID="ID2",
     ISIN="ISIN",
     Ticker="Ticker",
-    AssetClass=gf.GenericAssetClass.STOCK,
+    AssetClass=cf.GenericAssetClass.STOCK,
     Date=arrow.get("2023-06-07"),
     Multiplier=1.0,
-    ExchangedMoney=gf.GenericMonetaryExchangeInformation(
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
         UnderlyingCurrency="EUR",
         UnderlyingQuantity=-1.0,
         UnderlyingTradePrice=1.0,
@@ -65,14 +66,14 @@ stockSold = gf.TradeEventStockSold(
     ),
 )
 
-testData = gf.UnderlyingGrouping(
+testData = pgf.UnderlyingGrouping(
     ISIN="ISIN",
     CountryOfOrigin=None,
-    UnderlyingCategory=gf.GenericCategory.REGULAR,
+    UnderlyingCategory=cf.GenericCategory.REGULAR,
     StockTrades=[stockAcquired, stockSold],
     StockTaxLots=[
-        gf.TradeTaxLotEventStock(
-            ID="ID1", ISIN="ISIN", Quantity=1.0, Acquired=stockAcquired, Sold=stockSold, ShortLongType=gf.GenericShortLong.LONG
+        pgf.TradeTaxLotEventStock(
+            ID="ID1", ISIN="ISIN", Quantity=1.0, Acquired=stockAcquired, Sold=stockSold, ShortLongType=cf.GenericShortLong.LONG
         )
     ],
     DerivativeTrades=[],

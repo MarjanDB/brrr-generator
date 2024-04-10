@@ -8,7 +8,7 @@ import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as s
 import src.BrokerageExportProviders.Brokerages.IBKR.Transforms.Extract as e
 import src.BrokerageExportProviders.Brokerages.IBKR.Transforms.Transform as t
 import src.BrokerageExportProviders.Common.CommonBrokerageExportProvider as cbep
-import src.TaxAuthorityProvider.Schemas.GenericFormats as gf
+import src.Core.Schemas.StagingGenericFormats as sgf
 
 
 class IbkrBrokerageExportProvider(cbep.CommonBrokerageExportProvider[st.SegmentedTrades]):
@@ -31,5 +31,5 @@ class IbkrBrokerageExportProvider(cbep.CommonBrokerageExportProvider[st.Segmente
     def mergeBrokerEvents(self, events: Sequence[st.SegmentedTrades]) -> st.SegmentedTrades:
         return e.mergeTrades(list(events))
 
-    def transformBrokerEventsToBrokerAgnosticEvents(self, events: st.SegmentedTrades) -> Sequence[gf.GenericUnderlyingGroupingStaging]:
+    def transformBrokerEventsToBrokerAgnosticEvents(self, events: st.SegmentedTrades) -> Sequence[sgf.GenericUnderlyingGroupingStaging]:
         return t.convertSegmentedTradesToGenericUnderlyingGroups(events)

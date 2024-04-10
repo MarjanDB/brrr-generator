@@ -1,36 +1,37 @@
 from typing import Sequence
 
+import src.Core.Schemas.CommonFormats as cf
+import src.Core.Schemas.ProcessedGenericFormats as pgf
 import src.TaxAuthorityProvider.Schemas.Configuration as tc
-import src.TaxAuthorityProvider.Schemas.GenericFormats as gf
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 import src.TaxAuthorityProvider.Utils.GenericUtilities as g
 
 gUtils = g.GenericUtilities()
 
-SECURITY_MAPPING: dict[gf.GenericTradeReportItemType, ss.EDavkiTradeSecurityType] = {
-    gf.GenericTradeReportItemType.STOCK: ss.EDavkiTradeSecurityType.SECURITY,
-    gf.GenericTradeReportItemType.STOCK_SHORT: ss.EDavkiTradeSecurityType.SECURITY_SHORT,
-    gf.GenericTradeReportItemType.STOCK_CONTRACT: ss.EDavkiTradeSecurityType.SECURITY_WITH_CONTRACT,
-    gf.GenericTradeReportItemType.STOCK_CONTRACT_SHORT: ss.EDavkiTradeSecurityType.SECURITY_WITH_CONTRACT_SHORT,
-    gf.GenericTradeReportItemType.COMPANY_SHARE: ss.EDavkiTradeSecurityType.SHARE,
-    gf.GenericTradeReportItemType.PLVPZOK: ss.EDavkiTradeSecurityType.SECURITY_WITH_CAPITAL_REDUCTION,
+SECURITY_MAPPING: dict[cf.GenericTradeReportItemType, ss.EDavkiTradeSecurityType] = {
+    cf.GenericTradeReportItemType.STOCK: ss.EDavkiTradeSecurityType.SECURITY,
+    cf.GenericTradeReportItemType.STOCK_SHORT: ss.EDavkiTradeSecurityType.SECURITY_SHORT,
+    cf.GenericTradeReportItemType.STOCK_CONTRACT: ss.EDavkiTradeSecurityType.SECURITY_WITH_CONTRACT,
+    cf.GenericTradeReportItemType.STOCK_CONTRACT_SHORT: ss.EDavkiTradeSecurityType.SECURITY_WITH_CONTRACT_SHORT,
+    cf.GenericTradeReportItemType.COMPANY_SHARE: ss.EDavkiTradeSecurityType.SHARE,
+    cf.GenericTradeReportItemType.PLVPZOK: ss.EDavkiTradeSecurityType.SECURITY_WITH_CAPITAL_REDUCTION,
 }
 
-GAIN_MAPPINGS: dict[gf.GenericTradeReportItemGainType, ss.EDavkiTradeReportGainType] = {
-    gf.GenericTradeReportItemGainType.BOUGHT: ss.EDavkiTradeReportGainType.BOUGHT,
-    gf.GenericTradeReportItemGainType.CAPITAL_INVESTMENT: ss.EDavkiTradeReportGainType.CAPITAL_INVESTMENT,
-    gf.GenericTradeReportItemGainType.CAPITAL_RAISE: ss.EDavkiTradeReportGainType.CAPITAL_RAISE,
-    gf.GenericTradeReportItemGainType.CAPITAL_ASSET: ss.EDavkiTradeReportGainType.CAPITAL_ASSET_RAISE,
-    gf.GenericTradeReportItemGainType.CAPITALIZATION_CHANGE: ss.EDavkiTradeReportGainType.CAPITALIZATION_CHANGE,
-    gf.GenericTradeReportItemGainType.INHERITENCE: ss.EDavkiTradeReportGainType.INHERITENCE,
-    gf.GenericTradeReportItemGainType.GIFT: ss.EDavkiTradeReportGainType.GIFT,
-    gf.GenericTradeReportItemGainType.OTHER: ss.EDavkiTradeReportGainType.OTHER,
-    gf.GenericTradeReportItemGainType.RIGHT_TO_NEWLY_ISSUED_STOCK: ss.EDavkiTradeReportGainType.OTHER,
+GAIN_MAPPINGS: dict[cf.GenericTradeReportItemGainType, ss.EDavkiTradeReportGainType] = {
+    cf.GenericTradeReportItemGainType.BOUGHT: ss.EDavkiTradeReportGainType.BOUGHT,
+    cf.GenericTradeReportItemGainType.CAPITAL_INVESTMENT: ss.EDavkiTradeReportGainType.CAPITAL_INVESTMENT,
+    cf.GenericTradeReportItemGainType.CAPITAL_RAISE: ss.EDavkiTradeReportGainType.CAPITAL_RAISE,
+    cf.GenericTradeReportItemGainType.CAPITAL_ASSET: ss.EDavkiTradeReportGainType.CAPITAL_ASSET_RAISE,
+    cf.GenericTradeReportItemGainType.CAPITALIZATION_CHANGE: ss.EDavkiTradeReportGainType.CAPITALIZATION_CHANGE,
+    cf.GenericTradeReportItemGainType.INHERITENCE: ss.EDavkiTradeReportGainType.INHERITENCE,
+    cf.GenericTradeReportItemGainType.GIFT: ss.EDavkiTradeReportGainType.GIFT,
+    cf.GenericTradeReportItemGainType.OTHER: ss.EDavkiTradeReportGainType.OTHER,
+    cf.GenericTradeReportItemGainType.RIGHT_TO_NEWLY_ISSUED_STOCK: ss.EDavkiTradeReportGainType.OTHER,
 }
 
 
 def convertTradesToKdvpItems(
-    reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[gf.UnderlyingGrouping]
+    reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.UnderlyingGrouping]
 ) -> list[ss.EDavkiGenericTradeReportItem]:
     converted: list[ss.EDavkiGenericTradeReportItem] = list()
     periodStart = reportConfig.fromDate
@@ -39,7 +40,7 @@ def convertTradesToKdvpItems(
     for isinGrouping in data:
         ISIN = isinGrouping.ISIN
 
-        def isLotClosedInReportingPeriod(lot: gf.TradeTaxLotEventStock) -> bool:
+        def isLotClosedInReportingPeriod(lot: pgf.TradeTaxLotEventStock) -> bool:
             closedOn = lot.Sold.Date
 
             # lot was not closed during the reporting period, so its trades should not be included in the generated report
@@ -51,7 +52,7 @@ def convertTradesToKdvpItems(
         interestingGrouping = gUtils.generateInterestingUnderlyingGrouping(isinGrouping)
 
         def convertStockBuy(
-            line: gf.TradeEventStockAcquired,
+            line: pgf.TradeEventStockAcquired,
         ) -> ss.EDavkiTradeReportSecurityLineGenericEventBought:
             return ss.EDavkiTradeReportSecurityLineGenericEventBought(
                 BoughtOn=line.Date,
@@ -64,7 +65,7 @@ def convertTradesToKdvpItems(
             )
 
         def convertStockSell(
-            line: gf.TradeEventStockSold,
+            line: pgf.TradeEventStockSold,
         ) -> ss.EDavkiTradeReportSecurityLineGenericEventSold:
             return ss.EDavkiTradeReportSecurityLineGenericEventSold(
                 SoldOn=line.Date,
@@ -75,9 +76,9 @@ def convertTradesToKdvpItems(
             )
 
         def convertStock(
-            line: gf.TradeEventStockAcquired | gf.TradeEventStockSold,
+            line: pgf.TradeEventStockAcquired | pgf.TradeEventStockSold,
         ) -> ss.EDavkiTradeReportSecurityLineGenericEventBought | ss.EDavkiTradeReportSecurityLineGenericEventSold:
-            if isinstance(line, gf.TradeEventStockAcquired):
+            if isinstance(line, pgf.TradeEventStockAcquired):
                 return convertStockBuy(line)
 
             return convertStockSell(line)
@@ -91,7 +92,7 @@ def convertTradesToKdvpItems(
 
         convertedLines = list(map(convertStock, allLines))
 
-        isTrustFund = isinGrouping.UnderlyingCategory == gf.GenericCategory.TRUST_FUND
+        isTrustFund = isinGrouping.UnderlyingCategory == cf.GenericCategory.TRUST_FUND
 
         tickerSymbols = list(map(lambda line: line.Ticker, allLines)).pop()  # TODO: Maybe something better than just taking the last one?
 

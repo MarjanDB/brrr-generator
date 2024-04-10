@@ -5,9 +5,9 @@ from typing import Any, Generic, Sequence, TypeVar
 import pandas as pd
 
 import src.ConfigurationProvider.Configuration as conf
+import src.Core.Schemas.ProcessedGenericFormats as pgf
 import src.InfoProviders.InfoLookupProvider as ilp
 import src.TaxAuthorityProvider.Schemas.Configuration as tapc
-import src.TaxAuthorityProvider.Schemas.GenericFormats as gf
 import src.TaxAuthorityProvider.Utils.GenericUtilities as gu
 
 REPORT_CONFIG = TypeVar("REPORT_CONFIG", bound=tapc.TaxAuthorityConfiguration)
@@ -29,7 +29,7 @@ class GenericTaxAuthorityProvider(ABC, Generic[REPORT_CONFIG, TAX_PAYER_CONFIG, 
         self.reportConfig = reportConfig
 
     @abstractmethod
-    def generateExportForTaxAuthority(self, reportType: TAX_AUTHORITY_REPORT, data: Sequence[gf.UnderlyingGrouping]) -> Any:
+    def generateExportForTaxAuthority(self, reportType: TAX_AUTHORITY_REPORT, data: Sequence[pgf.UnderlyingGrouping]) -> Any:
         """
         The reportType argument represents a report type to be generated.
         The data argument is the UnderlyingGrouping that the report can be generated off of.
@@ -38,7 +38,7 @@ class GenericTaxAuthorityProvider(ABC, Generic[REPORT_CONFIG, TAX_PAYER_CONFIG, 
         """
 
     @abstractmethod
-    def generateSpreadsheetExport(self, reportType: TAX_AUTHORITY_REPORT, data: Sequence[gf.UnderlyingGrouping]) -> pd.DataFrame:
+    def generateSpreadsheetExport(self, reportType: TAX_AUTHORITY_REPORT, data: Sequence[pgf.UnderlyingGrouping]) -> pd.DataFrame:
         """
         The reportType argument represents a report type to be generated.
         The data argument is the UnderlyingGrouping that the report can be generated off of.
