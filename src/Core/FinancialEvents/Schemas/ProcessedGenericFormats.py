@@ -4,8 +4,8 @@ from typing import Generic, Sequence, TypeVar
 
 from arrow import Arrow
 
-import src.Core.Schemas.CommonFormats as cf
-import src.Core.Schemas.StagingGenericFormats as sgf
+import src.Core.FinancialEvents.Schemas.CommonFormats as cf
+import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 
 
 @dataclass

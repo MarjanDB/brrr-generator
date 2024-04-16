@@ -1,9 +1,9 @@
 import arrow as ar
 import pytest
 
-import src.Core.Schemas.CommonFormats as cf
-import src.Core.Schemas.ProcessedGenericFormats as pgf
-import src.Core.Schemas.StagingGenericFormats as sgf
+import src.Core.FinancialEvents.Schemas.CommonFormats as cf
+import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 import src.TaxAuthorityProvider.Utils.GenericUtilities as gu
 
 simpleStagingStockBuy = sgf.TradeEventStagingStockAcquired(

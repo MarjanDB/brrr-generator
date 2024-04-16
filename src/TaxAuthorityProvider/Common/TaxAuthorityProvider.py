@@ -5,7 +5,7 @@ from typing import Any, Generic, Sequence, TypeVar
 import pandas as pd
 
 import src.ConfigurationProvider.Configuration as conf
-import src.Core.Schemas.ProcessedGenericFormats as pgf
+import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.InfoProviders.InfoLookupProvider as ilp
 import src.TaxAuthorityProvider.Schemas.Configuration as tapc
 import src.TaxAuthorityProvider.Utils.GenericUtilities as gu

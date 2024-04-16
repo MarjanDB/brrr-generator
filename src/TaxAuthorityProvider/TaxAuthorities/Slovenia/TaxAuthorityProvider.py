@@ -5,7 +5,7 @@ import pandas as pd
 from lxml import etree
 
 import src.ConfigurationProvider.Configuration as cpc
-import src.Core.Schemas.ProcessedGenericFormats as pgf
+import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.TaxAuthorityProvider.Common.TaxAuthorityProvider as tap
 import src.TaxAuthorityProvider.Schemas.Configuration as c
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.CSV_Doh_KDVP as csv_kdvp

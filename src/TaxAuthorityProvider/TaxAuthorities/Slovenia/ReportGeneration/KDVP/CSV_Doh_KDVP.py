@@ -2,7 +2,7 @@ from typing import Sequence
 
 import pandas as pd
 
-import src.Core.Schemas.ProcessedGenericFormats as pgf
+import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.TaxAuthorityProvider.Schemas.Configuration as tc
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.Common as common
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss

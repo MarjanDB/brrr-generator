@@ -4,8 +4,8 @@ from typing import Generic, Sequence, TypeVar
 
 import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as s
 import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
-import src.Core.Schemas.CommonFormats as cf
-import src.Core.Schemas.StagingGenericFormats as sgf
+import src.Core.FinancialEvents.Schemas.CommonFormats as cf
+import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 
 LINE_GENERIC_BUY = TypeVar("LINE_GENERIC_BUY")
 LINE_GENERIC_SELL = TypeVar("LINE_GENERIC_SELL")

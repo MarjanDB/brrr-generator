@@ -3,7 +3,7 @@ from typing import Sequence
 
 from arrow import Arrow
 
-import src.Core.Schemas.CommonFormats as cf
+import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 
 
 @dataclass

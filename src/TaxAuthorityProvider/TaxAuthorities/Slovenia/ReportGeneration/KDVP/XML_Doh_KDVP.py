@@ -3,7 +3,7 @@ from typing import Sequence
 from lxml import etree
 
 import src.ConfigurationProvider.Configuration as c
-import src.Core.Schemas.ProcessedGenericFormats as pgf
+import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.TaxAuthorityProvider.Schemas.Configuration as tc
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.Common as common
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
