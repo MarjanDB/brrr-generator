@@ -3,9 +3,9 @@ from typing import Generic, Sequence, TypeVar
 
 import arrow as ar
 
-import src.Core.Schemas.CommonFormats as cf
-import src.Core.Schemas.ProcessedGenericFormats as pgf
-import src.Core.Schemas.StagingGenericFormats as sgf
+import src.Core.FinancialEvents.Schemas.CommonFormats as cf
+import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 
 TRADE_EVENT_TYPE = TypeVar("TRADE_EVENT_TYPE")
 
