@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-import src.Core.FinancialEvents.Processor.ProcessingUtils as pu
+import Core.FinancialEvents.Processor.Utils.ProcessingUtils as pu
 
 INPUT_TYPE = TypeVar("INPUT_TYPE")
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE")
