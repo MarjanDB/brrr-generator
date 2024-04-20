@@ -59,16 +59,21 @@ def getGenericDividendLineFromIBRKCashTransactions(
 
         return sgf.GenericDividendLine(
             AccountID=transaction.ClientAccountID,
-            LineCurrency=transaction.Currency,
-            ConversionToBaseAccountCurrency=transaction.FXRateToBase,
-            AccountCurrency=transaction.Currency,
             ReceivedDateTime=transaction.DateTime,
-            AmountInCurrency=transaction.Amount,
             DividendActionID=transaction.ActionID,
             SecurityISIN=transaction.ISIN,
             ListingExchange=transaction.ListingExchange,
             DividendType=edavkiDividendType,
             LineType=dividendMapping[transaction.Type],
+            ExchangedMoney=cf.GenericMonetaryExchangeInformation(
+                UnderlyingCurrency=transaction.Currency,
+                UnderlyingQuantity=1,  # TODO: it's possible to extract quantity from description
+                UnderlyingTradePrice=transaction.Amount * transaction.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
+                ComissionCurrency=transaction.Currency,
+                ComissionTotal=0,
+                TaxCurrency=transaction.Currency,
+                TaxTotal=0,
+            ),
         )
 
     return list(map(mapToGenericDividendLine, cashTransactions))
@@ -245,13 +250,17 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
     derivativeTrades = segmented.derivativeTrades
     derivativeLots = segmented.derivativeLots
 
+    cashTransactions = segmented.cashTransactions
+
     stockTrades.sort(key=lambda entry: entry.ISIN)
     stockLots.sort(key=lambda entry: entry.ISIN)
     derivativeTrades.sort(key=lambda entry: entry.UnderlyingSecurityID)
     derivativeLots.sort(key=lambda entry: entry.UnderlyingSecurityID)
+    cashTransactions.sort(key=lambda entry: entry.ISIN)
 
     stockTradeEvents = convertStockTradesToStockTradeEvents(stockTrades)
     stockLotEvents = convertStockLotsToStockLotEvents(stockLots)
+    dividendsWithWitholdingTax = getGenericDividendLineFromIBRKCashTransactions(cashTransactions)
 
     derivativeTradeEvents = convertDerivativeTradesToDerivativeTradeEvents(derivativeTrades)
     derivativeLotEvents = convertDerivativeLotsToDerivativeLotEvents(derivativeLots)
@@ -272,10 +281,19 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
             segmented[key] = list(v for v in valuesiter)
         return segmented
 
+    def segmentCashTransactionByIsin(
+        transactions: list[sgf.GenericDividendLine],
+    ) -> dict[str, Sequence[sgf.GenericDividendLine]]:
+        segmented: dict[str, Sequence[sgf.GenericDividendLine]] = {}
+        for key, valuesiter in groupby(transactions, key=lambda trade: trade.SecurityISIN):
+            segmented[key] = list(v for v in valuesiter)
+        return segmented
+
     stocksSegmented = segmentTradeByIsin(stockTradeEvents)  # type: ignore
     stockLotsSegmented = segmentLotByIsin(stockLotEvents)  # type: ignore
     derivativesSegmented = segmentTradeByIsin(derivativeTradeEvents)  # type: ignore
     derivativeLotsSegmented = segmentLotByIsin(derivativeLotEvents)  # type: ignore
+    dividendsSegmented = segmentCashTransactionByIsin(dividendsWithWitholdingTax)
 
     allIsinsPresent = list(
         set(
@@ -283,6 +301,7 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
             + list(derivativesSegmented.keys())
             + list(stockLotsSegmented.keys())
             + list(derivativeLotsSegmented.keys())
+            + list(dividendsSegmented.keys())
         )
     )
 
@@ -296,7 +315,7 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
             StockTaxLots=stockLotsSegmented.get(isin, []),
             DerivativeTrades=derivativesSegmented.get(isin, []),  # type: ignore
             DerivativeTaxLots=derivativeLotsSegmented.get(isin, []),
-            Dividends=[],
+            Dividends=dividendsSegmented.get(isin, []),
         )
         generatedUnderlyingGroups.append(wrapper)
 

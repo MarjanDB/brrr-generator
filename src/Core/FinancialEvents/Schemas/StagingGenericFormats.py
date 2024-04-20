@@ -9,23 +9,13 @@ import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 @dataclass
 class GenericDividendLine:
     AccountID: str
-    LineCurrency: str
-    ConversionToBaseAccountCurrency: float
-    AccountCurrency: str
+    ExchangedMoney: cf.GenericMonetaryExchangeInformation
     ReceivedDateTime: Arrow
-    AmountInCurrency: float
     DividendActionID: str
     SecurityISIN: str
     ListingExchange: str
     DividendType: cf.GenericDividendType
-
     LineType: cf.GenericDividendLineType
-
-    def getAmountInBaseCurrency(self) -> float:
-        return self.AmountInCurrency * self.ConversionToBaseAccountCurrency
-
-    def getActionIdentifierForTax(self) -> str:
-        return self.DividendActionID
 
 
 @dataclass
