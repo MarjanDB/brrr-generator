@@ -85,6 +85,7 @@ testData = pgf.UnderlyingGrouping(
 class TestTaxAuthorityProvider:
     def testKdvpSimpleCsv(self):
         config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
+
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
         export = provider.generateSpreadsheetExport(rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP, [testData])
