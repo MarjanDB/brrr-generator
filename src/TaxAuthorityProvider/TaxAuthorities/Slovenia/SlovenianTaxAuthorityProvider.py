@@ -56,12 +56,14 @@ class SlovenianTaxAuthorityProvider(
         envelope = self.createReportEnvelope()
 
         if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP:
-            return xml_kdvp.generateXmlReport(self.reportConfig, self.taxPayerInfo, rt.EDavkiDocumentWorkflowType.ORIGINAL, data, envelope)
+            return xml_kdvp.generateXmlReport(
+                self.reportConfig, self.taxPayerInfo, rt.EDavkiDocumentWorkflowType.ORIGINAL, data, envelope, self.countedGroupingProcessor
+            )
 
     def generateSpreadsheetExport(
         self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[pgf.UnderlyingGrouping]
     ) -> pd.DataFrame:
         if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP:
-            return csv_kdvp.generateDataFrameReport(self.reportConfig, data)
+            return csv_kdvp.generateDataFrameReport(self.reportConfig, data, self.countedGroupingProcessor)
 
         return pd.DataFrame()

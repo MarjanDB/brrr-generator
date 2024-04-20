@@ -6,7 +6,7 @@ import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.TaxAuthorityProvider.Schemas.Configuration as tapc
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.TaxAuthorityProvider as tap
+import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.SlovenianTaxAuthorityProvider as tap
 
 simpleTaxPayer = cpc.TaxPayerInfo(
     taxNumber="taxNumber",
@@ -85,6 +85,7 @@ testData = pgf.UnderlyingGrouping(
 class TestTaxAuthorityProvider:
     def testKdvpSimpleCsv(self):
         config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
+
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
         export = provider.generateSpreadsheetExport(rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP, [testData])
