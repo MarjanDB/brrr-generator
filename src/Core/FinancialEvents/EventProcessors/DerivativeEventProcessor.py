@@ -16,7 +16,7 @@ class DerivativeEventProcessor(
         return []
 
     def process(self, input: sgf.GenericTradeEventStaging) -> pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold:
-        if isinstance(input, pgf.TradeEventDerivativeAcquired):
+        if isinstance(input, sgf.TradeEventStagingDerivativeAcquired):
             converted = pgf.TradeEventDerivativeAcquired(
                 ID=input.ID,
                 ISIN=input.ISIN,

@@ -1,12 +1,12 @@
 from typing import Sequence
 
+import src.Core.FinancialEvents.GroupingProcessor.StagingToUnderlyingProcessor as g
 import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.TaxAuthorityProvider.Schemas.Configuration as tc
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
-import src.TaxAuthorityProvider.Utils.GenericUtilities as g
 
-gUtils = g.GenericUtilities()
+gUtils = g.StagingToUnderlyingProcessor()
 
 SECURITY_MAPPING: dict[cf.GenericTradeReportItemType, ss.EDavkiTradeSecurityType] = {
     cf.GenericTradeReportItemType.STOCK: ss.EDavkiTradeSecurityType.SECURITY,
