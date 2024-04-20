@@ -2,7 +2,7 @@ from typing import Sequence
 
 import arrow as ar
 
-import Core.FinancialEvents.Contracts.LotProcessor as lp
+import src.Core.FinancialEvents.Contracts.LotProcessor as lp
 import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf

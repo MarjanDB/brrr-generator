@@ -1,6 +1,6 @@
 from typing import Sequence
 
-import Core.FinancialEvents.Contracts.EventProcessor as ep
+import src.Core.FinancialEvents.Contracts.EventProcessor as ep
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 
