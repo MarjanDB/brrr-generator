@@ -1,10 +1,12 @@
 import arrow as ar
 import pytest
 
-import src.Core.FinancialEvents.GroupingProcessor.StagingToUnderlyingProcessor as gu
+import src.Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor as cgp
+import src.Core.FinancialEvents.GroupingProcessor.StagingGroupingProcessor as sgp
 import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
+import src.Core.FinancialEvents.Utils.ProcessingUtils as pu
 
 simpleStagingStockBuy = sgf.TradeEventStagingStockAcquired(
     ID="StockBought",
@@ -147,7 +149,7 @@ class TestGenericGroupingsProcessing:
             )
         ]
 
-        utils = gu.StagingToUnderlyingProcessor()
+        utils = sgp.StagingGroupingProcessor(pu.ProcessingUtils())
 
         results = utils.generateGenericGroupings(groupings)
 
@@ -172,7 +174,7 @@ class TestGenericGroupingsProcessing:
             )
         ]
 
-        utils = gu.StagingToUnderlyingProcessor()
+        utils = sgp.StagingGroupingProcessor(pu.ProcessingUtils())
 
         with pytest.raises(LookupError):
             utils.generateGenericGroupings(groupings)
@@ -194,7 +196,7 @@ class TestGenericGroupingsProcessing:
             )
         ]
 
-        utils = gu.StagingToUnderlyingProcessor()
+        utils = sgp.StagingGroupingProcessor(pu.ProcessingUtils())
 
         results = utils.generateGenericGroupings(groupings)
 
@@ -219,7 +221,7 @@ class TestInterestingGroupingsProcessing:
             Dividends=[],
         )
 
-        utils = gu.StagingToUnderlyingProcessor()
+        utils = cgp.CountedGroupingProcessor(pu.ProcessingUtils())
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping])
 
@@ -246,7 +248,7 @@ class TestInterestingGroupingsProcessing:
             Dividends=[],
         )
 
-        utils = gu.StagingToUnderlyingProcessor()
+        utils = cgp.CountedGroupingProcessor(pu.ProcessingUtils())
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping])
 

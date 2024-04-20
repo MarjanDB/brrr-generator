@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Generic, Sequence, TypeVar
 
+import src.Core.FinancialEvents.Contracts.GroupingProcessor as gp
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 
 TRADE_EVENT_TYPE = TypeVar("TRADE_EVENT_TYPE")
@@ -12,7 +13,7 @@ class TradeEventTrackingWrapper(Generic[TRADE_EVENT_TYPE]):
     Trade: TRADE_EVENT_TYPE
 
 
-class CountedGroupingProcessor:
+class CountedGroupingProcessor(gp.GroupingProcessor[pgf.UnderlyingGrouping, pgf.UnderlyingGroupingWithTradesOfInterest]):
 
     def getTradeLotMatchesWithQuantity(
         self,
@@ -75,18 +76,18 @@ class CountedGroupingProcessor:
 
         return allTrades
 
-    def generateInterestingUnderlyingGrouping(self, grouping: pgf.UnderlyingGrouping) -> pgf.UnderlyingGroupingWithTradesOfInterest:
-        stockLots = grouping.StockTaxLots
+    def process(self, input: pgf.UnderlyingGrouping) -> pgf.UnderlyingGroupingWithTradesOfInterest:
+        stockLots = input.StockTaxLots
 
         stockTradesOfInterest = self.getTradeLotMatchesWithQuantity(stockLots)
 
         interestingGrouping = pgf.UnderlyingGroupingWithTradesOfInterest(
-            ISIN=grouping.ISIN,
-            CountryOfOrigin=grouping.CountryOfOrigin,
-            UnderlyingCategory=grouping.UnderlyingCategory,
+            ISIN=input.ISIN,
+            CountryOfOrigin=input.CountryOfOrigin,
+            UnderlyingCategory=input.UnderlyingCategory,
             StockTrades=stockTradesOfInterest,
             DerivativeTrades=[],
-            Dividends=grouping.Dividends,
+            Dividends=input.Dividends,
         )
 
         return interestingGrouping
@@ -94,5 +95,5 @@ class CountedGroupingProcessor:
     def generateInterestingUnderlyingGroupings(
         self, groupings: Sequence[pgf.UnderlyingGrouping]
     ) -> Sequence[pgf.UnderlyingGroupingWithTradesOfInterest]:
-        processedGroupings = list(map(self.generateInterestingUnderlyingGrouping, groupings))
+        processedGroupings = list(map(self.process, groupings))
         return processedGroupings

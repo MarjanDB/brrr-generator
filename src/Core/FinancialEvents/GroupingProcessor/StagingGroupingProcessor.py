@@ -1,6 +1,6 @@
-from dataclasses import dataclass
-from typing import Generic, Sequence, TypeVar
+from typing import Sequence
 
+import src.Core.FinancialEvents.Contracts.EventProcessor as ep
 import src.Core.FinancialEvents.EventProcessors.DerivativeEventProcessor as dep
 import src.Core.FinancialEvents.EventProcessors.StockEventProcessor as sep
 import src.Core.FinancialEvents.LotProcessors.DerivativeLotProcessor as dlp
@@ -9,39 +9,36 @@ import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 import src.Core.FinancialEvents.Utils.ProcessingUtils as pu
 
-TRADE_EVENT_TYPE = TypeVar("TRADE_EVENT_TYPE")
 
-
-class StagingGroupingProcessor:
+class StagingGroupingProcessor(ep.EventProcessor[sgf.GenericUnderlyingGroupingStaging, pgf.UnderlyingGrouping]):
     stockProcessor: sep.StockEventProcessor
     derivativeProcessor: dep.DerivativeEventProcessor
 
     stockLotProcessor: slp.StockLotProcessor
     derivativeLotProcessor: dlp.DerivativeLotProcessor
 
-    def __init__(self) -> None:
-        utils = pu.ProcessingUtils()
+    def __init__(self, utils: pu.ProcessingUtils) -> None:
         self.stockProcessor = sep.StockEventProcessor(utils)
         self.derivativeProcessor = dep.DerivativeEventProcessor(utils)
         self.stockLotProcessor = slp.StockLotProcessor(utils)
         self.derivativeLotProcessor = dlp.DerivativeLotProcessor(utils)
 
-    def processGenericGrouping(self, grouping: sgf.GenericUnderlyingGroupingStaging) -> pgf.UnderlyingGrouping:
-        stockTrades = grouping.StockTrades
+    def process(self, input: sgf.GenericUnderlyingGroupingStaging) -> pgf.UnderlyingGrouping:
+        stockTrades = input.StockTrades
         processedTrades = list(map(self.stockProcessor.process, stockTrades))
         tradesCausedByCorporateActions = list(self.stockProcessor.createMissingStockTradesFromCorporateActions())
 
         allTrades = processedTrades + tradesCausedByCorporateActions
 
-        stockLots = grouping.StockTaxLots
+        stockLots = input.StockTaxLots
         processedStockLots = list(map(lambda lot: self.stockLotProcessor.process(lot, allTrades), stockLots))
 
-        derivativeTrades = grouping.DerivativeTrades
+        derivativeTrades = input.DerivativeTrades
         processedDerivatives = list(map(self.derivativeProcessor.process, derivativeTrades))
         derivativeCausedByCorporateActions = list(self.derivativeProcessor.createMissingDerivativeTradesFromCorporateActions())
         allDerivativeTrades = processedDerivatives + derivativeCausedByCorporateActions
 
-        derivativeLots = grouping.DerivativeTaxLots
+        derivativeLots = input.DerivativeTaxLots
         porcessedDerivativeLots = list(
             map(
                 lambda lot: self.derivativeLotProcessor.process(lot, allDerivativeTrades),
@@ -50,9 +47,9 @@ class StagingGroupingProcessor:
         )
 
         processed = pgf.UnderlyingGrouping(
-            ISIN=grouping.ISIN,
-            CountryOfOrigin=grouping.CountryOfOrigin,
-            UnderlyingCategory=grouping.UnderlyingCategory,
+            ISIN=input.ISIN,
+            CountryOfOrigin=input.CountryOfOrigin,
+            UnderlyingCategory=input.UnderlyingCategory,
             StockTrades=allTrades,
             StockTaxLots=processedStockLots,
             DerivativeTrades=allDerivativeTrades,
@@ -62,5 +59,5 @@ class StagingGroupingProcessor:
         return processed
 
     def generateGenericGroupings(self, groupings: Sequence[sgf.GenericUnderlyingGroupingStaging]) -> Sequence[pgf.UnderlyingGrouping]:
-        processedGroupings = list(map(self.processGenericGrouping, groupings))
+        processedGroupings = list(map(self.process, groupings))
         return processedGroupings
