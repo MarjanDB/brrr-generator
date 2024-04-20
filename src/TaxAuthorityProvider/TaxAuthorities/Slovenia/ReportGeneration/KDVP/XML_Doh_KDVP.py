@@ -8,6 +8,9 @@ import src.TaxAuthorityProvider.Schemas.Configuration as tc
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.Common as common
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
+from src.Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor import (
+    CountedGroupingProcessor,
+)
 
 
 def generateXmlReport(
@@ -16,8 +19,9 @@ def generateXmlReport(
     documentType: rt.EDavkiDocumentWorkflowType,
     data: Sequence[pgf.UnderlyingGrouping],
     templateEnvelope: etree._Element,
+    countedProcessor: CountedGroupingProcessor,
 ) -> etree._Element:
-    convertedTrades = common.convertTradesToKdvpItems(reportConfig, data)
+    convertedTrades = common.convertTradesToKdvpItems(reportConfig, data, countedProcessor)
 
     nsmap = templateEnvelope.nsmap
     nsmap[None] = "http://edavki.durs.si/Documents/Schemas/Doh_KDVP_9.xsd"

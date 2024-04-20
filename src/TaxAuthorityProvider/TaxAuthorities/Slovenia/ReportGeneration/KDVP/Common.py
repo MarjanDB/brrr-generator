@@ -3,11 +3,8 @@ from typing import Sequence
 import src.Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor as g
 import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.Core.FinancialEvents.Utils.ProcessingUtils as pu
 import src.TaxAuthorityProvider.Schemas.Configuration as tc
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
-
-gUtils = g.CountedGroupingProcessor(pu.ProcessingUtils())
 
 SECURITY_MAPPING: dict[cf.GenericTradeReportItemType, ss.EDavkiTradeSecurityType] = {
     cf.GenericTradeReportItemType.STOCK: ss.EDavkiTradeSecurityType.SECURITY,
@@ -32,7 +29,7 @@ GAIN_MAPPINGS: dict[cf.GenericTradeReportItemGainType, ss.EDavkiTradeReportGainT
 
 
 def convertTradesToKdvpItems(
-    reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.UnderlyingGrouping]
+    reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.UnderlyingGrouping], countedProcessor: g.CountedGroupingProcessor
 ) -> list[ss.EDavkiGenericTradeReportItem]:
     converted: list[ss.EDavkiGenericTradeReportItem] = list()
     periodStart = reportConfig.fromDate
@@ -50,7 +47,7 @@ def convertTradesToKdvpItems(
         validLots = list(filter(isLotClosedInReportingPeriod, isinGrouping.StockTaxLots))
         isinGrouping.StockTaxLots = validLots
 
-        interestingGrouping = gUtils.process(isinGrouping)
+        interestingGrouping = countedProcessor.process(isinGrouping)
 
         def convertStockBuy(
             line: pgf.TradeEventStockAcquired,

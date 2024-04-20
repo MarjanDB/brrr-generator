@@ -6,7 +6,7 @@ import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.TaxAuthorityProvider.Schemas.Configuration as tapc
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.TaxAuthorityProvider as tap
+import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.SlovenianTaxAuthorityProvider as tap
 
 simpleTaxPayer = cpc.TaxPayerInfo(
     taxNumber="taxNumber",
