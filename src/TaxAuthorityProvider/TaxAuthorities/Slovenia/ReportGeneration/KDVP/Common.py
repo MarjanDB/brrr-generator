@@ -1,12 +1,13 @@
 from typing import Sequence
 
-import src.Core.FinancialEvents.GroupingProcessor.StagingToUnderlyingProcessor as g
+import src.Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor as g
 import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import src.Core.FinancialEvents.Utils.ProcessingUtils as pu
 import src.TaxAuthorityProvider.Schemas.Configuration as tc
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 
-gUtils = g.StagingToUnderlyingProcessor()
+gUtils = g.CountedGroupingProcessor(pu.ProcessingUtils())
 
 SECURITY_MAPPING: dict[cf.GenericTradeReportItemType, ss.EDavkiTradeSecurityType] = {
     cf.GenericTradeReportItemType.STOCK: ss.EDavkiTradeSecurityType.SECURITY,
@@ -49,7 +50,7 @@ def convertTradesToKdvpItems(
         validLots = list(filter(isLotClosedInReportingPeriod, isinGrouping.StockTaxLots))
         isinGrouping.StockTaxLots = validLots
 
-        interestingGrouping = gUtils.generateInterestingUnderlyingGrouping(isinGrouping)
+        interestingGrouping = gUtils.process(isinGrouping)
 
         def convertStockBuy(
             line: pgf.TradeEventStockAcquired,
