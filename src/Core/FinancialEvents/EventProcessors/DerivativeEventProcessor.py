@@ -1,21 +1,21 @@
 from typing import Sequence
 
-import src.Core.FinancialEvents.Processor.Contracts.EventProcessor as ep
+import src.Core.FinancialEvents.Contracts.EventProcessor as ep
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 
 
-class StockEventProcessor(ep.EventProcessor[sgf.GenericTradeEventStaging, pgf.TradeEventStockAcquired | pgf.TradeEventStockSold]):
+class StockEventProcessor(ep.EventProcessor[sgf.GenericTradeEventStaging, pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold]):
 
     # TODO: Create trade events based on corporate events
-    def createMissingStockTradesFromCorporateActions(
+    def createMissingDerivativeTradesFromCorporateActions(
         self,
-    ) -> Sequence[pgf.TradeEventStockAcquired | pgf.TradeEventStockSold]:
+    ) -> Sequence[pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold]:
         return []
 
-    def process(self, input: sgf.GenericTradeEventStaging) -> pgf.TradeEventStockAcquired | pgf.TradeEventStockSold:
-        if isinstance(input, sgf.TradeEventStagingStockAcquired):
-            converted = pgf.TradeEventStockAcquired(
+    def process(self, input: sgf.GenericTradeEventStaging) -> pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold:
+        if isinstance(input, pgf.TradeEventDerivativeAcquired):
+            converted = pgf.TradeEventDerivativeAcquired(
                 ID=input.ID,
                 ISIN=input.ISIN,
                 Ticker=input.Ticker or "",
@@ -27,7 +27,7 @@ class StockEventProcessor(ep.EventProcessor[sgf.GenericTradeEventStaging, pgf.Tr
             )
             return converted
 
-        converted = pgf.TradeEventStockSold(
+        converted = pgf.TradeEventDerivativeSold(
             ID=input.ID,
             ISIN=input.ISIN,
             Ticker=input.Ticker or "",
