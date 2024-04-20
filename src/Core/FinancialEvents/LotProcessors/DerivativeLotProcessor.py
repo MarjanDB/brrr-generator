@@ -8,7 +8,7 @@ import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 
 
-class StockLotProcessor(
+class DerivativeLotProcessor(
     lp.LotProcessor[
         sgf.GenericTaxLotEventStaging,
         pgf.TradeTaxLotEventDerivative,

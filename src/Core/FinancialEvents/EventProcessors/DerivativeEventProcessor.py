@@ -5,7 +5,9 @@ import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 
 
-class StockEventProcessor(ep.EventProcessor[sgf.GenericTradeEventStaging, pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold]):
+class DerivativeEventProcessor(
+    ep.EventProcessor[sgf.GenericTradeEventStaging, pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold]
+):
 
     # TODO: Create trade events based on corporate events
     def createMissingDerivativeTradesFromCorporateActions(
