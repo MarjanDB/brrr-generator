@@ -8,7 +8,6 @@ import src.ConfigurationProvider.Configuration as conf
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.InfoProviders.InfoLookupProvider as ilp
 import src.TaxAuthorityProvider.Schemas.Configuration as tapc
-import src.TaxAuthorityProvider.Utils.GenericUtilities as gu
 
 REPORT_CONFIG = TypeVar("REPORT_CONFIG", bound=tapc.TaxAuthorityConfiguration)
 TAX_PAYER_CONFIG = TypeVar("TAX_PAYER_CONFIG", bound=conf.TaxPayerInfo)
@@ -22,7 +21,6 @@ class GenericTaxAuthorityProvider(ABC, Generic[REPORT_CONFIG, TAX_PAYER_CONFIG, 
 
     companyLookupProvider = ilp.CompanyLookupProvider()
     countryLookupProvider = ilp.CountryLookupProvider()
-    gUtils = gu.GenericUtilities()
 
     def __init__(self, taxPayerInfo: TAX_PAYER_CONFIG, reportConfig: REPORT_CONFIG):
         self.taxPayerInfo = taxPayerInfo

@@ -1,10 +1,10 @@
 import arrow as ar
 import pytest
 
+import src.Core.FinancialEvents.GroupingProcessor.StagingToUnderlyingProcessor as gu
 import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
-import src.TaxAuthorityProvider.Utils.GenericUtilities as gu
 
 simpleStagingStockBuy = sgf.TradeEventStagingStockAcquired(
     ID="StockBought",
@@ -147,7 +147,7 @@ class TestGenericGroupingsProcessing:
             )
         ]
 
-        utils = gu.GenericUtilities()
+        utils = gu.StagingToUnderlyingProcessor()
 
         results = utils.generateGenericGroupings(groupings)
 
@@ -172,7 +172,7 @@ class TestGenericGroupingsProcessing:
             )
         ]
 
-        utils = gu.GenericUtilities()
+        utils = gu.StagingToUnderlyingProcessor()
 
         with pytest.raises(LookupError):
             utils.generateGenericGroupings(groupings)
@@ -194,7 +194,7 @@ class TestGenericGroupingsProcessing:
             )
         ]
 
-        utils = gu.GenericUtilities()
+        utils = gu.StagingToUnderlyingProcessor()
 
         results = utils.generateGenericGroupings(groupings)
 
@@ -219,7 +219,7 @@ class TestInterestingGroupingsProcessing:
             Dividends=[],
         )
 
-        utils = gu.GenericUtilities()
+        utils = gu.StagingToUnderlyingProcessor()
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping])
 
@@ -246,7 +246,7 @@ class TestInterestingGroupingsProcessing:
             Dividends=[],
         )
 
-        utils = gu.GenericUtilities()
+        utils = gu.StagingToUnderlyingProcessor()
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping])
 
