@@ -22,10 +22,10 @@
                 isin="FR0000120271" figi="" listingExchange="SBF" underlyingConid=""
                 underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange=""
                 issuer="" issuerCountryCode="" multiplier="1" strike="" expiry="" putCall=""
-                principalAdjustFactor="" dateTime="2022-07-01;20:20:00 EDT"
-                settleDate="2022-07-01" amount="-0.66" type="Withholding Tax" tradeID="" code=""
-                transactionID="323614082" reportDate="2022-07-04" clientReference=""
-                actionID="105799286" levelOfDetail="DETAIL" serialNumber="" deliveryType=""
+                principalAdjustFactor="" dateTime="2022-04-01;20:20:00 EDT"
+                settleDate="2022-04-01" amount="-0.66" type="Withholding Tax" tradeID="" code=""
+                transactionID="323614082" reportDate="2022-04-01" clientReference=""
+                actionID="102869793" levelOfDetail="DETAIL" serialNumber="" deliveryType=""
                 commodityType="" fineness="0.0" weight="0.0" />
             </CashTransactions>
         </FlexStatement>
