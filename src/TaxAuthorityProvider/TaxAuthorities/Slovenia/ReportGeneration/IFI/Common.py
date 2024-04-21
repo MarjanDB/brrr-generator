@@ -90,7 +90,7 @@ def convertTradesToIfiItems(
 
         convertedLines = list(map(convertEvent, allLines))
 
-        ForeignTaxPaid = sum(map(lambda entry: entry.TotalPrice, convertedLines))
+        ForeignTaxPaid = sum(map(lambda entry: entry.ExchangedMoney.TaxTotal, allLines))
         HasForeignTax = True
         if ForeignTaxPaid <= 0:
             ForeignTaxPaid = None
