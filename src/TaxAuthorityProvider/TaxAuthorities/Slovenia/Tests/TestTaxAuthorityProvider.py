@@ -66,6 +66,43 @@ stockSold = pgf.TradeEventStockSold(
     ),
 )
 
+cashTransactionDivided = pgf.TransactionCashDividend(
+    AccountID="ID",
+    ReceivedDateTime=arrow.get("2023-06-07"),
+    ActionID="DivAction",
+    TransactionID="TranId1",
+    SecurityISIN="ISIN",
+    ListingExchange="EXH",
+    DividendType=cf.GenericDividendType.ORDINARY,
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
+        UnderlyingCurrency="EUR",
+        UnderlyingQuantity=1.0,
+        UnderlyingTradePrice=10.0,
+        ComissionCurrency="EUR",
+        ComissionTotal=0.0,
+        TaxCurrency="EUR",
+        TaxTotal=0.0,
+    ),
+)
+
+cashTransactionWitholdingTax = pgf.TransactionCashWitholdingTax(
+    AccountID="ID",
+    ReceivedDateTime=arrow.get("2023-06-07"),
+    ActionID="DivAction",
+    TransactionID="TranId2",
+    SecurityISIN="ISIN",
+    ListingExchange="EXH",
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
+        UnderlyingCurrency="EUR",
+        UnderlyingQuantity=1.0,
+        UnderlyingTradePrice=-5.0,
+        ComissionCurrency="EUR",
+        ComissionTotal=0.0,
+        TaxCurrency="EUR",
+        TaxTotal=0.0,
+    ),
+)
+
 testData = pgf.UnderlyingGrouping(
     ISIN="ISIN",
     CountryOfOrigin=None,
@@ -78,11 +115,11 @@ testData = pgf.UnderlyingGrouping(
     ],
     DerivativeTrades=[],
     DerivativeTaxLots=[],
-    Dividends=[],
+    CashTransactions=[cashTransactionDivided, cashTransactionWitholdingTax],
 )
 
 
-class TestTaxAuthorityProvider:
+class TestSlovenianTaxAuthorityProvider:
     def testKdvpSimpleCsv(self):
         config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
 
@@ -110,3 +147,30 @@ class TestTaxAuthorityProvider:
 
         assert purchaseNodes[0].getchildren()[2].text == "1.0", "The purchase's 3rd F3 element should contain a positive Quantity"
         assert saleNodes[0].getchildren()[1].text == "-1.0", "The sale's 3rd F3 element should contain a negative Quantity"
+
+    def testDivSimpleCsv(self):
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
+
+        provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
+
+        export = provider.generateSpreadsheetExport(rt.SlovenianTaxAuthorityReportTypes.DOH_DIV, [testData])
+
+        assert export.shape[0] == 1, "Only 1 rows should be present, because the dividend and witholding tax are related"
+        assert export["Znesek dividend (v EUR)"][0] == 10.0, "The dividend amount should equal 10"
+        assert export["Tuji davek (v EUR)"][0] == 5.0, "The dividend witheld tax should be 5"
+
+    def testDivSimpleXml(self):
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
+        provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
+
+        export = provider.generateExportForTaxAuthority(rt.SlovenianTaxAuthorityReportTypes.DOH_DIV, [testData])
+
+        dividendLinesfinder = etree.XPath("/Envelope/body/Dividend")
+        dividendLines = dividendLinesfinder(export)
+
+        assert len(dividendLines) == 1, "There should be 1 dividend line"
+
+        assert dividendLines[0].getchildren()[7].text == "10.0", "The dividend line's Value should equal the dividend total"
+        assert (
+            dividendLines[0].getchildren()[8].text == "5.0"
+        ), "The dividend line's ForeignTax should equal the withlend tax for the dividend line"

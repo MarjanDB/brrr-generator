@@ -1,11 +1,36 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Generic, Sequence, TypeVar
+from typing import Generic, Sequence, TypeVar, Union
 
 from arrow import Arrow
 
 import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
+
+
+@dataclass
+class GenericTransactionCash:
+    AccountID: str
+    ReceivedDateTime: Arrow
+    ActionID: str
+    TransactionID: str
+    ExchangedMoney: cf.GenericMonetaryExchangeInformation
+
+
+@dataclass
+class TransactionCashDividend(GenericTransactionCash):
+    SecurityISIN: str
+    ListingExchange: str
+    DividendType: cf.GenericDividendType
+
+
+@dataclass
+class TransactionCashWitholdingTax(GenericTransactionCash):
+    SecurityISIN: str
+    ListingExchange: str
+
+
+TransactionCash = Union[TransactionCashDividend, TransactionCashWitholdingTax]
 
 
 @dataclass
@@ -78,7 +103,7 @@ class UnderlyingGrouping:
     DerivativeTrades: Sequence[TradeEventDerivativeAcquired | TradeEventDerivativeSold]
     DerivativeTaxLots: Sequence[TradeTaxLotEventDerivative]
 
-    Dividends: Sequence[sgf.GenericDividendLine]
+    CashTransactions: Sequence[TransactionCash]
 
 
 @dataclass
@@ -92,7 +117,7 @@ class UnderlyingGroupingWithTradesOfInterest:
 
     DerivativeTrades: Sequence[TradeEventDerivativeAcquired | TradeEventDerivativeSold]
 
-    Dividends: Sequence[sgf.GenericDividendLine]
+    CashTransactions: Sequence[TransactionCash]
 
 
 class GenericDerivativeReportItemType(str, Enum):

@@ -8,6 +8,9 @@ import src.Core.FinancialEvents.LotProcessors.StockLotProcessor as slp
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 import src.Core.FinancialEvents.Utils.ProcessingUtils as pu
+from src.Core.FinancialEvents.EventProcessors.CashTransactionEventProcessor import (
+    CashTransactionEventProcessor,
+)
 
 
 class StagingGroupingProcessor(ep.EventProcessor[sgf.GenericUnderlyingGroupingStaging, pgf.UnderlyingGrouping]):
@@ -16,12 +19,14 @@ class StagingGroupingProcessor(ep.EventProcessor[sgf.GenericUnderlyingGroupingSt
 
     stockLotProcessor: slp.StockLotProcessor
     derivativeLotProcessor: dlp.DerivativeLotProcessor
+    cashTransactionProcessor: CashTransactionEventProcessor
 
     def __init__(self, utils: pu.ProcessingUtils) -> None:
         self.stockProcessor = sep.StockEventProcessor(utils)
         self.derivativeProcessor = dep.DerivativeEventProcessor(utils)
         self.stockLotProcessor = slp.StockLotProcessor(utils)
         self.derivativeLotProcessor = dlp.DerivativeLotProcessor(utils)
+        self.cashTransactionProcessor = CashTransactionEventProcessor(utils)
 
     def process(self, input: sgf.GenericUnderlyingGroupingStaging) -> pgf.UnderlyingGrouping:
         stockTrades = input.StockTrades
@@ -39,12 +44,15 @@ class StagingGroupingProcessor(ep.EventProcessor[sgf.GenericUnderlyingGroupingSt
         allDerivativeTrades = processedDerivatives + derivativeCausedByCorporateActions
 
         derivativeLots = input.DerivativeTaxLots
-        porcessedDerivativeLots = list(
+        processedDerivativeLots = list(
             map(
                 lambda lot: self.derivativeLotProcessor.process(lot, allDerivativeTrades),
                 derivativeLots,
             )
         )
+
+        cashTransactions = input.CashTransactions
+        processedCashTransactions = list(map(self.cashTransactionProcessor.process, cashTransactions))
 
         processed = pgf.UnderlyingGrouping(
             ISIN=input.ISIN,
@@ -53,8 +61,8 @@ class StagingGroupingProcessor(ep.EventProcessor[sgf.GenericUnderlyingGroupingSt
             StockTrades=allTrades,
             StockTaxLots=processedStockLots,
             DerivativeTrades=allDerivativeTrades,
-            DerivativeTaxLots=porcessedDerivativeLots,
-            Dividends=[],
+            DerivativeTaxLots=processedDerivativeLots,
+            CashTransactions=processedCashTransactions,
         )
         return processed
 

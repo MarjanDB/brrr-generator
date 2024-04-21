@@ -3,6 +3,10 @@ import arrow as ar
 import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as es
 import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
 import src.BrokerageExportProviders.Brokerages.IBKR.Transforms.Transform as t
+from src.Core.FinancialEvents.Schemas.StagingGenericFormats import (
+    TransactionCashStagingDividend,
+    TransactionCashStagingWitholdingTax,
+)
 
 simpleTradeBuy = es.TradeStock(
     ClientAccountID="test",
@@ -135,7 +139,7 @@ simpleStockLot = es.LotStock(
 )
 
 
-class TestIbkrTransform:
+class TestIbkrTransformStock:
     def testSingleStockTrade(self):
         segmented = st.SegmentedTrades(
             cashTransactions=[],
@@ -196,3 +200,106 @@ class TestIbkrTransform:
         assert extracted.StockTaxLots[0].ISIN == "US21212112", "The lot ISIN should match the ISIN of the group"
 
     # TODO: Add test for groupby, where the trade events are ISIN1, ISIN2, ISIN1
+
+
+dividend = es.TransactionCash(
+    ClientAccountID="FakeAccount",
+    Currency="USD",
+    FXRateToBase=1.2,
+    AssetClass=es.AssetClass.CASH,
+    SubCategory=es.SubCategory.COMMON,
+    Symbol="TTE",
+    Description="TTE(FR0000120271) CASH DIVIDEND USD 0.66 PER SHARE (Ordinary Dividend)",
+    Conid="29612193",
+    SecurityID="FR0000120271",
+    SecurityIDType=es.SecurityIDType.ISIN,
+    CUSIP=None,
+    ISIN="FR0000120271",
+    FIGI=None,
+    ListingExchange="SBF",
+    DateTime=ar.get("2023-01-01T02:00:00"),
+    SettleDate=ar.get("2023-01-01"),
+    Amount=2.64,
+    Type=es.CashTransactionType.DIVIDEND,
+    Code=None,
+    TransactionID="269176073",
+    ReportDate=ar.get("2023-01-01"),
+    ActionID="102869793",
+)
+
+witholdingTax = es.TransactionCash(
+    ClientAccountID="FakeAccount",
+    Currency="USD",
+    FXRateToBase=1.2,
+    AssetClass=es.AssetClass.CASH,
+    SubCategory=es.SubCategory.COMMON,
+    Symbol="TTE",
+    Description="TTE(FR0000120271) CASH DIVIDEND USD 0.66 PER SHARE - FR TAX",
+    Conid="29612193",
+    SecurityID="FR0000120271",
+    SecurityIDType=es.SecurityIDType.ISIN,
+    CUSIP=None,
+    ISIN="FR0000120271",
+    FIGI=None,
+    ListingExchange="SBF",
+    DateTime=ar.get("2023-01-01T02:00:00"),
+    SettleDate=ar.get("2023-01-01"),
+    Amount=-0.66,
+    Type=es.CashTransactionType.WITHOLDING_TAX,
+    Code=None,
+    TransactionID="323614082",
+    ReportDate=ar.get("2023-01-01"),
+    ActionID="102869793",
+)
+
+
+class TestIbkrTransformCashTransaction:
+    def testSingleDividend(self):
+        segmented = st.SegmentedTrades(
+            cashTransactions=[dividend],
+            corporateActions=[],
+            stockTrades=[],
+            stockLots=[],
+            derivativeTrades=[],
+            derivativeLots=[],
+        )
+
+        extract = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
+
+        assert len(extract) == 1, "Given a single cash transaction, there should only be a single underlying group"
+
+        extracted = extract[0]
+
+        assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
+        assert extracted.CashTransactions[0].SecurityISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
+        assert isinstance(extracted.CashTransactions[0], TransactionCashStagingDividend), "Dividend is of a dividend line type"
+        assert (
+            extracted.CashTransactions[0].ExchangedMoney.UnderlyingTradePrice == dividend.Amount * dividend.FXRateToBase
+        ), "The Dividend Trade Price should match the dividend"
+        assert extracted.CashTransactions[0].ExchangedMoney.UnderlyingQuantity == 1, "There was only one instance of the dividend paid"
+
+    def testSingleWitholdingTax(self):
+        segmented = st.SegmentedTrades(
+            cashTransactions=[witholdingTax],
+            corporateActions=[],
+            stockTrades=[],
+            stockLots=[],
+            derivativeTrades=[],
+            derivativeLots=[],
+        )
+
+        extract = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
+
+        assert len(extract) == 1, "Given a single cash transaction, there should only be a single underlying group"
+
+        extracted = extract[0]
+
+        assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
+        assert extracted.CashTransactions[0].SecurityISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
+        assert isinstance(
+            extracted.CashTransactions[0], TransactionCashStagingWitholdingTax
+        ), "WitholdingTax is of a witholdingTax line type"
+        assert (
+            extracted.CashTransactions[0].ExchangedMoney.UnderlyingTradePrice == witholdingTax.Amount * witholdingTax.FXRateToBase
+        ), "The Dividend Trade Price should match the dividend"
+        assert extracted.CashTransactions[0].ExchangedMoney.UnderlyingQuantity == 1, "There was only one instance of the witholding tax"

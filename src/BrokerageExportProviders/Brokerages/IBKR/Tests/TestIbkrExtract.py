@@ -11,6 +11,7 @@ locationOfFiles = pathlib.Path(__file__).parent
 simpleStockTradeXml = os.path.join(locationOfFiles, "SimpleStockTrade.xml")
 simpleOptionTradeXml = os.path.join(locationOfFiles, "SimpleOptionTrade.xml")
 simpleCorporateActionXml = os.path.join(locationOfFiles, "SimpleCorporateAction.xml")
+simpleCashTransactionsXml = os.path.join(locationOfFiles, "SimpleCashTransaction.xml")
 
 with open(simpleStockTradeXml) as fobj:
     tradeString = fobj.read()
@@ -23,6 +24,10 @@ with open(simpleOptionTradeXml) as fobj:
 with open(simpleCorporateActionXml) as fobj:
     tradeString = fobj.read()
     simpleCorporateAction: etree._Element = etree.fromstring(tradeString)
+
+with open(simpleCashTransactionsXml) as fobj:
+    tradeString = fobj.read()
+    simpleCashTransactions: etree._Element = etree.fromstring(tradeString)
 
 
 class TestIbkrExtractStockTrades:
@@ -127,3 +132,37 @@ class TestIbkrExtractCorporateActions:
         assert (
             len(merged.corporateActions) == 1
         ), "There should only be one Corporate Action when merging 2 SegmentedTrades containing the same Corporate Action"
+
+
+class TestIbkrExtractCashTransactions:
+    def testSegmentedTradesReturnCashTransactions(self):
+        segmented = ex.extractFromXML(simpleCashTransactions)
+
+        assert isinstance(segmented, st.SegmentedTrades)
+        assert len(segmented.derivativeTrades) == 0
+        assert len(segmented.derivativeLots) == 0
+        assert len(segmented.corporateActions) == 0
+        assert len(segmented.cashTransactions) == 2
+
+    def testCashTransactionMerging(self):
+        segmented1 = ex.extractFromXML(simpleCashTransactions)
+        segmented2 = ex.extractFromXML(simpleCashTransactions)
+
+        merged = ex.mergeTrades([segmented1, segmented2])
+
+        assert (
+            len(merged.cashTransactions) == 2
+        ), "There should only be two Cash Transactions when merging 2 SegmentedTrades which both contain 2 of the same Cash Transactions"
+
+    def testSegmentedTradesContainsTwoCashTransactions(self):
+        segmented = ex.extractFromXML(simpleCashTransactions)
+
+        dividend = segmented.cashTransactions[0]
+        assert dividend.TransactionID == "269176073"
+        assert dividend.ISIN == "FR0000120271"
+        assert dividend.Type == es.CashTransactionType.DIVIDEND.value
+
+        witholdingTax = segmented.cashTransactions[1]
+        assert witholdingTax.TransactionID == "323614082"
+        assert witholdingTax.ISIN == "FR0000120271"
+        assert witholdingTax.Type == es.CashTransactionType.WITHOLDING_TAX.value

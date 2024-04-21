@@ -1,5 +1,8 @@
 from opyoid.bindings.module import Module
 
+from src.Core.FinancialEvents.EventProcessors.CashTransactionEventProcessor import (
+    CashTransactionEventProcessor,
+)
 from src.Core.FinancialEvents.EventProcessors.DerivativeEventProcessor import (
     DerivativeEventProcessor,
 )
@@ -28,3 +31,4 @@ class FinancialEventsModule(Module):
         self.bind(CountedGroupingProcessor)
         self.bind(StagingGroupingProcessor)
         self.bind(ProcessingUtils)
+        self.bind(CashTransactionEventProcessor)

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Sequence, Union
 
 from arrow import Arrow
 
@@ -7,25 +7,28 @@ import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 
 
 @dataclass
-class GenericDividendLine:
+class GenericTransactionCashStaging:
     AccountID: str
-    LineCurrency: str
-    ConversionToBaseAccountCurrency: float
-    AccountCurrency: str
     ReceivedDateTime: Arrow
-    AmountInCurrency: float
-    DividendActionID: str
+    ActionID: str
+    TransactionID: str
+    ExchangedMoney: cf.GenericMonetaryExchangeInformation
+
+
+@dataclass
+class TransactionCashStagingDividend(GenericTransactionCashStaging):
     SecurityISIN: str
     ListingExchange: str
     DividendType: cf.GenericDividendType
 
-    LineType: cf.GenericDividendLineType
 
-    def getAmountInBaseCurrency(self) -> float:
-        return self.AmountInCurrency * self.ConversionToBaseAccountCurrency
+@dataclass
+class TransactionCashStagingWitholdingTax(GenericTransactionCashStaging):
+    SecurityISIN: str
+    ListingExchange: str
 
-    def getActionIdentifierForTax(self) -> str:
-        return self.DividendActionID
+
+TransactionCashStaging = Union[TransactionCashStagingDividend, TransactionCashStagingWitholdingTax]
 
 
 @dataclass
@@ -93,4 +96,4 @@ class GenericUnderlyingGroupingStaging:
     DerivativeTrades: Sequence[TradeEventStagingDerivativeAcquired | TradeEventStagingDerivativeSold]
     DerivativeTaxLots: Sequence[GenericTaxLotEventStaging]
 
-    Dividends: Sequence[GenericDividendLine]
+    CashTransactions: Sequence[TransactionCashStaging]
