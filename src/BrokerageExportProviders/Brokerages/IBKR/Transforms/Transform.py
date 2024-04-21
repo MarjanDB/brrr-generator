@@ -35,46 +35,63 @@ class SegmentedTrades(Generic[LINE_GENERIC_BUY, LINE_GENERIC_SELL]):
     Sells: list[LINE_GENERIC_SELL]
 
 
-def getGenericDividendLineFromIBRKCashTransactions(
+def convertToCashTransactions(
     cashTransactions: list[s.TransactionCash],
-) -> list[sgf.GenericDividendLine]:
+) -> list[sgf.TransactionCashStaging]:
     def mapToGenericDividendLine(
         transaction: s.TransactionCash,
-    ) -> sgf.GenericDividendLine:
-        edavkiDividendType = cf.GenericDividendType.UNKNOWN
+    ) -> sgf.TransactionCashStaging:
+        dividendType = cf.GenericDividendType.UNKNOWN
 
         ordinaryDividend = transaction.Description.__contains__("Ordinary Dividend")
         bonusDividend = transaction.Description.__contains__("Bonus Dividend")
 
         if ordinaryDividend:
-            edavkiDividendType = cf.GenericDividendType.ORDINARY
+            dividendType = cf.GenericDividendType.ORDINARY
 
         if bonusDividend:
-            edavkiDividendType = cf.GenericDividendType.BONUS
+            dividendType = cf.GenericDividendType.BONUS
 
-        dividendMapping = {
-            s.CashTransactionType.DIVIDEND: cf.GenericDividendLineType.DIVIDEND,
-            s.CashTransactionType.WITHOLDING_TAX: cf.GenericDividendLineType.WITHOLDING_TAX,
-        }
+        if transaction.Type == s.CashTransactionType.DIVIDEND:
+            return sgf.TransactionCashStagingDividend(
+                AccountID=transaction.ClientAccountID,
+                ReceivedDateTime=transaction.DateTime,
+                ActionID=transaction.ActionID,
+                TransactionID=transaction.TransactionID,
+                ListingExchange=transaction.ListingExchange,
+                DividendType=dividendType,
+                SecurityISIN=transaction.ISIN,
+                ExchangedMoney=cf.GenericMonetaryExchangeInformation(
+                    UnderlyingQuantity=1,
+                    UnderlyingTradePrice=transaction.Amount * transaction.FXRateToBase,  # TODO: Currency provider
+                    UnderlyingCurrency=transaction.Currency,
+                    ComissionCurrency=transaction.Currency,
+                    ComissionTotal=0,
+                    TaxCurrency=transaction.Currency,
+                    TaxTotal=0,
+                ),
+            )
 
-        return sgf.GenericDividendLine(
-            AccountID=transaction.ClientAccountID,
-            ReceivedDateTime=transaction.DateTime,
-            DividendActionID=transaction.ActionID,
-            SecurityISIN=transaction.ISIN,
-            ListingExchange=transaction.ListingExchange,
-            DividendType=edavkiDividendType,
-            LineType=dividendMapping[transaction.Type],
-            ExchangedMoney=cf.GenericMonetaryExchangeInformation(
-                UnderlyingCurrency=transaction.Currency,
-                UnderlyingQuantity=1,  # TODO: it's possible to extract quantity from description
-                UnderlyingTradePrice=transaction.Amount * transaction.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
-                ComissionCurrency=transaction.Currency,
-                ComissionTotal=0,
-                TaxCurrency=transaction.Currency,
-                TaxTotal=0,
-            ),
-        )
+        if transaction.Type == s.CashTransactionType.WITHOLDING_TAX:
+            return sgf.TransactionCashStagingWitholdingTax(
+                AccountID=transaction.ClientAccountID,
+                ReceivedDateTime=transaction.DateTime,
+                ActionID=transaction.ActionID,
+                TransactionID=transaction.TransactionID,
+                ListingExchange=transaction.ListingExchange,
+                SecurityISIN=transaction.ISIN,
+                ExchangedMoney=cf.GenericMonetaryExchangeInformation(
+                    UnderlyingQuantity=1,
+                    UnderlyingTradePrice=transaction.Amount * transaction.FXRateToBase,  # TODO: Currency provider
+                    UnderlyingCurrency=transaction.Currency,
+                    ComissionCurrency=transaction.Currency,
+                    ComissionTotal=0,
+                    TaxCurrency=transaction.Currency,
+                    TaxTotal=0,
+                ),
+            )
+
+        raise ValueError("Unknow type of Cash Transaction")
 
     return list(map(mapToGenericDividendLine, cashTransactions))
 
@@ -260,7 +277,7 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
 
     stockTradeEvents = convertStockTradesToStockTradeEvents(stockTrades)
     stockLotEvents = convertStockLotsToStockLotEvents(stockLots)
-    dividendsWithWitholdingTax = getGenericDividendLineFromIBRKCashTransactions(cashTransactions)
+    cashTransactionEvents = convertToCashTransactions(cashTransactions)
 
     derivativeTradeEvents = convertDerivativeTradesToDerivativeTradeEvents(derivativeTrades)
     derivativeLotEvents = convertDerivativeLotsToDerivativeLotEvents(derivativeLots)
@@ -282,9 +299,9 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
         return segmented
 
     def segmentCashTransactionByIsin(
-        transactions: list[sgf.GenericDividendLine],
-    ) -> dict[str, Sequence[sgf.GenericDividendLine]]:
-        segmented: dict[str, Sequence[sgf.GenericDividendLine]] = {}
+        transactions: list[sgf.TransactionCashStaging],
+    ) -> dict[str, Sequence[sgf.TransactionCashStaging]]:
+        segmented: dict[str, Sequence[sgf.TransactionCashStaging]] = {}
         for key, valuesiter in groupby(transactions, key=lambda trade: trade.SecurityISIN):
             segmented[key] = list(v for v in valuesiter)
         return segmented
@@ -293,7 +310,7 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
     stockLotsSegmented = segmentLotByIsin(stockLotEvents)  # type: ignore
     derivativesSegmented = segmentTradeByIsin(derivativeTradeEvents)  # type: ignore
     derivativeLotsSegmented = segmentLotByIsin(derivativeLotEvents)  # type: ignore
-    dividendsSegmented = segmentCashTransactionByIsin(dividendsWithWitholdingTax)
+    dividendsSegmented = segmentCashTransactionByIsin(cashTransactionEvents)
 
     allIsinsPresent = list(
         set(

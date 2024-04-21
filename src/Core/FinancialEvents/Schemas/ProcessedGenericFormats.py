@@ -78,7 +78,7 @@ class UnderlyingGrouping:
     DerivativeTrades: Sequence[TradeEventDerivativeAcquired | TradeEventDerivativeSold]
     DerivativeTaxLots: Sequence[TradeTaxLotEventDerivative]
 
-    Dividends: Sequence[sgf.GenericDividendLine]
+    Dividends: Sequence[sgf.GenericTransactionCashStaging]
 
 
 @dataclass
@@ -92,7 +92,7 @@ class UnderlyingGroupingWithTradesOfInterest:
 
     DerivativeTrades: Sequence[TradeEventDerivativeAcquired | TradeEventDerivativeSold]
 
-    Dividends: Sequence[sgf.GenericDividendLine]
+    Dividends: Sequence[sgf.GenericTransactionCashStaging]
 
 
 class GenericDerivativeReportItemType(str, Enum):
