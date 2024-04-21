@@ -86,7 +86,7 @@ class CountedGroupingProcessor(gp.GroupingProcessor[pgf.UnderlyingGrouping, pgf.
             CountryOfOrigin=input.CountryOfOrigin,
             UnderlyingCategory=input.UnderlyingCategory,
             StockTrades=stockTradesOfInterest,
-            DerivativeTrades=[],
+            DerivativeTrades=input.DerivativeTrades,
             CashTransactions=input.CashTransactions,
         )
 
