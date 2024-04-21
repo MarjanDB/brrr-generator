@@ -8,6 +8,7 @@ import src.ConfigurationProvider.Configuration as cpc
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.TaxAuthorityProvider.Common.TaxAuthorityProvider as tap
 import src.TaxAuthorityProvider.Schemas.Configuration as c
+import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.CSV_Doh_DIV as csv_div
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.XML_Doh_DIV as xml_div
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.CSV_Doh_KDVP as csv_kdvp
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.XML_Doh_KDVP as xml_kdvp
@@ -78,5 +79,8 @@ class SlovenianTaxAuthorityProvider(
     ) -> pd.DataFrame:
         if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP:
             return csv_kdvp.generateDataFrameReport(self.reportConfig, data, self.countedGroupingProcessor)
+
+        if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_DIV:
+            return csv_div.generateDataFrameReport(self.reportConfig, data)
 
         return pd.DataFrame()
