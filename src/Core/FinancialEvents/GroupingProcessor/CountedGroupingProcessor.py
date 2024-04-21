@@ -15,7 +15,7 @@ class TradeEventTrackingWrapper(Generic[TRADE_EVENT_TYPE]):
 
 class CountedGroupingProcessor(gp.GroupingProcessor[pgf.UnderlyingGrouping, pgf.UnderlyingGroupingWithTradesOfInterest]):
 
-    def getTradeLotMatchesWithQuantity(
+    def getTradeLotMatchesWithQuantityForStocks(
         self,
         lots: Sequence[pgf.TradeTaxLotEventStock],
     ):
@@ -76,17 +76,81 @@ class CountedGroupingProcessor(gp.GroupingProcessor[pgf.UnderlyingGrouping, pgf.
 
         return allTrades
 
+    # TODO: Respect Asset Classes, since gain of SHORT can't be matched with a sell of LONG
+    def getTradeLotMatchesWithQuantityForDerivatives(
+        self,
+        lots: Sequence[pgf.TradeTaxLotEventDerivative],
+    ):
+        tradeAcquiredLotMatches: dict[str, TradeEventTrackingWrapper[pgf.TradeEventDerivativeAcquired]] = dict()
+        tradeSoldLotMatches: dict[str, TradeEventTrackingWrapper[pgf.TradeEventDerivativeSold]] = dict()
+
+        # TODO: Keep track of invalid Quantities
+        for lot in lots:
+            acquiredTrade = lot.Acquired
+            existingEvent = tradeAcquiredLotMatches.get(acquiredTrade.ID, TradeEventTrackingWrapper(0, acquiredTrade))
+            existingEvent.Quantity += lot.Quantity
+            tradeAcquiredLotMatches[acquiredTrade.ID] = existingEvent
+
+            # NOTE: Lots subtract, as sells remove from holding
+            soldTrade = lot.Sold
+            existingEvent = tradeSoldLotMatches.get(soldTrade.ID, TradeEventTrackingWrapper(0, soldTrade))
+            existingEvent.Quantity += -lot.Quantity
+            tradeSoldLotMatches[soldTrade.ID] = existingEvent
+
+        def convertBuyTrade(
+            trade: TradeEventTrackingWrapper[pgf.TradeEventDerivativeAcquired],
+        ) -> pgf.TradeEventDerivativeAcquired:
+            converted = pgf.TradeEventDerivativeAcquired(
+                ID=trade.Trade.ID,
+                ISIN=trade.Trade.ISIN,
+                Ticker=trade.Trade.Ticker,
+                AssetClass=trade.Trade.AssetClass,
+                Date=trade.Trade.Date,
+                Multiplier=trade.Trade.Multiplier,
+                AcquiredReason=trade.Trade.AcquiredReason,
+                ExchangedMoney=trade.Trade.ExchangedMoney,
+            )
+            return converted
+
+        def convertSellTrade(
+            trade: TradeEventTrackingWrapper[pgf.TradeEventDerivativeSold],
+        ) -> pgf.TradeEventDerivativeSold:
+            converted = pgf.TradeEventDerivativeSold(
+                ID=trade.Trade.ID,
+                ISIN=trade.Trade.ISIN,
+                Ticker=trade.Trade.Ticker,
+                AssetClass=trade.Trade.AssetClass,
+                Date=trade.Trade.Date,
+                Multiplier=trade.Trade.Multiplier,
+                ExchangedMoney=trade.Trade.ExchangedMoney,
+            )
+
+            # TODO: Because IBKR does not provide IDs for what closed the lot, we come across a problem where if multiple lots closed at the same time, we're unable to distinguish between closing trades
+            # I'm just using this hack for now, but this needs to be fixed specifically for IBKR so that imports for other brokers will work properly
+            converted.ExchangedMoney.UnderlyingQuantity = trade.Quantity
+
+            return converted
+
+        convertedBuyTrades = list(map(convertBuyTrade, tradeAcquiredLotMatches.values()))
+        convertedSellTrades = list(map(convertSellTrade, tradeSoldLotMatches.values()))
+
+        allTrades = convertedBuyTrades + convertedSellTrades
+
+        return allTrades
+
     def process(self, input: pgf.UnderlyingGrouping) -> pgf.UnderlyingGroupingWithTradesOfInterest:
         stockLots = input.StockTaxLots
+        derivativeLots = input.DerivativeTaxLots
 
-        stockTradesOfInterest = self.getTradeLotMatchesWithQuantity(stockLots)
+        stockTradesOfInterest = self.getTradeLotMatchesWithQuantityForStocks(stockLots)
+        derivativeTradesOfInterest = self.getTradeLotMatchesWithQuantityForDerivatives(derivativeLots)
 
         interestingGrouping = pgf.UnderlyingGroupingWithTradesOfInterest(
             ISIN=input.ISIN,
             CountryOfOrigin=input.CountryOfOrigin,
             UnderlyingCategory=input.UnderlyingCategory,
             StockTrades=stockTradesOfInterest,
-            DerivativeTrades=[],
+            DerivativeTrades=derivativeTradesOfInterest,
             CashTransactions=input.CashTransactions,
         )
 

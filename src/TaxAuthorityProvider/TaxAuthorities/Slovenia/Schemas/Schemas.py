@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Union
 
 from arrow import Arrow
 
@@ -147,6 +148,11 @@ class EDavkiDerivativeReportSecurityLineGenericEventSold:
     Leveraged: bool
 
 
+EdavkiDerivativeReportSecurityLines = Union[
+    EDavkiDerivativeReportSecurityLineGenericEventBought, EDavkiDerivativeReportSecurityLineGenericEventSold
+]
+
+
 @dataclass
 class EDavkiGenericDerivativeReportItem:
     InventoryListType: EDavkiDerivativeSecurityType
@@ -159,4 +165,4 @@ class EDavkiGenericDerivativeReportItem:
     FTCountryID: str | None
     FTCountryName: str | None
 
-    Items: list[EDavkiDerivativeReportSecurityLineGenericEventBought | EDavkiDerivativeReportSecurityLineGenericEventSold]
+    Items: list[EdavkiDerivativeReportSecurityLines]

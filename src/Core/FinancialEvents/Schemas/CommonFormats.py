@@ -42,6 +42,30 @@ class GenericTradeReportItemGainType(str, Enum):
     RIGHT_TO_NEWLY_ISSUED_STOCK = "RIGHT_TO_NEWLY_ISSUED_STOCK"  # guessing
 
 
+class GenericDerivativeReportItemType(str, Enum):
+    DERIVATIVE = "DERIVATIVE"
+    DERIVATIVE_SHORT = "DERIVATIVE_SHORT"
+
+
+class GenericDerivativeReportAssetClassType(str, Enum):
+    FUTURES_CONTRACT = "FUTURES_CONTRACT"  # https://www.investopedia.com/terms/f/futurescontract.asp
+    CONTRACT_FOR_DIFFERENCE = "CFD"  # https://www.investopedia.com/terms/c/contractfordifferences.asp
+    OPTION = "OPTION"
+    CERTIFICATE = "CERTIFICATE"
+    OTHER = "OTHER"
+
+
+class GenericDerivativeReportItemGainType(str, Enum):
+    CAPITAL_INVESTMENT = "CAPITAL_INVESTMENT"  # guessing
+    BOUGHT = "BOUGHT"
+    CAPITAL_RAISE = "CAPITAL_RAISE"  # guessing
+    CAPITAL_ASSET = "CAPITAL_ASSET"  # guessing
+    CAPITALIZATION_CHANGE = "CAPITALIZATION_CHANGE"  # guessing
+    INHERITENCE = "INHERITENCE"
+    GIFT = "GIFT"
+    OTHER = "OTHER"
+
+
 @dataclass
 class GenericMonetaryExchangeInformation:
     UnderlyingCurrency: str

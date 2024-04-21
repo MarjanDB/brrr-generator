@@ -1,11 +1,9 @@
 from dataclasses import dataclass
-from enum import Enum
 from typing import Generic, Sequence, TypeVar, Union
 
 from arrow import Arrow
 
 import src.Core.FinancialEvents.Schemas.CommonFormats as cf
-import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 
 
 @dataclass
@@ -58,7 +56,7 @@ class TradeEventStockSold(GenericTradeEvent):
 
 @dataclass
 class TradeEventDerivativeAcquired(GenericTradeEvent):
-    AcquiredReason: cf.GenericTradeReportItemGainType
+    AcquiredReason: cf.GenericDerivativeReportItemGainType
     # Related: ??       # connect with corporate actions for better generation of reports
 
 
@@ -66,6 +64,9 @@ class TradeEventDerivativeAcquired(GenericTradeEvent):
 class TradeEventDerivativeSold(GenericTradeEvent):
     ...
     # Related: ??       # connect with corporate actions for better generation of reports (mergers can lead to "sold" stocks)
+
+
+TradeEventDerivatives = Union[TradeEventDerivativeAcquired, TradeEventDerivativeSold]
 
 
 GenericTaxLotAcquiredEvent = TypeVar("GenericTaxLotAcquiredEvent")
@@ -120,34 +121,10 @@ class UnderlyingGroupingWithTradesOfInterest:
     CashTransactions: Sequence[TransactionCash]
 
 
-class GenericDerivativeReportItemType(str, Enum):
-    DERIVATIVE = "DERIVATIVE"
-    DERIVATIVE_SHORT = "DERIVATIVE_SHORT"
-
-
-class GenericDerivativeReportAssetClassType(str, Enum):
-    FUTURES_CONTRACT = "FUTURES_CONTRACT"  # https://www.investopedia.com/terms/f/futurescontract.asp
-    CONTRACT_FOR_DIFFERENCE = "CFD"  # https://www.investopedia.com/terms/c/contractfordifferences.asp
-    OPTION = "OPTION"
-    CERTIFICATE = "CERTIFICATE"
-    OTHER = "OTHER"
-
-
-class GenericDerivativeReportItemGainType(str, Enum):
-    CAPITAL_INVESTMENT = "CAPITAL_INVESTMENT"  # guessing
-    BOUGHT = "BOUGHT"
-    CAPITAL_RAISE = "CAPITAL_RAISE"  # guessing
-    CAPITAL_ASSET = "CAPITAL_ASSET"  # guessing
-    CAPITALIZATION_CHANGE = "CAPITALIZATION_CHANGE"  # guessing
-    INHERITENCE = "INHERITENCE"
-    GIFT = "GIFT"
-    OTHER = "OTHER"
-
-
 @dataclass
 class GenericDerivativeReportItemSecurityLineBought:
     AcquiredDate: Arrow
-    AcquiredHow: GenericDerivativeReportItemGainType
+    AcquiredHow: cf.GenericDerivativeReportItemGainType
     NumberOfUnits: float
     AmountPerUnit: float
     TotalAmountPaid: float  # to avoid rounding errors in case of % purchases
@@ -178,8 +155,8 @@ class GenericDerivativeReportLotMatches:
 
 @dataclass
 class GenericDerivativeReportItem:
-    InventoryListType: GenericDerivativeReportItemType
-    AssetClass: GenericDerivativeReportAssetClassType
+    InventoryListType: cf.GenericDerivativeReportItemType
+    AssetClass: cf.GenericDerivativeReportAssetClassType
     ISIN: str
     Ticker: str
     HasForeignTax: bool

@@ -10,6 +10,8 @@ import src.TaxAuthorityProvider.Common.TaxAuthorityProvider as tap
 import src.TaxAuthorityProvider.Schemas.Configuration as c
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.CSV_Doh_DIV as csv_div
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.XML_Doh_DIV as xml_div
+import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.IFI.CSV_D_IFI as csv_ifi
+import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.IFI.XML_D_IFI as xml_ifi
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.CSV_Doh_KDVP as csv_kdvp
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.XML_Doh_KDVP as xml_kdvp
 import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
@@ -74,6 +76,9 @@ class SlovenianTaxAuthorityProvider(
             isSelfReport = self.isSelfReport(arrow.Arrow.now())
             return xml_div.generateXmlReport(self.reportConfig, self.taxPayerInfo, isSelfReport, data, envelope)
 
+        if reportType == rt.SlovenianTaxAuthorityReportTypes.D_IFI:
+            return xml_ifi.generateXmlReport(self.reportConfig, data, envelope, self.countedGroupingProcessor)
+
     def generateSpreadsheetExport(
         self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[pgf.UnderlyingGrouping]
     ) -> pd.DataFrame:
@@ -82,5 +87,8 @@ class SlovenianTaxAuthorityProvider(
 
         if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_DIV:
             return csv_div.generateDataFrameReport(self.reportConfig, data)
+
+        if reportType == rt.SlovenianTaxAuthorityReportTypes.D_IFI:
+            return csv_ifi.generateDataFrameReport(self.reportConfig, data, self.countedGroupingProcessor)
 
         return pd.DataFrame()

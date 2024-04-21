@@ -66,6 +66,43 @@ stockSold = pgf.TradeEventStockSold(
     ),
 )
 
+optionBought = pgf.TradeEventDerivativeAcquired(
+    ID="ID1",
+    ISIN="ISIN",
+    Ticker="Ticker",
+    AcquiredReason=cf.GenericDerivativeReportItemGainType.BOUGHT,
+    AssetClass=cf.GenericAssetClass.OPTION,
+    Date=arrow.get("2023-06-07"),
+    Multiplier=100,
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
+        UnderlyingCurrency="EUR",
+        UnderlyingQuantity=1.0,
+        UnderlyingTradePrice=1.0,
+        ComissionCurrency="EUR",
+        ComissionTotal=0.0,
+        TaxCurrency="EUR",
+        TaxTotal=0.0,
+    ),
+)
+
+optionSold = pgf.TradeEventDerivativeSold(
+    ID="ID2",
+    ISIN="ISIN",
+    Ticker="Ticker",
+    AssetClass=cf.GenericAssetClass.OPTION,
+    Date=arrow.get("2023-06-08"),
+    Multiplier=100,
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
+        UnderlyingCurrency="EUR",
+        UnderlyingQuantity=-1.0,
+        UnderlyingTradePrice=1.5,
+        ComissionCurrency="EUR",
+        ComissionTotal=0.0,
+        TaxCurrency="EUR",
+        TaxTotal=0.0,
+    ),
+)
+
 cashTransactionDivided = pgf.TransactionCashDividend(
     AccountID="ID",
     ReceivedDateTime=arrow.get("2023-06-07"),
@@ -113,8 +150,12 @@ testData = pgf.UnderlyingGrouping(
             ID="ID1", ISIN="ISIN", Quantity=1.0, Acquired=stockAcquired, Sold=stockSold, ShortLongType=cf.GenericShortLong.LONG
         )
     ],
-    DerivativeTrades=[],
-    DerivativeTaxLots=[],
+    DerivativeTrades=[optionBought, optionSold],
+    DerivativeTaxLots=[
+        pgf.TradeTaxLotEventDerivative(
+            ID="ID1", ISIN="ISIN", Quantity=1.0, Acquired=optionBought, Sold=optionSold, ShortLongType=cf.GenericShortLong.LONG
+        )
+    ],
     CashTransactions=[cashTransactionDivided, cashTransactionWitholdingTax],
 )
 
@@ -147,6 +188,34 @@ class TestSlovenianTaxAuthorityProvider:
 
         assert purchaseNodes[0].getchildren()[2].text == "1.0", "The purchase's 3rd F3 element should contain a positive Quantity"
         assert saleNodes[0].getchildren()[1].text == "-1.0", "The sale's 3rd F3 element should contain a negative Quantity"
+
+    def testIfiSimpleCsv(self):
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
+
+        provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
+
+        export = provider.generateSpreadsheetExport(rt.SlovenianTaxAuthorityReportTypes.D_IFI, [testData])
+
+        assert export.shape[0] == 2, "Only 2 rows should be present"
+        assert export["Quantity"][0] == 1, "The first line should be the buy line"
+        assert export["Quantity"][1] == -1, "The second line should be the sell line"
+
+    def testIfiSimpleXml(self):
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
+        provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
+
+        export = provider.generateExportForTaxAuthority(rt.SlovenianTaxAuthorityReportTypes.D_IFI, [testData])
+
+        tradePurchaseFinder = etree.XPath("/Envelope/body/D_IFI/TItem/TSubItem/Purchase")
+        tradeSaleFinder = etree.XPath("/Envelope/body/D_IFI/TItem/TSubItem/Sale")
+        purchaseNodes = tradePurchaseFinder(export)
+        saleNodes = tradeSaleFinder(export)
+
+        assert len(purchaseNodes) == 1, "There should only be one purchase"
+        assert len(saleNodes) == 1, "There should only be one sale"
+
+        assert purchaseNodes[0].getchildren()[2].text == "1.0", "The purchase's 3rd F3 element should contain a positive Quantity"
+        assert saleNodes[0].getchildren()[1].text == "-1.0", "The sale's 2nd F6 element should contain a negative Quantity"
 
     def testDivSimpleCsv(self):
         config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
