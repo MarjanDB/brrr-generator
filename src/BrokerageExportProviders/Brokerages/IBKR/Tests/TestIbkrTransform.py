@@ -271,12 +271,12 @@ class TestIbkrTransformCashTransaction:
         extracted = extract[0]
 
         assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
-        assert extracted.Dividends[0].SecurityISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
-        assert isinstance(extracted.Dividends[0], TransactionCashStagingDividend), "Dividend is of a dividend line type"
+        assert extracted.CashTransactions[0].SecurityISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
+        assert isinstance(extracted.CashTransactions[0], TransactionCashStagingDividend), "Dividend is of a dividend line type"
         assert (
-            extracted.Dividends[0].ExchangedMoney.UnderlyingTradePrice == dividend.Amount * dividend.FXRateToBase
+            extracted.CashTransactions[0].ExchangedMoney.UnderlyingTradePrice == dividend.Amount * dividend.FXRateToBase
         ), "The Dividend Trade Price should match the dividend"
-        assert extracted.Dividends[0].ExchangedMoney.UnderlyingQuantity == 1, "There was only one instance of the dividend paid"
+        assert extracted.CashTransactions[0].ExchangedMoney.UnderlyingQuantity == 1, "There was only one instance of the dividend paid"
 
     def testSingleWitholdingTax(self):
         segmented = st.SegmentedTrades(
@@ -295,9 +295,11 @@ class TestIbkrTransformCashTransaction:
         extracted = extract[0]
 
         assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
-        assert extracted.Dividends[0].SecurityISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
-        assert isinstance(extracted.Dividends[0], TransactionCashStagingWitholdingTax), "WitholdingTax is of a witholdingTax line type"
+        assert extracted.CashTransactions[0].SecurityISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
+        assert isinstance(
+            extracted.CashTransactions[0], TransactionCashStagingWitholdingTax
+        ), "WitholdingTax is of a witholdingTax line type"
         assert (
-            extracted.Dividends[0].ExchangedMoney.UnderlyingTradePrice == witholdingTax.Amount * witholdingTax.FXRateToBase
+            extracted.CashTransactions[0].ExchangedMoney.UnderlyingTradePrice == witholdingTax.Amount * witholdingTax.FXRateToBase
         ), "The Dividend Trade Price should match the dividend"
-        assert extracted.Dividends[0].ExchangedMoney.UnderlyingQuantity == 1, "There was only one instance of the witholding tax"
+        assert extracted.CashTransactions[0].ExchangedMoney.UnderlyingQuantity == 1, "There was only one instance of the witholding tax"

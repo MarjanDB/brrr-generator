@@ -145,7 +145,7 @@ class TestGenericGroupingsProcessing:
                 StockTaxLots=[simpleStagingStockLot],
                 DerivativeTrades=[],
                 DerivativeTaxLots=[],
-                Dividends=[],
+                CashTransactions=[],
             )
         ]
 
@@ -170,7 +170,7 @@ class TestGenericGroupingsProcessing:
                 StockTaxLots=[simpleStagingStockLot],
                 DerivativeTrades=[],
                 DerivativeTaxLots=[],
-                Dividends=[],
+                CashTransactions=[],
             )
         ]
 
@@ -192,7 +192,7 @@ class TestGenericGroupingsProcessing:
                     simpleStagingDerivativeSold,
                 ],
                 DerivativeTaxLots=[simpleStagingDerivativeLot],
-                Dividends=[],
+                CashTransactions=[],
             )
         ]
 
@@ -218,7 +218,7 @@ class TestInterestingGroupingsProcessing:
             StockTaxLots=[simpleStockLot],
             DerivativeTrades=[],
             DerivativeTaxLots=[],
-            Dividends=[],
+            CashTransactions=[],
         )
 
         utils = cgp.CountedGroupingProcessor(pu.ProcessingUtils())
@@ -245,7 +245,7 @@ class TestInterestingGroupingsProcessing:
             StockTaxLots=[],
             DerivativeTrades=[],
             DerivativeTaxLots=[],
-            Dividends=[],
+            CashTransactions=[],
         )
 
         utils = cgp.CountedGroupingProcessor(pu.ProcessingUtils())

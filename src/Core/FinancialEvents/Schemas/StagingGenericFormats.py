@@ -96,4 +96,4 @@ class GenericUnderlyingGroupingStaging:
     DerivativeTrades: Sequence[TradeEventStagingDerivativeAcquired | TradeEventStagingDerivativeSold]
     DerivativeTaxLots: Sequence[GenericTaxLotEventStaging]
 
-    Dividends: Sequence[TransactionCashStaging]
+    CashTransactions: Sequence[TransactionCashStaging]

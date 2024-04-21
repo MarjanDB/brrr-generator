@@ -78,7 +78,7 @@ testData = pgf.UnderlyingGrouping(
     ],
     DerivativeTrades=[],
     DerivativeTaxLots=[],
-    Dividends=[],
+    CashTransactions=[],
 )
 
 

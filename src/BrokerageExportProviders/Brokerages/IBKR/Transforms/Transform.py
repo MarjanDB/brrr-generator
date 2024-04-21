@@ -332,7 +332,7 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
             StockTaxLots=stockLotsSegmented.get(isin, []),
             DerivativeTrades=derivativesSegmented.get(isin, []),  # type: ignore
             DerivativeTaxLots=derivativeLotsSegmented.get(isin, []),
-            Dividends=dividendsSegmented.get(isin, []),
+            CashTransactions=dividendsSegmented.get(isin, []),
         )
         generatedUnderlyingGroups.append(wrapper)
 
