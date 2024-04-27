@@ -7,3 +7,11 @@ pythonpath = "."
 python_files = "Test*.py"
 python_classes = "Test*"
 python_functions = "test*"
+
+
+[tool.coverage.html]
+directory = "coverage/htmlcov"
+
+[tool.coverage.run]
+branch = true
+data_file = "coverage/.coverage"
