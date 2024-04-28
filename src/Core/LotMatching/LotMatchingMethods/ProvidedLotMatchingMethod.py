@@ -37,3 +37,29 @@ class ProvidedLotMatchingMethod(LotMatchingMethod):
             processedLots.append(processedLot)
 
         return processedLots
+
+    def generateTradesFromLotsWithTracking(self, lots: Sequence[Lot]) -> Sequence[Trade]:
+
+        processedTrades: dict[str, Trade] = dict()
+
+        for lot in lots:
+            acquiredTrade = lot.Acquired.Relation
+
+            acquiredTradeTracking = self.tradeAssociationTracker.getAcquiredTradeTracker(acquiredTrade)
+            accountedForAcquiredQuantity = acquiredTradeTracking.Quantity
+
+            acquiredTradeProcessed = Trade(ID=acquiredTrade.ID, Quantity=accountedForAcquiredQuantity, Date=acquiredTrade.Date)
+            processedTrades[acquiredTrade.ID] = acquiredTradeProcessed
+
+            soldTrade = lot.Sold.Relation
+            soldTradeTracking = self.tradeAssociationTracker.getSoldTradeTracker(soldTrade)
+            accountedForSoldQuantity = soldTradeTracking.Quantity
+
+            soldTradeProcessed = Trade(ID=soldTrade.ID, Quantity=accountedForSoldQuantity, Date=soldTrade.Date)
+            processedTrades[soldTrade.ID] = soldTradeProcessed
+
+        processedTradesValues = list(processedTrades.values())
+
+        processedTradesValues.sort(key=lambda trade: trade.Date)
+
+        return processedTradesValues
