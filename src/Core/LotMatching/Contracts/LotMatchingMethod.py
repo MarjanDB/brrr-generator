@@ -9,7 +9,9 @@ from src.Core.LotMatching.Services.TradeAssociationTracker import (
 
 
 class LotMatchingMethod(ABC):
-    tradeAssociationTracker: TradeAssociationTracker = TradeAssociationTracker()
+    def __init__(self) -> None:
+        super().__init__()
+        self.tradeAssociationTracker: TradeAssociationTracker = TradeAssociationTracker()
 
     @abstractmethod
     def performMatching(self, events: Sequence[Trade]) -> Sequence[Lot]:
