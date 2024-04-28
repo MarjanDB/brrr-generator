@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Sequence
 
-from Core.LotMatching.Services.TradeAssociationTracker import TradeAssociationTracker
 from src.Core.FinancialEvents.Schemas.ProcessedGenericFormats import GenericTradeEvent
 from src.Core.LotMatching.Schemas.Lot import Lot
+from src.Core.LotMatching.Services.TradeAssociationTracker import (
+    TradeAssociationTracker,
+)
 
 
 class LotMatchingMethod(ABC):
