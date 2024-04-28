@@ -2,19 +2,19 @@ from dataclasses import dataclass
 
 from arrow import Arrow
 
-from src.Core.FinancialEvents.Schemas.ProcessedGenericFormats import GenericTradeEvent
+from src.Core.LotMatching.Schemas.Trade import Trade
 
 
 @dataclass
 class LotAcquired:
     Date: Arrow
-    Relation: GenericTradeEvent
+    Relation: Trade
 
 
 @dataclass
 class LotSold:
     Date: Arrow
-    Relation: GenericTradeEvent
+    Relation: Trade
 
 
 @dataclass
