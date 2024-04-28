@@ -1,3 +1,4 @@
+import pytest
 from arrow import get
 
 from src.Core.FinancialEvents.Schemas.CommonFormats import (
@@ -88,3 +89,15 @@ class TestTradeAssociationTracker:
         retrieved = tracker.getSoldTradeTracker(simpleBuyTrade)
 
         assert retrieved.Quantity == 1, "The tracked quantity should be the sum of all tracking quantities"
+
+    def testInvalidQuantityForAcquiredTrade(self):
+        tracker = TradeAssociationTracker()
+
+        with pytest.raises(AssertionError) as ae:
+            tracker.trackAcquiredQuantity(simpleBuyTrade, 2)
+
+    def testInvalidQuantityForSoldTrade(self):
+        tracker = TradeAssociationTracker()
+
+        with pytest.raises(AssertionError) as ae:
+            tracker.trackSoldQuantity(simpleSoldTrade, 2)
