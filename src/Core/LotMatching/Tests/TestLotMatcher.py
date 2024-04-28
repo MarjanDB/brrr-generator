@@ -10,11 +10,15 @@ from src.Core.FinancialEvents.Schemas.CommonFormats import (
 from src.Core.FinancialEvents.Schemas.ProcessedGenericFormats import GenericTradeEvent
 from src.Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
 from src.Core.LotMatching.Schemas.Lot import Lot
+from src.Core.LotMatching.Schemas.Trade import Trade
 from src.Core.LotMatching.Services.LotMatcher import LotMatcher
 
 
 class FakeLotMatchingMethod(LotMatchingMethod):
-    def performMatching(self, events: Sequence[GenericTradeEvent]) -> Sequence[Lot]:
+    def performMatching(self, events: Sequence[Trade]) -> Sequence[Lot]:
+        return []
+
+    def generateTradesFromLotsWithTracking(self, lots: Sequence[Lot]) -> Sequence[Trade]:
         return []
 
 

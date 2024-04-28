@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
-from src.Core.FinancialEvents.Schemas.ProcessedGenericFormats import GenericTradeEvent
+from src.Core.LotMatching.Schemas.Trade import Trade
 
 
 @dataclass
 class TradeAssociation:
     Quantity: float
-    Trade: GenericTradeEvent
+    AssociatedTrade: Trade
 
 
 class TradeAssociationTracker:
@@ -15,54 +15,54 @@ class TradeAssociationTracker:
         self.__tradeAcquiredTracker: dict[str, TradeAssociation] = dict()
         self.__tradeSoldTracker: dict[str, TradeAssociation] = dict()
 
-    def __associateAcquiredTrade(self, event: GenericTradeEvent):
+    def __associateAcquiredTrade(self, event: Trade):
         if event.ID not in self.__tradeAcquiredTracker:
-            self.__tradeAcquiredTracker[event.ID] = TradeAssociation(Quantity=0, Trade=event)
+            self.__tradeAcquiredTracker[event.ID] = TradeAssociation(Quantity=0, AssociatedTrade=event)
 
-    def __associateSoldTrade(self, event: GenericTradeEvent):
+    def __associateSoldTrade(self, event: Trade):
         if event.ID not in self.__tradeSoldTracker:
-            self.__tradeSoldTracker[event.ID] = TradeAssociation(Quantity=0, Trade=event)
+            self.__tradeSoldTracker[event.ID] = TradeAssociation(Quantity=0, AssociatedTrade=event)
 
-    def trackAcquiredQuantity(self, event: GenericTradeEvent, quantity: float):
+    def trackAcquiredQuantity(self, event: Trade, quantity: float):
         self.__associateAcquiredTrade(event)
 
         tracker = self.__tradeAcquiredTracker.get(event.ID)
         if tracker is None:
             raise AssertionError("There is no tracker for the event ({})".format(event.ID))
 
-        if tracker.Quantity + quantity > event.ExchangedMoney.UnderlyingQuantity:
+        if tracker.Quantity + quantity > event.Quantity:
             raise AssertionError(
                 "Adding tracking quantity ({}) to event ({}) exceeds total quantity ({} / {}) of the event".format(
-                    quantity, event.ID, tracker.Quantity + quantity, event.ExchangedMoney.UnderlyingQuantity
+                    quantity, event.ID, tracker.Quantity + quantity, event.Quantity
                 )
             )
 
         tracker.Quantity += quantity
 
-    def trackSoldQuantity(self, event: GenericTradeEvent, quantity: float):
+    def trackSoldQuantity(self, event: Trade, quantity: float):
         self.__associateSoldTrade(event)
 
         tracker = self.__tradeSoldTracker.get(event.ID)
         if tracker is None:
             raise AssertionError("There is no tracker for the event ({})".format(event.ID))
 
-        if tracker.Quantity + quantity > event.ExchangedMoney.UnderlyingQuantity.__abs__():
+        if tracker.Quantity + quantity > event.Quantity.__abs__():
             raise AssertionError(
                 "Adding tracking quantity ({}) to event ({}) exceeds total quantity ({} / {}) of the event".format(
-                    quantity, event.ID, tracker.Quantity + quantity, event.ExchangedMoney.UnderlyingQuantity.__abs__()
+                    quantity, event.ID, tracker.Quantity + quantity, event.Quantity.__abs__()
                 )
             )
 
         tracker.Quantity += quantity
 
-    def getAcquiredTradeTracker(self, event: GenericTradeEvent) -> TradeAssociation:
+    def getAcquiredTradeTracker(self, event: Trade) -> TradeAssociation:
         tracker = self.__tradeAcquiredTracker.get(event.ID)
         if tracker is None:
             raise KeyError("Tracker for event ({}) does not exist".format(event.ID))
 
         return tracker
 
-    def getSoldTradeTracker(self, event: GenericTradeEvent) -> TradeAssociation:
+    def getSoldTradeTracker(self, event: Trade) -> TradeAssociation:
         tracker = self.__tradeSoldTracker.get(event.ID)
         if tracker is None:
             raise KeyError("Tracker for event ({}) does not exist".format(event.ID))
