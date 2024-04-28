@@ -3,11 +3,6 @@ from unittest.mock import MagicMock
 
 from arrow import get
 
-from src.Core.FinancialEvents.Schemas.CommonFormats import (
-    GenericAssetClass,
-    GenericMonetaryExchangeInformation,
-)
-from src.Core.FinancialEvents.Schemas.ProcessedGenericFormats import GenericTradeEvent
 from src.Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
 from src.Core.LotMatching.Schemas.Lot import Lot
 from src.Core.LotMatching.Schemas.Trade import Trade
@@ -26,29 +21,13 @@ class TestLotMatcher:
     def testProvidedMethodIsCalled(self):
         fakeMethod = FakeLotMatchingMethod()
         fakeMethod.performMatching = MagicMock()
+        fakeMethod.generateTradesFromLotsWithTracking = MagicMock()
 
         lotMatcher = LotMatcher()
-        lotMatcher.match(
+        lotMatcher.matchLotsWithTrades(
             fakeMethod,
-            [
-                GenericTradeEvent(
-                    ID="test",
-                    ISIN="test",
-                    Ticker="test",
-                    AssetClass=GenericAssetClass.STOCK,
-                    Date=get("2023-01-01"),
-                    Multiplier=1,
-                    ExchangedMoney=GenericMonetaryExchangeInformation(
-                        UnderlyingCurrency="EUR",
-                        UnderlyingQuantity=1,
-                        UnderlyingTradePrice=1,
-                        ComissionCurrency="EUR",
-                        ComissionTotal=0,
-                        TaxCurrency="EUR",
-                        TaxTotal=0,
-                    ),
-                )
-            ],
+            [Trade(ID="ID", Quantity=1, Date=get("2023-01-01"))],
         )
 
         fakeMethod.performMatching.assert_called()  # As soon as there's a single trade event, the lot matcher should be called
+        fakeMethod.generateTradesFromLotsWithTracking.assert_called()  # As soon as there's a single trade event, the lot matcher should be called
