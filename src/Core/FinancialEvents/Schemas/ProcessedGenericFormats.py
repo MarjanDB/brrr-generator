@@ -69,8 +69,8 @@ class TradeEventDerivativeSold(GenericTradeEvent):
 TradeEventDerivatives = Union[TradeEventDerivativeAcquired, TradeEventDerivativeSold]
 
 
-GenericTaxLotAcquiredEvent = TypeVar("GenericTaxLotAcquiredEvent")
-GenericTaxLotSoldEvent = TypeVar("GenericTaxLotSoldEvent")
+GenericTaxLotAcquiredEvent = TypeVar("GenericTaxLotAcquiredEvent", bound=GenericTradeEvent, covariant=True)
+GenericTaxLotSoldEvent = TypeVar("GenericTaxLotSoldEvent", bound=GenericTradeEvent, covariant=True)
 
 
 @dataclass

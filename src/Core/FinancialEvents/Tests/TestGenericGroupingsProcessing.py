@@ -7,6 +7,7 @@ import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 import src.Core.FinancialEvents.Utils.ProcessingUtils as pu
+from src.Core.LotMatching.Services.LotMatcher import LotMatcher
 
 simpleStagingStockBuy = sgf.TradeEventStagingStockAcquired(
     ID="StockBought",
@@ -221,7 +222,7 @@ class TestInterestingGroupingsProcessing:
             CashTransactions=[],
         )
 
-        utils = cgp.CountedGroupingProcessor(pu.ProcessingUtils())
+        utils = cgp.CountedGroupingProcessor(pu.ProcessingUtils(), LotMatcher())
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping])
 
@@ -248,7 +249,7 @@ class TestInterestingGroupingsProcessing:
             CashTransactions=[],
         )
 
-        utils = cgp.CountedGroupingProcessor(pu.ProcessingUtils())
+        utils = cgp.CountedGroupingProcessor(pu.ProcessingUtils(), LotMatcher())
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping])
 
