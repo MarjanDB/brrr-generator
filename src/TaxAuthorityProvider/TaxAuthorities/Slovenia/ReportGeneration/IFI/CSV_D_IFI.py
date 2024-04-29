@@ -34,6 +34,9 @@ def generateDataFrameReport(
 
     mappedData = list(map(getLinesFromData, convertedTrades))
 
+    if len(mappedData) == 0:
+        return pd.DataFrame()
+
     combinedData = pd.concat(mappedData)
 
     return combinedData
