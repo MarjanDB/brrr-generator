@@ -1,6 +1,6 @@
 import copy
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Sequence, TypeVar
 
 from src.Core.FinancialEvents.Schemas.CommonFormats import GenericShortLong
 from src.Core.FinancialEvents.Schemas.ProcessedGenericFormats import (
@@ -11,11 +11,19 @@ from src.Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
 from src.Core.LotMatching.Schemas.Lot import Lot
 from src.Core.LotMatching.Schemas.Trade import Trade
 
+TAX_LOT_TYPE = TypeVar("TAX_LOT_TYPE", bound=GenericTaxLot[GenericTradeEvent, GenericTradeEvent], covariant=True)
+
 
 @dataclass
 class LotMatchingDetails:
     Lots: Sequence[Lot]
     Trades: Sequence[Trade]
+
+
+@dataclass
+class GenericLotMatchingDetails:
+    Lots: Sequence[GenericTaxLot[GenericTradeEvent, GenericTradeEvent]]
+    Trades: Sequence[GenericTradeEvent]
 
 
 class LotMatcher:
@@ -29,9 +37,7 @@ class LotMatcher:
 
         return details
 
-    def matchLotsWithGenericTradeEvents(
-        self, method: LotMatchingMethod, events: Sequence[GenericTradeEvent]
-    ) -> Sequence[GenericTaxLot[GenericTradeEvent, GenericTradeEvent]]:
+    def matchLotsWithGenericTradeEvents(self, method: LotMatchingMethod, events: Sequence[GenericTradeEvent]) -> GenericLotMatchingDetails:
 
         def convertTradeEvent(event: GenericTradeEvent) -> Trade:
             trade = Trade(ID=event.ID, Quantity=event.ExchangedMoney.UnderlyingQuantity, Date=event.Date)
@@ -47,8 +53,9 @@ class LotMatcher:
             tradeMappings[convertedEvent.ID] = convertedEvent
 
         convertedEvents = list(tradeMappings.values())
-        generatedLots = method.performMatching(convertedEvents)
-        generatedTrades = method.generateTradesFromLotsWithTracking(generatedLots)
+        matchingDetails = self.matchLotsWithTrades(method=method, events=convertedEvents)
+        generatedLots = matchingDetails.Lots
+        generatedTrades = matchingDetails.Trades
 
         def convertTrade(trade: Trade) -> GenericTradeEvent:
             matchingGenericEvent = tradeEventMappings.get(trade.ID)
@@ -86,4 +93,6 @@ class LotMatcher:
 
         convertedLots = list(map(convertLot, generatedLots))
 
-        return convertedLots
+        details = GenericLotMatchingDetails(Lots=convertedLots, Trades=convertedGeneratedTrades)
+
+        return details
