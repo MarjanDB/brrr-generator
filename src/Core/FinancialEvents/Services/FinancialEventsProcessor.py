@@ -1,13 +1,22 @@
 from typing import Sequence
 
-import Core.FinancialEvents.Contracts.GroupingProcessor as gp
 import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+from Core.FinancialEvents.Utils.ProcessingUtils import ProcessingUtils
 from Core.LotMatching.LotMatchingMethods.ProvidedLotMatchingMethod import (
     ProvidedLotMatchingMethod,
 )
+from Core.LotMatching.Services.LotMatcher import LotMatcher
 
 
-class CountedGroupingProcessor(gp.GroupingProcessor[pgf.UnderlyingGrouping, pgf.UnderlyingGroupingWithTradesOfInterest]):
+class FinancialEventsProcessor:
+
+    def __init__(
+        self,
+        processingUtils: ProcessingUtils,
+        lotMatcher: LotMatcher,
+    ) -> None:
+        self.lotMatcher = lotMatcher
+        self.processingUtils = processingUtils
 
     def process(self, input: pgf.UnderlyingGrouping) -> pgf.UnderlyingGroupingWithTradesOfInterest:
         stockLots = input.StockTaxLots

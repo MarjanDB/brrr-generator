@@ -1,8 +1,8 @@
 from typing import Sequence
 
-import Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor as g
 import Core.FinancialEvents.Schemas.CommonFormats as cf
 import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Services.FinancialEventsProcessor as g
 import TaxAuthorityProvider.Schemas.Configuration as tc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 
@@ -29,7 +29,7 @@ GAIN_MAPPINGS: dict[cf.GenericTradeReportItemGainType, ss.EDavkiTradeReportGainT
 
 
 def convertTradesToKdvpItems(
-    reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.UnderlyingGrouping], countedProcessor: g.CountedGroupingProcessor
+    reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.UnderlyingGrouping], countedProcessor: g.FinancialEventsProcessor
 ) -> list[ss.EDavkiGenericTradeReportItem]:
     converted: list[ss.EDavkiGenericTradeReportItem] = list()
     periodStart = reportConfig.fromDate

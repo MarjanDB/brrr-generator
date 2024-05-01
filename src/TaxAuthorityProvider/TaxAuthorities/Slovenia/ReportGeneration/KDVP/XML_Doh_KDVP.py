@@ -8,8 +8,8 @@ import TaxAuthorityProvider.Schemas.Configuration as tc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.Common as common
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
-from Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor import (
-    CountedGroupingProcessor,
+from Core.FinancialEvents.Services.FinancialEventsProcessor import (
+    FinancialEventsProcessor,
 )
 
 
@@ -19,7 +19,7 @@ def generateXmlReport(
     documentType: rt.EDavkiDocumentWorkflowType,
     data: Sequence[pgf.UnderlyingGrouping],
     templateEnvelope: etree._Element,
-    countedProcessor: CountedGroupingProcessor,
+    countedProcessor: FinancialEventsProcessor,
 ) -> etree._Element:
     convertedTrades = common.convertTradesToKdvpItems(reportConfig, data, countedProcessor)
 

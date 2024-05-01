@@ -1,8 +1,8 @@
 import arrow as ar
 
-import Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor as cgp
 import Core.FinancialEvents.Schemas.CommonFormats as cf
 import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Services.FinancialEventsProcessor as cgp
 import Core.FinancialEvents.Utils.ProcessingUtils as pu
 from Core.LotMatching.Services.LotMatcher import LotMatcher
 
@@ -68,7 +68,7 @@ class TestInterestingGroupingsProcessing:
             CashTransactions=[],
         )
 
-        utils = cgp.CountedGroupingProcessor(pu.ProcessingUtils(), LotMatcher())
+        utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping])
 
@@ -95,7 +95,7 @@ class TestInterestingGroupingsProcessing:
             CashTransactions=[],
         )
 
-        utils = cgp.CountedGroupingProcessor(pu.ProcessingUtils(), LotMatcher())
+        utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping])
 

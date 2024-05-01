@@ -9,8 +9,8 @@ import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import InfoProviders.InfoLookupProvider as ilp
 import TaxAuthorityProvider.Schemas.Configuration as tapc
 from AppModule import appInjector
-from Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor import (
-    CountedGroupingProcessor,
+from Core.FinancialEvents.Services.FinancialEventsProcessor import (
+    FinancialEventsProcessor,
 )
 
 REPORT_CONFIG = TypeVar("REPORT_CONFIG", bound=tapc.TaxAuthorityConfiguration)
@@ -25,14 +25,14 @@ class GenericTaxAuthorityProvider(ABC, Generic[REPORT_CONFIG, TAX_PAYER_CONFIG, 
 
     companyLookupProvider: ilp.CompanyLookupProvider
     countryLookupProvider: ilp.CountryLookupProvider
-    countedGroupingProcessor: CountedGroupingProcessor
+    countedGroupingProcessor: FinancialEventsProcessor
 
     def __init__(self, taxPayerInfo: TAX_PAYER_CONFIG, reportConfig: REPORT_CONFIG):
         self.taxPayerInfo = taxPayerInfo
         self.reportConfig = reportConfig
         self.companyLookupProvider = appInjector.inject(ilp.CompanyLookupProvider)
         self.countryLookupProvider = appInjector.inject(ilp.CountryLookupProvider)
-        self.countedGroupingProcessor = appInjector.inject(CountedGroupingProcessor)
+        self.countedGroupingProcessor = appInjector.inject(FinancialEventsProcessor)
 
     @abstractmethod
     def generateExportForTaxAuthority(self, reportType: TAX_AUTHORITY_REPORT, data: Sequence[pgf.UnderlyingGrouping]) -> Any:
