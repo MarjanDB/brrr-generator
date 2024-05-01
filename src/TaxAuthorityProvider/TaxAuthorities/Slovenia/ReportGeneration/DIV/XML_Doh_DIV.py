@@ -2,11 +2,11 @@ from typing import Sequence
 
 from lxml import etree
 
-import src.ConfigurationProvider.Configuration as c
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.TaxAuthorityProvider.Schemas.Configuration as tc
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.Common as common
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
+import ConfigurationProvider.Configuration as c
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import TaxAuthorityProvider.Schemas.Configuration as tc
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.Common as common
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 
 
 def generateXmlReport(

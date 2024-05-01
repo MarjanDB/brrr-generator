@@ -1,6 +1,6 @@
 from opyoid.bindings.module import Module
 
-from src.ConfigurationProvider.Configuration import ConfigurationProvider
+from ConfigurationProvider.Configuration import ConfigurationProvider
 
 
 class ConfigurationModule(Module):

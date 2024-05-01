@@ -1,5 +1,5 @@
-import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as s
-import src.BrokerageExportProviders.Contracts.CommonBrokerageEvents as cbe
+import BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as s
+import BrokerageExportProviders.Contracts.CommonBrokerageEvents as cbe
 
 
 class SegmentedTrades(

@@ -2,11 +2,11 @@ from typing import Sequence
 
 import pandas as pd
 
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.TaxAuthorityProvider.Schemas.Configuration as tc
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.Common as common
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
-from src.Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor import (
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import TaxAuthorityProvider.Schemas.Configuration as tc
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.Common as common
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
+from Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor import (
     CountedGroupingProcessor,
 )
 

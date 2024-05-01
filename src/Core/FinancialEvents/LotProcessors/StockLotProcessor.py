@@ -2,10 +2,10 @@ from typing import Sequence
 
 import arrow as ar
 
-import src.Core.FinancialEvents.Contracts.LotProcessor as lp
-import src.Core.FinancialEvents.Schemas.CommonFormats as cf
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-from src.StagingFinancialEvents.Schemas.Lots import StagingTaxLot
+import Core.FinancialEvents.Contracts.LotProcessor as lp
+import Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+from StagingFinancialEvents.Schemas.Lots import StagingTaxLot
 
 
 class StockLotProcessor(

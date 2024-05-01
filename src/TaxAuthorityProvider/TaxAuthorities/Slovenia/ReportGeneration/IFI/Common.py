@@ -1,10 +1,10 @@
 from typing import Sequence
 
-import src.Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor as g
-import src.Core.FinancialEvents.Schemas.CommonFormats as cf
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.TaxAuthorityProvider.Schemas.Configuration as tc
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
+import Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor as g
+import Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import TaxAuthorityProvider.Schemas.Configuration as tc
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 
 SECURITY_MAPPING: dict[cf.GenericDerivativeReportAssetClassType, ss.EDavkiDerivativeSecurityType] = {
     cf.GenericDerivativeReportAssetClassType.OPTION: ss.EDavkiDerivativeSecurityType.OPTION,

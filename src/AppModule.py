@@ -1,13 +1,13 @@
 from opyoid.bindings.module import Module
 from opyoid.injector import Injector
 
-from src.BrokerageExportProviders.BrokerageExportProvidersModule import (
+from BrokerageExportProviders.BrokerageExportProvidersModule import (
     BrokerageExportProvidersModule,
 )
-from src.ConfigurationProvider.ConfigurationModule import ConfigurationModule
-from src.Core.FinancialEvents.FinancialEventsModule import FinancialEventsModule
-from src.Core.LotMatching.LotMatchingModule import LotMatchingModule
-from src.InfoProviders.InfoProviderModule import InfoProviderModule
+from ConfigurationProvider.ConfigurationModule import ConfigurationModule
+from Core.FinancialEvents.FinancialEventsModule import FinancialEventsModule
+from Core.LotMatching.LotMatchingModule import LotMatchingModule
+from InfoProviders.InfoProviderModule import InfoProviderModule
 
 
 class AppModule(Module):

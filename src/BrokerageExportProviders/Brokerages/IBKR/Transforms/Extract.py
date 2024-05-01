@@ -2,9 +2,9 @@ from typing import Any
 
 from lxml import etree
 
-import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as s
-import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
-import src.BrokerageExportProviders.Utils.ValueParsingUtils as utils
+import BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as s
+import BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
+import BrokerageExportProviders.Utils.ValueParsingUtils as utils
 
 
 def deduplicateList(lines: list[list[Any]]):

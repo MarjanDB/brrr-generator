@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from arrow import Arrow
 
-from src.Core.LotMatching.Schemas.Trade import Trade
+from Core.LotMatching.Schemas.Trade import Trade
 
 
 @dataclass

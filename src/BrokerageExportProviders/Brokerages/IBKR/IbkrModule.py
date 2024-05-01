@@ -1,6 +1,6 @@
 from opyoid.bindings.module import Module
 
-from src.BrokerageExportProviders.Brokerages.IBKR.IbkrBrokerageExportProvider import (
+from BrokerageExportProviders.Brokerages.IBKR.IbkrBrokerageExportProvider import (
     IbkrBrokerageExportProvider,
 )
 

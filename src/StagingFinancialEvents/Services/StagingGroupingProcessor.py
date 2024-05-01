@@ -1,16 +1,16 @@
 from typing import Sequence
 
-import src.Core.FinancialEvents.Contracts.EventProcessor as ep
-import src.Core.FinancialEvents.EventProcessors.DerivativeEventProcessor as dep
-import src.Core.FinancialEvents.EventProcessors.StockEventProcessor as sep
-import src.Core.FinancialEvents.LotProcessors.DerivativeLotProcessor as dlp
-import src.Core.FinancialEvents.LotProcessors.StockLotProcessor as slp
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.Core.FinancialEvents.Utils.ProcessingUtils as pu
-from src.Core.FinancialEvents.EventProcessors.CashTransactionEventProcessor import (
+import Core.FinancialEvents.Contracts.EventProcessor as ep
+import Core.FinancialEvents.EventProcessors.DerivativeEventProcessor as dep
+import Core.FinancialEvents.EventProcessors.StockEventProcessor as sep
+import Core.FinancialEvents.LotProcessors.DerivativeLotProcessor as dlp
+import Core.FinancialEvents.LotProcessors.StockLotProcessor as slp
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Utils.ProcessingUtils as pu
+from Core.FinancialEvents.EventProcessors.CashTransactionEventProcessor import (
     CashTransactionEventProcessor,
 )
-from src.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
+from StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
 
 
 class StagingGroupingProcessor(ep.EventProcessor[StagingFinancialGrouping, pgf.UnderlyingGrouping]):

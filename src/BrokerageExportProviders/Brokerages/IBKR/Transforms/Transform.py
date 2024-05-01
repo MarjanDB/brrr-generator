@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from itertools import groupby
 from typing import Generic, Sequence, TypeVar
 
-import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as s
-import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
-import src.Core.FinancialEvents.Schemas.CommonFormats as cf
-from src.StagingFinancialEvents.Schemas.Events import (
+import BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as s
+import BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
+import Core.FinancialEvents.Schemas.CommonFormats as cf
+from StagingFinancialEvents.Schemas.Events import (
     StagingTradeEvent,
     StagingTradeEventCashTransactionDividend,
     StagingTradeEventCashTransactionWitholdingTax,
@@ -17,8 +17,8 @@ from src.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventStockSold,
     StagingTransactionCash,
 )
-from src.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
-from src.StagingFinancialEvents.Schemas.Lots import (
+from StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
+from StagingFinancialEvents.Schemas.Lots import (
     StagingTaxLot,
     StagingTaxLotMatchingDetails,
 )

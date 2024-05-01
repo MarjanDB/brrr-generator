@@ -22,8 +22,9 @@
         "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-            "source.organizeImports": true
+            "source.organizeImports": "always"
         },
     },
     "isort.args":["--profile", "black"],
+    "jupyter.notebookFileRoot": "${workspaceFolder}/src"
 }

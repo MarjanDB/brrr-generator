@@ -1,8 +1,8 @@
 from typing import Sequence
 
-import src.Core.FinancialEvents.Contracts.EventProcessor as ep
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-from src.StagingFinancialEvents.Schemas.Events import (
+import Core.FinancialEvents.Contracts.EventProcessor as ep
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+from StagingFinancialEvents.Schemas.Events import (
     StagingTradeEvent,
     StagingTradeEventDerivativeAcquired,
 )

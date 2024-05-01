@@ -2,7 +2,7 @@ from typing import Sequence, TypeVar
 
 import arrow as ar
 
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 
 GENERIC_TRADE_EVENT = TypeVar("GENERIC_TRADE_EVENT", bound=pgf.GenericTradeEvent)
 

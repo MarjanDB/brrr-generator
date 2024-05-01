@@ -2,14 +2,14 @@ import copy
 from dataclasses import dataclass
 from typing import Sequence, TypeVar
 
-from src.Core.FinancialEvents.Schemas.CommonFormats import GenericShortLong
-from src.Core.FinancialEvents.Schemas.ProcessedGenericFormats import (
+from Core.FinancialEvents.Schemas.CommonFormats import GenericShortLong
+from Core.FinancialEvents.Schemas.ProcessedGenericFormats import (
     GenericTaxLot,
     GenericTradeEvent,
 )
-from src.Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
-from src.Core.LotMatching.Schemas.Lot import Lot
-from src.Core.LotMatching.Schemas.Trade import Trade
+from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
+from Core.LotMatching.Schemas.Lot import Lot
+from Core.LotMatching.Schemas.Trade import Trade
 
 TAX_LOT_TYPE = TypeVar("TAX_LOT_TYPE", bound=GenericTaxLot[GenericTradeEvent, GenericTradeEvent], covariant=True)
 

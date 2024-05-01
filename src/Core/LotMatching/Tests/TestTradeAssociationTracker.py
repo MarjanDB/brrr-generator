@@ -1,8 +1,8 @@
 import pytest
 from arrow import get
 
-from src.Core.LotMatching.Schemas.Trade import Trade
-from src.Core.LotMatching.Services.TradeAssociationTracker import (
+from Core.LotMatching.Schemas.Trade import Trade
+from Core.LotMatching.Services.TradeAssociationTracker import (
     TradeAssociation,
     TradeAssociationTracker,
 )

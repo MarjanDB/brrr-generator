@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-import src.Core.FinancialEvents.Utils.ProcessingUtils as pu
-from src.Core.LotMatching.Services.LotMatcher import LotMatcher
+import Core.FinancialEvents.Utils.ProcessingUtils as pu
+from Core.LotMatching.Services.LotMatcher import LotMatcher
 
 INPUT_TYPE = TypeVar("INPUT_TYPE")
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE")

@@ -1,6 +1,6 @@
 from opyoid.bindings.module import Module
 
-from src.InfoProviders.InfoLookupProvider import (
+from InfoProviders.InfoLookupProvider import (
     CompanyLookupProvider,
     CountryLookupProvider,
 )

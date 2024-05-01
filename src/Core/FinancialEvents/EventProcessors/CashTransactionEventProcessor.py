@@ -1,9 +1,9 @@
-import src.Core.FinancialEvents.Contracts.EventProcessor as ep
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-from src.Core.FinancialEvents.Schemas.CommonFormats import (
+import Core.FinancialEvents.Contracts.EventProcessor as ep
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+from Core.FinancialEvents.Schemas.CommonFormats import (
     GenericMonetaryExchangeInformation,
 )
-from src.StagingFinancialEvents.Schemas.Events import (
+from StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventCashTransaction,
     StagingTradeEventCashTransactionDividend,
     StagingTradeEventCashTransactionWitholdingTax,

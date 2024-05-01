@@ -1,15 +1,15 @@
 from arrow import get
 
-from src.Core.FinancialEvents.Schemas.CommonFormats import (
+from Core.FinancialEvents.Schemas.CommonFormats import (
     GenericAssetClass,
     GenericMonetaryExchangeInformation,
     GenericShortLong,
 )
-from src.Core.FinancialEvents.Schemas.ProcessedGenericFormats import (
+from Core.FinancialEvents.Schemas.ProcessedGenericFormats import (
     GenericTaxLot,
     GenericTradeEvent,
 )
-from src.Core.LotMatching.LotMatchingMethods.ProvidedLotMatchingMethod import (
+from Core.LotMatching.LotMatchingMethods.ProvidedLotMatchingMethod import (
     ProvidedLotMatchingMethod,
 )
 
