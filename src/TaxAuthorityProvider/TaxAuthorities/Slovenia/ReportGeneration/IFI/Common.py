@@ -5,6 +5,7 @@ import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import Core.FinancialEvents.Services.FinancialEventsProcessor as g
 import TaxAuthorityProvider.Schemas.Configuration as tc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
+from Core.FinancialEvents.Schemas.Events import TradeEventDerivative
 
 SECURITY_MAPPING: dict[cf.GenericDerivativeReportAssetClassType, ss.EDavkiDerivativeSecurityType] = {
     cf.GenericDerivativeReportAssetClassType.OPTION: ss.EDavkiDerivativeSecurityType.OPTION,
@@ -52,7 +53,7 @@ def convertSell(
 
 
 def convertEvent(
-    line: pgf.TradeEventDerivatives,
+    line: TradeEventDerivative,
 ) -> ss.EdavkiDerivativeReportSecurityLines:
     if isinstance(line, pgf.TradeEventDerivativeAcquired):
         return convertBuy(line)

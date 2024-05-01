@@ -7,6 +7,11 @@ import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import TaxAuthorityProvider.Schemas.Configuration as tc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 from AppModule import appInjector
+from Core.FinancialEvents.Schemas.Events import (
+    TradeEventCashTransactionDividend,
+    TradeEventCashTransactionWitholdingTax,
+    TransactionCash,
+)
 from InfoProviders.InfoLookupProvider import (
     CompanyInfo,
     CompanyLookupProvider,
@@ -16,16 +21,14 @@ from InfoProviders.InfoLookupProvider import (
 
 
 def filterOutCashTransactionsBasedOnDate(
-    data: Sequence[pgf.GenericTransactionCash], fromDateInclusive: Arrow, toDateExclusive: Arrow
-) -> Sequence[pgf.GenericTransactionCash]:
-    linesThatFallIntoDate = list(
-        filter(lambda line: line.ReceivedDateTime >= fromDateInclusive and line.ReceivedDateTime < toDateExclusive, data)
-    )
+    data: Sequence[TransactionCash], fromDateInclusive: Arrow, toDateExclusive: Arrow
+) -> Sequence[TransactionCash]:
+    linesThatFallIntoDate = list(filter(lambda line: line.Date >= fromDateInclusive and line.Date < toDateExclusive, data))
     return linesThatFallIntoDate
 
 
 def processEdavkiLineItemsFromCashTransactions(
-    dividendLines: Sequence[pgf.TransactionCashDividend], witholdingLines: Sequence[pgf.TransactionCashWitholdingTax]
+    dividendLines: Sequence[TradeEventCashTransactionDividend], witholdingLines: Sequence[TradeEventCashTransactionWitholdingTax]
 ) -> Sequence[ss.EDavkiDividendReportLine]:
     actionToDividendMapping: dict[str, ss.EDavkiDividendReportLine] = dict()
 
@@ -33,9 +36,9 @@ def processEdavkiLineItemsFromCashTransactions(
         actionId = dividend.ActionID
 
         thisDividendLine = ss.EDavkiDividendReportLine(
-            DateReceived=dividend.ReceivedDateTime,
+            DateReceived=dividend.Date,
             TaxNumberForDividendPayer="",
-            DividendPayerIdentificationNumber=dividend.SecurityISIN,
+            DividendPayerIdentificationNumber=dividend.ISIN,
             DividendPayerTitle="",
             DividendPayerAddress="",
             DividendPayerCountryOfOrigin="",
@@ -180,12 +183,12 @@ def processSingleUnderlyingGroupingToDivLines(
 ) -> Sequence[ss.EDavkiDividendReportLine]:
     relevantCashTransactions = filterOutCashTransactionsBasedOnDate(data.CashTransactions, reportConfig.fromDate, reportConfig.toDate)
 
-    dividendLines: list[pgf.TransactionCashDividend] = list(
-        filter(lambda line: isinstance(line, pgf.TransactionCashDividend), relevantCashTransactions)
+    dividendLines: list[TradeEventCashTransactionDividend] = list(
+        filter(lambda line: isinstance(line, TradeEventCashTransactionDividend), relevantCashTransactions)
     )  # pyright: ignore[reportAssignmentType]
 
-    witholdingTax: list[pgf.TransactionCashWitholdingTax] = list(
-        filter(lambda line: isinstance(line, pgf.TransactionCashWitholdingTax), relevantCashTransactions)
+    witholdingTax: list[TradeEventCashTransactionWitholdingTax] = list(
+        filter(lambda line: isinstance(line, TradeEventCashTransactionWitholdingTax), relevantCashTransactions)
     )  # pyright: ignore[reportAssignmentType]
 
     processedDividendLines = processEdavkiLineItemsFromCashTransactions(dividendLines, witholdingTax)

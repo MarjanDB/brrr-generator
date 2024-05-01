@@ -7,17 +7,17 @@ from Core.FinancialEvents.Schemas.CommonFormats import (
 )
 from Core.FinancialEvents.Schemas.ProcessedGenericFormats import (
     GenericTaxLot,
-    GenericTradeEvent,
+    TradeEvent,
 )
 from Core.LotMatching.LotMatchingMethods.ProvidedLotMatchingMethod import (
     ProvidedLotMatchingMethod,
 )
 
-simpleLot = GenericTaxLot[GenericTradeEvent, GenericTradeEvent](
+simpleLot = GenericTaxLot[TradeEvent, TradeEvent](
     ID="ID",
     ISIN="ISIN",
     Quantity=1,
-    Acquired=GenericTradeEvent(
+    Acquired=TradeEvent(
         ID="ID",
         ISIN="ISIN",
         Ticker="TICKER",
@@ -34,7 +34,7 @@ simpleLot = GenericTaxLot[GenericTradeEvent, GenericTradeEvent](
             TaxTotal=0,
         ),
     ),
-    Sold=GenericTradeEvent(
+    Sold=TradeEvent(
         ID="ID2",
         ISIN="ISIN",
         Ticker="TICKER",
@@ -54,11 +54,11 @@ simpleLot = GenericTaxLot[GenericTradeEvent, GenericTradeEvent](
     ShortLongType=GenericShortLong.LONG,
 )
 
-underUtilizedLot = GenericTaxLot[GenericTradeEvent, GenericTradeEvent](
+underUtilizedLot = GenericTaxLot[TradeEvent, TradeEvent](
     ID="ID",
     ISIN="ISIN",
     Quantity=1,
-    Acquired=GenericTradeEvent(
+    Acquired=TradeEvent(
         ID="ID",
         ISIN="ISIN",
         Ticker="TICKER",
@@ -75,7 +75,7 @@ underUtilizedLot = GenericTaxLot[GenericTradeEvent, GenericTradeEvent](
             TaxTotal=0,
         ),
     ),
-    Sold=GenericTradeEvent(
+    Sold=TradeEvent(
         ID="ID2",
         ISIN="ISIN",
         Ticker="TICKER",

@@ -1,76 +1,20 @@
 from dataclasses import dataclass
-from typing import Generic, Sequence, TypeVar, Union
+from typing import Generic, Sequence, TypeVar
 
 from arrow import Arrow
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
+from Core.FinancialEvents.Schemas.Events import (
+    TradeEvent,
+    TradeEventDerivativeAcquired,
+    TradeEventDerivativeSold,
+    TradeEventStockAcquired,
+    TradeEventStockSold,
+    TransactionCash,
+)
 
-
-@dataclass
-class GenericTransactionCash:
-    AccountID: str
-    ReceivedDateTime: Arrow
-    ActionID: str
-    TransactionID: str
-    ExchangedMoney: cf.GenericMonetaryExchangeInformation
-
-
-@dataclass
-class TransactionCashDividend(GenericTransactionCash):
-    SecurityISIN: str
-    ListingExchange: str
-    DividendType: cf.GenericDividendType
-
-
-@dataclass
-class TransactionCashWitholdingTax(GenericTransactionCash):
-    SecurityISIN: str
-    ListingExchange: str
-
-
-TransactionCash = Union[TransactionCashDividend, TransactionCashWitholdingTax]
-
-
-@dataclass
-class GenericTradeEvent:
-    ID: str
-    ISIN: str
-    Ticker: str
-    AssetClass: cf.GenericAssetClass  # Trades can have to do with different Asset Classes (Stock, Options, ...)
-    Date: Arrow
-    Multiplier: float  # for Leveraged trades
-    ExchangedMoney: cf.GenericMonetaryExchangeInformation
-
-
-@dataclass
-class TradeEventStockAcquired(GenericTradeEvent):
-    AcquiredReason: cf.GenericTradeReportItemGainType
-    # Related: ??       # connect with corporate actions for better generation of reports
-
-
-@dataclass
-class TradeEventStockSold(GenericTradeEvent):
-    ...
-    # Related: ??       # connect with corporate actions for better generation of reports (mergers can lead to "sold" stocks)
-
-
-@dataclass
-class TradeEventDerivativeAcquired(GenericTradeEvent):
-    AcquiredReason: cf.GenericDerivativeReportItemGainType
-    # Related: ??       # connect with corporate actions for better generation of reports
-
-
-@dataclass
-class TradeEventDerivativeSold(GenericTradeEvent):
-    ...
-    # Related: ??       # connect with corporate actions for better generation of reports (mergers can lead to "sold" stocks)
-
-
-TradeEventDerivatives = Union[TradeEventDerivativeAcquired, TradeEventDerivativeSold]
-
-
-GenericTaxLotAcquiredEvent = TypeVar("GenericTaxLotAcquiredEvent", bound=GenericTradeEvent, covariant=True)
-GenericTaxLotSoldEvent = TypeVar("GenericTaxLotSoldEvent", bound=GenericTradeEvent, covariant=True)
+GenericTaxLotAcquiredEvent = TypeVar("GenericTaxLotAcquiredEvent", bound=TradeEvent, covariant=True)
+GenericTaxLotSoldEvent = TypeVar("GenericTaxLotSoldEvent", bound=TradeEvent, covariant=True)
 
 
 @dataclass
