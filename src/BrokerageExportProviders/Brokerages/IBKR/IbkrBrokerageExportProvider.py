@@ -8,7 +8,7 @@ import BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
 import BrokerageExportProviders.Brokerages.IBKR.Transforms.Extract as e
 import BrokerageExportProviders.Brokerages.IBKR.Transforms.Transform as t
 import BrokerageExportProviders.Common.CommonBrokerageExportProvider as cbep
-from StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
+from Core.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
 
 
 class IbkrBrokerageExportProvider(cbep.CommonBrokerageExportProvider[st.SegmentedTrades]):

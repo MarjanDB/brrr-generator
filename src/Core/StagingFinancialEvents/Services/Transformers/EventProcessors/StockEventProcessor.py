@@ -1,14 +1,14 @@
 from typing import Sequence
 
-import Core.FinancialEvents.Contracts.EventProcessor as ep
 import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-from StagingFinancialEvents.Schemas.Events import (
+from Core.StagingFinancialEvents.Contracts.EventProcessor import EventProcessor
+from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEvent,
     StagingTradeEventStockAcquired,
 )
 
 
-class StockEventProcessor(ep.EventProcessor[StagingTradeEvent, pgf.TradeEventStockAcquired | pgf.TradeEventStockSold]):
+class StockEventProcessor(EventProcessor[StagingTradeEvent, pgf.TradeEventStockAcquired | pgf.TradeEventStockSold]):
 
     # TODO: Create trade events based on corporate events
     def createMissingStockTradesFromCorporateActions(
