@@ -3,7 +3,7 @@ from typing import Sequence
 import arrow as ar
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.StagingFinancialEvents.Contracts.LotProcessor import LotProcessor
 from Core.StagingFinancialEvents.Schemas.Lots import StagingTaxLot
 
@@ -11,7 +11,7 @@ from Core.StagingFinancialEvents.Schemas.Lots import StagingTaxLot
 class DerivativeLotProcessor(
     LotProcessor[
         StagingTaxLot,
-        pgf.TradeTaxLotEventDerivative,
+        pgf.TaxLotDerivative,
         Sequence[pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold],
     ]
 ):
@@ -20,7 +20,7 @@ class DerivativeLotProcessor(
         self,
         input: StagingTaxLot,
         references: Sequence[pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold],
-    ) -> pgf.TradeTaxLotEventDerivative:
+    ) -> pgf.TaxLotDerivative:
         # print("Processing stock lot (ID: {})".format(lot.ID))
 
         allBuys: list[pgf.TradeEventDerivativeAcquired] = list(filter(lambda trade: isinstance(trade, pgf.TradeEventDerivativeAcquired), references))  # type: ignore
@@ -38,7 +38,7 @@ class DerivativeLotProcessor(
             print("Failed processing stock lot (ID: {}, ISIN: {}), found no match".format(input.ID, input.ISIN))
             raise StopIteration
 
-        processed = pgf.TradeTaxLotEventDerivative(
+        processed = pgf.TaxLotDerivative(
             ID=input.ID,
             ISIN=input.ISIN,
             Quantity=input.Quantity,

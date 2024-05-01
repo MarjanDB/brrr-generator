@@ -2,13 +2,13 @@ from typing import Sequence
 
 import pandas as pd
 
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
 import TaxAuthorityProvider.Schemas.Configuration as tc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.Common as common
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 
 
-def generateDataFrameReport(reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.UnderlyingGrouping]) -> pd.DataFrame:
+def generateDataFrameReport(reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.FinancialGrouping]) -> pd.DataFrame:
     convertedTrades = common.convertCashTransactionsToDivItems(reportConfig, data)
 
     def convertToDict(data: ss.EDavkiDividendReportLine):

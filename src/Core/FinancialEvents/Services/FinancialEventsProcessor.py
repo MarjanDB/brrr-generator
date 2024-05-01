@@ -1,15 +1,24 @@
 from typing import Sequence
 
-import Core.FinancialEvents.Contracts.GroupingProcessor as gp
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
+from Core.FinancialEvents.Utils.ProcessingUtils import ProcessingUtils
 from Core.LotMatching.LotMatchingMethods.ProvidedLotMatchingMethod import (
     ProvidedLotMatchingMethod,
 )
+from Core.LotMatching.Services.LotMatcher import LotMatcher
 
 
-class CountedGroupingProcessor(gp.GroupingProcessor[pgf.UnderlyingGrouping, pgf.UnderlyingGroupingWithTradesOfInterest]):
+class FinancialEventsProcessor:
 
-    def process(self, input: pgf.UnderlyingGrouping) -> pgf.UnderlyingGroupingWithTradesOfInterest:
+    def __init__(
+        self,
+        processingUtils: ProcessingUtils,
+        lotMatcher: LotMatcher,
+    ) -> None:
+        self.lotMatcher = lotMatcher
+        self.processingUtils = processingUtils
+
+    def process(self, input: pgf.FinancialGrouping) -> pgf.UnderlyingGroupingWithTradesOfInterest:
         stockLots = input.StockTaxLots
         derivativeLots = input.DerivativeTaxLots
 
@@ -32,7 +41,7 @@ class CountedGroupingProcessor(gp.GroupingProcessor[pgf.UnderlyingGrouping, pgf.
         return interestingGrouping
 
     def generateInterestingUnderlyingGroupings(
-        self, groupings: Sequence[pgf.UnderlyingGrouping]
+        self, groupings: Sequence[pgf.FinancialGrouping]
     ) -> Sequence[pgf.UnderlyingGroupingWithTradesOfInterest]:
         processedGroupings = list(map(self.process, groupings))
         return processedGroupings

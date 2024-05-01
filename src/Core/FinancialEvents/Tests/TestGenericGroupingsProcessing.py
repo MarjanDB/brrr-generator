@@ -1,8 +1,8 @@
 import arrow as ar
 
-import Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor as cgp
 import Core.FinancialEvents.Schemas.CommonFormats as cf
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
+import Core.FinancialEvents.Services.FinancialEventsProcessor as cgp
 import Core.FinancialEvents.Utils.ProcessingUtils as pu
 from Core.LotMatching.Services.LotMatcher import LotMatcher
 
@@ -45,7 +45,7 @@ simpleStockSold = pgf.TradeEventStockSold(
 )
 
 
-simpleStockLot = pgf.TradeTaxLotEventStock(
+simpleStockLot = pgf.TaxLotStock(
     ID="Lot",
     ISIN="US123",
     Quantity=1,
@@ -57,7 +57,7 @@ simpleStockLot = pgf.TradeTaxLotEventStock(
 
 class TestInterestingGroupingsProcessing:
     def testSingleStockLotMatching(self):
-        grouping = pgf.UnderlyingGrouping(
+        grouping = pgf.FinancialGrouping(
             ISIN="US123",
             CountryOfOrigin="US",
             UnderlyingCategory=cf.GenericCategory.REGULAR,
@@ -68,7 +68,7 @@ class TestInterestingGroupingsProcessing:
             CashTransactions=[],
         )
 
-        utils = cgp.CountedGroupingProcessor(pu.ProcessingUtils(), LotMatcher())
+        utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping])
 
@@ -84,7 +84,7 @@ class TestInterestingGroupingsProcessing:
         ), "There should be no derivative trades, since there were no derivative trades whatsoever"
 
     def testNoStockTradesMatching(self):
-        grouping = pgf.UnderlyingGrouping(
+        grouping = pgf.FinancialGrouping(
             ISIN="US123",
             CountryOfOrigin="US",
             UnderlyingCategory=cf.GenericCategory.REGULAR,
@@ -95,7 +95,7 @@ class TestInterestingGroupingsProcessing:
             CashTransactions=[],
         )
 
-        utils = cgp.CountedGroupingProcessor(pu.ProcessingUtils(), LotMatcher())
+        utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping])
 

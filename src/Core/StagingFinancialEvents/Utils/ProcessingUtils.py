@@ -2,9 +2,9 @@ from typing import Sequence, TypeVar
 
 import arrow as ar
 
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+from Core.StagingFinancialEvents.Schemas.Events import StagingTradeEvent
 
-GENERIC_TRADE_EVENT = TypeVar("GENERIC_TRADE_EVENT", bound=pgf.GenericTradeEvent)
+GENERIC_TRADE_EVENT = TypeVar("GENERIC_TRADE_EVENT", bound=StagingTradeEvent)
 
 
 class ProcessingUtils:

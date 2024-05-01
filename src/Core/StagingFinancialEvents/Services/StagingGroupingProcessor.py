@@ -1,6 +1,6 @@
 from typing import Sequence
 
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.StagingFinancialEvents.Contracts.EventProcessor import EventProcessor
 from Core.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
 from Core.StagingFinancialEvents.Services.Transformers.EventProcessors.CashTransactionEventProcessor import (
@@ -21,7 +21,7 @@ from Core.StagingFinancialEvents.Services.Transformers.LotProcessors.StockLotPro
 from Core.StagingFinancialEvents.Utils.ProcessingUtils import ProcessingUtils
 
 
-class StagingGroupingProcessor(EventProcessor[StagingFinancialGrouping, pgf.UnderlyingGrouping]):
+class StagingGroupingProcessor(EventProcessor[StagingFinancialGrouping, pgf.FinancialGrouping]):
     def __init__(self, utils: ProcessingUtils) -> None:
         self.stockProcessor = StockEventProcessor(utils)
         self.derivativeProcessor = DerivativeEventProcessor(utils)
@@ -29,7 +29,7 @@ class StagingGroupingProcessor(EventProcessor[StagingFinancialGrouping, pgf.Unde
         self.derivativeLotProcessor = DerivativeLotProcessor(utils)
         self.cashTransactionProcessor = CashTransactionEventProcessor(utils)
 
-    def process(self, input: StagingFinancialGrouping) -> pgf.UnderlyingGrouping:
+    def process(self, input: StagingFinancialGrouping) -> pgf.FinancialGrouping:
         stockTrades = input.StockTrades
         processedTrades = list(map(self.stockProcessor.process, stockTrades))
         tradesCausedByCorporateActions = list(self.stockProcessor.createMissingStockTradesFromCorporateActions())
@@ -55,7 +55,7 @@ class StagingGroupingProcessor(EventProcessor[StagingFinancialGrouping, pgf.Unde
         cashTransactions = input.CashTransactions
         processedCashTransactions = list(map(self.cashTransactionProcessor.process, cashTransactions))
 
-        processed = pgf.UnderlyingGrouping(
+        processed = pgf.FinancialGrouping(
             ISIN=input.ISIN,
             CountryOfOrigin=input.CountryOfOrigin,
             UnderlyingCategory=input.UnderlyingCategory,
@@ -67,6 +67,6 @@ class StagingGroupingProcessor(EventProcessor[StagingFinancialGrouping, pgf.Unde
         )
         return processed
 
-    def generateGenericGroupings(self, groupings: Sequence[StagingFinancialGrouping]) -> Sequence[pgf.UnderlyingGrouping]:
+    def generateGenericGroupings(self, groupings: Sequence[StagingFinancialGrouping]) -> Sequence[pgf.FinancialGrouping]:
         processedGroupings = list(map(self.process, groupings))
         return processedGroupings

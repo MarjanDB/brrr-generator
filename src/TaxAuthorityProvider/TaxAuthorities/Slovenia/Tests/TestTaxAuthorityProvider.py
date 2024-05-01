@@ -3,10 +3,14 @@ from lxml import etree
 
 import ConfigurationProvider.Configuration as cpc
 import Core.FinancialEvents.Schemas.CommonFormats as cf
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
 import TaxAuthorityProvider.Schemas.Configuration as tapc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.SlovenianTaxAuthorityProvider as tap
+from Core.FinancialEvents.Schemas.Events import (
+    TradeEventCashTransactionDividend,
+    TradeEventCashTransactionWitholdingTax,
+)
 
 simpleTaxPayer = cpc.TaxPayerInfo(
     taxNumber="taxNumber",
@@ -103,14 +107,13 @@ optionSold = pgf.TradeEventDerivativeSold(
     ),
 )
 
-cashTransactionDivided = pgf.TransactionCashDividend(
-    AccountID="ID",
-    ReceivedDateTime=arrow.get("2023-06-07"),
-    ActionID="DivAction",
-    TransactionID="TranId1",
-    SecurityISIN="ISIN",
-    ListingExchange="EXH",
-    DividendType=cf.GenericDividendType.ORDINARY,
+cashTransactionDivided = TradeEventCashTransactionDividend(
+    ID="ID",
+    ISIN="ISIN",
+    Ticker="Ticker",
+    AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+    Date=arrow.get("2023-06-07"),
+    Multiplier=1,
     ExchangedMoney=cf.GenericMonetaryExchangeInformation(
         UnderlyingCurrency="EUR",
         UnderlyingQuantity=1.0,
@@ -120,15 +123,19 @@ cashTransactionDivided = pgf.TransactionCashDividend(
         TaxCurrency="EUR",
         TaxTotal=0.0,
     ),
+    ActionID="DivAction",
+    TransactionID="TranId1",
+    ListingExchange="EXH",
+    DividendType=cf.GenericDividendType.ORDINARY,
 )
 
-cashTransactionWitholdingTax = pgf.TransactionCashWitholdingTax(
-    AccountID="ID",
-    ReceivedDateTime=arrow.get("2023-06-07"),
-    ActionID="DivAction",
-    TransactionID="TranId2",
-    SecurityISIN="ISIN",
-    ListingExchange="EXH",
+cashTransactionWitholdingTax = TradeEventCashTransactionWitholdingTax(
+    ID="ID",
+    ISIN="ISIN",
+    Ticker="Ticker",
+    AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+    Date=arrow.get("2023-06-07"),
+    Multiplier=1,
     ExchangedMoney=cf.GenericMonetaryExchangeInformation(
         UnderlyingCurrency="EUR",
         UnderlyingQuantity=1.0,
@@ -138,21 +145,22 @@ cashTransactionWitholdingTax = pgf.TransactionCashWitholdingTax(
         TaxCurrency="EUR",
         TaxTotal=0.0,
     ),
+    ActionID="DivAction",
+    TransactionID="TranId1",
+    ListingExchange="EXH",
 )
 
-testData = pgf.UnderlyingGrouping(
+testData = pgf.FinancialGrouping(
     ISIN="ISIN",
     CountryOfOrigin=None,
     UnderlyingCategory=cf.GenericCategory.REGULAR,
     StockTrades=[stockAcquired, stockSold],
     StockTaxLots=[
-        pgf.TradeTaxLotEventStock(
-            ID="ID1", ISIN="ISIN", Quantity=1.0, Acquired=stockAcquired, Sold=stockSold, ShortLongType=cf.GenericShortLong.LONG
-        )
+        pgf.TaxLotStock(ID="ID1", ISIN="ISIN", Quantity=1.0, Acquired=stockAcquired, Sold=stockSold, ShortLongType=cf.GenericShortLong.LONG)
     ],
     DerivativeTrades=[optionBought, optionSold],
     DerivativeTaxLots=[
-        pgf.TradeTaxLotEventDerivative(
+        pgf.TaxLotDerivative(
             ID="ID1", ISIN="ISIN", Quantity=1.0, Acquired=optionBought, Sold=optionSold, ShortLongType=cf.GenericShortLong.LONG
         )
     ],

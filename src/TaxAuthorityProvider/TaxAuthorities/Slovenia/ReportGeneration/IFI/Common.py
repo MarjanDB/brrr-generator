@@ -1,10 +1,11 @@
 from typing import Sequence
 
-import Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor as g
 import Core.FinancialEvents.Schemas.CommonFormats as cf
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
+import Core.FinancialEvents.Services.FinancialEventsProcessor as g
 import TaxAuthorityProvider.Schemas.Configuration as tc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
+from Core.FinancialEvents.Schemas.Events import TradeEventDerivative
 
 SECURITY_MAPPING: dict[cf.GenericDerivativeReportAssetClassType, ss.EDavkiDerivativeSecurityType] = {
     cf.GenericDerivativeReportAssetClassType.OPTION: ss.EDavkiDerivativeSecurityType.OPTION,
@@ -52,7 +53,7 @@ def convertSell(
 
 
 def convertEvent(
-    line: pgf.TradeEventDerivatives,
+    line: TradeEventDerivative,
 ) -> ss.EdavkiDerivativeReportSecurityLines:
     if isinstance(line, pgf.TradeEventDerivativeAcquired):
         return convertBuy(line)
@@ -61,7 +62,7 @@ def convertEvent(
 
 
 def convertTradesToIfiItems(
-    reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.UnderlyingGrouping], countedProcessor: g.CountedGroupingProcessor
+    reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.FinancialGrouping], countedProcessor: g.FinancialEventsProcessor
 ) -> list[ss.EDavkiGenericDerivativeReportItem]:
     converted: list[ss.EDavkiGenericDerivativeReportItem] = list()
     periodStart = reportConfig.fromDate
@@ -70,7 +71,7 @@ def convertTradesToIfiItems(
     for isinGrouping in data:
         ISIN = isinGrouping.ISIN
 
-        def isLotClosedInReportingPeriod(lot: pgf.TradeTaxLotEventDerivative) -> bool:
+        def isLotClosedInReportingPeriod(lot: pgf.TaxLotDerivative) -> bool:
             closedOn = lot.Sold.Date
 
             # lot was not closed during the reporting period, so its trades should not be included in the generated report
