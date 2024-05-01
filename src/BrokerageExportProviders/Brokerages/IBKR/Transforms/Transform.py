@@ -212,7 +212,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(
             Ticker=trade.UnderlyingSymbol,
             AssetClass=cf.GenericAssetClass.OPTION,  # TODO: Could also be stock but leveraged (multiplier)
             Multiplier=trade.Multiplier,
-            AcquiredReason=cf.GenericTradeReportItemGainType.BOUGHT,  # TODO: Determine reason for acquire
+            AcquiredReason=cf.GenericDerivativeReportItemGainType.BOUGHT,  # TODO: Determine reason for acquire
             Date=trade.DateTime,
             ExchangedMoney=cf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency=trade.Currency,
