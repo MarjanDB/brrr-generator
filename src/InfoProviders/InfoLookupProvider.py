@@ -31,8 +31,8 @@ class CountryLookupProvider:
     problematicCountryMappings: dict[str, str]
 
     def __init__(self):
-        definitionsPath = os.path.join(os.getcwd(), "src", "InfoProviders", "internationalTreaties.json")
-        problematicCountryMappingsFile = os.path.join(os.getcwd(), "src", "InfoProviders", "specialCountryMappings.json")
+        definitionsPath = os.path.join(os.getcwd(), "InfoProviders", "internationalTreaties.json")
+        problematicCountryMappingsFile = os.path.join(os.getcwd(), "InfoProviders", "specialCountryMappings.json")
 
         with open(definitionsPath, "r") as read_file:
             self.definitions = json.load(read_file)
@@ -121,12 +121,12 @@ class CompanyLookupProvider:
     isinToCompanyLookup: dict[str, dict[str, str]]
 
     def __init__(self):
-        definitionsPath = os.path.join(os.getcwd(), "src", "InfoProviders", "missingISINLookup.json")
+        definitionsPath = os.path.join(os.getcwd(), "InfoProviders", "missingISINLookup.json")
 
         with open(definitionsPath, "r") as read_file:
             self.isinToTickerLookup = dict(json.load(read_file))
 
-        definitionsPath = os.path.join(os.getcwd(), "src", "InfoProviders", "missingCompaniesLookup.json")
+        definitionsPath = os.path.join(os.getcwd(), "InfoProviders", "missingCompaniesLookup.json")
 
         with open(definitionsPath, "r") as read_file:
             self.isinToCompanyLookup = dict(json.load(read_file))
