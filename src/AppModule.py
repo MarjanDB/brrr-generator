@@ -7,6 +7,9 @@ from BrokerageExportProviders.BrokerageExportProvidersModule import (
 from ConfigurationProvider.ConfigurationModule import ConfigurationModule
 from Core.FinancialEvents.FinancialEventsModule import FinancialEventsModule
 from Core.LotMatching.LotMatchingModule import LotMatchingModule
+from Core.StagingFinancialEvents.StagingFinancialEventsModule import (
+    StagingFinancialEventsModule,
+)
 from InfoProviders.InfoProviderModule import InfoProviderModule
 
 
@@ -17,6 +20,7 @@ class AppModule(Module):
         self.install(BrokerageExportProvidersModule)
         self.install(ConfigurationModule)
         self.install(LotMatchingModule)
+        self.install(StagingFinancialEventsModule)
 
 
 appInjector = Injector([AppModule])

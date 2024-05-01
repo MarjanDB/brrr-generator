@@ -2,12 +2,12 @@ from dataclasses import dataclass
 from typing import Sequence
 
 from Core.FinancialEvents.Schemas.CommonFormats import GenericCategory
-from StagingFinancialEvents.Schemas.Events import (
+from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventDerivative,
     StagingTradeEventStock,
     StagingTransactionCash,
 )
-from StagingFinancialEvents.Schemas.Lots import StagingTaxLot
+from Core.StagingFinancialEvents.Schemas.Lots import StagingTaxLot
 
 
 @dataclass

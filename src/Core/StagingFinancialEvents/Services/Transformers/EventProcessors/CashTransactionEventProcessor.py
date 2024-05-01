@@ -1,16 +1,16 @@
-import Core.FinancialEvents.Contracts.EventProcessor as ep
 import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 from Core.FinancialEvents.Schemas.CommonFormats import (
     GenericMonetaryExchangeInformation,
 )
-from StagingFinancialEvents.Schemas.Events import (
+from Core.StagingFinancialEvents.Contracts.EventProcessor import EventProcessor
+from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventCashTransaction,
     StagingTradeEventCashTransactionDividend,
     StagingTradeEventCashTransactionWitholdingTax,
 )
 
 
-class CashTransactionEventProcessor(ep.EventProcessor[StagingTradeEventCashTransaction, pgf.TransactionCash]):
+class CashTransactionEventProcessor(EventProcessor[StagingTradeEventCashTransaction, pgf.TransactionCash]):
 
     def process(self, input: StagingTradeEventCashTransaction) -> pgf.TransactionCash:
         if isinstance(input, StagingTradeEventCashTransactionDividend):

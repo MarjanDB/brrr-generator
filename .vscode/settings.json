@@ -26,5 +26,4 @@
         },
     },
     "isort.args":["--profile", "black"],
-    "jupyter.notebookFileRoot": "${workspaceFolder}/src"
 }

@@ -1,31 +1,32 @@
 from typing import Sequence
 
-import Core.FinancialEvents.Contracts.EventProcessor as ep
-import Core.FinancialEvents.EventProcessors.DerivativeEventProcessor as dep
-import Core.FinancialEvents.EventProcessors.StockEventProcessor as sep
-import Core.FinancialEvents.LotProcessors.DerivativeLotProcessor as dlp
-import Core.FinancialEvents.LotProcessors.StockLotProcessor as slp
 import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import Core.FinancialEvents.Utils.ProcessingUtils as pu
-from Core.FinancialEvents.EventProcessors.CashTransactionEventProcessor import (
+from Core.StagingFinancialEvents.Contracts.EventProcessor import EventProcessor
+from Core.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
+from Core.StagingFinancialEvents.Services.Transformers.EventProcessors.CashTransactionEventProcessor import (
     CashTransactionEventProcessor,
 )
-from StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
+from Core.StagingFinancialEvents.Services.Transformers.EventProcessors.DerivativeEventProcessor import (
+    DerivativeEventProcessor,
+)
+from Core.StagingFinancialEvents.Services.Transformers.EventProcessors.StockEventProcessor import (
+    StockEventProcessor,
+)
+from Core.StagingFinancialEvents.Services.Transformers.LotProcessors.DerivativeLotProcessor import (
+    DerivativeLotProcessor,
+)
+from Core.StagingFinancialEvents.Services.Transformers.LotProcessors.StockLotProcessor import (
+    StockLotProcessor,
+)
+from Core.StagingFinancialEvents.Utils.ProcessingUtils import ProcessingUtils
 
 
-class StagingGroupingProcessor(ep.EventProcessor[StagingFinancialGrouping, pgf.UnderlyingGrouping]):
-    stockProcessor: sep.StockEventProcessor
-    derivativeProcessor: dep.DerivativeEventProcessor
-
-    stockLotProcessor: slp.StockLotProcessor
-    derivativeLotProcessor: dlp.DerivativeLotProcessor
-    cashTransactionProcessor: CashTransactionEventProcessor
-
-    def __init__(self, utils: pu.ProcessingUtils) -> None:
-        self.stockProcessor = sep.StockEventProcessor(utils)
-        self.derivativeProcessor = dep.DerivativeEventProcessor(utils)
-        self.stockLotProcessor = slp.StockLotProcessor(utils)
-        self.derivativeLotProcessor = dlp.DerivativeLotProcessor(utils)
+class StagingGroupingProcessor(EventProcessor[StagingFinancialGrouping, pgf.UnderlyingGrouping]):
+    def __init__(self, utils: ProcessingUtils) -> None:
+        self.stockProcessor = StockEventProcessor(utils)
+        self.derivativeProcessor = DerivativeEventProcessor(utils)
+        self.stockLotProcessor = StockLotProcessor(utils)
+        self.derivativeLotProcessor = DerivativeLotProcessor(utils)
         self.cashTransactionProcessor = CashTransactionEventProcessor(utils)
 
     def process(self, input: StagingFinancialGrouping) -> pgf.UnderlyingGrouping:

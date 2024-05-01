@@ -5,7 +5,7 @@ from typing import Generic, Sequence, TypeVar
 import BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as s
 import BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
 import Core.FinancialEvents.Schemas.CommonFormats as cf
-from StagingFinancialEvents.Schemas.Events import (
+from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEvent,
     StagingTradeEventCashTransactionDividend,
     StagingTradeEventCashTransactionWitholdingTax,
@@ -17,8 +17,8 @@ from StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventStockSold,
     StagingTransactionCash,
 )
-from StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
-from StagingFinancialEvents.Schemas.Lots import (
+from Core.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
+from Core.StagingFinancialEvents.Schemas.Lots import (
     StagingTaxLot,
     StagingTaxLotMatchingDetails,
 )

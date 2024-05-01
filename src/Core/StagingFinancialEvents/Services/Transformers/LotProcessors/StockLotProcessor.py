@@ -2,29 +2,25 @@ from typing import Sequence
 
 import arrow as ar
 
-import Core.FinancialEvents.Contracts.LotProcessor as lp
 import Core.FinancialEvents.Schemas.CommonFormats as cf
 import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-from StagingFinancialEvents.Schemas.Lots import StagingTaxLot
+from Core.StagingFinancialEvents.Contracts.LotProcessor import LotProcessor
+from Core.StagingFinancialEvents.Schemas.Lots import StagingTaxLot
 
 
-class DerivativeLotProcessor(
-    lp.LotProcessor[
-        StagingTaxLot,
-        pgf.TradeTaxLotEventDerivative,
-        Sequence[pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold],
-    ]
+class StockLotProcessor(
+    LotProcessor[StagingTaxLot, pgf.TradeTaxLotEventStock, Sequence[pgf.TradeEventStockAcquired | pgf.TradeEventStockSold]]
 ):
 
     def process(
         self,
         input: StagingTaxLot,
-        references: Sequence[pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold],
-    ) -> pgf.TradeTaxLotEventDerivative:
+        references: Sequence[pgf.TradeEventStockAcquired | pgf.TradeEventStockSold],
+    ) -> pgf.TradeTaxLotEventStock:
         # print("Processing stock lot (ID: {})".format(lot.ID))
 
-        allBuys: list[pgf.TradeEventDerivativeAcquired] = list(filter(lambda trade: isinstance(trade, pgf.TradeEventDerivativeAcquired), references))  # type: ignore
-        allSells: list[pgf.TradeEventDerivativeSold] = list(filter(lambda trade: isinstance(trade, pgf.TradeEventDerivativeSold), references))  # type: ignore
+        allBuys: list[pgf.TradeEventStockAcquired] = list(filter(lambda trade: isinstance(trade, pgf.TradeEventStockAcquired), references))  # type: ignore
+        allSells: list[pgf.TradeEventStockSold] = list(filter(lambda trade: isinstance(trade, pgf.TradeEventStockSold), references))  # type: ignore
 
         # TODO: Validate returns since buys and sells are merged
         # TODO: What to do when no match is found?
@@ -38,7 +34,7 @@ class DerivativeLotProcessor(
             print("Failed processing stock lot (ID: {}, ISIN: {}), found no match".format(input.ID, input.ISIN))
             raise StopIteration
 
-        processed = pgf.TradeTaxLotEventDerivative(
+        processed = pgf.TradeTaxLotEventStock(
             ID=input.ID,
             ISIN=input.ISIN,
             Quantity=input.Quantity,

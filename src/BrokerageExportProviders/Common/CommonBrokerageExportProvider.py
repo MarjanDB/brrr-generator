@@ -4,7 +4,7 @@ from typing import Any, Generic, Sequence, TypeVar
 from BrokerageExportProviders.Contracts.CommonBrokerageEvents import (
     CommonBrokerageEvents,
 )
-from StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
+from Core.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
 
 BROKERAGE_EVENTS_TYPE = TypeVar("BROKERAGE_EVENTS_TYPE", bound=CommonBrokerageEvents[Any, Any, Any, Any, Any, Any])
 
