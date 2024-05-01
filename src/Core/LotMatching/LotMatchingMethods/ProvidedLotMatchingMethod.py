@@ -1,16 +1,16 @@
 from typing import Sequence
 
 from Core.FinancialEvents.Schemas.Events import TradeEvent
-from Core.FinancialEvents.Schemas.ProcessedGenericFormats import GenericTaxLot
+from Core.FinancialEvents.Schemas.Lots import TaxLot
 from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
 from Core.LotMatching.Schemas.Lot import Lot, LotAcquired, LotSold
 from Core.LotMatching.Schemas.Trade import Trade
 
 
 class ProvidedLotMatchingMethod(LotMatchingMethod):
-    def __init__(self, predefinedLots: Sequence[GenericTaxLot[TradeEvent, TradeEvent]]) -> None:
+    def __init__(self, predefinedLots: Sequence[TaxLot[TradeEvent, TradeEvent]]) -> None:
         super().__init__()
-        self.predefinedLots: Sequence[GenericTaxLot[TradeEvent, TradeEvent]] = predefinedLots
+        self.predefinedLots: Sequence[TaxLot[TradeEvent, TradeEvent]] = predefinedLots
 
     def performMatching(self, events: Sequence[Trade]) -> Sequence[Lot]:
 

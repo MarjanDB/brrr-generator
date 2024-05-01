@@ -38,7 +38,7 @@ def convertTradesToKdvpItems(
     for isinGrouping in data:
         ISIN = isinGrouping.ISIN
 
-        def isLotClosedInReportingPeriod(lot: pgf.TradeTaxLotEventStock) -> bool:
+        def isLotClosedInReportingPeriod(lot: pgf.TaxLotStock) -> bool:
             closedOn = lot.Sold.Date
 
             # lot was not closed during the reporting period, so its trades should not be included in the generated report

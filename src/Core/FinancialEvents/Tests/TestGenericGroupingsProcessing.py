@@ -45,7 +45,7 @@ simpleStockSold = pgf.TradeEventStockSold(
 )
 
 
-simpleStockLot = pgf.TradeTaxLotEventStock(
+simpleStockLot = pgf.TaxLotStock(
     ID="Lot",
     ISIN="US123",
     Quantity=1,

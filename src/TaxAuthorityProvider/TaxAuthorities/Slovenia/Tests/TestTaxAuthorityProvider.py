@@ -156,13 +156,11 @@ testData = pgf.UnderlyingGrouping(
     UnderlyingCategory=cf.GenericCategory.REGULAR,
     StockTrades=[stockAcquired, stockSold],
     StockTaxLots=[
-        pgf.TradeTaxLotEventStock(
-            ID="ID1", ISIN="ISIN", Quantity=1.0, Acquired=stockAcquired, Sold=stockSold, ShortLongType=cf.GenericShortLong.LONG
-        )
+        pgf.TaxLotStock(ID="ID1", ISIN="ISIN", Quantity=1.0, Acquired=stockAcquired, Sold=stockSold, ShortLongType=cf.GenericShortLong.LONG)
     ],
     DerivativeTrades=[optionBought, optionSold],
     DerivativeTaxLots=[
-        pgf.TradeTaxLotEventDerivative(
+        pgf.TaxLotDerivative(
             ID="ID1", ISIN="ISIN", Quantity=1.0, Acquired=optionBought, Sold=optionSold, ShortLongType=cf.GenericShortLong.LONG
         )
     ],

@@ -4,12 +4,12 @@ from typing import Sequence, TypeVar
 
 from Core.FinancialEvents.Schemas.CommonFormats import GenericShortLong
 from Core.FinancialEvents.Schemas.Events import TradeEvent
-from Core.FinancialEvents.Schemas.ProcessedGenericFormats import GenericTaxLot
+from Core.FinancialEvents.Schemas.Lots import TaxLot
 from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
 from Core.LotMatching.Schemas.Lot import Lot
 from Core.LotMatching.Schemas.Trade import Trade
 
-TAX_LOT_TYPE = TypeVar("TAX_LOT_TYPE", bound=GenericTaxLot[TradeEvent, TradeEvent], covariant=True)
+TAX_LOT_TYPE = TypeVar("TAX_LOT_TYPE", bound=TaxLot[TradeEvent, TradeEvent], covariant=True)
 
 
 @dataclass
@@ -20,7 +20,7 @@ class LotMatchingDetails:
 
 @dataclass
 class GenericLotMatchingDetails:
-    Lots: Sequence[GenericTaxLot[TradeEvent, TradeEvent]]
+    Lots: Sequence[TaxLot[TradeEvent, TradeEvent]]
     Trades: Sequence[TradeEvent]
 
 
@@ -70,7 +70,7 @@ class LotMatcher:
             convertedGeneratedMappings[trade.ID] = trade
 
         # TODO: Get rid of ShortLong type on GenericTaxLot, this is going to have to live on some other layer (or there is a missing layer between the entities here)
-        def convertLot(lot: Lot) -> GenericTaxLot[TradeEvent, TradeEvent]:
+        def convertLot(lot: Lot) -> TaxLot[TradeEvent, TradeEvent]:
             lotId = lot.Acquired.Relation.ID
             acquiredTrade = convertedGeneratedMappings.get(lot.Acquired.Relation.ID)
             soldTrade = convertedGeneratedMappings.get(lot.Sold.Relation.ID)
@@ -78,7 +78,7 @@ class LotMatcher:
             if acquiredTrade is None or soldTrade is None:
                 raise ValueError("Acquired Trade or Sold Trade is missing lookup")
 
-            newLot = GenericTaxLot(
+            newLot = TaxLot(
                 ID=lotId,
                 ISIN=acquiredTrade.ISIN,
                 Quantity=lot.Quantity,

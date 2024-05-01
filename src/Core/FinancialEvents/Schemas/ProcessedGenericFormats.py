@@ -1,38 +1,17 @@
 from dataclasses import dataclass
-from typing import Generic, Sequence, TypeVar
+from typing import Sequence
 
 from arrow import Arrow
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
 from Core.FinancialEvents.Schemas.Events import (
-    TradeEvent,
     TradeEventDerivativeAcquired,
     TradeEventDerivativeSold,
     TradeEventStockAcquired,
     TradeEventStockSold,
     TransactionCash,
 )
-
-GenericTaxLotAcquiredEvent = TypeVar("GenericTaxLotAcquiredEvent", bound=TradeEvent, covariant=True)
-GenericTaxLotSoldEvent = TypeVar("GenericTaxLotSoldEvent", bound=TradeEvent, covariant=True)
-
-
-@dataclass
-class GenericTaxLot(Generic[GenericTaxLotAcquiredEvent, GenericTaxLotSoldEvent]):
-    ID: str
-    ISIN: str
-    Quantity: float
-    Acquired: GenericTaxLotAcquiredEvent
-    Sold: GenericTaxLotSoldEvent
-    ShortLongType: cf.GenericShortLong  # Some trades can be SHORTING, meaning you first sell and then buy back
-
-
-@dataclass
-class TradeTaxLotEventStock(GenericTaxLot[TradeEventStockAcquired, TradeEventStockSold]): ...
-
-
-@dataclass
-class TradeTaxLotEventDerivative(GenericTaxLot[TradeEventDerivativeAcquired, TradeEventDerivativeSold]): ...
+from Core.FinancialEvents.Schemas.Lots import TaxLotDerivative, TaxLotStock
 
 
 @dataclass
@@ -43,10 +22,10 @@ class UnderlyingGrouping:
     UnderlyingCategory: cf.GenericCategory
 
     StockTrades: Sequence[TradeEventStockAcquired | TradeEventStockSold]
-    StockTaxLots: Sequence[TradeTaxLotEventStock]
+    StockTaxLots: Sequence[TaxLotStock]
 
     DerivativeTrades: Sequence[TradeEventDerivativeAcquired | TradeEventDerivativeSold]
-    DerivativeTaxLots: Sequence[TradeTaxLotEventDerivative]
+    DerivativeTaxLots: Sequence[TaxLotDerivative]
 
     CashTransactions: Sequence[TransactionCash]
 

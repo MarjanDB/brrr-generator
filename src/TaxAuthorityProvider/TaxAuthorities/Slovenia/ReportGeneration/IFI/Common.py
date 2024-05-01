@@ -71,7 +71,7 @@ def convertTradesToIfiItems(
     for isinGrouping in data:
         ISIN = isinGrouping.ISIN
 
-        def isLotClosedInReportingPeriod(lot: pgf.TradeTaxLotEventDerivative) -> bool:
+        def isLotClosedInReportingPeriod(lot: pgf.TaxLotDerivative) -> bool:
             closedOn = lot.Sold.Date
 
             # lot was not closed during the reporting period, so its trades should not be included in the generated report

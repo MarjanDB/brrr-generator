@@ -8,15 +8,13 @@ from Core.StagingFinancialEvents.Contracts.LotProcessor import LotProcessor
 from Core.StagingFinancialEvents.Schemas.Lots import StagingTaxLot
 
 
-class StockLotProcessor(
-    LotProcessor[StagingTaxLot, pgf.TradeTaxLotEventStock, Sequence[pgf.TradeEventStockAcquired | pgf.TradeEventStockSold]]
-):
+class StockLotProcessor(LotProcessor[StagingTaxLot, pgf.TaxLotStock, Sequence[pgf.TradeEventStockAcquired | pgf.TradeEventStockSold]]):
 
     def process(
         self,
         input: StagingTaxLot,
         references: Sequence[pgf.TradeEventStockAcquired | pgf.TradeEventStockSold],
-    ) -> pgf.TradeTaxLotEventStock:
+    ) -> pgf.TaxLotStock:
         # print("Processing stock lot (ID: {})".format(lot.ID))
 
         allBuys: list[pgf.TradeEventStockAcquired] = list(filter(lambda trade: isinstance(trade, pgf.TradeEventStockAcquired), references))  # type: ignore
@@ -34,7 +32,7 @@ class StockLotProcessor(
             print("Failed processing stock lot (ID: {}, ISIN: {}), found no match".format(input.ID, input.ISIN))
             raise StopIteration
 
-        processed = pgf.TradeTaxLotEventStock(
+        processed = pgf.TaxLotStock(
             ID=input.ID,
             ISIN=input.ISIN,
             Quantity=input.Quantity,
