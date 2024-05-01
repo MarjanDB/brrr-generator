@@ -5,6 +5,7 @@ from arrow import Arrow
 
 from src.Core.FinancialEvents.Schemas.CommonFormats import (
     GenericAssetClass,
+    GenericDerivativeReportItemGainType,
     GenericDividendType,
     GenericMonetaryExchangeInformation,
     GenericTradeReportItemGainType,
@@ -39,7 +40,7 @@ StagingTradeEventStock = Union[StagingTradeEventStockAcquired, StagingTradeEvent
 
 @dataclass
 class StagingTradeEventDerivativeAcquired(StagingTradeEvent):
-    AcquiredReason: GenericTradeReportItemGainType
+    AcquiredReason: GenericDerivativeReportItemGainType
     # Related: ??       # connect with corporate actions for better generation of reports
 
 

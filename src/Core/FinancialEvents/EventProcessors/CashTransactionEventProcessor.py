@@ -15,13 +15,13 @@ class CashTransactionEventProcessor(ep.EventProcessor[StagingTradeEventCashTrans
     def process(self, input: StagingTradeEventCashTransaction) -> pgf.TransactionCash:
         if isinstance(input, StagingTradeEventCashTransactionDividend):
             converted = pgf.TransactionCashDividend(
-                AccountID=input.AccountID,
-                ReceivedDateTime=input.ReceivedDateTime,
+                AccountID="",
+                ReceivedDateTime=input.Date,
                 ActionID=input.ActionID,
                 TransactionID=input.TransactionID,
                 ListingExchange=input.ListingExchange,
                 DividendType=input.DividendType,
-                SecurityISIN=input.SecurityISIN,
+                SecurityISIN=input.ISIN,
                 ExchangedMoney=GenericMonetaryExchangeInformation(
                     UnderlyingQuantity=input.ExchangedMoney.UnderlyingQuantity,
                     UnderlyingTradePrice=input.ExchangedMoney.UnderlyingTradePrice,
@@ -36,12 +36,12 @@ class CashTransactionEventProcessor(ep.EventProcessor[StagingTradeEventCashTrans
 
         if isinstance(input, StagingTradeEventCashTransactionWitholdingTax):  # pyright: ignore[reportUnnecessaryIsInstance]
             converted = pgf.TransactionCashWitholdingTax(
-                AccountID=input.AccountID,
-                ReceivedDateTime=input.ReceivedDateTime,
+                AccountID="",
+                ReceivedDateTime=input.Date,
                 ActionID=input.ActionID,
                 TransactionID=input.TransactionID,
                 ListingExchange=input.ListingExchange,
-                SecurityISIN=input.SecurityISIN,
+                SecurityISIN=input.ISIN,
                 ExchangedMoney=GenericMonetaryExchangeInformation(
                     UnderlyingQuantity=input.ExchangedMoney.UnderlyingQuantity,
                     UnderlyingTradePrice=input.ExchangedMoney.UnderlyingTradePrice,
