@@ -2,10 +2,10 @@ import arrow as ar
 import pytest
 
 import src.Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor as cgp
-import src.Core.FinancialEvents.GroupingProcessor.StagingGroupingProcessor as sgp
 import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
 import src.Core.FinancialEvents.Utils.ProcessingUtils as pu
+import src.StagingFinancialEvents.Services.StagingGroupingProcessor as sgp
 from src.Core.LotMatching.Services.LotMatcher import LotMatcher
 from src.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventDerivativeAcquired,
