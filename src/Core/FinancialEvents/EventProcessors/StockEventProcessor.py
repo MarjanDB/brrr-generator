@@ -2,10 +2,13 @@ from typing import Sequence
 
 import src.Core.FinancialEvents.Contracts.EventProcessor as ep
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
+from src.StagingFinancialEvents.Schemas.Events import (
+    StagingTradeEvent,
+    StagingTradeEventStockAcquired,
+)
 
 
-class StockEventProcessor(ep.EventProcessor[sgf.GenericTradeEventStaging, pgf.TradeEventStockAcquired | pgf.TradeEventStockSold]):
+class StockEventProcessor(ep.EventProcessor[StagingTradeEvent, pgf.TradeEventStockAcquired | pgf.TradeEventStockSold]):
 
     # TODO: Create trade events based on corporate events
     def createMissingStockTradesFromCorporateActions(
@@ -13,8 +16,8 @@ class StockEventProcessor(ep.EventProcessor[sgf.GenericTradeEventStaging, pgf.Tr
     ) -> Sequence[pgf.TradeEventStockAcquired | pgf.TradeEventStockSold]:
         return []
 
-    def process(self, input: sgf.GenericTradeEventStaging) -> pgf.TradeEventStockAcquired | pgf.TradeEventStockSold:
-        if isinstance(input, sgf.TradeEventStagingStockAcquired):
+    def process(self, input: StagingTradeEvent) -> pgf.TradeEventStockAcquired | pgf.TradeEventStockSold:
+        if isinstance(input, StagingTradeEventStockAcquired):
             converted = pgf.TradeEventStockAcquired(
                 ID=input.ID,
                 ISIN=input.ISIN,

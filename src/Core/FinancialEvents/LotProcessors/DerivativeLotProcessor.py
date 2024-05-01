@@ -5,12 +5,12 @@ import arrow as ar
 import src.Core.FinancialEvents.Contracts.LotProcessor as lp
 import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
+from src.StagingFinancialEvents.Schemas.Lots import StagingTaxLot
 
 
 class DerivativeLotProcessor(
     lp.LotProcessor[
-        sgf.GenericTaxLotEventStaging,
+        StagingTaxLot,
         pgf.TradeTaxLotEventDerivative,
         Sequence[pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold],
     ]
@@ -18,7 +18,7 @@ class DerivativeLotProcessor(
 
     def process(
         self,
-        input: sgf.GenericTaxLotEventStaging,
+        input: StagingTaxLot,
         references: Sequence[pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold],
     ) -> pgf.TradeTaxLotEventDerivative:
         # print("Processing stock lot (ID: {})".format(lot.ID))

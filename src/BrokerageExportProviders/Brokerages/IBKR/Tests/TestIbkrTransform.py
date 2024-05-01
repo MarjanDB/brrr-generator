@@ -273,7 +273,7 @@ class TestIbkrTransformCashTransaction:
         extracted = extract[0]
 
         assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
-        assert extracted.CashTransactions[0].SecurityISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
+        assert extracted.CashTransactions[0].ISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
         assert isinstance(extracted.CashTransactions[0], StagingTradeEventCashTransactionDividend), "Dividend is of a dividend line type"
         assert (
             extracted.CashTransactions[0].ExchangedMoney.UnderlyingTradePrice == dividend.Amount * dividend.FXRateToBase
@@ -297,7 +297,7 @@ class TestIbkrTransformCashTransaction:
         extracted = extract[0]
 
         assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
-        assert extracted.CashTransactions[0].SecurityISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
+        assert extracted.CashTransactions[0].ISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
         assert isinstance(extracted.CashTransactions[0], TransactionCashWitholdingTax), "WitholdingTax is of a witholdingTax line type"
         assert (
             extracted.CashTransactions[0].ExchangedMoney.UnderlyingTradePrice == witholdingTax.Amount * witholdingTax.FXRateToBase
