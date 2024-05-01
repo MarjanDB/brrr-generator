@@ -4,11 +4,11 @@ from typing import Sequence
 
 from lxml import etree
 
-import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
-import src.BrokerageExportProviders.Brokerages.IBKR.Transforms.Extract as e
-import src.BrokerageExportProviders.Brokerages.IBKR.Transforms.Transform as t
-import src.BrokerageExportProviders.Common.CommonBrokerageExportProvider as cbep
-from src.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
+import BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
+import BrokerageExportProviders.Brokerages.IBKR.Transforms.Extract as e
+import BrokerageExportProviders.Brokerages.IBKR.Transforms.Transform as t
+import BrokerageExportProviders.Common.CommonBrokerageExportProvider as cbep
+from StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
 
 
 class IbkrBrokerageExportProvider(cbep.CommonBrokerageExportProvider[st.SegmentedTrades]):

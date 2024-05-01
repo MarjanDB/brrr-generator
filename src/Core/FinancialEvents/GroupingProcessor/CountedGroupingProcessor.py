@@ -1,8 +1,8 @@
 from typing import Sequence
 
-import src.Core.FinancialEvents.Contracts.GroupingProcessor as gp
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-from src.Core.LotMatching.LotMatchingMethods.ProvidedLotMatchingMethod import (
+import Core.FinancialEvents.Contracts.GroupingProcessor as gp
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+from Core.LotMatching.LotMatchingMethods.ProvidedLotMatchingMethod import (
     ProvidedLotMatchingMethod,
 )
 

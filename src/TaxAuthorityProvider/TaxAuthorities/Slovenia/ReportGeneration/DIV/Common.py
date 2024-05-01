@@ -3,11 +3,11 @@ from typing import Sequence
 
 from arrow import Arrow
 
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.TaxAuthorityProvider.Schemas.Configuration as tc
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
-from src.AppModule import appInjector
-from src.InfoProviders.InfoLookupProvider import (
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import TaxAuthorityProvider.Schemas.Configuration as tc
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
+from AppModule import appInjector
+from InfoProviders.InfoLookupProvider import (
     CompanyInfo,
     CompanyLookupProvider,
     CountryLookupProvider,

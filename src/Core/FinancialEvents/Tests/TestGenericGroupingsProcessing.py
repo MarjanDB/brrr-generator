@@ -1,20 +1,20 @@
 import arrow as ar
 import pytest
 
-import src.Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor as cgp
-import src.Core.FinancialEvents.Schemas.CommonFormats as cf
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.Core.FinancialEvents.Utils.ProcessingUtils as pu
-import src.StagingFinancialEvents.Services.StagingGroupingProcessor as sgp
-from src.Core.LotMatching.Services.LotMatcher import LotMatcher
-from src.StagingFinancialEvents.Schemas.Events import (
+import Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor as cgp
+import Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Utils.ProcessingUtils as pu
+import StagingFinancialEvents.Services.StagingGroupingProcessor as sgp
+from Core.LotMatching.Services.LotMatcher import LotMatcher
+from StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventDerivativeAcquired,
     StagingTradeEventDerivativeSold,
     StagingTradeEventStockAcquired,
     StagingTradeEventStockSold,
 )
-from src.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
-from src.StagingFinancialEvents.Schemas.Lots import (
+from StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
+from StagingFinancialEvents.Schemas.Lots import (
     StagingTaxLot,
     StagingTaxLotMatchingDetails,
 )

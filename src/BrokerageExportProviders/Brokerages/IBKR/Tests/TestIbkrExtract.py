@@ -3,9 +3,9 @@ import pathlib
 
 from lxml import etree
 
-import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as es
-import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
-import src.BrokerageExportProviders.Brokerages.IBKR.Transforms.Extract as ex
+import BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as es
+import BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
+import BrokerageExportProviders.Brokerages.IBKR.Transforms.Extract as ex
 
 locationOfFiles = pathlib.Path(__file__).parent
 simpleStockTradeXml = os.path.join(locationOfFiles, "SimpleStockTrade.xml")

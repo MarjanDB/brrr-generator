@@ -4,17 +4,17 @@ import arrow
 import pandas as pd
 from lxml import etree
 
-import src.ConfigurationProvider.Configuration as cpc
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.TaxAuthorityProvider.Common.TaxAuthorityProvider as tap
-import src.TaxAuthorityProvider.Schemas.Configuration as c
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.CSV_Doh_DIV as csv_div
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.XML_Doh_DIV as xml_div
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.IFI.CSV_D_IFI as csv_ifi
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.IFI.XML_D_IFI as xml_ifi
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.CSV_Doh_KDVP as csv_kdvp
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.XML_Doh_KDVP as xml_kdvp
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
+import ConfigurationProvider.Configuration as cpc
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import TaxAuthorityProvider.Common.TaxAuthorityProvider as tap
+import TaxAuthorityProvider.Schemas.Configuration as c
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.CSV_Doh_DIV as csv_div
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.XML_Doh_DIV as xml_div
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.IFI.CSV_D_IFI as csv_ifi
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.IFI.XML_D_IFI as xml_ifi
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.CSV_Doh_KDVP as csv_kdvp
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.XML_Doh_KDVP as xml_kdvp
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
 
 
 class SlovenianTaxAuthorityProvider(

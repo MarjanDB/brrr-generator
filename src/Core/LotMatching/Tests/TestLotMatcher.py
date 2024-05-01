@@ -3,10 +3,10 @@ from unittest.mock import MagicMock
 
 from arrow import get
 
-from src.Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
-from src.Core.LotMatching.Schemas.Lot import Lot
-from src.Core.LotMatching.Schemas.Trade import Trade
-from src.Core.LotMatching.Services.LotMatcher import LotMatcher
+from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
+from Core.LotMatching.Schemas.Lot import Lot
+from Core.LotMatching.Schemas.Trade import Trade
+from Core.LotMatching.Services.LotMatcher import LotMatcher
 
 
 class FakeLotMatchingMethod(LotMatchingMethod):

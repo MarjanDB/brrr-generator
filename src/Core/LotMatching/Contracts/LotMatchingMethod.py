@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Sequence
 
-from src.Core.LotMatching.Schemas.Lot import Lot
-from src.Core.LotMatching.Schemas.Trade import Trade
-from src.Core.LotMatching.Services.TradeAssociationTracker import (
+from Core.LotMatching.Schemas.Lot import Lot
+from Core.LotMatching.Schemas.Trade import Trade
+from Core.LotMatching.Services.TradeAssociationTracker import (
     TradeAssociationTracker,
 )
 

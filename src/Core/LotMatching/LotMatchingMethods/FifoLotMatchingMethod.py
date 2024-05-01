@@ -1,8 +1,8 @@
 from typing import Sequence
 
-from src.Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
-from src.Core.LotMatching.Schemas.Lot import Lot
-from src.Core.LotMatching.Schemas.Trade import Trade
+from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
+from Core.LotMatching.Schemas.Lot import Lot
+from Core.LotMatching.Schemas.Trade import Trade
 
 
 class FifoLotMatchingMethod(LotMatchingMethod):

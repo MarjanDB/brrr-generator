@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from arrow import Arrow
 
-from src.Core.FinancialEvents.Schemas.CommonFormats import GenericShortLong
+from Core.FinancialEvents.Schemas.CommonFormats import GenericShortLong
 
 
 @dataclass

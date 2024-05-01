@@ -3,7 +3,7 @@ from typing import Generic, Sequence, TypeVar, Union
 
 from arrow import Arrow
 
-import src.Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.FinancialEvents.Schemas.CommonFormats as cf
 
 
 @dataclass

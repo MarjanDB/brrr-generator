@@ -1,12 +1,12 @@
 from typing import Sequence
 
-from src.Core.FinancialEvents.Schemas.ProcessedGenericFormats import (
+from Core.FinancialEvents.Schemas.ProcessedGenericFormats import (
     GenericTaxLot,
     GenericTradeEvent,
 )
-from src.Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
-from src.Core.LotMatching.Schemas.Lot import Lot, LotAcquired, LotSold
-from src.Core.LotMatching.Schemas.Trade import Trade
+from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
+from Core.LotMatching.Schemas.Lot import Lot, LotAcquired, LotSold
+from Core.LotMatching.Schemas.Trade import Trade
 
 
 class ProvidedLotMatchingMethod(LotMatchingMethod):

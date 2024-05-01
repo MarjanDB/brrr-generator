@@ -1,12 +1,12 @@
 import arrow
 from lxml import etree
 
-import src.ConfigurationProvider.Configuration as cpc
-import src.Core.FinancialEvents.Schemas.CommonFormats as cf
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.TaxAuthorityProvider.Schemas.Configuration as tapc
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
-import src.TaxAuthorityProvider.TaxAuthorities.Slovenia.SlovenianTaxAuthorityProvider as tap
+import ConfigurationProvider.Configuration as cpc
+import Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import TaxAuthorityProvider.Schemas.Configuration as tapc
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.SlovenianTaxAuthorityProvider as tap
 
 simpleTaxPayer = cpc.TaxPayerInfo(
     taxNumber="taxNumber",

@@ -1,6 +1,6 @@
 from opyoid.bindings.module import Module
 
-from src.Core.LotMatching.Services.LotMatcher import LotMatcher
+from Core.LotMatching.Services.LotMatcher import LotMatcher
 
 
 class LotMatchingModule(Module):

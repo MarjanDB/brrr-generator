@@ -1,23 +1,23 @@
 from opyoid.bindings.module import Module
 
-from src.Core.FinancialEvents.EventProcessors.CashTransactionEventProcessor import (
+from Core.FinancialEvents.EventProcessors.CashTransactionEventProcessor import (
     CashTransactionEventProcessor,
 )
-from src.Core.FinancialEvents.EventProcessors.DerivativeEventProcessor import (
+from Core.FinancialEvents.EventProcessors.DerivativeEventProcessor import (
     DerivativeEventProcessor,
 )
-from src.Core.FinancialEvents.EventProcessors.StockEventProcessor import (
+from Core.FinancialEvents.EventProcessors.StockEventProcessor import (
     StockEventProcessor,
 )
-from src.Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor import (
+from Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor import (
     CountedGroupingProcessor,
 )
-from src.Core.FinancialEvents.LotProcessors.DerivativeLotProcessor import (
+from Core.FinancialEvents.LotProcessors.DerivativeLotProcessor import (
     DerivativeLotProcessor,
 )
-from src.Core.FinancialEvents.LotProcessors.StockLotProcessor import StockLotProcessor
-from src.Core.FinancialEvents.Utils.ProcessingUtils import ProcessingUtils
-from src.StagingFinancialEvents.Services.StagingGroupingProcessor import (
+from Core.FinancialEvents.LotProcessors.StockLotProcessor import StockLotProcessor
+from Core.FinancialEvents.Utils.ProcessingUtils import ProcessingUtils
+from StagingFinancialEvents.Services.StagingGroupingProcessor import (
     StagingGroupingProcessor,
 )
 

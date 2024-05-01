@@ -4,12 +4,12 @@ from typing import Any, Generic, Sequence, TypeVar
 
 import pandas as pd
 
-import src.ConfigurationProvider.Configuration as conf
-import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.InfoProviders.InfoLookupProvider as ilp
-import src.TaxAuthorityProvider.Schemas.Configuration as tapc
-from src.AppModule import appInjector
-from src.Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor import (
+import ConfigurationProvider.Configuration as conf
+import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import InfoProviders.InfoLookupProvider as ilp
+import TaxAuthorityProvider.Schemas.Configuration as tapc
+from AppModule import appInjector
+from Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor import (
     CountedGroupingProcessor,
 )
 

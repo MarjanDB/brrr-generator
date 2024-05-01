@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.Core.LotMatching.Schemas.Trade import Trade
+from Core.LotMatching.Schemas.Trade import Trade
 
 
 @dataclass

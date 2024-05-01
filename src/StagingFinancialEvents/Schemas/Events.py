@@ -3,7 +3,7 @@ from typing import Union
 
 from arrow import Arrow
 
-from src.Core.FinancialEvents.Schemas.CommonFormats import (
+from Core.FinancialEvents.Schemas.CommonFormats import (
     GenericAssetClass,
     GenericDerivativeReportItemGainType,
     GenericDividendType,
