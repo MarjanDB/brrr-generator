@@ -3,10 +3,10 @@ import arrow as ar
 import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as es
 import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
 import src.BrokerageExportProviders.Brokerages.IBKR.Transforms.Transform as t
-from Core.FinancialEvents.Schemas.ProcessedGenericFormats import (
+from src.Core.FinancialEvents.Schemas.ProcessedGenericFormats import (
     TransactionCashWitholdingTax,
 )
-from StagingFinancialEvents.Schemas.Events import (
+from src.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventCashTransactionDividend,
 )
 

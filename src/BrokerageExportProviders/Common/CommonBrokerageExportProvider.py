@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generic, Sequence, TypeVar
 
-import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 from src.BrokerageExportProviders.Contracts.CommonBrokerageEvents import (
     CommonBrokerageEvents,
 )
+from src.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
 
 BROKERAGE_EVENTS_TYPE = TypeVar("BROKERAGE_EVENTS_TYPE", bound=CommonBrokerageEvents[Any, Any, Any, Any, Any, Any])
 
@@ -34,7 +34,7 @@ class CommonBrokerageExportProvider(ABC, Generic[BROKERAGE_EVENTS_TYPE]):
 
     # TODO: These shouldn't already be grouped by ISIN, but instead only segmented. Grouping is common to all brokerages.
     @abstractmethod
-    def transformBrokerEventsToBrokerAgnosticEvents(self, events: BROKERAGE_EVENTS_TYPE) -> Sequence[sgf.GenericUnderlyingGroupingStaging]:
+    def transformBrokerEventsToBrokerAgnosticEvents(self, events: BROKERAGE_EVENTS_TYPE) -> Sequence[StagingFinancialGrouping]:
         """
         The argument events will contain the Events specific to this Brokerage Provider.
         The return will be Broker Events which are agnostic to any one Brokerage.

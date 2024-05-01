@@ -5,11 +5,21 @@ import src.Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor as cg
 import src.Core.FinancialEvents.GroupingProcessor.StagingGroupingProcessor as sgp
 import src.Core.FinancialEvents.Schemas.CommonFormats as cf
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 import src.Core.FinancialEvents.Utils.ProcessingUtils as pu
 from src.Core.LotMatching.Services.LotMatcher import LotMatcher
+from src.StagingFinancialEvents.Schemas.Events import (
+    StagingTradeEventDerivativeAcquired,
+    StagingTradeEventDerivativeSold,
+    StagingTradeEventStockAcquired,
+    StagingTradeEventStockSold,
+)
+from src.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
+from src.StagingFinancialEvents.Schemas.Lots import (
+    StagingTaxLot,
+    StagingTaxLotMatchingDetails,
+)
 
-simpleStagingStockBuy = sgf.TradeEventStagingStockAcquired(
+simpleStagingStockBuy = StagingTradeEventStockAcquired(
     ID="StockBought",
     ISIN="US123",
     Ticker="AAPL",
@@ -39,7 +49,7 @@ simpleStockBuy = pgf.TradeEventStockAcquired(
     ExchangedMoney=simpleStagingStockBuy.ExchangedMoney,
 )
 
-simpleStagingStockSold = sgf.TradeEventStagingStockSold(
+simpleStagingStockSold = StagingTradeEventStockSold(
     ID="StockSold",
     ISIN="US123",
     Ticker="AAPL",
@@ -67,13 +77,13 @@ simpleStockSold = pgf.TradeEventStockSold(
     ExchangedMoney=simpleStagingStockSold.ExchangedMoney,
 )
 
-simpleStagingStockLot = sgf.GenericTaxLotEventStaging(
+simpleStagingStockLot = StagingTaxLot(
     ID="Lot",
     Ticker="AAPL",
     ISIN="US123",
     Quantity=1,
-    Acquired=sgf.GenericTaxLotMatchingDetails(ID="StockBought", DateTime=None),
-    Sold=sgf.GenericTaxLotMatchingDetails(ID=None, DateTime=ar.get("2023-01-02")),
+    Acquired=StagingTaxLotMatchingDetails(ID="StockBought", DateTime=None),
+    Sold=StagingTaxLotMatchingDetails(ID=None, DateTime=ar.get("2023-01-02")),
     ShortLongType=cf.GenericShortLong.LONG,
 )
 
@@ -87,7 +97,7 @@ simpleStockLot = pgf.TradeTaxLotEventStock(
 )
 
 
-simpleStagingDerivativeBuy = sgf.TradeEventStagingDerivativeAcquired(
+simpleStagingDerivativeBuy = StagingTradeEventDerivativeAcquired(
     ID="DerivativeBought",
     ISIN="US123",
     Ticker="AAPL",
@@ -106,7 +116,7 @@ simpleStagingDerivativeBuy = sgf.TradeEventStagingDerivativeAcquired(
     ),
 )
 
-simpleStagingDerivativeSold = sgf.TradeEventStagingDerivativeSold(
+simpleStagingDerivativeSold = StagingTradeEventDerivativeSold(
     ID="DerivativeSold",
     ISIN="US123",
     Ticker="AAPL",
@@ -124,13 +134,13 @@ simpleStagingDerivativeSold = sgf.TradeEventStagingDerivativeSold(
     ),
 )
 
-simpleStagingDerivativeLot = sgf.GenericTaxLotEventStaging(
+simpleStagingDerivativeLot = StagingTaxLot(
     ID="Lot",
     ISIN="US123",
     Ticker="AAPL",
     Quantity=1,
-    Acquired=sgf.GenericTaxLotMatchingDetails(ID="DerivativeBought", DateTime=None),
-    Sold=sgf.GenericTaxLotMatchingDetails(ID=None, DateTime=ar.get("2023-01-02")),
+    Acquired=StagingTaxLotMatchingDetails(ID="DerivativeBought", DateTime=None),
+    Sold=StagingTaxLotMatchingDetails(ID=None, DateTime=ar.get("2023-01-02")),
     ShortLongType=cf.GenericShortLong.LONG,
 )
 
@@ -138,7 +148,7 @@ simpleStagingDerivativeLot = sgf.GenericTaxLotEventStaging(
 class TestGenericGroupingsProcessing:
     def testSimpleStockLotMatching(self):
         groupings = [
-            sgf.GenericUnderlyingGroupingStaging(
+            StagingFinancialGrouping(
                 ISIN="US123",
                 CountryOfOrigin=None,
                 UnderlyingCategory=cf.GenericCategory.REGULAR,
@@ -163,7 +173,7 @@ class TestGenericGroupingsProcessing:
 
     def testPartialStockLotMatching(self):
         groupings = [
-            sgf.GenericUnderlyingGroupingStaging(
+            StagingFinancialGrouping(
                 ISIN="US123",
                 CountryOfOrigin=None,
                 UnderlyingCategory=cf.GenericCategory.REGULAR,
@@ -182,7 +192,7 @@ class TestGenericGroupingsProcessing:
 
     def testSimpleDerivativeLotMatching(self):
         groupings = [
-            sgf.GenericUnderlyingGroupingStaging(
+            StagingFinancialGrouping(
                 ISIN="US123",
                 CountryOfOrigin=None,
                 UnderlyingCategory=cf.GenericCategory.REGULAR,

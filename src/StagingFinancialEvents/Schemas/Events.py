@@ -60,14 +60,12 @@ class StagingTradeEventCashTransaction(StagingTradeEvent):
 
 @dataclass
 class StagingTradeEventCashTransactionDividend(StagingTradeEventCashTransaction):
-    SecurityISIN: str
     ListingExchange: str
     DividendType: GenericDividendType
 
 
 @dataclass
 class StagingTradeEventCashTransactionWitholdingTax(StagingTradeEventCashTransaction):
-    SecurityISIN: str
     ListingExchange: str
 
 
