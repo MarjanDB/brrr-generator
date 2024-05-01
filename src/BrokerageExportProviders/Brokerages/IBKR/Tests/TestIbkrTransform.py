@@ -8,6 +8,7 @@ from src.Core.FinancialEvents.Schemas.ProcessedGenericFormats import (
 )
 from src.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventCashTransactionDividend,
+    StagingTradeEventCashTransactionWitholdingTax,
 )
 
 simpleTradeBuy = es.TradeStock(
@@ -298,7 +299,9 @@ class TestIbkrTransformCashTransaction:
 
         assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
         assert extracted.CashTransactions[0].ISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
-        assert isinstance(extracted.CashTransactions[0], TransactionCashWitholdingTax), "WitholdingTax is of a witholdingTax line type"
+        assert isinstance(
+            extracted.CashTransactions[0], StagingTradeEventCashTransactionWitholdingTax
+        ), "WitholdingTax is of a witholdingTax line type"
         assert (
             extracted.CashTransactions[0].ExchangedMoney.UnderlyingTradePrice == witholdingTax.Amount * witholdingTax.FXRateToBase
         ), "The Dividend Trade Price should match the dividend"
