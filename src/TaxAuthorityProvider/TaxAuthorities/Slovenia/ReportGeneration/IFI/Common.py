@@ -1,7 +1,7 @@
 from typing import Sequence
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
 import Core.FinancialEvents.Services.FinancialEventsProcessor as g
 import TaxAuthorityProvider.Schemas.Configuration as tc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
@@ -62,7 +62,7 @@ def convertEvent(
 
 
 def convertTradesToIfiItems(
-    reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.UnderlyingGrouping], countedProcessor: g.FinancialEventsProcessor
+    reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.FinancialGrouping], countedProcessor: g.FinancialEventsProcessor
 ) -> list[ss.EDavkiGenericDerivativeReportItem]:
     converted: list[ss.EDavkiGenericDerivativeReportItem] = list()
     periodStart = reportConfig.fromDate

@@ -2,7 +2,7 @@ from typing import Sequence
 
 from lxml import etree
 
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
 import TaxAuthorityProvider.Schemas.Configuration as tc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.IFI.Common as common
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
@@ -13,7 +13,7 @@ from Core.FinancialEvents.Services.FinancialEventsProcessor import (
 
 def generateXmlReport(
     reportConfig: tc.TaxAuthorityConfiguration,
-    data: Sequence[pgf.UnderlyingGrouping],
+    data: Sequence[pgf.FinancialGrouping],
     templateEnvelope: etree._Element,
     countedProcessor: FinancialEventsProcessor,
 ) -> etree._Element:

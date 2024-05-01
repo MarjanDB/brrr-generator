@@ -1,6 +1,6 @@
 from typing import Sequence
 
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.FinancialEvents.Utils.ProcessingUtils import ProcessingUtils
 from Core.LotMatching.LotMatchingMethods.ProvidedLotMatchingMethod import (
     ProvidedLotMatchingMethod,
@@ -18,7 +18,7 @@ class FinancialEventsProcessor:
         self.lotMatcher = lotMatcher
         self.processingUtils = processingUtils
 
-    def process(self, input: pgf.UnderlyingGrouping) -> pgf.UnderlyingGroupingWithTradesOfInterest:
+    def process(self, input: pgf.FinancialGrouping) -> pgf.UnderlyingGroupingWithTradesOfInterest:
         stockLots = input.StockTaxLots
         derivativeLots = input.DerivativeTaxLots
 
@@ -41,7 +41,7 @@ class FinancialEventsProcessor:
         return interestingGrouping
 
     def generateInterestingUnderlyingGroupings(
-        self, groupings: Sequence[pgf.UnderlyingGrouping]
+        self, groupings: Sequence[pgf.FinancialGrouping]
     ) -> Sequence[pgf.UnderlyingGroupingWithTradesOfInterest]:
         processedGroupings = list(map(self.process, groupings))
         return processedGroupings

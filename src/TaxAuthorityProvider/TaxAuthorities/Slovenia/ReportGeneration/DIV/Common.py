@@ -3,7 +3,7 @@ from typing import Sequence
 
 from arrow import Arrow
 
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
 import TaxAuthorityProvider.Schemas.Configuration as tc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 from AppModule import appInjector
@@ -179,7 +179,7 @@ def fillInMissingCompanyInformationForDividendLineAndRoundAmounts(
 
 
 def processSingleUnderlyingGroupingToDivLines(
-    reportConfig: tc.TaxAuthorityConfiguration, data: pgf.UnderlyingGrouping
+    reportConfig: tc.TaxAuthorityConfiguration, data: pgf.FinancialGrouping
 ) -> Sequence[ss.EDavkiDividendReportLine]:
     relevantCashTransactions = filterOutCashTransactionsBasedOnDate(data.CashTransactions, reportConfig.fromDate, reportConfig.toDate)
 
@@ -201,7 +201,7 @@ def processSingleUnderlyingGroupingToDivLines(
 
 
 def convertCashTransactionsToDivItems(
-    reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.UnderlyingGrouping]
+    reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.FinancialGrouping]
 ) -> Sequence[ss.EDavkiDividendReportLine]:
     allLines: list[ss.EDavkiDividendReportLine] = []
 

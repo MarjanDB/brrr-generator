@@ -3,7 +3,7 @@ from typing import Sequence
 import arrow as ar
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.StagingFinancialEvents.Contracts.LotProcessor import LotProcessor
 from Core.StagingFinancialEvents.Schemas.Lots import StagingTaxLot
 

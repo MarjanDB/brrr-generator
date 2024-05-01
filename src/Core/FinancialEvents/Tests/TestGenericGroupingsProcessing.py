@@ -1,7 +1,7 @@
 import arrow as ar
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
 import Core.FinancialEvents.Services.FinancialEventsProcessor as cgp
 import Core.FinancialEvents.Utils.ProcessingUtils as pu
 from Core.LotMatching.Services.LotMatcher import LotMatcher
@@ -57,7 +57,7 @@ simpleStockLot = pgf.TaxLotStock(
 
 class TestInterestingGroupingsProcessing:
     def testSingleStockLotMatching(self):
-        grouping = pgf.UnderlyingGrouping(
+        grouping = pgf.FinancialGrouping(
             ISIN="US123",
             CountryOfOrigin="US",
             UnderlyingCategory=cf.GenericCategory.REGULAR,
@@ -84,7 +84,7 @@ class TestInterestingGroupingsProcessing:
         ), "There should be no derivative trades, since there were no derivative trades whatsoever"
 
     def testNoStockTradesMatching(self):
-        grouping = pgf.UnderlyingGrouping(
+        grouping = pgf.FinancialGrouping(
             ISIN="US123",
             CountryOfOrigin="US",
             UnderlyingCategory=cf.GenericCategory.REGULAR,

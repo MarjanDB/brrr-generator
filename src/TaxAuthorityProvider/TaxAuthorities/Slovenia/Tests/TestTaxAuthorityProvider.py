@@ -3,7 +3,7 @@ from lxml import etree
 
 import ConfigurationProvider.Configuration as cpc
 import Core.FinancialEvents.Schemas.CommonFormats as cf
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
 import TaxAuthorityProvider.Schemas.Configuration as tapc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.SlovenianTaxAuthorityProvider as tap
@@ -150,7 +150,7 @@ cashTransactionWitholdingTax = TradeEventCashTransactionWitholdingTax(
     ListingExchange="EXH",
 )
 
-testData = pgf.UnderlyingGrouping(
+testData = pgf.FinancialGrouping(
     ISIN="ISIN",
     CountryOfOrigin=None,
     UnderlyingCategory=cf.GenericCategory.REGULAR,

@@ -5,7 +5,7 @@ import pandas as pd
 from lxml import etree
 
 import ConfigurationProvider.Configuration as cpc
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
 import TaxAuthorityProvider.Common.TaxAuthorityProvider as tap
 import TaxAuthorityProvider.Schemas.Configuration as c
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.CSV_Doh_DIV as csv_div
@@ -63,7 +63,7 @@ class SlovenianTaxAuthorityProvider(
 
         return Envelope
 
-    def generateExportForTaxAuthority(self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[pgf.UnderlyingGrouping]) -> Any:
+    def generateExportForTaxAuthority(self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[pgf.FinancialGrouping]) -> Any:
         envelope = self.createReportEnvelope()
 
         if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP:
@@ -80,7 +80,7 @@ class SlovenianTaxAuthorityProvider(
             return xml_ifi.generateXmlReport(self.reportConfig, data, envelope, self.countedGroupingProcessor)
 
     def generateSpreadsheetExport(
-        self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[pgf.UnderlyingGrouping]
+        self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[pgf.FinancialGrouping]
     ) -> pd.DataFrame:
         if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP:
             return csv_kdvp.generateDataFrameReport(self.reportConfig, data, self.countedGroupingProcessor)

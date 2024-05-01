@@ -1,4 +1,4 @@
-import Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
+import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.FinancialEvents.Schemas.CommonFormats import (
     GenericMonetaryExchangeInformation,
 )
