@@ -3,9 +3,11 @@ import arrow as ar
 import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as es
 import src.BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
 import src.BrokerageExportProviders.Brokerages.IBKR.Transforms.Transform as t
-from src.Core.FinancialEvents.Schemas.StagingGenericFormats import (
-    TransactionCashStagingDividend,
-    TransactionCashStagingWitholdingTax,
+from Core.FinancialEvents.Schemas.ProcessedGenericFormats import (
+    TransactionCashWitholdingTax,
+)
+from StagingFinancialEvents.Schemas.Events import (
+    StagingTradeEventCashTransactionDividend,
 )
 
 simpleTradeBuy = es.TradeStock(
@@ -272,7 +274,7 @@ class TestIbkrTransformCashTransaction:
 
         assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
         assert extracted.CashTransactions[0].SecurityISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
-        assert isinstance(extracted.CashTransactions[0], TransactionCashStagingDividend), "Dividend is of a dividend line type"
+        assert isinstance(extracted.CashTransactions[0], StagingTradeEventCashTransactionDividend), "Dividend is of a dividend line type"
         assert (
             extracted.CashTransactions[0].ExchangedMoney.UnderlyingTradePrice == dividend.Amount * dividend.FXRateToBase
         ), "The Dividend Trade Price should match the dividend"
@@ -296,9 +298,7 @@ class TestIbkrTransformCashTransaction:
 
         assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
         assert extracted.CashTransactions[0].SecurityISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
-        assert isinstance(
-            extracted.CashTransactions[0], TransactionCashStagingWitholdingTax
-        ), "WitholdingTax is of a witholdingTax line type"
+        assert isinstance(extracted.CashTransactions[0], TransactionCashWitholdingTax), "WitholdingTax is of a witholdingTax line type"
         assert (
             extracted.CashTransactions[0].ExchangedMoney.UnderlyingTradePrice == witholdingTax.Amount * witholdingTax.FXRateToBase
         ), "The Dividend Trade Price should match the dividend"
