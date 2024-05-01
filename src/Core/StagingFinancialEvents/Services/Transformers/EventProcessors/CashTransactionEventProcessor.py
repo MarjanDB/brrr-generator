@@ -2,6 +2,10 @@ import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.FinancialEvents.Schemas.CommonFormats import (
     GenericMonetaryExchangeInformation,
 )
+from Core.FinancialEvents.Schemas.Events import (
+    TradeEventCashTransactionDividend,
+    TradeEventCashTransactionWitholdingTax,
+)
 from Core.StagingFinancialEvents.Contracts.EventProcessor import EventProcessor
 from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventCashTransaction,
@@ -14,34 +18,37 @@ class CashTransactionEventProcessor(EventProcessor[StagingTradeEventCashTransact
 
     def process(self, input: StagingTradeEventCashTransaction) -> pgf.TransactionCash:
         if isinstance(input, StagingTradeEventCashTransactionDividend):
-            converted = pgf.TransactionCashDividend(
-                AccountID="",
-                ReceivedDateTime=input.Date,
+            converted = TradeEventCashTransactionDividend(
+                ID=input.ID,
+                ISIN=input.ISIN,
+                Ticker=input.Ticker or "",
+                AssetClass=input.AssetClass,
+                Date=input.Date,
+                Multiplier=input.Multiplier,
+                ExchangedMoney=GenericMonetaryExchangeInformation(
+                    UnderlyingQuantity=input.ExchangedMoney.UnderlyingQuantity,
+                    UnderlyingTradePrice=input.ExchangedMoney.UnderlyingTradePrice,
+                    UnderlyingCurrency=input.ExchangedMoney.UnderlyingCurrency,
+                    ComissionCurrency=input.ExchangedMoney.ComissionCurrency,
+                    ComissionTotal=input.ExchangedMoney.ComissionTotal,
+                    TaxCurrency=input.ExchangedMoney.TaxCurrency,
+                    TaxTotal=input.ExchangedMoney.TaxTotal,
+                ),
                 ActionID=input.ActionID,
                 TransactionID=input.TransactionID,
                 ListingExchange=input.ListingExchange,
                 DividendType=input.DividendType,
-                SecurityISIN=input.ISIN,
-                ExchangedMoney=GenericMonetaryExchangeInformation(
-                    UnderlyingQuantity=input.ExchangedMoney.UnderlyingQuantity,
-                    UnderlyingTradePrice=input.ExchangedMoney.UnderlyingTradePrice,
-                    UnderlyingCurrency=input.ExchangedMoney.UnderlyingCurrency,
-                    ComissionCurrency=input.ExchangedMoney.ComissionCurrency,
-                    ComissionTotal=input.ExchangedMoney.ComissionTotal,
-                    TaxCurrency=input.ExchangedMoney.TaxCurrency,
-                    TaxTotal=input.ExchangedMoney.TaxTotal,
-                ),
             )
             return converted
 
         if isinstance(input, StagingTradeEventCashTransactionWitholdingTax):  # pyright: ignore[reportUnnecessaryIsInstance]
-            converted = pgf.TransactionCashWitholdingTax(
-                AccountID="",
-                ReceivedDateTime=input.Date,
-                ActionID=input.ActionID,
-                TransactionID=input.TransactionID,
-                ListingExchange=input.ListingExchange,
-                SecurityISIN=input.ISIN,
+            converted = TradeEventCashTransactionWitholdingTax(
+                ID=input.ID,
+                ISIN=input.ISIN,
+                Ticker=input.Ticker or "",
+                AssetClass=input.AssetClass,
+                Date=input.Date,
+                Multiplier=input.Multiplier,
                 ExchangedMoney=GenericMonetaryExchangeInformation(
                     UnderlyingQuantity=input.ExchangedMoney.UnderlyingQuantity,
                     UnderlyingTradePrice=input.ExchangedMoney.UnderlyingTradePrice,
@@ -51,6 +58,9 @@ class CashTransactionEventProcessor(EventProcessor[StagingTradeEventCashTransact
                     TaxCurrency=input.ExchangedMoney.TaxCurrency,
                     TaxTotal=input.ExchangedMoney.TaxTotal,
                 ),
+                ActionID=input.ActionID,
+                TransactionID=input.TransactionID,
+                ListingExchange=input.ListingExchange,
             )
             return converted
 
