@@ -1,6 +1,6 @@
 # Ustvarjanje uvoznih datotek za platformo EDavki
 
-> Ustvarjene datoteke lahko vsebujejo napake, zato se naj te preverijo za morebitne napake pred oddajo na platformi EDavki
+**Ustvarjeni izvozi lahko vsebujejo napake, zato se naj te preverijo za morebitne napake pred oddajo na platformi EDavki**
 
 ## Uporaba
 ### Generiranje Izvoza iz IBKR platforme
