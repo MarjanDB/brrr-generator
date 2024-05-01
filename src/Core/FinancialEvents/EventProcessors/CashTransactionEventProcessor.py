@@ -1,23 +1,27 @@
 import src.Core.FinancialEvents.Contracts.EventProcessor as ep
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 from src.Core.FinancialEvents.Schemas.CommonFormats import (
     GenericMonetaryExchangeInformation,
 )
+from src.StagingFinancialEvents.Schemas.Events import (
+    StagingTradeEventCashTransaction,
+    StagingTradeEventCashTransactionDividend,
+    StagingTradeEventCashTransactionWitholdingTax,
+)
 
 
-class CashTransactionEventProcessor(ep.EventProcessor[sgf.TransactionCashStaging, pgf.TransactionCash]):
+class CashTransactionEventProcessor(ep.EventProcessor[StagingTradeEventCashTransaction, pgf.TransactionCash]):
 
-    def process(self, input: sgf.TransactionCashStaging) -> pgf.TransactionCash:
-        if isinstance(input, sgf.TransactionCashStagingDividend):
+    def process(self, input: StagingTradeEventCashTransaction) -> pgf.TransactionCash:
+        if isinstance(input, StagingTradeEventCashTransactionDividend):
             converted = pgf.TransactionCashDividend(
-                AccountID=input.AccountID,
-                ReceivedDateTime=input.ReceivedDateTime,
+                AccountID="",
+                ReceivedDateTime=input.Date,
                 ActionID=input.ActionID,
                 TransactionID=input.TransactionID,
                 ListingExchange=input.ListingExchange,
                 DividendType=input.DividendType,
-                SecurityISIN=input.SecurityISIN,
+                SecurityISIN=input.ISIN,
                 ExchangedMoney=GenericMonetaryExchangeInformation(
                     UnderlyingQuantity=input.ExchangedMoney.UnderlyingQuantity,
                     UnderlyingTradePrice=input.ExchangedMoney.UnderlyingTradePrice,
@@ -30,14 +34,14 @@ class CashTransactionEventProcessor(ep.EventProcessor[sgf.TransactionCashStaging
             )
             return converted
 
-        if isinstance(input, sgf.TransactionCashStagingWitholdingTax):  # pyright: ignore[reportUnnecessaryIsInstance]
+        if isinstance(input, StagingTradeEventCashTransactionWitholdingTax):  # pyright: ignore[reportUnnecessaryIsInstance]
             converted = pgf.TransactionCashWitholdingTax(
-                AccountID=input.AccountID,
-                ReceivedDateTime=input.ReceivedDateTime,
+                AccountID="",
+                ReceivedDateTime=input.Date,
                 ActionID=input.ActionID,
                 TransactionID=input.TransactionID,
                 ListingExchange=input.ListingExchange,
-                SecurityISIN=input.SecurityISIN,
+                SecurityISIN=input.ISIN,
                 ExchangedMoney=GenericMonetaryExchangeInformation(
                     UnderlyingQuantity=input.ExchangedMoney.UnderlyingQuantity,
                     UnderlyingTradePrice=input.ExchangedMoney.UnderlyingTradePrice,

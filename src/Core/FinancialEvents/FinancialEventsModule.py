@@ -12,14 +12,14 @@ from src.Core.FinancialEvents.EventProcessors.StockEventProcessor import (
 from src.Core.FinancialEvents.GroupingProcessor.CountedGroupingProcessor import (
     CountedGroupingProcessor,
 )
-from src.Core.FinancialEvents.GroupingProcessor.StagingGroupingProcessor import (
-    StagingGroupingProcessor,
-)
 from src.Core.FinancialEvents.LotProcessors.DerivativeLotProcessor import (
     DerivativeLotProcessor,
 )
 from src.Core.FinancialEvents.LotProcessors.StockLotProcessor import StockLotProcessor
 from src.Core.FinancialEvents.Utils.ProcessingUtils import ProcessingUtils
+from src.StagingFinancialEvents.Services.StagingGroupingProcessor import (
+    StagingGroupingProcessor,
+)
 
 
 class FinancialEventsModule(Module):

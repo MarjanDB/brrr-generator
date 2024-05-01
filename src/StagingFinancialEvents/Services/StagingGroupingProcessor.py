@@ -6,14 +6,14 @@ import src.Core.FinancialEvents.EventProcessors.StockEventProcessor as sep
 import src.Core.FinancialEvents.LotProcessors.DerivativeLotProcessor as dlp
 import src.Core.FinancialEvents.LotProcessors.StockLotProcessor as slp
 import src.Core.FinancialEvents.Schemas.ProcessedGenericFormats as pgf
-import src.Core.FinancialEvents.Schemas.StagingGenericFormats as sgf
 import src.Core.FinancialEvents.Utils.ProcessingUtils as pu
 from src.Core.FinancialEvents.EventProcessors.CashTransactionEventProcessor import (
     CashTransactionEventProcessor,
 )
+from src.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
 
 
-class StagingGroupingProcessor(ep.EventProcessor[sgf.GenericUnderlyingGroupingStaging, pgf.UnderlyingGrouping]):
+class StagingGroupingProcessor(ep.EventProcessor[StagingFinancialGrouping, pgf.UnderlyingGrouping]):
     stockProcessor: sep.StockEventProcessor
     derivativeProcessor: dep.DerivativeEventProcessor
 
@@ -28,7 +28,7 @@ class StagingGroupingProcessor(ep.EventProcessor[sgf.GenericUnderlyingGroupingSt
         self.derivativeLotProcessor = dlp.DerivativeLotProcessor(utils)
         self.cashTransactionProcessor = CashTransactionEventProcessor(utils)
 
-    def process(self, input: sgf.GenericUnderlyingGroupingStaging) -> pgf.UnderlyingGrouping:
+    def process(self, input: StagingFinancialGrouping) -> pgf.UnderlyingGrouping:
         stockTrades = input.StockTrades
         processedTrades = list(map(self.stockProcessor.process, stockTrades))
         tradesCausedByCorporateActions = list(self.stockProcessor.createMissingStockTradesFromCorporateActions())
@@ -66,6 +66,6 @@ class StagingGroupingProcessor(ep.EventProcessor[sgf.GenericUnderlyingGroupingSt
         )
         return processed
 
-    def generateGenericGroupings(self, groupings: Sequence[sgf.GenericUnderlyingGroupingStaging]) -> Sequence[pgf.UnderlyingGrouping]:
+    def generateGenericGroupings(self, groupings: Sequence[StagingFinancialGrouping]) -> Sequence[pgf.UnderlyingGrouping]:
         processedGroupings = list(map(self.process, groupings))
         return processedGroupings
