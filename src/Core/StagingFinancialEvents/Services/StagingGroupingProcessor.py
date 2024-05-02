@@ -1,7 +1,6 @@
 from typing import Sequence
 
 import Core.FinancialEvents.Schemas.Grouping as pgf
-from Core.StagingFinancialEvents.Contracts.EventProcessor import EventProcessor
 from Core.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
 from Core.StagingFinancialEvents.Services.Transformers.EventProcessors.CashTransactionEventProcessor import (
     CashTransactionEventProcessor,
@@ -21,7 +20,7 @@ from Core.StagingFinancialEvents.Services.Transformers.LotProcessors.StockLotPro
 from Core.StagingFinancialEvents.Utils.ProcessingUtils import ProcessingUtils
 
 
-class StagingGroupingProcessor(EventProcessor[StagingFinancialGrouping, pgf.FinancialGrouping]):
+class StagingGroupingProcessor:
     def __init__(self, utils: ProcessingUtils) -> None:
         self.stockProcessor = StockEventProcessor(utils)
         self.derivativeProcessor = DerivativeEventProcessor(utils)
