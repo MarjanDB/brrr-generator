@@ -116,7 +116,7 @@ simpleStagingDerivativeLot = StagingTaxLot(
 )
 
 
-class TestStagingGroupingProcessor:
+class TestStagingFinancialGroupingProcessor:
     def testSimpleStockLotMatching(self):
         groupings = [
             StagingFinancialGrouping(
