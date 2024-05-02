@@ -7,7 +7,7 @@ from Core.FinancialEvents.Schemas.CommonFormats import (
 )
 from Core.FinancialEvents.Schemas.Events import TradeEvent
 from Core.FinancialEvents.Schemas.Lots import TaxLot
-from Core.LotMatching.LotMatchingMethods.ProvidedLotMatchingMethod import (
+from Core.LotMatching.Services.LotMatchingMethods.ProvidedLotMatchingMethod import (
     ProvidedLotMatchingMethod,
 )
 

@@ -2,10 +2,10 @@ from typing import Sequence
 
 import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.FinancialEvents.Utils.ProcessingUtils import ProcessingUtils
-from Core.LotMatching.LotMatchingMethods.ProvidedLotMatchingMethod import (
+from Core.LotMatching.Services.LotMatcher import LotMatcher
+from Core.LotMatching.Services.LotMatchingMethods.ProvidedLotMatchingMethod import (
     ProvidedLotMatchingMethod,
 )
-from Core.LotMatching.Services.LotMatcher import LotMatcher
 
 
 class FinancialEventsProcessor:
