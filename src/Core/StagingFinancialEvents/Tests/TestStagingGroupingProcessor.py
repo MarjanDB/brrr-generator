@@ -13,8 +13,8 @@ from Core.StagingFinancialEvents.Schemas.Lots import (
     StagingTaxLot,
     StagingTaxLotMatchingDetails,
 )
-from Core.StagingFinancialEvents.Services.StagingGroupingProcessor import (
-    StagingGroupingProcessor,
+from Core.StagingFinancialEvents.Services.StagingFinancialGroupingProcessor import (
+    StagingFinancialGroupingProcessor,
 )
 from Core.StagingFinancialEvents.Utils.ProcessingUtils import ProcessingUtils
 
@@ -131,7 +131,7 @@ class TestStagingGroupingProcessor:
             )
         ]
 
-        utils = StagingGroupingProcessor(ProcessingUtils())
+        utils = StagingFinancialGroupingProcessor(ProcessingUtils())
 
         results = utils.generateGenericGroupings(groupings)
 
@@ -156,7 +156,7 @@ class TestStagingGroupingProcessor:
             )
         ]
 
-        utils = StagingGroupingProcessor(ProcessingUtils())
+        utils = StagingFinancialGroupingProcessor(ProcessingUtils())
 
         with pytest.raises(LookupError):
             utils.generateGenericGroupings(groupings)
@@ -178,7 +178,7 @@ class TestStagingGroupingProcessor:
             )
         ]
 
-        utils = StagingGroupingProcessor(ProcessingUtils())
+        utils = StagingFinancialGroupingProcessor(ProcessingUtils())
 
         results = utils.generateGenericGroupings(groupings)
 

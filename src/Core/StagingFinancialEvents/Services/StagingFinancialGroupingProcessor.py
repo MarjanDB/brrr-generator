@@ -20,7 +20,7 @@ from Core.StagingFinancialEvents.Services.Transformers.LotProcessors.StockLotPro
 from Core.StagingFinancialEvents.Utils.ProcessingUtils import ProcessingUtils
 
 
-class StagingGroupingProcessor:
+class StagingFinancialGroupingProcessor:
     def __init__(self, utils: ProcessingUtils) -> None:
         self.stockProcessor = StockEventProcessor(utils)
         self.derivativeProcessor = DerivativeEventProcessor(utils)

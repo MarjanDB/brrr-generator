@@ -1,7 +1,7 @@
 from opyoid.bindings.module import Module
 
-from Core.StagingFinancialEvents.Services.StagingGroupingProcessor import (
-    StagingGroupingProcessor,
+from Core.StagingFinancialEvents.Services.StagingFinancialGroupingProcessor import (
+    StagingFinancialGroupingProcessor,
 )
 from Core.StagingFinancialEvents.Services.Transformers.EventProcessors.CashTransactionEventProcessor import (
     CashTransactionEventProcessor,
@@ -29,4 +29,4 @@ class StagingFinancialEventsModule(Module):
         self.bind(StockEventProcessor)
         self.bind(DerivativeLotProcessor)
         self.bind(StockLotProcessor)
-        self.bind(StagingGroupingProcessor)
+        self.bind(StagingFinancialGroupingProcessor)
