@@ -55,7 +55,7 @@ simpleStockLot = pgf.TaxLotStock(
 )
 
 
-class TestInterestingGroupingsProcessing:
+class TestFinancialEventsProcessor:
     def testSingleStockLotMatching(self):
         grouping = pgf.FinancialGrouping(
             ISIN="US123",
