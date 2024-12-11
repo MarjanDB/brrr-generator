@@ -15,7 +15,7 @@ opyoid = "2.0.*"
 
 [dev-packages]
 ipykernel = "6.29.*"
-pytest = "8.0.*"
+pytest = "8.3.*"
 types-lxml = "2024.2.*"
 pytest-cov = "4.1.*"
 pytest-md = "0.2.*"
