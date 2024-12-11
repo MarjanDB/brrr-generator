@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e351f4116398a5322ce3a0f031389ea6d19c55d4fb6d37bff2a0e92a89454f5e"
+            "sha256": "90c94b93bf50e8262e5664bfe5aecd6c7af519ece56afed353c7b00242f043ba"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -27,11 +27,11 @@
         },
         "attrs": {
             "hashes": [
-                "sha256:935dc3b529c262f6cf76e50877d35a4bd3c1de194fd41f47a2b7ae8f19971f30",
-                "sha256:99b87a485a5820b23b879f04c2305b44b951b502fd64be915879d77a7e8fc6f1"
+                "sha256:5cfb1b9148b5b086569baec03f20d7b6bf3bcacc9a42bebf87ffaaca362f6346",
+                "sha256:81921eb96de3191c8258c199618104dd27ac608d9366f5e35d011eae1867ede2"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==23.2.0"
+            "version": "==24.2.0"
         },
         "beautifulsoup4": {
             "hashes": [
@@ -418,12 +418,12 @@
         },
         "opyoid": {
             "hashes": [
-                "sha256:c8ff7ceba410dbd07d19a740cfbecb3688f08fce8819ca2fe7202f451a7f268e",
-                "sha256:eb5e0a888c4ce19ca3e0edcbd56568f8f3bc5bcb81c4d7f3fc3b7811f6158436"
+                "sha256:4213b93c0908f8495b98c9ee78f36092635dfd7a709ae14732909467c5f58173",
+                "sha256:b9d48da512b198ed9e6b24cf907434e273f97f3113e93c7b56506abda7aeb444"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.8'",
-            "version": "==2.0.2"
+            "markers": "python_version >= '3.9'",
+            "version": "==3.0.0"
         },
         "pandas": {
             "hashes": [

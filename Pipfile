@@ -11,7 +11,7 @@ yfinance = "0.2.*"
 pycountry = "23.12.*"
 lxml = "5.3.*"
 pyyaml = "6.0.*"
-opyoid = "2.0.*"
+opyoid = "3.0.*"
 
 [dev-packages]
 ipykernel = "6.29.*"
