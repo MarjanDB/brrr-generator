@@ -22,4 +22,4 @@ pytest-md = "0.2.*"
 black = "24.3.*"
 
 [requires]
-python_version = "3.11"
+python_version = "3.12"
