@@ -18,11 +18,14 @@ class SubCategory(str, Enum):
     ADR = "ADR"  # American Depositary Receipt -> https://www.investopedia.com/terms/a/adr.asp
     ROYALTY_RUST = "ROYALTY TRST"  # Royalty Income Trust -> https://www.investopedia.com/terms/r/royaltyincometrust.asp
     ETF = "ETF"  # Exchange Traded Fund -> https://www.investopedia.com/terms/e/etf.asp
+    C = "C"  # Not sure what this is
+    P = "P"  # Not sure what this is
 
 
 class OpenCloseIndicator(str, Enum):
     OPEN = "O"
     CLOSE = "C"
+    NOT_SPECIFIED = ""
 
 
 class TransactionType(str, Enum):
@@ -129,6 +132,8 @@ class OrderType(str, Enum):
     LIMIT = "LMT"
     MARKET = "MKT"
     MID_POINT = "MIDPX"
+    STOP = "STP"
+    STOP_LIMIT = "STPLMT"
 
 
 class Model(str, Enum):
@@ -138,6 +143,7 @@ class Model(str, Enum):
 class CashTransactionType(str, Enum):
     WITHOLDING_TAX = "Withholding Tax"
     DIVIDEND = "Dividends"
+    PAYMENT_IN_LIEU_OF_DIVIDENDS = "Payment In Lieu Of Dividends"
 
 
 @dataclass
