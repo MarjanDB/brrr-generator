@@ -8,6 +8,7 @@ import Core.FinancialEvents.Schemas.CommonFormats as cf
 from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEvent,
     StagingTradeEventCashTransactionDividend,
+    StagingTradeEventCashTransactionPaymentInLieuOfDividends,
     StagingTradeEventCashTransactionWitholdingTax,
     StagingTradeEventDerivative,
     StagingTradeEventDerivativeAcquired,
@@ -93,6 +94,28 @@ def convertToCashTransactions(
 
         if transaction.Type == s.CashTransactionType.WITHOLDING_TAX:
             return StagingTradeEventCashTransactionWitholdingTax(
+                ID=transaction.TransactionID,
+                ISIN=transaction.ISIN,
+                Ticker=transaction.Symbol,
+                AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+                Date=transaction.DateTime,
+                Multiplier=1,
+                ExchangedMoney=cf.GenericMonetaryExchangeInformation(
+                    UnderlyingQuantity=1,
+                    UnderlyingTradePrice=transaction.Amount * transaction.FXRateToBase,  # TODO: Currency provider
+                    UnderlyingCurrency=transaction.Currency,
+                    ComissionCurrency=transaction.Currency,
+                    ComissionTotal=0,
+                    TaxCurrency=transaction.Currency,
+                    TaxTotal=0,
+                ),
+                ActionID=transaction.ActionID,
+                TransactionID=transaction.TransactionID,
+                ListingExchange=transaction.ListingExchange,
+            )
+
+        if transaction.Type == s.CashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS:
+            return StagingTradeEventCashTransactionPaymentInLieuOfDividends(
                 ID=transaction.TransactionID,
                 ISIN=transaction.ISIN,
                 Ticker=transaction.Symbol,
