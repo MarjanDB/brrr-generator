@@ -66,8 +66,16 @@ class TradeEventCashTransactionDividend(TradeEventCashTransaction):
 
 
 @dataclass
+class TradeEventCashTransactionPaymentInLieuOfDividend(TradeEventCashTransaction):
+    ListingExchange: str
+    DividendType: GenericDividendType
+
+
+@dataclass
 class TradeEventCashTransactionWitholdingTax(TradeEventCashTransaction):
     ListingExchange: str
 
 
-TransactionCash = Union[TradeEventCashTransactionDividend, TradeEventCashTransactionWitholdingTax]
+TransactionCash = Union[
+    TradeEventCashTransactionDividend, TradeEventCashTransactionWitholdingTax, TradeEventCashTransactionPaymentInLieuOfDividend
+]

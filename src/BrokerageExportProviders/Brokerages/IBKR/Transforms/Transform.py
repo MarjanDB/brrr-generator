@@ -122,6 +122,7 @@ def convertToCashTransactions(
                 AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
                 Date=transaction.DateTime,
                 Multiplier=1,
+                DividendType=dividendType,
                 ExchangedMoney=cf.GenericMonetaryExchangeInformation(
                     UnderlyingQuantity=1,
                     UnderlyingTradePrice=transaction.Amount * transaction.FXRateToBase,  # TODO: Currency provider

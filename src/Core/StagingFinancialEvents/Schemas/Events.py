@@ -73,6 +73,7 @@ class StagingTradeEventCashTransactionWitholdingTax(StagingTradeEventCashTransac
 @dataclass
 class StagingTradeEventCashTransactionPaymentInLieuOfDividends(StagingTradeEventCashTransaction):
     ListingExchange: str
+    DividendType: GenericDividendType
 
 
 StagingTransactionCash = Union[
