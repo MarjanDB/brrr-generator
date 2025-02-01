@@ -32,5 +32,10 @@ pipenv install
 pipenv shell
 ```
 
+## **Pitfalls**
+
+This repository was developed using VSCode.
+As a result, most configurations are VSCode specific.
+I'm not sure if it will work in other IDEs, but it should be just fine as long as you apply the environment variables specified in the `.env` file.
 
 

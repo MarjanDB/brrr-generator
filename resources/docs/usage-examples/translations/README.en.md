@@ -18,6 +18,6 @@
 
 1. Create a config file based on the example config in ./config directory
 2. Place the Broker export inside the exports folder in ./exports directory
-3. Run all cells in dividents.ipynb (fix dates to the year you're making a report for)
+3. Run all cells in corresponding .ipynb file (make sure to fix dates to the year you're making a report for)
 
 

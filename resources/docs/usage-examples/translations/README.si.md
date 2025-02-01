@@ -17,6 +17,6 @@
 ### Zagon Programa
 
 1. Ustvari konfiguracijsko datoteko v ./config mapi (primer je podan)
-2. Ustvarjen izvoz iz brokerja postavi v ./exports mapo
-3. Zaženi vse celice v dividents.ipynb (popravi datume za leto katero hočeš imet generiran izvoz)
+2. Ustvarjen izvoz iz brokerja postavi v ./imports mapo
+3. Zaženi celice v .ipynb datoteki specifični za dokument ki pripravljaš (`./notebooks` mapa) (v .ipynb datoteki popravi datume za leto katero hočeš imet generiran izvoz)
 
