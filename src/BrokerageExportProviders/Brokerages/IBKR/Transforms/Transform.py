@@ -10,6 +10,7 @@ from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventCashTransactionDividend,
     StagingTradeEventCashTransactionPaymentInLieuOfDividends,
     StagingTradeEventCashTransactionWitholdingTax,
+    StagingTradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividends,
     StagingTradeEventDerivative,
     StagingTradeEventDerivativeAcquired,
     StagingTradeEventDerivativeSold,
@@ -60,8 +61,9 @@ def convertToCashTransactions(
     ) -> StagingTransactionCash:
         dividendType = cf.GenericDividendType.UNKNOWN
 
-        ordinaryDividend = transaction.Description.__contains__("Ordinary Dividend")
-        bonusDividend = transaction.Description.__contains__("Bonus Dividend")
+        ordinaryDividend = transaction.Description.lower().__contains__("ordinary dividend")
+        bonusDividend = transaction.Description.lower().__contains__("bonus dividend")
+        witholdingTaxForPaymentInLieuOfDividends = transaction.Description.lower().__contains__("payment in lieu of dividend")
 
         if ordinaryDividend:
             dividendType = cf.GenericDividendType.ORDINARY
@@ -78,6 +80,29 @@ def convertToCashTransactions(
                 Date=transaction.DateTime,
                 Multiplier=1,
                 DividendType=dividendType,
+                ExchangedMoney=cf.GenericMonetaryExchangeInformation(
+                    UnderlyingQuantity=1,
+                    UnderlyingTradePrice=transaction.Amount * transaction.FXRateToBase,  # TODO: Currency provider
+                    UnderlyingCurrency=transaction.Currency,
+                    ComissionCurrency=transaction.Currency,
+                    ComissionTotal=0,
+                    TaxCurrency=transaction.Currency,
+                    TaxTotal=0,
+                    FxRateToBase=transaction.FXRateToBase,
+                ),
+                ActionID=transaction.ActionID,
+                TransactionID=transaction.TransactionID,
+                ListingExchange=transaction.ListingExchange,
+            )
+
+        if transaction.Type == s.CashTransactionType.WITHOLDING_TAX and witholdingTaxForPaymentInLieuOfDividends:
+            return StagingTradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividends(
+                ID=transaction.TransactionID,
+                ISIN=transaction.ISIN,
+                Ticker=transaction.Symbol,
+                AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+                Date=transaction.DateTime,
+                Multiplier=1,
                 ExchangedMoney=cf.GenericMonetaryExchangeInformation(
                     UnderlyingQuantity=1,
                     UnderlyingTradePrice=transaction.Amount * transaction.FXRateToBase,  # TODO: Currency provider

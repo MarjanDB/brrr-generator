@@ -3,6 +3,10 @@ import pytest
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
 from Core.StagingFinancialEvents.Schemas.Events import (
+    StagingTradeEventCashTransactionDividend,
+    StagingTradeEventCashTransactionPaymentInLieuOfDividends,
+    StagingTradeEventCashTransactionWitholdingTax,
+    StagingTradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividends,
     StagingTradeEventDerivativeAcquired,
     StagingTradeEventDerivativeSold,
     StagingTradeEventStockAcquired,
@@ -58,6 +62,97 @@ simpleStagingStockSold = StagingTradeEventStockSold(
     ),
 )
 
+
+simpleStagingDividend = StagingTradeEventCashTransactionDividend(
+    ID="Dividend",
+    ISIN="US123",
+    Ticker="AAPL",
+    AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+    Date=ar.get("2023-01-01"),
+    Multiplier=1,
+    ActionID="ActionID",
+    TransactionID="TransactionID",
+    ListingExchange="ListingExchange",
+    DividendType=cf.GenericDividendType.ORDINARY,
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
+        UnderlyingCurrency="EUR",
+        UnderlyingQuantity=1,
+        UnderlyingTradePrice=10,
+        ComissionCurrency="EUR",
+        ComissionTotal=0,
+        TaxCurrency="EUR",
+        TaxTotal=0,
+        FxRateToBase=1,
+    ),
+)
+
+simpleStagingDividendWitholdingTax = StagingTradeEventCashTransactionWitholdingTax(
+    ID="DividendWitholdingTax",
+    ISIN="US123",
+    Ticker="AAPL",
+    AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+    Date=ar.get("2023-01-01"),
+    Multiplier=1,
+    ActionID="ActionID",
+    TransactionID="TransactionID",
+    ListingExchange="ListingExchange",
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
+        UnderlyingCurrency="EUR",
+        UnderlyingQuantity=1,
+        UnderlyingTradePrice=-5,
+        ComissionCurrency="EUR",
+        ComissionTotal=0,
+        TaxCurrency="EUR",
+        TaxTotal=0,
+        FxRateToBase=1,
+    ),
+)
+
+
+simpleStagingPaymentInLieuOfDividend = StagingTradeEventCashTransactionPaymentInLieuOfDividends(
+    ID="PaymentInLieuOfDividend",
+    ISIN="US123",
+    Ticker="AAPL",
+    AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+    Date=ar.get("2023-01-01"),
+    Multiplier=1,
+    ActionID="ActionID",
+    TransactionID="TransactionID",
+    ListingExchange="ListingExchange",
+    DividendType=cf.GenericDividendType.ORDINARY,
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
+        UnderlyingCurrency="EUR",
+        UnderlyingQuantity=1,
+        UnderlyingTradePrice=5,
+        ComissionCurrency="EUR",
+        ComissionTotal=0,
+        TaxCurrency="EUR",
+        TaxTotal=0,
+        FxRateToBase=1,
+    ),
+)
+
+simpleStagingPaymentInLieuOfDividendWitholdingTax = StagingTradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividends(
+    ID="PaymentInLieuOfDividendWitholdingTax",
+    ISIN="US123",
+    Ticker="AAPL",
+    AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+    Date=ar.get("2023-01-01"),
+    Multiplier=1,
+    ActionID="ActionID",
+    TransactionID="TransactionID",
+    ListingExchange="ListingExchange",
+    ExchangedMoney=cf.GenericMonetaryExchangeInformation(
+        UnderlyingCurrency="EUR",
+        UnderlyingQuantity=1,
+        UnderlyingTradePrice=-2.5,
+        ComissionCurrency="EUR",
+        ComissionTotal=0,
+        TaxCurrency="EUR",
+        TaxTotal=0,
+        FxRateToBase=1,
+    ),
+)
 
 simpleStagingStockLot = StagingTaxLot(
     ID="Lot",
@@ -192,3 +287,67 @@ class TestStagingFinancialGroupingProcessor:
         assert results[0].DerivativeTaxLots[0].Acquired.ExchangedMoney.UnderlyingQuantity == 1
         assert results[0].DerivativeTaxLots[0].Sold == results[0].DerivativeTrades[1]
         assert results[0].DerivativeTaxLots[0].Sold.ExchangedMoney.UnderlyingQuantity == -1
+
+    def testDividendWithWitholdingTax(self):
+        groupings = [
+            StagingFinancialGrouping(
+                ISIN="US123",
+                CountryOfOrigin=None,
+                UnderlyingCategory=cf.GenericCategory.REGULAR,
+                StockTrades=[],
+                StockTaxLots=[],
+                DerivativeTrades=[],
+                DerivativeTaxLots=[],
+                CashTransactions=[
+                    simpleStagingDividend,
+                    simpleStagingDividendWitholdingTax,
+                ],
+            )
+        ]
+
+        utils = StagingFinancialGroupingProcessor(ProcessingUtils())
+
+        results = utils.generateGenericGroupings(groupings)
+
+        assert len(results) == 1
+
+        assert results[0].CashTransactions[0].ID == simpleStagingDividend.ID
+        assert results[0].CashTransactions[1].ID == simpleStagingDividendWitholdingTax.ID
+
+        assert results[0].CashTransactions[0].ExchangedMoney.UnderlyingQuantity == 1
+        assert results[0].CashTransactions[1].ExchangedMoney.UnderlyingQuantity == 1
+
+        assert results[0].CashTransactions[0].ExchangedMoney.UnderlyingTradePrice == 10
+        assert results[0].CashTransactions[1].ExchangedMoney.UnderlyingTradePrice == -5
+
+    def testPaymentInLieuOfDividendWithWitholdingTax(self):
+        groupings = [
+            StagingFinancialGrouping(
+                ISIN="US123",
+                CountryOfOrigin=None,
+                UnderlyingCategory=cf.GenericCategory.REGULAR,
+                StockTrades=[],
+                StockTaxLots=[],
+                DerivativeTrades=[],
+                DerivativeTaxLots=[],
+                CashTransactions=[
+                    simpleStagingPaymentInLieuOfDividend,
+                    simpleStagingPaymentInLieuOfDividendWitholdingTax,
+                ],
+            )
+        ]
+
+        utils = StagingFinancialGroupingProcessor(ProcessingUtils())
+
+        results = utils.generateGenericGroupings(groupings)
+
+        assert len(results) == 1
+
+        assert results[0].CashTransactions[0].ID == simpleStagingPaymentInLieuOfDividend.ID
+        assert results[0].CashTransactions[1].ID == simpleStagingPaymentInLieuOfDividendWitholdingTax.ID
+
+        assert results[0].CashTransactions[0].ExchangedMoney.UnderlyingQuantity == 1
+        assert results[0].CashTransactions[1].ExchangedMoney.UnderlyingQuantity == 1
+
+        assert results[0].CashTransactions[0].ExchangedMoney.UnderlyingTradePrice == 5
+        assert results[0].CashTransactions[1].ExchangedMoney.UnderlyingTradePrice == -2.5
