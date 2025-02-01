@@ -61,9 +61,9 @@ def convertToCashTransactions(
     ) -> StagingTransactionCash:
         dividendType = cf.GenericDividendType.UNKNOWN
 
-        ordinaryDividend = transaction.Description.__contains__("Ordinary Dividend")
-        bonusDividend = transaction.Description.__contains__("Bonus Dividend")
-        witholdingTaxForPaymentInLieuOfDividends = transaction.Description.__contains__("Payment in lieu of Dividends")
+        ordinaryDividend = transaction.Description.lower().__contains__("ordinary dividend")
+        bonusDividend = transaction.Description.lower().__contains__("bonus dividend")
+        witholdingTaxForPaymentInLieuOfDividends = transaction.Description.lower().__contains__("payment in lieu of dividend")
 
         if ordinaryDividend:
             dividendType = cf.GenericDividendType.ORDINARY
