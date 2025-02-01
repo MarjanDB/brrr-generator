@@ -48,6 +48,7 @@ stockAcquired = pgf.TradeEventStockAcquired(
         ComissionTotal=0.0,
         TaxCurrency="EUR",
         TaxTotal=0.0,
+        FxRateToBase=1,
     ),
     AcquiredReason=cf.GenericTradeReportItemGainType.BOUGHT,
 )
@@ -67,6 +68,7 @@ stockSold = pgf.TradeEventStockSold(
         ComissionTotal=0.0,
         TaxCurrency="EUR",
         TaxTotal=0.0,
+        FxRateToBase=1,
     ),
 )
 
@@ -86,6 +88,7 @@ optionBought = pgf.TradeEventDerivativeAcquired(
         ComissionTotal=0.0,
         TaxCurrency="EUR",
         TaxTotal=0.0,
+        FxRateToBase=1,
     ),
 )
 
@@ -104,6 +107,7 @@ optionSold = pgf.TradeEventDerivativeSold(
         ComissionTotal=0.0,
         TaxCurrency="EUR",
         TaxTotal=0.0,
+        FxRateToBase=1,
     ),
 )
 
@@ -122,6 +126,7 @@ cashTransactionDivided = TradeEventCashTransactionDividend(
         ComissionTotal=0.0,
         TaxCurrency="EUR",
         TaxTotal=0.0,
+        FxRateToBase=0.5,
     ),
     ActionID="DivAction",
     TransactionID="TranId1",
@@ -144,6 +149,7 @@ cashTransactionWitholdingTax = TradeEventCashTransactionWitholdingTax(
         ComissionTotal=0.0,
         TaxCurrency="EUR",
         TaxTotal=0.0,
+        FxRateToBase=0.5,
     ),
     ActionID="DivAction",
     TransactionID="TranId1",
@@ -235,6 +241,8 @@ class TestSlovenianTaxAuthorityProvider:
         assert export.shape[0] == 1, "Only 1 rows should be present, because the dividend and witholding tax are related"
         assert export["Znesek dividend (v EUR)"][0] == 10.0, "The dividend amount should equal 10"
         assert export["Tuji davek (v EUR)"][0] == 5.0, "The dividend witheld tax should be 5"
+        assert export["Znesek dividend (v Originalni Valuti)"][0] == 20, "The original dividend amount should equal 15"
+        assert export["Tuji davek (v Originalni Valuti)"][0] == 10.0, "The original dividend witheld tax should be 10"
 
     def testDivSimpleXml(self):
         config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))

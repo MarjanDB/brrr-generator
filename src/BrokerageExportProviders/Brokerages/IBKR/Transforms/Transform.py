@@ -86,6 +86,7 @@ def convertToCashTransactions(
                     ComissionTotal=0,
                     TaxCurrency=transaction.Currency,
                     TaxTotal=0,
+                    FxRateToBase=transaction.FXRateToBase,
                 ),
                 ActionID=transaction.ActionID,
                 TransactionID=transaction.TransactionID,
@@ -108,6 +109,7 @@ def convertToCashTransactions(
                     ComissionTotal=0,
                     TaxCurrency=transaction.Currency,
                     TaxTotal=0,
+                    FxRateToBase=transaction.FXRateToBase,
                 ),
                 ActionID=transaction.ActionID,
                 TransactionID=transaction.TransactionID,
@@ -131,6 +133,7 @@ def convertToCashTransactions(
                     ComissionTotal=0,
                     TaxCurrency=transaction.Currency,
                     TaxTotal=0,
+                    FxRateToBase=transaction.FXRateToBase,
                 ),
                 ActionID=transaction.ActionID,
                 TransactionID=transaction.TransactionID,
@@ -165,6 +168,7 @@ def convertStockTradesToStockTradeEvents(
                 ComissionTotal=trade.IBCommission,
                 TaxCurrency=trade.Currency,  # NOTE: Taxes Currency == Trade Currency ??
                 TaxTotal=trade.Taxes,
+                FxRateToBase=trade.FXRateToBase,
             ),
         )
         return converted
@@ -187,6 +191,7 @@ def convertStockTradesToStockTradeEvents(
                 ComissionTotal=trade.IBCommission,
                 TaxCurrency=trade.Currency,  # NOTE: Taxes Currency == Trade Currency ??
                 TaxTotal=trade.Taxes,
+                FxRateToBase=trade.FXRateToBase,
             ),
         )
         return converted
@@ -246,6 +251,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(
                 ComissionTotal=trade.IBCommission,
                 TaxCurrency=trade.Currency,  # NOTE: Taxes Currency == Trade Currency ??
                 TaxTotal=trade.Taxes,
+                FxRateToBase=trade.FXRateToBase,
             ),
         )
         return converted
@@ -268,6 +274,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(
                 ComissionTotal=trade.IBCommission,
                 TaxCurrency=trade.Currency,  # NOTE: Taxes Currency == Trade Currency ??
                 TaxTotal=trade.Taxes,
+                FxRateToBase=trade.FXRateToBase,
             ),
         )
         return converted

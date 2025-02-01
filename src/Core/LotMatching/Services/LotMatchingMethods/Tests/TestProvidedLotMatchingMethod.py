@@ -30,6 +30,7 @@ simpleLot = TaxLot[TradeEvent, TradeEvent](
             ComissionTotal=0,
             TaxCurrency="EUR",
             TaxTotal=0,
+            FxRateToBase=1,
         ),
     ),
     Sold=TradeEvent(
@@ -47,6 +48,7 @@ simpleLot = TaxLot[TradeEvent, TradeEvent](
             ComissionTotal=0,
             TaxCurrency="EUR",
             TaxTotal=0,
+            FxRateToBase=1,
         ),
     ),
     ShortLongType=GenericShortLong.LONG,
@@ -71,6 +73,7 @@ underUtilizedLot = TaxLot[TradeEvent, TradeEvent](
             ComissionTotal=0,
             TaxCurrency="EUR",
             TaxTotal=0,
+            FxRateToBase=1,
         ),
     ),
     Sold=TradeEvent(
@@ -88,6 +91,7 @@ underUtilizedLot = TaxLot[TradeEvent, TradeEvent](
             ComissionTotal=0,
             TaxCurrency="EUR",
             TaxTotal=0,
+            FxRateToBase=1,
         ),
     ),
     ShortLongType=GenericShortLong.LONG,

@@ -78,6 +78,8 @@ class GenericMonetaryExchangeInformation:
     TaxCurrency: str
     TaxTotal: float
 
+    FxRateToBase: float
+
 
 # https://www.racunovodstvo.net/zakonodaja/zdoh/90-clen
 class GenericDividendType(str, Enum):
