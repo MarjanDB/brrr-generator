@@ -47,7 +47,11 @@ def processEdavkiLineItemsFromCashTransactions(
             DividendIdentifierForTracking=actionId,
             TaxReliefParagraphInInternationalTreaty="",
             DividendAmount=dividend.ExchangedMoney.UnderlyingQuantity * dividend.ExchangedMoney.UnderlyingTradePrice,
+            DividendAmountInOriginalCurrency=dividend.ExchangedMoney.UnderlyingQuantity
+            * dividend.ExchangedMoney.UnderlyingTradePrice
+            * (1 / dividend.ExchangedMoney.FxRateToBase),
             ForeignTaxPaid=dividend.ExchangedMoney.TaxTotal,
+            ForeignTaxPaidInOriginalCurrency=dividend.ExchangedMoney.TaxTotal * (1 / dividend.ExchangedMoney.FxRateToBase),
         )
 
         if actionToDividendMapping.get(actionId) is None:
@@ -56,6 +60,11 @@ def processEdavkiLineItemsFromCashTransactions(
 
         actionToDividendMapping[actionId].DividendAmount += (
             dividend.ExchangedMoney.UnderlyingQuantity * dividend.ExchangedMoney.UnderlyingTradePrice
+        )
+        actionToDividendMapping[actionId].DividendAmountInOriginalCurrency += (
+            dividend.ExchangedMoney.UnderlyingQuantity
+            * dividend.ExchangedMoney.UnderlyingTradePrice
+            * (1 / dividend.ExchangedMoney.FxRateToBase)
         )
 
     for withheldTax in witholdingLines:
@@ -67,6 +76,11 @@ def processEdavkiLineItemsFromCashTransactions(
 
         actionToDividendMapping[actionId].ForeignTaxPaid += (
             withheldTax.ExchangedMoney.UnderlyingQuantity * withheldTax.ExchangedMoney.UnderlyingTradePrice
+        )
+        actionToDividendMapping[actionId].ForeignTaxPaidInOriginalCurrency += (
+            withheldTax.ExchangedMoney.UnderlyingQuantity
+            * withheldTax.ExchangedMoney.UnderlyingTradePrice
+            * (1 / withheldTax.ExchangedMoney.FxRateToBase)
         )
 
     createdLines = list(actionToDividendMapping.values())
@@ -99,7 +113,9 @@ def mergeDividendsReceivedOnSameDayForSingleIsin(dividends: Sequence[ss.EDavkiDi
 
     for dividendList in segmented.values():
         combinedTotal = sum(map(lambda dividend: dividend.DividendAmount, dividendList))
+        combinedTotalInOriginalCurrency = sum(map(lambda dividend: dividend.DividendAmountInOriginalCurrency, dividendList))
         combinedTotalTax = sum(map(lambda dividend: dividend.ForeignTaxPaid, dividendList))
+        combinedTotalTaxInOriginalCurrency = sum(map(lambda dividend: dividend.ForeignTaxPaidInOriginalCurrency, dividendList))
 
         combinedTracking = "-".join(
             list(
@@ -122,7 +138,9 @@ def mergeDividendsReceivedOnSameDayForSingleIsin(dividends: Sequence[ss.EDavkiDi
             DividendIdentifierForTracking=combinedTracking,
             TaxReliefParagraphInInternationalTreaty=dividendList[0].TaxReliefParagraphInInternationalTreaty,
             DividendAmount=combinedTotal,
+            DividendAmountInOriginalCurrency=combinedTotalInOriginalCurrency,
             ForeignTaxPaid=combinedTotalTax,
+            ForeignTaxPaidInOriginalCurrency=combinedTotalTaxInOriginalCurrency,
         )
 
         mergedDividends.append(generatedMerged)
@@ -168,7 +186,9 @@ def fillInMissingCompanyInformationForDividendLineAndRoundAmounts(
 
     for dividendLine in lines:
         dividendLine.DividendAmount = dividendLine.DividendAmount.__round__(2)
+        dividendLine.DividendAmountInOriginalCurrency = dividendLine.DividendAmountInOriginalCurrency.__round__(2)
         dividendLine.ForeignTaxPaid = dividendLine.ForeignTaxPaid.__abs__().__round__(2)
+        dividendLine.ForeignTaxPaidInOriginalCurrency = dividendLine.ForeignTaxPaidInOriginalCurrency.__abs__().__round__(2)
         dividendLine.DividendPayerTitle = DividendPayerTitle
         dividendLine.DividendPayerCountryOfOrigin = DividendPayerCountryOfOrigin
         dividendLine.CountryOfOrigin = CountryOfOrigin

@@ -34,6 +34,7 @@ simpleStagingStockBuy = StagingTradeEventStockAcquired(
         ComissionTotal=0,
         TaxCurrency="EUR",
         TaxTotal=0,
+        FxRateToBase=1,
     ),
 )
 
@@ -53,6 +54,7 @@ simpleStagingStockSold = StagingTradeEventStockSold(
         ComissionTotal=0,
         TaxCurrency="EUR",
         TaxTotal=0,
+        FxRateToBase=1,
     ),
 )
 
@@ -84,6 +86,7 @@ simpleStagingDerivativeBuy = StagingTradeEventDerivativeAcquired(
         ComissionTotal=0,
         TaxCurrency="EUR",
         TaxTotal=0,
+        FxRateToBase=1,
     ),
 )
 
@@ -102,6 +105,7 @@ simpleStagingDerivativeSold = StagingTradeEventDerivativeSold(
         ComissionTotal=0,
         TaxCurrency="EUR",
         TaxTotal=0,
+        FxRateToBase=1,
     ),
 )
 

@@ -22,6 +22,7 @@ simpleStockBuy = pgf.TradeEventStockAcquired(
         ComissionTotal=0,
         TaxCurrency="EUR",
         TaxTotal=0,
+        FxRateToBase=1,
     ),
 )
 
@@ -41,6 +42,7 @@ simpleStockSold = pgf.TradeEventStockSold(
         ComissionTotal=0,
         TaxCurrency="EUR",
         TaxTotal=0,
+        FxRateToBase=1,
     ),
 )
 

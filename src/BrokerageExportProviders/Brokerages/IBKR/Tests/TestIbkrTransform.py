@@ -5,6 +5,7 @@ import BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
 import BrokerageExportProviders.Brokerages.IBKR.Transforms.Transform as t
 from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventCashTransactionDividend,
+    StagingTradeEventCashTransactionPaymentInLieuOfDividends,
     StagingTradeEventCashTransactionWitholdingTax,
 )
 
@@ -227,6 +228,31 @@ dividend = es.TransactionCash(
     ActionID="102869793",
 )
 
+paymentInLieuOfDividend = es.TransactionCash(
+    ClientAccountID="FakeAccount",
+    Currency="USD",
+    FXRateToBase=1.2,
+    AssetClass=es.AssetClass.CASH,
+    SubCategory=es.SubCategory.COMMON,
+    Symbol="TTE",
+    Description="TTE(FR0000120271) CASH DIVIDEND USD 0.66 PER SHARE (Payment in Lieu of Dividends)",
+    Conid="29612193",
+    SecurityID="FR0000120271",
+    SecurityIDType=es.SecurityIDType.ISIN,
+    CUSIP=None,
+    ISIN="FR0000120271",
+    FIGI=None,
+    ListingExchange="SBF",
+    DateTime=ar.get("2023-01-01T02:00:00"),
+    SettleDate=ar.get("2023-01-01"),
+    Amount=2.64,
+    Type=es.CashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS,
+    Code=None,
+    TransactionID="269176073",
+    ReportDate=ar.get("2023-01-01"),
+    ActionID="102869793",
+)
+
 witholdingTax = es.TransactionCash(
     ClientAccountID="FakeAccount",
     Currency="USD",
@@ -277,6 +303,35 @@ class TestIbkrTransformCashTransaction:
             extracted.CashTransactions[0].ExchangedMoney.UnderlyingTradePrice == dividend.Amount * dividend.FXRateToBase
         ), "The Dividend Trade Price should match the dividend"
         assert extracted.CashTransactions[0].ExchangedMoney.UnderlyingQuantity == 1, "There was only one instance of the dividend paid"
+
+    def testSinglePaymentInLieuOfDividend(self):
+        segmented = st.SegmentedTrades(
+            cashTransactions=[paymentInLieuOfDividend],
+            corporateActions=[],
+            stockTrades=[],
+            stockLots=[],
+            derivativeTrades=[],
+            derivativeLots=[],
+        )
+
+        extract = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
+
+        assert len(extract) == 1, "Given a single cash transaction, there should only be a single underlying group"
+
+        extracted = extract[0]
+
+        assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
+        assert extracted.CashTransactions[0].ISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
+        assert isinstance(
+            extracted.CashTransactions[0], StagingTradeEventCashTransactionPaymentInLieuOfDividends
+        ), "Payment in lieu of dividend is of a payment in lieu of dividend line type"
+        assert (
+            extracted.CashTransactions[0].ExchangedMoney.UnderlyingTradePrice
+            == paymentInLieuOfDividend.Amount * paymentInLieuOfDividend.FXRateToBase
+        ), "The Dividend Trade Price should match the dividend"
+        assert (
+            extracted.CashTransactions[0].ExchangedMoney.UnderlyingQuantity == 1
+        ), "There was only one instance of the payment in lieu of dividend paid"
 
     def testSingleWitholdingTax(self):
         segmented = st.SegmentedTrades(

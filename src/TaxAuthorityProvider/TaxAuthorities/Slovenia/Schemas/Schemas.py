@@ -31,7 +31,9 @@ class EDavkiDividendReportLine:
     DividendIdentifierForTracking: str
     TaxReliefParagraphInInternationalTreaty: str | None
     DividendAmount: float = 0
+    DividendAmountInOriginalCurrency: float = 0
     ForeignTaxPaid: float = 0
+    ForeignTaxPaidInOriginalCurrency: float = 0
 
 
 class EDavkiTradeSecurityType(str, Enum):
