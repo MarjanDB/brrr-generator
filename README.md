@@ -10,5 +10,9 @@ Generated exports can be wrong, so verify the generated reports before submittin
 
 ## Technical Translations
 
+### Repository setup
+[![English translation](https://img.shields.io/badge/translation-english-green)](resources/docs/repo-setup/translations/README.en.md)
+
+
 ### Broker implementation
 [![English translation](https://img.shields.io/badge/translation-english-green)](resources/docs/brokerage-development/translations/README.en.md)
