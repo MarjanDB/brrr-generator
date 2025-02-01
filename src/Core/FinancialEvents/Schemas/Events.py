@@ -76,6 +76,14 @@ class TradeEventCashTransactionWitholdingTax(TradeEventCashTransaction):
     ListingExchange: str
 
 
+@dataclass
+class TradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividend(TradeEventCashTransaction):
+    ListingExchange: str
+
+
 TransactionCash = Union[
-    TradeEventCashTransactionDividend, TradeEventCashTransactionWitholdingTax, TradeEventCashTransactionPaymentInLieuOfDividend
+    TradeEventCashTransactionDividend,
+    TradeEventCashTransactionWitholdingTax,
+    TradeEventCashTransactionPaymentInLieuOfDividend,
+    TradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividend,
 ]

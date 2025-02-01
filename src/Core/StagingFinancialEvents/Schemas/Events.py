@@ -57,27 +57,30 @@ StagingTradeEventDerivative = Union[StagingTradeEventDerivativeAcquired, Staging
 class StagingTradeEventCashTransaction(StagingTradeEvent):
     ActionID: str
     TransactionID: str
+    ListingExchange: str
 
 
 @dataclass
 class StagingTradeEventCashTransactionDividend(StagingTradeEventCashTransaction):
-    ListingExchange: str
     DividendType: GenericDividendType
 
 
 @dataclass
-class StagingTradeEventCashTransactionWitholdingTax(StagingTradeEventCashTransaction):
-    ListingExchange: str
+class StagingTradeEventCashTransactionWitholdingTax(StagingTradeEventCashTransaction): ...
 
 
 @dataclass
 class StagingTradeEventCashTransactionPaymentInLieuOfDividends(StagingTradeEventCashTransaction):
-    ListingExchange: str
     DividendType: GenericDividendType
+
+
+@dataclass
+class StagingTradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividends(StagingTradeEventCashTransaction): ...
 
 
 StagingTransactionCash = Union[
     StagingTradeEventCashTransactionDividend,
     StagingTradeEventCashTransactionWitholdingTax,
     StagingTradeEventCashTransactionPaymentInLieuOfDividends,
+    StagingTradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividends,
 ]
