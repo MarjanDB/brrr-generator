@@ -1,0 +1,35 @@
+<FlexQueryResponse queryName="Tax Relevant Export" type="AF">
+    <FlexStatements count="1">
+        <FlexStatement accountId="FakeAccountId" fromDate="2022-01-01" toDate="2022-12-30" period=""
+            whenGenerated="2024-02-12;14:37:52 EST">
+            <CashTransactions>
+                <CashTransaction accountId="FakeAccountId" acctAlias="" model="" currency="USD"
+                    fxRateToBase="0.89981" assetCategory="STK" subCategory="COMMON" symbol="MCD"
+                    description="MCD(US5801351017) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)"
+                    conid="9408" securityID="US5801351017" securityIDType="ISIN" cusip="580135101"
+                    isin="US5801351017" figi="BBG000BNSZP1" listingExchange="NYSE"
+                    underlyingConid="" underlyingSymbol="MCD" underlyingSecurityID=""
+                    underlyingListingExchange="" issuer="" issuerCountryCode="US" multiplier="1"
+                    strike="" expiry="" putCall="" principalAdjustFactor=""
+                    dateTime="2024-09-17;20:20:00 EDT" settleDate="2024-09-17" amount="15.03"
+                    type="Payment In Lieu Of Dividends" tradeID="" code="" transactionID="814208300"
+                    reportDate="2024-09-17" clientReference="" actionID="141244396"
+                    levelOfDetail="DETAIL" serialNumber="" deliveryType="" commodityType=""
+                    fineness="0.0" weight="0.0" />
+                <CashTransaction accountId="FakeAccountId" acctAlias="" model="" currency="USD"
+                    fxRateToBase="0.89981" assetCategory="STK" subCategory="COMMON" symbol="MCD"
+                    description="MCD(US5801351017) PAYMENT IN LIEU OF DIVIDEND - US TAX"
+                    conid="9408" securityID="US5801351017" securityIDType="ISIN" cusip="580135101"
+                    isin="US5801351017" figi="BBG000BNSZP1" listingExchange="NYSE"
+                    underlyingConid="" underlyingSymbol="MCD" underlyingSecurityID=""
+                    underlyingListingExchange="" issuer="" issuerCountryCode="US" multiplier="1"
+                    strike="" expiry="" putCall="" principalAdjustFactor=""
+                    dateTime="2024-09-17;20:20:00 EDT" settleDate="2024-09-17" amount="-2.25"
+                    type="Withholding Tax" tradeID="" code="" transactionID="814208301"
+                    reportDate="2024-09-17" clientReference="" actionID="141244396"
+                    levelOfDetail="DETAIL" serialNumber="" deliveryType="" commodityType=""
+                    fineness="0.0" weight="0.0" />
+            </CashTransactions>
+        </FlexStatement>
+    </FlexStatements>
+</FlexQueryResponse>
