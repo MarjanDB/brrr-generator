@@ -1,13 +1,17 @@
 {
     "xml.fileAssociations": [
         {
-            "pattern": "exports/GeneratedReports/Doh_Div_3.xml",
+            "pattern": "exports/Doh_Div_3.xml",
             "systemId": "src/TaxAuthorityProvider/TaxAuthorities/Slovenia/XmlSchemas/Doh_Div_3.xsd"
         },
         {
-            "pattern": "exports/GeneratedReports/Doh_KDVP_9.xml",
+            "pattern": "exports/Doh_KDVP_9.xml",
             "systemId": "src/TaxAuthorityProvider/TaxAuthorities/Slovenia/XmlSchemas/Doh_KDVP_9.xsd"
         },
+        {
+            "pattern": "exports/D_IFI_4.xml",
+            "systemId": "src/TaxAuthorityProvider/TaxAuthorities/Slovenia/XmlSchemas/D_IFI_4.xsd"
+        }
     ],
     "python.analysis.diagnosticSeverityOverrides": {
         "reportIncompatibleVariableOverride": "information",
@@ -16,6 +20,7 @@
     "python.testing.pytestArgs": [
         "src"
     ],
+    "jupyter.notebookFileRoot": "${workspaceFolder}",
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "[python]": {
