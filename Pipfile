@@ -20,6 +20,7 @@ types-lxml = "2024.11.*"
 pytest-cov = "6.0.*"
 pytest-md = "0.2.*"
 black = "24.10.*"
+nbconvert = "7.16.*"
 
 [requires]
 python_version = "3.12"
