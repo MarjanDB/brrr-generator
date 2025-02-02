@@ -62,6 +62,11 @@ class FifoLotMatchingMethod(LotMatchingMethod):
         while len(eventBacklog) > 0:
             newCandidateEvent = eventBacklog.pop()
 
+            # If there are no events waiting for a matching event, we can just add the new candidate event to that queue
+            if len(eventsWaitingForMatchingEventsToMakeLot) == 0:
+                eventsWaitingForMatchingEventsToMakeLot.append(newCandidateEvent)
+                continue
+
             earliestEventWaitingForMatch = eventsWaitingForMatchingEventsToMakeLot[-1]
 
             # The most common case is when the quantities don't cancel out
