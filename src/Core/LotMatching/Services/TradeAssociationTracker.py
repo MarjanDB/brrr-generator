@@ -23,6 +23,12 @@ class TradeAssociationTracker:
         if event.ID not in self.__tradeSoldTracker:
             self.__tradeSoldTracker[event.ID] = TradeAssociation(Quantity=0, AssociatedTrade=event)
 
+    def trackTrade(self, event: Trade):
+        if event.Quantity >= 0:
+            self.__associateAcquiredTrade(event)
+        else:
+            self.__associateSoldTrade(event)
+
     def trackAcquiredQuantity(self, event: Trade, quantity: float):
         self.__associateAcquiredTrade(event)
 

@@ -1,11 +1,12 @@
-from typing import Sequence
+from typing import Callable, Sequence
 
 import Core.FinancialEvents.Schemas.Grouping as pgf
-from Core.FinancialEvents.Utils.ProcessingUtils import ProcessingUtils
-from Core.LotMatching.Services.LotMatcher import LotMatcher
-from Core.LotMatching.Services.LotMatchingMethods.ProvidedLotMatchingMethod import (
-    ProvidedLotMatchingMethod,
+from Core.FinancialEvents.Schemas.LotMatchingConfiguration import (
+    LotMatchingConfiguration,
 )
+from Core.FinancialEvents.Utils.ProcessingUtils import ProcessingUtils
+from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
+from Core.LotMatching.Services.LotMatcher import LotMatcher
 
 
 class FinancialEventsProcessor:
@@ -18,16 +19,16 @@ class FinancialEventsProcessor:
         self.lotMatcher = lotMatcher
         self.processingUtils = processingUtils
 
-    def process(self, input: pgf.FinancialGrouping) -> pgf.UnderlyingGroupingWithTradesOfInterest:
-        stockLots = input.StockTaxLots
-        derivativeLots = input.DerivativeTaxLots
-
+    def process(
+        self, input: pgf.FinancialGrouping, lotMatchingMethod: LotMatchingConfiguration
+    ) -> pgf.UnderlyingGroupingWithTradesOfInterest:
         lotMatcher = self.lotMatcher
-        stockTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(ProvidedLotMatchingMethod(stockLots), input.StockTrades)
 
-        derivativeTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(
-            ProvidedLotMatchingMethod(derivativeLots), input.DerivativeTrades
-        )
+        lotMatchingMethodInstance = lotMatchingMethod.ForStocks(input)
+        stockTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(lotMatchingMethodInstance, input.StockTrades)
+
+        lotMatchingMethodInstance = lotMatchingMethod.ForDerivatives(input)
+        derivativeTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(lotMatchingMethodInstance, input.DerivativeTrades)
 
         interestingGrouping = pgf.UnderlyingGroupingWithTradesOfInterest(
             ISIN=input.ISIN,
@@ -41,7 +42,7 @@ class FinancialEventsProcessor:
         return interestingGrouping
 
     def generateInterestingUnderlyingGroupings(
-        self, groupings: Sequence[pgf.FinancialGrouping]
+        self, groupings: Sequence[pgf.FinancialGrouping], lotMatchingMethod: LotMatchingConfiguration
     ) -> Sequence[pgf.UnderlyingGroupingWithTradesOfInterest]:
-        processedGroupings = list(map(self.process, groupings))
+        processedGroupings = list(map(lambda grouping: self.process(grouping, lotMatchingMethod), groupings))
         return processedGroupings
