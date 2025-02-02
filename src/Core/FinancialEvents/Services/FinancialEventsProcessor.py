@@ -4,9 +4,6 @@ import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.FinancialEvents.Utils.ProcessingUtils import ProcessingUtils
 from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
 from Core.LotMatching.Services.LotMatcher import LotMatcher
-from Core.LotMatching.Services.LotMatchingMethods.ProvidedLotMatchingMethod import (
-    ProvidedLotMatchingMethod,
-)
 
 
 class FinancialEventsProcessor:
@@ -22,15 +19,13 @@ class FinancialEventsProcessor:
     def process(
         self, input: pgf.FinancialGrouping, lotMatchingMethod: Callable[[pgf.FinancialGrouping], LotMatchingMethod]
     ) -> pgf.UnderlyingGroupingWithTradesOfInterest:
-        derivativeLots = input.DerivativeTaxLots
-        lotMatchingMethodInstance = lotMatchingMethod(input)
-
         lotMatcher = self.lotMatcher
+
+        lotMatchingMethodInstance = lotMatchingMethod(input)
         stockTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(lotMatchingMethodInstance, input.StockTrades)
 
-        derivativeTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(
-            ProvidedLotMatchingMethod(derivativeLots), input.DerivativeTrades
-        )
+        lotMatchingMethodInstance = lotMatchingMethod(input)
+        derivativeTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(lotMatchingMethodInstance, input.DerivativeTrades)
 
         interestingGrouping = pgf.UnderlyingGroupingWithTradesOfInterest(
             ISIN=input.ISIN,

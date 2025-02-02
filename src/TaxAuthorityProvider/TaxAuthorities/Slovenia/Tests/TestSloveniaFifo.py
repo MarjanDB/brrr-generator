@@ -120,7 +120,7 @@ testData = pgf.FinancialGrouping(
 )
 
 
-class TestSloveniaKdvpFifo:
+class TestSloveniaFifo:
     def testKdvpSimpleCsv(self):
         config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.FIFO)
 

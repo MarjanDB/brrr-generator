@@ -78,7 +78,7 @@ def convertTradesToIfiItems(
     if reportConfig.lotMatchingMethod == tc.TaxAuthorityLotMatchingMethod.PROVIDED:
 
         def matchingMethodFactory(grouping: pgf.FinancialGrouping) -> LotMatchingMethod:
-            return ProvidedLotMatchingMethod(grouping.StockTaxLots)
+            return ProvidedLotMatchingMethod(grouping.DerivativeTaxLots)
 
     else:
 
