@@ -176,7 +176,7 @@ testData = pgf.FinancialGrouping(
 
 class TestSlovenianTaxAuthorityProvider:
     def testKdvpSimpleCsv(self):
-        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.PROVIDED)
 
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
@@ -187,7 +187,7 @@ class TestSlovenianTaxAuthorityProvider:
         assert export["Quantity"][1] == -1, "The second line should be the sell line"
 
     def testKdvpSimpleXml(self):
-        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.PROVIDED)
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
         export = provider.generateExportForTaxAuthority(rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP, [testData])
@@ -204,7 +204,7 @@ class TestSlovenianTaxAuthorityProvider:
         assert saleNodes[0].getchildren()[1].text == "-1.0", "The sale's 3rd F3 element should contain a negative Quantity"
 
     def testIfiSimpleCsv(self):
-        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.PROVIDED)
 
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
@@ -215,7 +215,7 @@ class TestSlovenianTaxAuthorityProvider:
         assert export["Quantity"][1] == -1, "The second line should be the sell line"
 
     def testIfiSimpleXml(self):
-        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.PROVIDED)
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
         export = provider.generateExportForTaxAuthority(rt.SlovenianTaxAuthorityReportTypes.D_IFI, [testData])
@@ -232,7 +232,7 @@ class TestSlovenianTaxAuthorityProvider:
         assert saleNodes[0].getchildren()[1].text == "-1.0", "The sale's 2nd F6 element should contain a negative Quantity"
 
     def testDivSimpleCsv(self):
-        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.NONE)
 
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
@@ -245,7 +245,7 @@ class TestSlovenianTaxAuthorityProvider:
         assert export["Tuji davek (v Originalni Valuti)"][0] == 10.0, "The original dividend witheld tax should be 10"
 
     def testDivSimpleXml(self):
-        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.NONE)
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
         export = provider.generateExportForTaxAuthority(rt.SlovenianTaxAuthorityReportTypes.DOH_DIV, [testData])

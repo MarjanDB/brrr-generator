@@ -142,7 +142,7 @@ testData = pgf.FinancialGrouping(
 
 class TestPaymentInLieuOfDividend:
     def testThatWitholdingTaxForPaymentInLieuOfDividendIsNotReportedAsDividendWitholdingTax(self):
-        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"))
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.NONE)
 
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
