@@ -4,7 +4,11 @@ import Core.FinancialEvents.Schemas.CommonFormats as cf
 import Core.FinancialEvents.Schemas.Grouping as pgf
 import Core.FinancialEvents.Services.FinancialEventsProcessor as cgp
 import Core.FinancialEvents.Utils.ProcessingUtils as pu
+from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
 from Core.LotMatching.Services.LotMatcher import LotMatcher
+from Core.LotMatching.Services.LotMatchingMethods.ProvidedLotMatchingMethod import (
+    ProvidedLotMatchingMethod,
+)
 
 simpleStockBuy = pgf.TradeEventStockAcquired(
     ID="StockBought",
@@ -57,6 +61,10 @@ simpleStockLot = pgf.TaxLotStock(
 )
 
 
+def matchingMethodFactory(grouping: pgf.FinancialGrouping) -> LotMatchingMethod:
+    return ProvidedLotMatchingMethod(grouping.StockTaxLots)
+
+
 class TestFinancialEventsProcessor:
     def testSingleStockLotMatching(self):
         grouping = pgf.FinancialGrouping(
@@ -72,7 +80,7 @@ class TestFinancialEventsProcessor:
 
         utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
 
-        interesting = utils.generateInterestingUnderlyingGroupings([grouping])
+        interesting = utils.generateInterestingUnderlyingGroupings([grouping], matchingMethodFactory)
 
         assert len(interesting) == 1, "There should only be one grouping generated when given one grouping"
 
@@ -99,7 +107,7 @@ class TestFinancialEventsProcessor:
 
         utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
 
-        interesting = utils.generateInterestingUnderlyingGroupings([grouping])
+        interesting = utils.generateInterestingUnderlyingGroupings([grouping], matchingMethodFactory)
 
         assert len(interesting) == 1, "There should only be one grouping generated when given one grouping"
 
