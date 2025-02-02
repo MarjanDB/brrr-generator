@@ -29,13 +29,13 @@ class TrackingTradeBuySellSide:
 
     def confirmConsumedQuantity(self, quantity: float, tracker: TradeAssociationTracker):
         tracker.trackAcquiredQuantity(self.BuySide, quantity)
-        tracker.trackSoldQuantity(self.SellSide, quantity)
+        tracker.trackSoldQuantity(self.SellSide, -quantity)
 
     def getRemainingQuantity(self, of: Trade, tracker: TradeAssociationTracker):
         if of == self.BuySide:
             return of.Quantity - tracker.getAcquiredTradeTracker(of).Quantity
         else:
-            return of.Quantity + tracker.getSoldTradeTracker(of).Quantity
+            return of.Quantity - tracker.getSoldTradeTracker(of).Quantity
 
 
 class FifoLotMatchingMethod(LotMatchingMethod):
@@ -175,5 +175,26 @@ class FifoLotMatchingMethod(LotMatchingMethod):
         return createdLots
 
     def generateTradesFromLotsWithTracking(self, lots: Sequence[Lot]) -> Sequence[Trade]:
+        processedTrades: dict[str, Trade] = dict()
 
-        return []
+        for lot in lots:
+            acquiredTrade = lot.Acquired.Relation
+
+            acquiredTradeTracking = self.tradeAssociationTracker.getAcquiredTradeTracker(acquiredTrade)
+            accountedForAcquiredQuantity = acquiredTradeTracking.Quantity
+
+            acquiredTradeProcessed = Trade(ID=acquiredTrade.ID, Quantity=accountedForAcquiredQuantity, Date=acquiredTrade.Date)
+            processedTrades[acquiredTrade.ID] = acquiredTradeProcessed
+
+            soldTrade = lot.Sold.Relation
+            soldTradeTracking = self.tradeAssociationTracker.getSoldTradeTracker(soldTrade)
+            accountedForSoldQuantity = soldTradeTracking.Quantity
+
+            soldTradeProcessed = Trade(ID=soldTrade.ID, Quantity=accountedForSoldQuantity, Date=soldTrade.Date)
+            processedTrades[soldTrade.ID] = soldTradeProcessed
+
+        processedTradesValues = list(processedTrades.values())
+
+        processedTradesValues.sort(key=lambda trade: trade.Date)
+
+        return processedTradesValues
