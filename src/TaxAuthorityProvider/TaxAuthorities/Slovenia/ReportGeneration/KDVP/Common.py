@@ -5,6 +5,9 @@ import Core.FinancialEvents.Schemas.Grouping as pgf
 import Core.FinancialEvents.Services.FinancialEventsProcessor as g
 import TaxAuthorityProvider.Schemas.Configuration as tc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
+from Core.FinancialEvents.Schemas.LotMatchingConfiguration import (
+    LotMatchingConfiguration,
+)
 from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
 from Core.LotMatching.Services.LotMatchingMethods.FifoLotMatchingMethod import (
     FifoLotMatchingMethod,
@@ -64,7 +67,11 @@ def convertTradesToKdvpItems(
         validLots = list(filter(isLotClosedInReportingPeriod, isinGrouping.StockTaxLots))
         isinGrouping.StockTaxLots = validLots
 
-        interestingGrouping = countedProcessor.process(isinGrouping, matchingMethodFactory)
+        lotMatchingConfiguration = LotMatchingConfiguration(
+            forStocks=matchingMethodFactory,
+        )
+
+        interestingGrouping = countedProcessor.process(isinGrouping, lotMatchingConfiguration)
 
         def convertStockBuy(
             line: pgf.TradeEventStockAcquired,

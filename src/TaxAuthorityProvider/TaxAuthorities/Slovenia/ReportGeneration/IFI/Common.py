@@ -6,6 +6,9 @@ import Core.FinancialEvents.Services.FinancialEventsProcessor as g
 import TaxAuthorityProvider.Schemas.Configuration as tc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 from Core.FinancialEvents.Schemas.Events import TradeEventDerivative
+from Core.FinancialEvents.Schemas.LotMatchingConfiguration import (
+    LotMatchingConfiguration,
+)
 from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
 from Core.LotMatching.Services.LotMatchingMethods.FifoLotMatchingMethod import (
     FifoLotMatchingMethod,
@@ -97,7 +100,11 @@ def convertTradesToIfiItems(
         validLots = list(filter(isLotClosedInReportingPeriod, isinGrouping.DerivativeTaxLots))
         isinGrouping.DerivativeTaxLots = validLots
 
-        interestingGrouping = countedProcessor.process(isinGrouping, matchingMethodFactory)
+        lotMatchingConfiguration = LotMatchingConfiguration(
+            forDerivatives=matchingMethodFactory,
+        )
+
+        interestingGrouping = countedProcessor.process(isinGrouping, lotMatchingConfiguration)
 
         allLines = list(interestingGrouping.DerivativeTrades)
         allLines.sort(key=lambda line: line.Date)
