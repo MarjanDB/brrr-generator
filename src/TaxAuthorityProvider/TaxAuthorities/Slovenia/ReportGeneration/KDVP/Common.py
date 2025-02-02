@@ -6,6 +6,9 @@ import Core.FinancialEvents.Services.FinancialEventsProcessor as g
 import TaxAuthorityProvider.Schemas.Configuration as tc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
+from Core.LotMatching.Services.LotMatchingMethods.FifoLotMatchingMethod import (
+    FifoLotMatchingMethod,
+)
 from Core.LotMatching.Services.LotMatchingMethods.ProvidedLotMatchingMethod import (
     ProvidedLotMatchingMethod,
 )
@@ -39,6 +42,16 @@ def convertTradesToKdvpItems(
     periodStart = reportConfig.fromDate
     periodEnd = reportConfig.toDate
 
+    if reportConfig.lotMatchingMethod == tc.TaxAuthorityLotMatchingMethod.PROVIDED:
+
+        def matchingMethodFactory(grouping: pgf.FinancialGrouping) -> LotMatchingMethod:
+            return ProvidedLotMatchingMethod(grouping.StockTaxLots)
+
+    else:
+
+        def matchingMethodFactory(grouping: pgf.FinancialGrouping) -> LotMatchingMethod:
+            return FifoLotMatchingMethod()
+
     for isinGrouping in data:
         ISIN = isinGrouping.ISIN
 
@@ -50,9 +63,6 @@ def convertTradesToKdvpItems(
 
         validLots = list(filter(isLotClosedInReportingPeriod, isinGrouping.StockTaxLots))
         isinGrouping.StockTaxLots = validLots
-
-        def matchingMethodFactory(grouping: pgf.FinancialGrouping) -> LotMatchingMethod:
-            return ProvidedLotMatchingMethod(grouping.StockTaxLots)
 
         interestingGrouping = countedProcessor.process(isinGrouping, matchingMethodFactory)
 
