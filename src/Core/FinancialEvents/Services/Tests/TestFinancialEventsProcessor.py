@@ -83,7 +83,7 @@ class TestFinancialEventsProcessor:
 
         utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
 
-        lotMatchingConfiguration = LotMatchingConfiguration()
+        lotMatchingConfiguration = LotMatchingConfiguration(fromDate=ar.get("2023-01-01"), toDate=ar.get("2023-01-02"))
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping], lotMatchingConfiguration)
 
@@ -97,6 +97,32 @@ class TestFinancialEventsProcessor:
         assert (
             len(iGrouping.DerivativeTrades) == 0
         ), "There should be no derivative trades, since there were no derivative trades whatsoever"
+
+    def testSimpleFilteringTradesOfLotsClosedInPeriod(self):
+        grouping = pgf.FinancialGrouping(
+            ISIN="US123",
+            CountryOfOrigin="US",
+            UnderlyingCategory=cf.GenericCategory.REGULAR,
+            StockTrades=[simpleStockBuy, simpleStockSold],
+            StockTaxLots=[simpleStockLot],
+            DerivativeTrades=[],
+            DerivativeTaxLots=[],
+            CashTransactions=[],
+        )
+
+        utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
+
+        lotMatchingConfiguration = LotMatchingConfiguration(fromDate=ar.get("2022-01-01"), toDate=ar.get("2022-01-02"))
+
+        interesting = utils.generateInterestingUnderlyingGroupings([grouping], lotMatchingConfiguration)
+
+        assert len(interesting) == 1, "There should only be one grouping generated when given one grouping"
+
+        iGrouping = interesting[0]
+
+        assert (
+            len(iGrouping.StockTrades) == 0
+        ), "There should be no stock trades, since there were no trade lots matching the reporting period"
 
     def testNoStockTradesMatching(self):
         grouping = pgf.FinancialGrouping(
@@ -112,7 +138,7 @@ class TestFinancialEventsProcessor:
 
         utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
 
-        lotMatchingConfiguration = LotMatchingConfiguration()
+        lotMatchingConfiguration = LotMatchingConfiguration(fromDate=ar.get("2023-01-01"), toDate=ar.get("2023-01-02"))
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping], lotMatchingConfiguration)
 
