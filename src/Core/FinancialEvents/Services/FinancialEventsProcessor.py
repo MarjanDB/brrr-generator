@@ -1,15 +1,17 @@
-from typing import Callable, Sequence
+from typing import Sequence
 
 import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.FinancialEvents.Schemas.LotMatchingConfiguration import (
     LotMatchingConfiguration,
 )
 from Core.FinancialEvents.Utils.ProcessingUtils import ProcessingUtils
-from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
 from Core.LotMatching.Services.LotMatcher import LotMatcher
 
 
 class FinancialEventsProcessor:
+    """
+    Note that since the LotMatcher is stateful, we need to create a new instance for each financial grouping.
+    """
 
     def __init__(
         self,
@@ -20,22 +22,30 @@ class FinancialEventsProcessor:
         self.processingUtils = processingUtils
 
     def process(
-        self, input: pgf.FinancialGrouping, lotMatchingMethod: LotMatchingConfiguration
+        self, input: pgf.FinancialGrouping, lotMatchingConfiguration: LotMatchingConfiguration
     ) -> pgf.UnderlyingGroupingWithTradesOfInterest:
         lotMatcher = self.lotMatcher
 
-        lotMatchingMethodInstance = lotMatchingMethod.ForStocks(input)
+        lotMatchingMethodInstance = lotMatchingConfiguration.ForStocks(input)
         stockTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(lotMatchingMethodInstance, input.StockTrades)
 
-        lotMatchingMethodInstance = lotMatchingMethod.ForDerivatives(input)
+        lotMatchingMethodInstance = lotMatchingConfiguration.ForDerivatives(input)
         derivativeTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(lotMatchingMethodInstance, input.DerivativeTrades)
+
+        stockTradesOfInterestFiltered = stockTradesOfInterest.getTradesOfLotsClosedInPeriod(
+            periodStart=lotMatchingConfiguration.fromDate, periodEnd=lotMatchingConfiguration.toDate
+        )
+
+        derivativeTradesOfInterestFiltered = derivativeTradesOfInterest.getTradesOfLotsClosedInPeriod(
+            periodStart=lotMatchingConfiguration.fromDate, periodEnd=lotMatchingConfiguration.toDate
+        )
 
         interestingGrouping = pgf.UnderlyingGroupingWithTradesOfInterest(
             ISIN=input.ISIN,
             CountryOfOrigin=input.CountryOfOrigin,
             UnderlyingCategory=input.UnderlyingCategory,
-            StockTrades=stockTradesOfInterest.Trades,  # TODO: Types
-            DerivativeTrades=derivativeTradesOfInterest.Trades,  # TODO: Types
+            StockTrades=stockTradesOfInterestFiltered.Trades,  # TODO: Types
+            DerivativeTrades=derivativeTradesOfInterestFiltered.Trades,  # TODO: Types
             CashTransactions=input.CashTransactions,
         )
 

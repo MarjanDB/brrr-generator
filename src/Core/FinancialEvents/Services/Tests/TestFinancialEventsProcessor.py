@@ -83,7 +83,7 @@ class TestFinancialEventsProcessor:
 
         utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
 
-        lotMatchingConfiguration = LotMatchingConfiguration()
+        lotMatchingConfiguration = LotMatchingConfiguration(fromDate=ar.get("2023-01-01"), toDate=ar.get("2023-01-02"))
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping], lotMatchingConfiguration)
 
@@ -112,7 +112,7 @@ class TestFinancialEventsProcessor:
 
         utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
 
-        lotMatchingConfiguration = LotMatchingConfiguration()
+        lotMatchingConfiguration = LotMatchingConfiguration(fromDate=ar.get("2023-01-01"), toDate=ar.get("2023-01-02"))
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping], lotMatchingConfiguration)
 

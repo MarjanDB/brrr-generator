@@ -91,17 +91,10 @@ def convertTradesToIfiItems(
     for isinGrouping in data:
         ISIN = isinGrouping.ISIN
 
-        def isLotClosedInReportingPeriod(lot: pgf.TaxLotDerivative) -> bool:
-            closedOn = lot.Sold.Date
-
-            # lot was not closed during the reporting period, so its trades should not be included in the generated report
-            return not (closedOn < periodStart or closedOn > periodEnd)
-
-        validLots = list(filter(isLotClosedInReportingPeriod, isinGrouping.DerivativeTaxLots))
-        isinGrouping.DerivativeTaxLots = validLots
-
         lotMatchingConfiguration = LotMatchingConfiguration(
             forDerivatives=matchingMethodFactory,
+            fromDate=periodStart,
+            toDate=periodEnd,
         )
 
         interestingGrouping = countedProcessor.process(isinGrouping, lotMatchingConfiguration)
