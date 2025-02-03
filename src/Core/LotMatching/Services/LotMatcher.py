@@ -1,6 +1,8 @@
 import copy
 from dataclasses import dataclass
-from typing import Sequence, TypeVar
+from typing import Self, Sequence, TypeVar
+
+from arrow import Arrow
 
 from Core.FinancialEvents.Schemas.CommonFormats import GenericShortLong
 from Core.FinancialEvents.Schemas.Events import TradeEvent
@@ -18,10 +20,24 @@ class LotMatchingDetails:
     Trades: Sequence[Trade]
 
 
-@dataclass
 class GenericLotMatchingDetails:
     Lots: Sequence[TaxLot[TradeEvent, TradeEvent]]
     Trades: Sequence[TradeEvent]
+
+    def __init__(self, lots: Sequence[TaxLot[TradeEvent, TradeEvent]], trades: Sequence[TradeEvent]):
+        self.Lots = lots
+        self.Trades = trades
+
+    def getTradesOfLotsClosedInPeriod(self, periodStart: Arrow, periodEnd: Arrow) -> Self:
+        lotsClosedInPeriod = list(filter(lambda lot: lot.Sold.Date >= periodStart and lot.Sold.Date <= periodEnd, self.Lots))
+
+        lotAcquiredTrades = list(map(lambda lot: lot.Acquired, lotsClosedInPeriod))
+        lotSoldTrades = list(map(lambda lot: lot.Sold, lotsClosedInPeriod))
+        allTrades = lotAcquiredTrades + lotSoldTrades
+
+        sortedTrades = sorted(allTrades, key=lambda trade: trade.Date)
+
+        return self.__class__(lots=lotsClosedInPeriod, trades=sortedTrades)
 
 
 class LotMatcher:
@@ -37,16 +53,12 @@ class LotMatcher:
 
     def matchLotsWithGenericTradeEvents(self, method: LotMatchingMethod, events: Sequence[TradeEvent]) -> GenericLotMatchingDetails:
 
-        def convertTradeEvent(event: TradeEvent) -> Trade:
-            trade = Trade(ID=event.ID, Quantity=event.ExchangedMoney.UnderlyingQuantity, Date=event.Date)
-            return trade
-
         tradeEventMappings: dict[str, TradeEvent] = dict()
         tradeMappings: dict[str, Trade] = dict()
         convertedGeneratedMappings: dict[str, TradeEvent] = dict()
 
         for event in events:
-            convertedEvent = convertTradeEvent(event)
+            convertedEvent = self._convertTradeEvent(event)
             tradeEventMappings[event.ID] = event
             tradeMappings[convertedEvent.ID] = convertedEvent
 
@@ -55,17 +67,7 @@ class LotMatcher:
         generatedLots = matchingDetails.Lots
         generatedTrades = matchingDetails.Trades
 
-        def convertTrade(trade: Trade) -> TradeEvent:
-            matchingGenericEvent = tradeEventMappings.get(trade.ID)
-
-            if matchingGenericEvent is None:
-                raise KeyError("Missing TradeEvent for Trade ({})".format(trade.ID))
-
-            cloned = copy.deepcopy(matchingGenericEvent)
-            cloned.ExchangedMoney.UnderlyingQuantity = trade.Quantity
-            return cloned
-
-        convertedGeneratedTrades = list(map(convertTrade, generatedTrades))
+        convertedGeneratedTrades = list(map(lambda trade: self._convertTrade(trade, tradeEventMappings), generatedTrades))
         for trade in convertedGeneratedTrades:
             convertedGeneratedMappings[trade.ID] = trade
 
@@ -91,6 +93,20 @@ class LotMatcher:
 
         convertedLots = list(map(convertLot, generatedLots))
 
-        details = GenericLotMatchingDetails(Lots=convertedLots, Trades=convertedGeneratedTrades)
+        details = GenericLotMatchingDetails(lots=convertedLots, trades=convertedGeneratedTrades)
 
         return details
+
+    def _convertTradeEvent(self, event: TradeEvent) -> Trade:
+        trade = Trade(ID=event.ID, Quantity=event.ExchangedMoney.UnderlyingQuantity, Date=event.Date)
+        return trade
+
+    def _convertTrade(self, trade: Trade, tradeEventMappings: dict[str, TradeEvent]) -> TradeEvent:
+        matchingGenericEvent = tradeEventMappings.get(trade.ID)
+
+        if matchingGenericEvent is None:
+            raise KeyError("Missing TradeEvent for Trade ({})".format(trade.ID))
+
+        cloned = copy.deepcopy(matchingGenericEvent)
+        cloned.ExchangedMoney.UnderlyingQuantity = trade.Quantity
+        return cloned
