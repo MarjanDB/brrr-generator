@@ -20,6 +20,13 @@ class LotMatchingDetails:
     Trades: Sequence[Trade]
 
 
+@dataclass
+class GeneratedLotWithTradeEvents:
+    Lot: Lot
+    AcquiredTrade: TradeEvent
+    SoldTrade: TradeEvent
+
+
 class GenericLotMatchingDetails:
     Lots: Sequence[TaxLot[TradeEvent, TradeEvent]]
     Trades: Sequence[TradeEvent]
@@ -65,35 +72,35 @@ class LotMatcher:
         convertedEvents = list(tradeMappings.values())
         matchingDetails = self.matchLotsWithTrades(method=method, events=convertedEvents)
         generatedLots = matchingDetails.Lots
-        generatedTrades = matchingDetails.Trades
 
-        convertedGeneratedTrades = list(map(lambda trade: self._convertTrade(trade, tradeEventMappings), generatedTrades))
-        for trade in convertedGeneratedTrades:
-            convertedGeneratedMappings[trade.ID] = trade
+        # this part seems dangerous
+        generatedLotsWithTradeEvents = list(map(lambda lot: self._generateTradeEventBasedOnLot(lot, tradeEventMappings), generatedLots))
 
         # TODO: Get rid of ShortLong type on GenericTaxLot, this is going to have to live on some other layer (or there is a missing layer between the entities here)
-        def convertLot(lot: Lot) -> TaxLot[TradeEvent, TradeEvent]:
-            lotId = lot.Acquired.Relation.ID
-            acquiredTrade = convertedGeneratedMappings.get(lot.Acquired.Relation.ID)
-            soldTrade = convertedGeneratedMappings.get(lot.Sold.Relation.ID)
-
-            if acquiredTrade is None or soldTrade is None:
-                raise ValueError("Acquired Trade or Sold Trade is missing lookup")
+        def convertLot(lot: GeneratedLotWithTradeEvents) -> TaxLot[TradeEvent, TradeEvent]:
+            lotId = lot.Lot.Acquired.Relation.ID
+            acquiredTrade = lot.AcquiredTrade
+            soldTrade = lot.SoldTrade
 
             newLot = TaxLot(
                 ID=lotId,
                 ISIN=acquiredTrade.ISIN,
-                Quantity=lot.Quantity,
+                Quantity=lot.Lot.Quantity,
                 Acquired=acquiredTrade,
                 Sold=soldTrade,
-                ShortLongType=GenericShortLong.LONG,
+                ShortLongType=GenericShortLong.LONG,  # TODO: we can check trade dates? if it was sold before it was bought, it's a short
             )
 
             return newLot
 
-        convertedLots = list(map(convertLot, generatedLots))
+        convertedLots = list(map(convertLot, generatedLotsWithTradeEvents))
 
-        details = GenericLotMatchingDetails(lots=convertedLots, trades=convertedGeneratedTrades)
+        # for clarity, list all buys and then all sells for trades
+        buys = list(map(lambda lot: lot.AcquiredTrade, generatedLotsWithTradeEvents))
+        sells = list(map(lambda lot: lot.SoldTrade, generatedLotsWithTradeEvents))
+        allTradesTakenFromLots = buys + sells
+
+        details = GenericLotMatchingDetails(lots=convertedLots, trades=allTradesTakenFromLots)
 
         return details
 
@@ -101,12 +108,23 @@ class LotMatcher:
         trade = Trade(ID=event.ID, Quantity=event.ExchangedMoney.UnderlyingQuantity, Date=event.Date)
         return trade
 
-    def _convertTrade(self, trade: Trade, tradeEventMappings: dict[str, TradeEvent]) -> TradeEvent:
-        matchingGenericEvent = tradeEventMappings.get(trade.ID)
+    def _generateTradeEventBasedOnLot(self, lot: Lot, tradeEventMappings: dict[str, TradeEvent]) -> GeneratedLotWithTradeEvents:
+        acquiredTrade = lot.Acquired
+        soldTrade = lot.Sold
 
-        if matchingGenericEvent is None:
-            raise KeyError("Missing TradeEvent for Trade ({})".format(trade.ID))
+        underlyingAcquiredTrade = tradeEventMappings.get(acquiredTrade.Relation.ID)
+        underlyingSoldTrade = tradeEventMappings.get(soldTrade.Relation.ID)
 
-        cloned = copy.deepcopy(matchingGenericEvent)
-        cloned.ExchangedMoney.UnderlyingQuantity = trade.Quantity
-        return cloned
+        if underlyingAcquiredTrade is None or underlyingSoldTrade is None:
+            raise ValueError("Acquired Trade or Sold Trade is missing lookup")
+
+        lotQuantity = lot.Quantity
+        clonedAcquiredTrade = copy.deepcopy(underlyingAcquiredTrade)
+        clonedAcquiredTrade.ExchangedMoney.UnderlyingQuantity = lotQuantity
+
+        clonedSoldTrade = copy.deepcopy(underlyingSoldTrade)
+        clonedSoldTrade.ExchangedMoney.UnderlyingQuantity = -lotQuantity
+
+        generatedLotWithTradeEvents = GeneratedLotWithTradeEvents(Lot=lot, AcquiredTrade=clonedAcquiredTrade, SoldTrade=clonedSoldTrade)
+
+        return generatedLotWithTradeEvents
