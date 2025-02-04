@@ -50,12 +50,25 @@ class TestSloveniaIssues:
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=taxPayerInfo, reportConfig=reportconfig)
 
         tradeCsv = provider.generateSpreadsheetExport(reportType=rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP, data=converted)
-        print(tradeCsv)
 
         # Issue:
         # 2024-07-19 -> 10
-        # 2024-07-22 -> 90 -> this one is duplicated
+        # 2024-07-22 -> 90 -> this one was duplicated, because it matched with two sells and the original quantity was taken
         # 2024-08-19 -> 100
-        # 2024-10-01 -> -100
+        # 2024-10-01 -> -50
+        # 2024-10-01 -> -50
         # 2024-10-02 -> -100
-        # 2024-11-26 -> 10
+        # 2024-11-26 -> 10 -> has no matching lot, which is ok
+
+        assert (
+            tradeCsv.shape[0] == 8
+        ), "Expected 8 rows, as there are 3 buys and 3 sells, but 2 of the buys are smaller than a single sell, so there are 4 matching lots"
+
+        assert tradeCsv["Quantity"][0] == 10  # 2024-07-19 (10) -> 2024-10-01 (-50) = 2024-07-19 (0) -> 2024-10-01 (-40)
+        assert tradeCsv["Quantity"][1] == 40  # 2024-07-22 (90) -> 2024-10-01 (-50) = 2024-07-22 (50) -> 2024-10-01 (0)
+        assert tradeCsv["Quantity"][2] == 50  # 2024-08-19 (100) -> 2024-10-01 (-50) = 2024-08-19 (50) -> 2024-10-01 (0)
+        assert tradeCsv["Quantity"][3] == 100  # 2024-10-01 (100) -> 2024-10-02 (-100) = 2024-10-01 (0) -> 2024-10-02 (0)
+        assert tradeCsv["Quantity"][4] == -10
+        assert tradeCsv["Quantity"][5] == -40
+        assert tradeCsv["Quantity"][6] == -50
+        assert tradeCsv["Quantity"][7] == -100
