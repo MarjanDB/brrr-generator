@@ -61,7 +61,7 @@ cashTransactionPaymentInLieuOfDividend = TradeEventCashTransactionPaymentInLieuO
     ISIN="ISIN",
     Ticker="Ticker",
     AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-    Date=arrow.get("2023-06-07"),
+    Date=arrow.get("2023-06-08"),
     Multiplier=1,
     ExchangedMoney=cf.GenericMonetaryExchangeInformation(
         UnderlyingCurrency="EUR",
@@ -73,7 +73,7 @@ cashTransactionPaymentInLieuOfDividend = TradeEventCashTransactionPaymentInLieuO
         TaxTotal=0.0,
         FxRateToBase=1,
     ),
-    ActionID="DivAction",
+    ActionID="DivAction2",
     TransactionID="TranId2",
     ListingExchange="EXH",
     DividendType=cf.GenericDividendType.ORDINARY,
@@ -106,7 +106,7 @@ cashTransactionPaymentInLieuOfDividendWitholdingTax = TradeEventCashTransactionW
     ISIN="ISIN",
     Ticker="Ticker",
     AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-    Date=arrow.get("2023-06-07"),
+    Date=arrow.get("2023-06-08"),
     Multiplier=1,
     ExchangedMoney=cf.GenericMonetaryExchangeInformation(
         UnderlyingCurrency="EUR",
@@ -118,7 +118,7 @@ cashTransactionPaymentInLieuOfDividendWitholdingTax = TradeEventCashTransactionW
         TaxTotal=0.0,
         FxRateToBase=1,
     ),
-    ActionID="DivAction",
+    ActionID="DivAction2",
     TransactionID="TranId4",
     ListingExchange="EXH",
 )
@@ -148,11 +148,9 @@ class TestPaymentInLieuOfDividend:
 
         export = provider.generateSpreadsheetExport(rt.SlovenianTaxAuthorityReportTypes.DOH_DIV, [testData])
 
-        assert (
-            export.shape[0] == 1
-        ), "Only 1 row should be present, as there's one unique dividend event and one payment in lieu of dividend event"
+        assert export.shape[0] == 2, "2 rows should be present, as there's one dividend event and one payment in lieu of dividend event"
 
-        assert export["Znesek dividend (v EUR)"][0] == 10.0, "The dividend should equal the dividend event"
-        assert (
-            export["Tuji davek (v EUR)"][0] == 5.0
-        ), "The witholding tax should only be taken from the witholding tax event for the dividend, not the payment in lieu of dividend event"
+        assert export["Znesek dividend (v EUR)"][0] == 10.0
+        assert export["Tuji davek (v EUR)"][0] == 5.0
+        assert export["Znesek dividend (v EUR)"][1] == 5.0
+        assert export["Tuji davek (v EUR)"][1] == 2.5
