@@ -9,7 +9,9 @@ import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 from AppModule import appInjector
 from Core.FinancialEvents.Schemas.Events import (
     TradeEventCashTransactionDividend,
+    TradeEventCashTransactionPaymentInLieuOfDividend,
     TradeEventCashTransactionWitholdingTax,
+    TradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividend,
     TransactionCash,
 )
 from InfoProviders.InfoLookupProvider import (
@@ -28,7 +30,8 @@ def filterOutCashTransactionsBasedOnDate(
 
 
 def processEdavkiLineItemsFromCashTransactions(
-    dividendLines: Sequence[TradeEventCashTransactionDividend], witholdingLines: Sequence[TradeEventCashTransactionWitholdingTax]
+    dividendLines: Sequence[TradeEventCashTransactionDividend | TradeEventCashTransactionPaymentInLieuOfDividend],
+    witholdingLines: Sequence[TradeEventCashTransactionWitholdingTax | TradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividend],
 ) -> Sequence[ss.EDavkiDividendReportLine]:
     actionToDividendMapping: dict[str, ss.EDavkiDividendReportLine] = dict()
 
@@ -203,12 +206,20 @@ def processSingleUnderlyingGroupingToDivLines(
 ) -> Sequence[ss.EDavkiDividendReportLine]:
     relevantCashTransactions = filterOutCashTransactionsBasedOnDate(data.CashTransactions, reportConfig.fromDate, reportConfig.toDate)
 
-    dividendLines: list[TradeEventCashTransactionDividend] = list(
-        filter(lambda line: isinstance(line, TradeEventCashTransactionDividend), relevantCashTransactions)
+    dividendLines: list[TradeEventCashTransactionDividend | TradeEventCashTransactionPaymentInLieuOfDividend] = list(
+        filter(
+            lambda line: isinstance(line, (TradeEventCashTransactionDividend, TradeEventCashTransactionPaymentInLieuOfDividend)),
+            relevantCashTransactions,
+        )
     )  # pyright: ignore[reportAssignmentType]
 
-    witholdingTax: list[TradeEventCashTransactionWitholdingTax] = list(
-        filter(lambda line: isinstance(line, TradeEventCashTransactionWitholdingTax), relevantCashTransactions)
+    witholdingTax: list[TradeEventCashTransactionWitholdingTax | TradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividend] = list(
+        filter(
+            lambda line: isinstance(
+                line, (TradeEventCashTransactionWitholdingTax, TradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividend)
+            ),
+            relevantCashTransactions,
+        )
     )  # pyright: ignore[reportAssignmentType]
 
     processedDividendLines = processEdavkiLineItemsFromCashTransactions(dividendLines, witholdingTax)
