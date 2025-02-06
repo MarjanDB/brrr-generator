@@ -46,7 +46,13 @@ def convertStockBuy(
         GainType=GAIN_MAPPINGS[line.AcquiredReason],
         Quantity=line.ExchangedMoney.UnderlyingQuantity,
         PricePerUnit=line.ExchangedMoney.UnderlyingTradePrice,
+        PricePerUnitInOriginalCurrency=line.ExchangedMoney.UnderlyingTradePrice * (1 / line.ExchangedMoney.FxRateToBase),
         TotalPrice=line.ExchangedMoney.UnderlyingQuantity * line.ExchangedMoney.UnderlyingTradePrice,
+        TotalPriceInOriginalCurrency=line.ExchangedMoney.UnderlyingQuantity
+        * line.ExchangedMoney.UnderlyingTradePrice
+        * (1 / line.ExchangedMoney.FxRateToBase),
+        Commissions=line.ExchangedMoney.ComissionTotal,
+        CommissionsInOriginalCurrency=line.ExchangedMoney.ComissionTotal * (1 / line.ExchangedMoney.FxRateToBase),
         InheritanceAndGiftTaxPaid=None,
         BaseTaxReduction=None,
     )
@@ -59,7 +65,13 @@ def convertStockSell(
         SoldOn=line.Date,
         Quantity=line.ExchangedMoney.UnderlyingQuantity,
         PricePerUnit=line.ExchangedMoney.UnderlyingTradePrice,
+        PricePerUnitInOriginalCurrency=line.ExchangedMoney.UnderlyingTradePrice * (1 / line.ExchangedMoney.FxRateToBase),
         TotalPrice=line.ExchangedMoney.UnderlyingQuantity * line.ExchangedMoney.UnderlyingTradePrice,
+        TotalPriceInOriginalCurrency=line.ExchangedMoney.UnderlyingQuantity
+        * line.ExchangedMoney.UnderlyingTradePrice
+        * (1 / line.ExchangedMoney.FxRateToBase),
+        Commissions=line.ExchangedMoney.ComissionTotal,
+        CommissionsInOriginalCurrency=line.ExchangedMoney.ComissionTotal * (1 / line.ExchangedMoney.FxRateToBase),
         SatisfiesTaxBasisReduction=False,  # TODO: Wash sale handling
     )
 

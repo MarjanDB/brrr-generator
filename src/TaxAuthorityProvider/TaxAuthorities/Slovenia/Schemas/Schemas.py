@@ -64,7 +64,11 @@ class EDavkiTradeReportSecurityLineGenericEventBought:
     GainType: EDavkiTradeReportGainType
     Quantity: float
     PricePerUnit: float
+    PricePerUnitInOriginalCurrency: float
     TotalPrice: float
+    TotalPriceInOriginalCurrency: float
+    Commissions: float
+    CommissionsInOriginalCurrency: float
     InheritanceAndGiftTaxPaid: float | None
     BaseTaxReduction: float | None
 
@@ -74,7 +78,11 @@ class EDavkiTradeReportSecurityLineGenericEventSold:
     SoldOn: Arrow
     Quantity: float
     TotalPrice: float
+    TotalPriceInOriginalCurrency: float
     PricePerUnit: float
+    PricePerUnitInOriginalCurrency: float
+    Commissions: float
+    CommissionsInOriginalCurrency: float
     SatisfiesTaxBasisReduction: bool
 
 
