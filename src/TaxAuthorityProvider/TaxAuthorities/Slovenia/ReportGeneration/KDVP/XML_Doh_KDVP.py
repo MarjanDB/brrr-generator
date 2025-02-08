@@ -102,7 +102,7 @@ def generateXmlReport(
                     if isinstance(entryLine, ss.EDavkiTradeReportSecurityLineGenericEventSold):
                         sale = etree.SubElement(row, "Sale")
                         etree.SubElement(sale, "F6").text = entryLine.SoldOn.format("YYYY-MM-DD")
-                        etree.SubElement(sale, "F7").text = str(entryLine.Quantity.__round__(5))
+                        etree.SubElement(sale, "F7").text = str(-entryLine.Quantity.__round__(5))
                         etree.SubElement(sale, "F9").text = str(entryLine.PricePerUnit.__abs__().__round__(5))
                         etree.SubElement(sale, "F10").text = str(entryLine.SatisfiesTaxBasisReduction).lower()
 
