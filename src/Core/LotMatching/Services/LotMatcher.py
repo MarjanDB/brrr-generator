@@ -62,7 +62,6 @@ class LotMatcher:
 
         tradeEventMappings: dict[str, TradeEvent] = dict()
         tradeMappings: dict[str, Trade] = dict()
-        convertedGeneratedMappings: dict[str, TradeEvent] = dict()
 
         for event in events:
             convertedEvent = self._convertTradeEvent(event)
@@ -121,9 +120,17 @@ class LotMatcher:
         lotQuantity = lot.Quantity
         clonedAcquiredTrade = copy.deepcopy(underlyingAcquiredTrade)
         clonedAcquiredTrade.ExchangedMoney.UnderlyingQuantity = lotQuantity
+        clonedAcquiredTrade.ExchangedMoney.ComissionTotal = (
+            (1 / underlyingAcquiredTrade.ExchangedMoney.UnderlyingQuantity)
+            * lotQuantity
+            * underlyingAcquiredTrade.ExchangedMoney.ComissionTotal
+        )
 
         clonedSoldTrade = copy.deepcopy(underlyingSoldTrade)
         clonedSoldTrade.ExchangedMoney.UnderlyingQuantity = -lotQuantity
+        clonedSoldTrade.ExchangedMoney.ComissionTotal = (
+            (1 / underlyingSoldTrade.ExchangedMoney.UnderlyingQuantity) * -lotQuantity * underlyingSoldTrade.ExchangedMoney.ComissionTotal
+        )
 
         generatedLotWithTradeEvents = GeneratedLotWithTradeEvents(Lot=lot, AcquiredTrade=clonedAcquiredTrade, SoldTrade=clonedSoldTrade)
 
