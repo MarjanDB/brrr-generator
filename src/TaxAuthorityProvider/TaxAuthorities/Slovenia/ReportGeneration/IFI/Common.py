@@ -46,6 +46,12 @@ def convertBuy(
         Quantity=line.ExchangedMoney.UnderlyingQuantity,
         PricePerUnit=line.ExchangedMoney.UnderlyingTradePrice,
         TotalPrice=line.ExchangedMoney.UnderlyingQuantity * line.ExchangedMoney.UnderlyingTradePrice * line.Multiplier,
+        TotalPriceInOriginalCurrency=line.ExchangedMoney.UnderlyingQuantity
+        * line.ExchangedMoney.UnderlyingTradePrice
+        * line.Multiplier
+        * (1 / line.ExchangedMoney.FxRateToBase),
+        Commissions=line.ExchangedMoney.ComissionTotal,
+        CommissionsInOriginalCurrency=line.ExchangedMoney.ComissionTotal * (1 / line.ExchangedMoney.FxRateToBase),
         Leveraged=False,
     )
 
@@ -58,6 +64,12 @@ def convertSell(
         Quantity=line.ExchangedMoney.UnderlyingQuantity,
         PricePerUnit=line.ExchangedMoney.UnderlyingTradePrice,
         TotalPrice=line.ExchangedMoney.UnderlyingQuantity * line.ExchangedMoney.UnderlyingTradePrice * line.Multiplier,
+        TotalPriceInOriginalCurrency=line.ExchangedMoney.UnderlyingQuantity
+        * line.ExchangedMoney.UnderlyingTradePrice
+        * line.Multiplier
+        * (1 / line.ExchangedMoney.FxRateToBase),
+        Commissions=line.ExchangedMoney.ComissionTotal,
+        CommissionsInOriginalCurrency=line.ExchangedMoney.ComissionTotal * (1 / line.ExchangedMoney.FxRateToBase),
         Leveraged=False,
     )
 
