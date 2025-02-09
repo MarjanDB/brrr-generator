@@ -95,9 +95,9 @@ def generateXmlReport(
                         etree.SubElement(purchase, "F5").text = str(
                             entryLine.InheritanceAndGiftTaxPaid.__round__(5) if entryLine.InheritanceAndGiftTaxPaid is not None else "0"
                         )
-                        etree.SubElement(purchase, "F11").text = str(
-                            entryLine.BaseTaxReduction.__round__(5) if entryLine.BaseTaxReduction is not None else "0"
-                        )
+
+                        if entryLine.BaseTaxReduction is not None:
+                            etree.SubElement(purchase, "F11").text = str(entryLine.BaseTaxReduction.__round__(5))
 
                     if isinstance(entryLine, ss.EDavkiTradeReportSecurityLineGenericEventSold):
                         sale = etree.SubElement(row, "Sale")
