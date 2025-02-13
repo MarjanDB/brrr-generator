@@ -15,3 +15,9 @@ directory = "coverage/htmlcov"
 [tool.coverage.run]
 branch = true
 data_file = "coverage/.coverage"
+
+[tool.mypy]
+files = ["src/**/*.py"]
+mypy_path = "src"
+explicit_package_bases = true
+disable_error_code = ["import-untyped"] # WIP: Try to get everything typed
