@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Self, Sequence
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.StagingFinancialEvents.Schemas.Grouping as sfg
 from Core.FinancialEvents.Schemas.Events import (
     TradeEventDerivativeAcquired,
     TradeEventDerivativeSold,
@@ -31,6 +32,10 @@ class FinancialGroupingIdentifier:
 
     def isTheSameAs(self, other: Self) -> bool:
         return self._Isin == other._Isin or self._Ticker == other._Ticker
+
+    @staticmethod
+    def fromStagingIdentifier(identifier: sfg.StagingFinancialGroupingIdentifier) -> "FinancialGroupingIdentifier":
+        return FinancialGroupingIdentifier(ISIN=identifier.getIsin(), Ticker=identifier.getTicker())
 
 
 @dataclass
