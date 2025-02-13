@@ -5,6 +5,7 @@ from typing import Generic, Sequence, TypeVar
 import BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as s
 import BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
 import Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.StagingFinancialEvents.Schemas.Grouping as sfg
 from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEvent,
     StagingTradeEventCashTransactionDividend,
@@ -393,9 +394,9 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
     )
 
     generatedUnderlyingGroups: Sequence[StagingFinancialGrouping] = list()
-    for isin in allIsinsPresent:
+    for isin in allIsinsPresent:  # TODO: Respect that there are more than just ISIN groupings
         wrapper = StagingFinancialGrouping(
-            ISIN=isin,
+            GroupingIdentity=sfg.StagingFinancialGroupingIdentifier(ISIN=isin),
             CountryOfOrigin=None,
             UnderlyingCategory=cf.GenericCategory.REGULAR,
             StockTrades=stocksSegmented.get(isin, []),  # type: ignore

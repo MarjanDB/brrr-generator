@@ -21,6 +21,7 @@ pytest-cov = "6.0.*"
 pytest-md = "0.2.*"
 black = "24.10.*"
 nbconvert = "7.16.*"
+mypy = "1.15.*"
 
 [requires]
 python_version = "3.12"

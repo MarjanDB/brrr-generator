@@ -2,6 +2,7 @@ import arrow as ar
 import pytest
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.StagingFinancialEvents.Schemas.Grouping as sfg
 from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventCashTransactionDividend,
     StagingTradeEventCashTransactionPaymentInLieuOfDividends,
@@ -219,7 +220,7 @@ class TestStagingFinancialGroupingProcessor:
     def testSimpleStockLotMatching(self):
         groupings = [
             StagingFinancialGrouping(
-                ISIN="US123",
+                GroupingIdentity=sfg.StagingFinancialGroupingIdentifier(ISIN="US123"),
                 CountryOfOrigin=None,
                 UnderlyingCategory=cf.GenericCategory.REGULAR,
                 StockTrades=[simpleStagingStockBuy, simpleStagingStockSold],
@@ -244,7 +245,7 @@ class TestStagingFinancialGroupingProcessor:
     def testPartialStockLotMatching(self):
         groupings = [
             StagingFinancialGrouping(
-                ISIN="US123",
+                GroupingIdentity=sfg.StagingFinancialGroupingIdentifier(ISIN="US123"),
                 CountryOfOrigin=None,
                 UnderlyingCategory=cf.GenericCategory.REGULAR,
                 StockTrades=[simpleStagingStockBuy],
@@ -263,7 +264,7 @@ class TestStagingFinancialGroupingProcessor:
     def testSimpleDerivativeLotMatching(self):
         groupings = [
             StagingFinancialGrouping(
-                ISIN="US123",
+                GroupingIdentity=sfg.StagingFinancialGroupingIdentifier(ISIN="US123"),
                 CountryOfOrigin=None,
                 UnderlyingCategory=cf.GenericCategory.REGULAR,
                 StockTrades=[],
@@ -291,7 +292,7 @@ class TestStagingFinancialGroupingProcessor:
     def testDividendWithWitholdingTax(self):
         groupings = [
             StagingFinancialGrouping(
-                ISIN="US123",
+                GroupingIdentity=sfg.StagingFinancialGroupingIdentifier(ISIN="US123"),
                 CountryOfOrigin=None,
                 UnderlyingCategory=cf.GenericCategory.REGULAR,
                 StockTrades=[],
@@ -323,7 +324,7 @@ class TestStagingFinancialGroupingProcessor:
     def testPaymentInLieuOfDividendWithWitholdingTax(self):
         groupings = [
             StagingFinancialGrouping(
-                ISIN="US123",
+                GroupingIdentity=sfg.StagingFinancialGroupingIdentifier(ISIN="US123"),
                 CountryOfOrigin=None,
                 UnderlyingCategory=cf.GenericCategory.REGULAR,
                 StockTrades=[],

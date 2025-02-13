@@ -109,7 +109,7 @@ optionSold = pgf.TradeEventDerivativeSold(
 
 
 testData = pgf.FinancialGrouping(
-    ISIN="ISIN",
+    GroupingIdentity=pgf.FinancialGroupingIdentifier(ISIN="ISIN"),
     CountryOfOrigin=None,
     UnderlyingCategory=cf.GenericCategory.REGULAR,
     StockTrades=[stockAcquired, stockSold],

@@ -101,7 +101,7 @@ def convertTradesToIfiItems(
             return FifoLotMatchingMethod()
 
     for isinGrouping in data:
-        ISIN = isinGrouping.ISIN
+        ISIN = isinGrouping.GroupingIdentity.getIsin()
 
         lotMatchingConfiguration = LotMatchingConfiguration(
             forDerivatives=matchingMethodFactory,
@@ -130,7 +130,7 @@ def convertTradesToIfiItems(
             InventoryListType=ss.EDavkiDerivativeSecurityType.OPTION,  # TODO: respect listing type SECURITY_MAPPING[securityType],
             ItemType=ss.EDavkiDerivativeReportItemType.DERIVATIVE,  # TODO: Actually check this for correct type
             Code=None,
-            ISIN=ISIN,
+            ISIN=ISIN,  # TODO: Security line has 3 possible identifiers, not just isin
             Name=None,
             HasForeignTax=HasForeignTax,
             ForeignTax=ForeignTaxPaid,

@@ -158,7 +158,7 @@ class TestIbkrTransformStock:
 
         extracted = extract[0]
 
-        assert extracted.ISIN == "US21212112", "Underlying group ISIN should match the trade ISIN"
+        assert extracted.GroupingIdentity.getIsin() == "US21212112", "Underlying group ISIN should match the trade ISIN"
         assert extracted.StockTrades[0].ISIN == "US21212112", "The trade ISIN should match the ISIN of the group"
         assert extracted.StockTrades[0].ExchangedMoney.UnderlyingQuantity == 2, "The trade quantity should be 2"
 
@@ -178,7 +178,7 @@ class TestIbkrTransformStock:
 
         extracted = extract[0]
 
-        assert extracted.ISIN == "US21212112", "Underlying group ISIN should match the trade ISIN"
+        assert extracted.GroupingIdentity.getIsin() == "US21212112", "Underlying group ISIN should match the trade ISIN"
         assert extracted.StockTrades[0].ISIN == "US21212112", "The trade ISIN should match the ISIN of the group"
         assert extracted.StockTrades[0].ExchangedMoney.UnderlyingQuantity == -2, "The trade quantity should be -2"
 
@@ -198,7 +198,7 @@ class TestIbkrTransformStock:
 
         extracted = extract[0]
 
-        assert extracted.ISIN == "US21212112", "Underlying group ISIN should match the lot ISIN"
+        assert extracted.GroupingIdentity.getIsin() == "US21212112", "Underlying group ISIN should match the lot ISIN"
         assert extracted.StockTaxLots[0].ISIN == "US21212112", "The lot ISIN should match the ISIN of the group"
 
     # TODO: Add test for groupby, where the trade events are ISIN1, ISIN2, ISIN1
@@ -322,7 +322,7 @@ class TestIbkrTransformCashTransaction:
 
         extracted = extract[0]
 
-        assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
+        assert extracted.GroupingIdentity.getIsin() == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
         assert extracted.CashTransactions[0].ISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
         assert isinstance(extracted.CashTransactions[0], StagingTradeEventCashTransactionDividend), "Dividend is of a dividend line type"
         assert (
@@ -346,7 +346,7 @@ class TestIbkrTransformCashTransaction:
 
         extracted = extract[0]
 
-        assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
+        assert extracted.GroupingIdentity.getIsin() == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
         assert extracted.CashTransactions[0].ISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
         assert isinstance(
             extracted.CashTransactions[0], StagingTradeEventCashTransactionPaymentInLieuOfDividends
@@ -375,7 +375,7 @@ class TestIbkrTransformCashTransaction:
 
         extracted = extract[0]
 
-        assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
+        assert extracted.GroupingIdentity.getIsin() == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
         assert extracted.CashTransactions[0].ISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
         assert isinstance(
             extracted.CashTransactions[0], StagingTradeEventCashTransactionWitholdingTax
@@ -402,7 +402,7 @@ class TestIbkrTransformCashTransaction:
 
         extracted = extract[0]
 
-        assert extracted.ISIN == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
+        assert extracted.GroupingIdentity.getIsin() == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
         assert extracted.CashTransactions[0].ISIN == "FR0000120271", "The cash transaction ISIN should match the ISIN of the group"
         assert isinstance(
             extracted.CashTransactions[0], StagingTradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividends
