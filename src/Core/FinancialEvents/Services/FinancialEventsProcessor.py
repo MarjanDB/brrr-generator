@@ -41,7 +41,7 @@ class FinancialEventsProcessor:
         )
 
         interestingGrouping = pgf.UnderlyingGroupingWithTradesOfInterest(
-            ISIN=input.ISIN,
+            ISIN=input.GroupingIdentity.getIsin(),  # TODO: Underlying group should use a mutli-identifier approach, not striaght up ISIN
             CountryOfOrigin=input.CountryOfOrigin,
             UnderlyingCategory=input.UnderlyingCategory,
             StockTrades=stockTradesOfInterestFiltered.Trades,  # TODO: Types
