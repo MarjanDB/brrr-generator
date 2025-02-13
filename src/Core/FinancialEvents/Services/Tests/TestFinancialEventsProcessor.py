@@ -71,7 +71,7 @@ def matchingMethodFactory(grouping: pgf.FinancialGrouping) -> LotMatchingMethod:
 class TestFinancialEventsProcessor:
     def testSingleStockLotMatching(self):
         grouping = pgf.FinancialGrouping(
-            ISIN="US123",
+            GroupingIdentity=pgf.FinancialGroupingIdentifier(ISIN="US123"),
             CountryOfOrigin="US",
             UnderlyingCategory=cf.GenericCategory.REGULAR,
             StockTrades=[simpleStockBuy, simpleStockSold],
@@ -100,7 +100,7 @@ class TestFinancialEventsProcessor:
 
     def testSimpleFilteringTradesOfLotsClosedInPeriod(self):
         grouping = pgf.FinancialGrouping(
-            ISIN="US123",
+            GroupingIdentity=pgf.FinancialGroupingIdentifier(ISIN="US123"),
             CountryOfOrigin="US",
             UnderlyingCategory=cf.GenericCategory.REGULAR,
             StockTrades=[simpleStockBuy, simpleStockSold],
@@ -126,7 +126,7 @@ class TestFinancialEventsProcessor:
 
     def testNoStockTradesMatching(self):
         grouping = pgf.FinancialGrouping(
-            ISIN="US123",
+            GroupingIdentity=pgf.FinancialGroupingIdentifier(ISIN="US123"),
             CountryOfOrigin="US",
             UnderlyingCategory=cf.GenericCategory.REGULAR,
             StockTrades=[simpleStockBuy, simpleStockSold],
