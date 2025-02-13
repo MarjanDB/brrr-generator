@@ -158,7 +158,6 @@ cashTransactionWitholdingTax = TradeEventCashTransactionWitholdingTax(
 
 testData = pgf.FinancialGrouping(
     GroupingIdentity=pgf.FinancialGroupingIdentifier(ISIN="ISIN"),
-    ISIN="ISIN",
     CountryOfOrigin=None,
     UnderlyingCategory=cf.GenericCategory.REGULAR,
     StockTrades=[stockAcquired, stockSold],

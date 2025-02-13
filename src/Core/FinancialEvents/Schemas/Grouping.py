@@ -36,7 +36,6 @@ class FinancialGroupingIdentifier:
 @dataclass
 class FinancialGrouping:
     GroupingIdentity: FinancialGroupingIdentifier
-    ISIN: str
     CountryOfOrigin: str | None  # None for unknown
 
     UnderlyingCategory: cf.GenericCategory
