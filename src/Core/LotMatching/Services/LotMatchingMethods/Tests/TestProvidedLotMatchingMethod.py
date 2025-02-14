@@ -1,5 +1,6 @@
 from arrow import get
 
+import Core.FinancialEvents.Schemas.FinancialIdentifier as cfi
 from Core.FinancialEvents.Schemas.CommonFormats import (
     GenericAssetClass,
     GenericMonetaryExchangeInformation,
@@ -13,12 +14,11 @@ from Core.LotMatching.Services.LotMatchingMethods.ProvidedLotMatchingMethod impo
 
 simpleLot = TaxLot[TradeEvent, TradeEvent](
     ID="ID",
-    ISIN="ISIN",
+    FinancialIdentifier=cfi.FinancialIdentifier(ISIN="ISIN", Ticker="TICKER", Name="NAME"),
     Quantity=1,
     Acquired=TradeEvent(
         ID="ID",
-        ISIN="ISIN",
-        Ticker="TICKER",
+        FinancialIdentifier=cfi.FinancialIdentifier(ISIN="ISIN", Ticker="TICKER", Name="NAME"),
         AssetClass=GenericAssetClass.STOCK,
         Date=get("2023-01-01"),
         Multiplier=1,
@@ -35,8 +35,7 @@ simpleLot = TaxLot[TradeEvent, TradeEvent](
     ),
     Sold=TradeEvent(
         ID="ID2",
-        ISIN="ISIN",
-        Ticker="TICKER",
+        FinancialIdentifier=cfi.FinancialIdentifier(ISIN="ISIN", Ticker="TICKER", Name="NAME"),
         AssetClass=GenericAssetClass.STOCK,
         Date=get("2023-01-02"),
         Multiplier=1,
@@ -56,12 +55,11 @@ simpleLot = TaxLot[TradeEvent, TradeEvent](
 
 underUtilizedLot = TaxLot[TradeEvent, TradeEvent](
     ID="ID",
-    ISIN="ISIN",
+    FinancialIdentifier=cfi.FinancialIdentifier(ISIN="ISIN", Ticker="TICKER", Name="NAME"),
     Quantity=1,
     Acquired=TradeEvent(
         ID="ID",
-        ISIN="ISIN",
-        Ticker="TICKER",
+        FinancialIdentifier=cfi.FinancialIdentifier(ISIN="ISIN", Ticker="TICKER", Name="NAME"),
         AssetClass=GenericAssetClass.STOCK,
         Date=get("2023-01-01"),
         Multiplier=1,
@@ -78,8 +76,7 @@ underUtilizedLot = TaxLot[TradeEvent, TradeEvent](
     ),
     Sold=TradeEvent(
         ID="ID2",
-        ISIN="ISIN",
-        Ticker="TICKER",
+        FinancialIdentifier=cfi.FinancialIdentifier(ISIN="ISIN", Ticker="TICKER", Name="NAME"),
         AssetClass=GenericAssetClass.STOCK,
         Date=get("2023-01-02"),
         Multiplier=1,

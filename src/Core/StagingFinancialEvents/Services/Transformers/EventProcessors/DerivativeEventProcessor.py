@@ -1,5 +1,6 @@
 from typing import Sequence
 
+import Core.FinancialEvents.Schemas.FinancialIdentifier as cfi
 import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.StagingFinancialEvents.Contracts.EventProcessor import EventProcessor
 from Core.StagingFinancialEvents.Schemas.Events import (
@@ -17,11 +18,12 @@ class DerivativeEventProcessor(EventProcessor[StagingTradeEvent, pgf.TradeEventD
         return []
 
     def process(self, input: StagingTradeEvent) -> pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold:
+        converted: pgf.TradeEventDerivativeAcquired | pgf.TradeEventDerivativeSold
+
         if isinstance(input, StagingTradeEventDerivativeAcquired):
             converted = pgf.TradeEventDerivativeAcquired(
                 ID=input.ID,
-                ISIN=input.ISIN,
-                Ticker=input.Ticker or "",
+                FinancialIdentifier=cfi.FinancialIdentifier.fromStagingIdentifier(input.FinancialIdentifier),
                 AssetClass=input.AssetClass,
                 Date=input.Date,
                 Multiplier=input.Multiplier,
@@ -32,8 +34,7 @@ class DerivativeEventProcessor(EventProcessor[StagingTradeEvent, pgf.TradeEventD
 
         converted = pgf.TradeEventDerivativeSold(
             ID=input.ID,
-            ISIN=input.ISIN,
-            Ticker=input.Ticker or "",
+            FinancialIdentifier=cfi.FinancialIdentifier.fromStagingIdentifier(input.FinancialIdentifier),
             AssetClass=input.AssetClass,
             Date=input.Date,
             Multiplier=input.Multiplier,

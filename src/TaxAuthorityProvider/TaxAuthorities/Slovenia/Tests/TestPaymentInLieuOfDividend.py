@@ -35,8 +35,7 @@ simpleTaxPayer = cpc.TaxPayerInfo(
 
 cashTransactionDividend = TradeEventCashTransactionDividend(
     ID="ID",
-    ISIN="ISIN",
-    Ticker="Ticker",
+    FinancialIdentifier=pgf.FinancialIdentifier(ISIN="ISIN", Ticker="Ticker", Name="Name"),
     AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
     Date=arrow.get("2023-06-07"),
     Multiplier=1,
@@ -58,8 +57,7 @@ cashTransactionDividend = TradeEventCashTransactionDividend(
 
 cashTransactionPaymentInLieuOfDividend = TradeEventCashTransactionPaymentInLieuOfDividend(
     ID="ID",
-    ISIN="ISIN",
-    Ticker="Ticker",
+    FinancialIdentifier=pgf.FinancialIdentifier(ISIN="ISIN", Ticker="Ticker", Name="Name"),
     AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
     Date=arrow.get("2023-06-08"),
     Multiplier=1,
@@ -81,8 +79,7 @@ cashTransactionPaymentInLieuOfDividend = TradeEventCashTransactionPaymentInLieuO
 
 cashTransactionDividendWitholdingTax = TradeEventCashTransactionWitholdingTax(
     ID="ID",
-    ISIN="ISIN",
-    Ticker="Ticker",
+    FinancialIdentifier=pgf.FinancialIdentifier(ISIN="ISIN", Ticker="Ticker", Name="Name"),
     AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
     Date=arrow.get("2023-06-07"),
     Multiplier=1,
@@ -103,8 +100,7 @@ cashTransactionDividendWitholdingTax = TradeEventCashTransactionWitholdingTax(
 
 cashTransactionPaymentInLieuOfDividendWitholdingTax = TradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividend(
     ID="ID",
-    ISIN="ISIN",
-    Ticker="Ticker",
+    FinancialIdentifier=pgf.FinancialIdentifier(ISIN="ISIN", Ticker="Ticker", Name="Name"),
     AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
     Date=arrow.get("2023-06-08"),
     Multiplier=1,
@@ -124,7 +120,7 @@ cashTransactionPaymentInLieuOfDividendWitholdingTax = TradeEventCashTransactionW
 )
 
 testData = pgf.FinancialGrouping(
-    GroupingIdentity=pgf.FinancialGroupingIdentifier(ISIN="ISIN"),
+    FinancialIdentifier=pgf.FinancialIdentifier(ISIN="ISIN"),
     CountryOfOrigin=None,
     UnderlyingCategory=cf.GenericCategory.REGULAR,
     StockTrades=[],

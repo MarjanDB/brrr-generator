@@ -3,6 +3,7 @@ from typing import Sequence
 import arrow as ar
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.FinancialEvents.Schemas.FinancialIdentifier as cfi
 import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.StagingFinancialEvents.Contracts.LotProcessor import LotProcessor
 from Core.StagingFinancialEvents.Schemas.Lots import StagingTaxLot
@@ -40,7 +41,7 @@ class DerivativeLotProcessor(
 
         processed = pgf.TaxLotDerivative(
             ID=input.ID,
-            ISIN=input.ISIN,
+            FinancialIdentifier=cfi.FinancialIdentifier.fromStagingIdentifier(input.FinancialIdentifier),
             Quantity=input.Quantity,
             Acquired=matchingBuyById,
             Sold=matchingSoldByDate,

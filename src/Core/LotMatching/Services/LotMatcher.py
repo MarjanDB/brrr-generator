@@ -83,7 +83,7 @@ class LotMatcher:
 
             newLot = TaxLot(
                 ID=lotId,
-                ISIN=acquiredTrade.ISIN,
+                FinancialIdentifier=acquiredTrade.FinancialIdentifier,
                 Quantity=lot.Lot.Quantity,
                 Acquired=acquiredTrade,
                 Sold=soldTrade,

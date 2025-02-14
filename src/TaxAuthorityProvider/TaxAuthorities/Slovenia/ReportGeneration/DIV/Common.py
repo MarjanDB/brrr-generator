@@ -41,7 +41,8 @@ def processEdavkiLineItemsFromCashTransactions(
         thisDividendLine = ss.EDavkiDividendReportLine(
             DateReceived=dividend.Date,
             TaxNumberForDividendPayer="",
-            DividendPayerIdentificationNumber=dividend.ISIN,
+            DividendPayerIdentificationNumber=dividend.FinancialIdentifier.getIsin()
+            or "",  # TODO: Specialized financial identifiers where ISIN will not be None?
             DividendPayerTitle="",
             DividendPayerAddress="",
             DividendPayerCountryOfOrigin="",

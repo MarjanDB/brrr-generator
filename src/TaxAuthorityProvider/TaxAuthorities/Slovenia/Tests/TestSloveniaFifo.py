@@ -31,8 +31,7 @@ simpleTaxPayer = cpc.TaxPayerInfo(
 
 stockAcquired = pgf.TradeEventStockAcquired(
     ID="ID1",
-    ISIN="ISIN",
-    Ticker="Ticker",
+    FinancialIdentifier=pgf.FinancialIdentifier(ISIN="ISIN", Ticker="Ticker", Name="Name"),
     AssetClass=cf.GenericAssetClass.STOCK,
     Date=arrow.get("2023-06-06"),
     Multiplier=1.0,
@@ -51,8 +50,7 @@ stockAcquired = pgf.TradeEventStockAcquired(
 
 stockSold = pgf.TradeEventStockSold(
     ID="ID2",
-    ISIN="ISIN",
-    Ticker="Ticker",
+    FinancialIdentifier=pgf.FinancialIdentifier(ISIN="ISIN", Ticker="Ticker", Name="Name"),
     AssetClass=cf.GenericAssetClass.STOCK,
     Date=arrow.get("2023-06-07"),
     Multiplier=1.0,
@@ -70,8 +68,7 @@ stockSold = pgf.TradeEventStockSold(
 
 optionBought = pgf.TradeEventDerivativeAcquired(
     ID="ID1",
-    ISIN="ISIN",
-    Ticker="Ticker",
+    FinancialIdentifier=pgf.FinancialIdentifier(ISIN="ISIN", Ticker="Ticker", Name="Name"),
     AcquiredReason=cf.GenericDerivativeReportItemGainType.BOUGHT,
     AssetClass=cf.GenericAssetClass.OPTION,
     Date=arrow.get("2023-06-07"),
@@ -90,8 +87,7 @@ optionBought = pgf.TradeEventDerivativeAcquired(
 
 optionSold = pgf.TradeEventDerivativeSold(
     ID="ID2",
-    ISIN="ISIN",
-    Ticker="Ticker",
+    FinancialIdentifier=pgf.FinancialIdentifier(ISIN="ISIN", Ticker="Ticker", Name="Name"),
     AssetClass=cf.GenericAssetClass.OPTION,
     Date=arrow.get("2023-06-08"),
     Multiplier=100,
@@ -109,7 +105,7 @@ optionSold = pgf.TradeEventDerivativeSold(
 
 
 testData = pgf.FinancialGrouping(
-    GroupingIdentity=pgf.FinancialGroupingIdentifier(ISIN="ISIN"),
+    FinancialIdentifier=pgf.FinancialIdentifier(ISIN="ISIN"),
     CountryOfOrigin=None,
     UnderlyingCategory=cf.GenericCategory.REGULAR,
     StockTrades=[stockAcquired, stockSold],

@@ -1,5 +1,6 @@
 from typing import Sequence
 
+import Core.FinancialEvents.Schemas.FinancialIdentifier as cfi
 import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.StagingFinancialEvents.Contracts.EventProcessor import EventProcessor
 from Core.StagingFinancialEvents.Schemas.Events import (
@@ -17,11 +18,12 @@ class StockEventProcessor(EventProcessor[StagingTradeEvent, pgf.TradeEventStockA
         return []
 
     def process(self, input: StagingTradeEvent) -> pgf.TradeEventStockAcquired | pgf.TradeEventStockSold:
+        converted: pgf.TradeEventStockAcquired | pgf.TradeEventStockSold
+
         if isinstance(input, StagingTradeEventStockAcquired):
             converted = pgf.TradeEventStockAcquired(
                 ID=input.ID,
-                ISIN=input.ISIN,
-                Ticker=input.Ticker or "",
+                FinancialIdentifier=cfi.FinancialIdentifier.fromStagingIdentifier(input.FinancialIdentifier),
                 AssetClass=input.AssetClass,
                 Date=input.Date,
                 Multiplier=input.Multiplier,
@@ -32,8 +34,7 @@ class StockEventProcessor(EventProcessor[StagingTradeEvent, pgf.TradeEventStockA
 
         converted = pgf.TradeEventStockSold(
             ID=input.ID,
-            ISIN=input.ISIN,
-            Ticker=input.Ticker or "",
+            FinancialIdentifier=cfi.FinancialIdentifier.fromStagingIdentifier(input.FinancialIdentifier),
             AssetClass=input.AssetClass,
             Date=input.Date,
             Multiplier=input.Multiplier,

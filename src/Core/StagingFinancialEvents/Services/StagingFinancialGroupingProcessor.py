@@ -55,7 +55,7 @@ class StagingFinancialGroupingProcessor:
         processedCashTransactions = list(map(self.cashTransactionProcessor.process, cashTransactions))
 
         processed = pgf.FinancialGrouping(
-            GroupingIdentity=pgf.FinancialGroupingIdentifier.fromStagingIdentifier(input.GroupingIdentity),
+            FinancialIdentifier=pgf.FinancialIdentifier.fromStagingIdentifier(input.FinancialIdentifier),
             CountryOfOrigin=input.CountryOfOrigin,
             UnderlyingCategory=input.UnderlyingCategory,
             StockTrades=allTrades,
