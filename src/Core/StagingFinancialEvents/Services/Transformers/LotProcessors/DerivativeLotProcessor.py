@@ -36,7 +36,9 @@ class DerivativeLotProcessor(
             # print("Matched Buy with trade (ID: {}, DateTime: {})".format(matchingBuyById.ID, matchingBuyById.Date))
             # print("Matched Sell with trade (ID: {}, DateTime: {})".format(matchingSoldByDate.ID, matchingSoldByDate.Date))
         except StopIteration:
-            print("Failed processing stock lot (ID: {}, ISIN: {}), found no match".format(input.ID, input.ISIN))
+            print(
+                "Failed processing stock lot (ID: {}, FinancialIdentifier: {}), found no match".format(input.ID, input.FinancialIdentifier)
+            )
             raise StopIteration
 
         processed = pgf.TaxLotDerivative(

@@ -32,6 +32,9 @@ class StagingFinancialIdentifier:
 
         return sameIsin or sameTicker or sameName
 
+    def __str__(self) -> str:
+        return "FinancialIdentifier(ISIN: {}, Ticker: {}, Name: {})".format(self._Isin, self._Ticker, self._Name)
+
     def __eq__(self, other: object) -> bool:
         if isinstance(other, StagingFinancialIdentifier):
             return self.isTheSameAs(other)
