@@ -44,7 +44,8 @@ def convertBuy(
         BoughtOn=line.Date,
         GainType=GAIN_MAPPINGS[line.AcquiredReason],
         Quantity=line.ExchangedMoney.UnderlyingQuantity,
-        PricePerUnit=line.ExchangedMoney.UnderlyingTradePrice,
+        PricePerUnit=line.ExchangedMoney.UnderlyingTradePrice * line.Multiplier,
+        PricePerUnitInOriginalCurrency=line.ExchangedMoney.UnderlyingTradePrice * line.Multiplier * (1 / line.ExchangedMoney.FxRateToBase),
         TotalPrice=line.ExchangedMoney.UnderlyingQuantity * line.ExchangedMoney.UnderlyingTradePrice * line.Multiplier,
         TotalPriceInOriginalCurrency=line.ExchangedMoney.UnderlyingQuantity
         * line.ExchangedMoney.UnderlyingTradePrice
@@ -62,7 +63,8 @@ def convertSell(
     return ss.EDavkiDerivativeReportSecurityLineGenericEventSold(
         SoldOn=line.Date,
         Quantity=line.ExchangedMoney.UnderlyingQuantity,
-        PricePerUnit=line.ExchangedMoney.UnderlyingTradePrice,
+        PricePerUnit=line.ExchangedMoney.UnderlyingTradePrice * line.Multiplier,
+        PricePerUnitInOriginalCurrency=line.ExchangedMoney.UnderlyingTradePrice * line.Multiplier * (1 / line.ExchangedMoney.FxRateToBase),
         TotalPrice=line.ExchangedMoney.UnderlyingQuantity * line.ExchangedMoney.UnderlyingTradePrice * line.Multiplier,
         TotalPriceInOriginalCurrency=line.ExchangedMoney.UnderlyingQuantity
         * line.ExchangedMoney.UnderlyingTradePrice

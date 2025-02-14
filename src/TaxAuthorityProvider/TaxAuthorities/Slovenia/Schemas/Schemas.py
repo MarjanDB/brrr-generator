@@ -147,11 +147,16 @@ class EDavkiDerivativeReportSecurityLineGenericEventBought:
     BoughtOn: Arrow
     GainType: EDavkiDerivativeReportGainType
     Quantity: float
+
     PricePerUnit: float
+    PricePerUnitInOriginalCurrency: float
+
     TotalPrice: float
     TotalPriceInOriginalCurrency: float
+
     Commissions: float
     CommissionsInOriginalCurrency: float
+
     Leveraged: bool  # Options are not Leveraged
 
 
@@ -159,11 +164,16 @@ class EDavkiDerivativeReportSecurityLineGenericEventBought:
 class EDavkiDerivativeReportSecurityLineGenericEventSold:
     SoldOn: Arrow
     Quantity: float
+
     PricePerUnit: float
+    PricePerUnitInOriginalCurrency: float
+
     TotalPrice: float
     TotalPriceInOriginalCurrency: float
+
     Commissions: float
     CommissionsInOriginalCurrency: float
+
     Leveraged: bool
 
 
