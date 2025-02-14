@@ -103,7 +103,7 @@ def convertTradesToKdvpItems(
             return FifoLotMatchingMethod()
 
     for isinGrouping in data:
-        ISIN = isinGrouping.GroupingIdentity.getIsin()
+        ISIN = isinGrouping.FinancialIdentifier.getIsin()
 
         lotMatchingConfiguration = LotMatchingConfiguration(
             fromDate=periodStart,
@@ -124,10 +124,12 @@ def convertTradesToKdvpItems(
 
         isTrustFund = isinGrouping.UnderlyingCategory == cf.GenericCategory.TRUST_FUND
 
-        tickerSymbols = list(map(lambda line: line.Ticker, allLines)).pop()  # TODO: Maybe something better than just taking the last one?
+        tickerSymbols = list(
+            map(lambda line: line.FinancialIdentifier.getTicker(), allLines)
+        ).pop()  # TODO: Maybe something better than just taking the last one?
 
         reportItem = ss.EDavkiTradeReportSecurityLineEvent(
-            ISIN=ISIN,  # TODO: Security line has 3 possible identifiers, not just isin
+            ISIN=ISIN or "",  # TODO: Security line has 3 possible identifiers, not just isin
             Code=tickerSymbols,
             Name=None,
             IsFund=isTrustFund,

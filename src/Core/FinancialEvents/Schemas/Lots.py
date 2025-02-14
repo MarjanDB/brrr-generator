@@ -9,6 +9,7 @@ from Core.FinancialEvents.Schemas.Events import (
     TradeEventStockAcquired,
     TradeEventStockSold,
 )
+from Core.FinancialEvents.Schemas.FinancialIdentifier import FinancialIdentifier
 
 TaxLotAcquiredEvent = TypeVar("TaxLotAcquiredEvent", bound=TradeEvent, covariant=True)
 TaxLotSoldEvent = TypeVar("TaxLotSoldEvent", bound=TradeEvent, covariant=True)
@@ -17,7 +18,7 @@ TaxLotSoldEvent = TypeVar("TaxLotSoldEvent", bound=TradeEvent, covariant=True)
 @dataclass
 class TaxLot(Generic[TaxLotAcquiredEvent, TaxLotSoldEvent]):
     ID: str
-    ISIN: str
+    FinancialIdentifier: FinancialIdentifier
     Quantity: float
     Acquired: TaxLotAcquiredEvent
     Sold: TaxLotSoldEvent

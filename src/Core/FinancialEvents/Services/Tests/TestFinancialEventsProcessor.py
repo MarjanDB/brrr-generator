@@ -1,6 +1,7 @@
 import arrow as ar
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.FinancialEvents.Schemas.FinancialIdentifier as cfi
 import Core.FinancialEvents.Schemas.Grouping as pgf
 import Core.FinancialEvents.Services.FinancialEventsProcessor as cgp
 import Core.FinancialEvents.Utils.ProcessingUtils as pu
@@ -15,8 +16,7 @@ from Core.LotMatching.Services.LotMatchingMethods.ProvidedLotMatchingMethod impo
 
 simpleStockBuy = pgf.TradeEventStockAcquired(
     ID="StockBought",
-    ISIN="US123",
-    Ticker="AAPL",
+    FinancialIdentifier=cfi.FinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
     AssetClass=cf.GenericAssetClass.STOCK,
     Date=ar.get("2023-01-01"),
     Multiplier=1,
@@ -36,8 +36,7 @@ simpleStockBuy = pgf.TradeEventStockAcquired(
 
 simpleStockSold = pgf.TradeEventStockSold(
     ID="StockSold",
-    ISIN="US123",
-    Ticker="AAPL",
+    FinancialIdentifier=cfi.FinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
     AssetClass=cf.GenericAssetClass.STOCK,
     Date=ar.get("2023-01-02"),
     Multiplier=1,
@@ -56,7 +55,7 @@ simpleStockSold = pgf.TradeEventStockSold(
 
 simpleStockLot = pgf.TaxLotStock(
     ID="Lot",
-    ISIN="US123",
+    FinancialIdentifier=cfi.FinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
     Quantity=1,
     Acquired=simpleStockBuy,
     Sold=simpleStockSold,
@@ -71,7 +70,7 @@ def matchingMethodFactory(grouping: pgf.FinancialGrouping) -> LotMatchingMethod:
 class TestFinancialEventsProcessor:
     def testSingleStockLotMatching(self):
         grouping = pgf.FinancialGrouping(
-            GroupingIdentity=pgf.FinancialGroupingIdentifier(ISIN="US123"),
+            FinancialIdentifier=cfi.FinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
             CountryOfOrigin="US",
             UnderlyingCategory=cf.GenericCategory.REGULAR,
             StockTrades=[simpleStockBuy, simpleStockSold],
@@ -100,7 +99,7 @@ class TestFinancialEventsProcessor:
 
     def testSimpleFilteringTradesOfLotsClosedInPeriod(self):
         grouping = pgf.FinancialGrouping(
-            GroupingIdentity=pgf.FinancialGroupingIdentifier(ISIN="US123"),
+            FinancialIdentifier=cfi.FinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
             CountryOfOrigin="US",
             UnderlyingCategory=cf.GenericCategory.REGULAR,
             StockTrades=[simpleStockBuy, simpleStockSold],
@@ -126,7 +125,7 @@ class TestFinancialEventsProcessor:
 
     def testNoStockTradesMatching(self):
         grouping = pgf.FinancialGrouping(
-            GroupingIdentity=pgf.FinancialGroupingIdentifier(ISIN="US123"),
+            FinancialIdentifier=cfi.FinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
             CountryOfOrigin="US",
             UnderlyingCategory=cf.GenericCategory.REGULAR,
             StockTrades=[simpleStockBuy, simpleStockSold],

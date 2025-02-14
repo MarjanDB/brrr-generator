@@ -3,6 +3,7 @@ from typing import Sequence
 import arrow as ar
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.FinancialEvents.Schemas.FinancialIdentifier as cfi
 import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.StagingFinancialEvents.Contracts.LotProcessor import LotProcessor
 from Core.StagingFinancialEvents.Schemas.Lots import StagingTaxLot
@@ -35,12 +36,14 @@ class DerivativeLotProcessor(
             # print("Matched Buy with trade (ID: {}, DateTime: {})".format(matchingBuyById.ID, matchingBuyById.Date))
             # print("Matched Sell with trade (ID: {}, DateTime: {})".format(matchingSoldByDate.ID, matchingSoldByDate.Date))
         except StopIteration:
-            print("Failed processing stock lot (ID: {}, ISIN: {}), found no match".format(input.ID, input.ISIN))
+            print(
+                "Failed processing stock lot (ID: {}, FinancialIdentifier: {}), found no match".format(input.ID, input.FinancialIdentifier)
+            )
             raise StopIteration
 
         processed = pgf.TaxLotDerivative(
             ID=input.ID,
-            ISIN=input.ISIN,
+            FinancialIdentifier=cfi.FinancialIdentifier.fromStagingIdentifier(input.FinancialIdentifier),
             Quantity=input.Quantity,
             Acquired=matchingBuyById,
             Sold=matchingSoldByDate,

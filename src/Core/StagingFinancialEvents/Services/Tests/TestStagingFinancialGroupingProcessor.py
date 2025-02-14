@@ -2,7 +2,7 @@ import arrow as ar
 import pytest
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
-import Core.StagingFinancialEvents.Schemas.Grouping as sfg
+import Core.StagingFinancialEvents.Schemas.FinancialIdentifier as sfi
 from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventCashTransactionDividend,
     StagingTradeEventCashTransactionPaymentInLieuOfDividends,
@@ -25,8 +25,7 @@ from Core.StagingFinancialEvents.Utils.ProcessingUtils import ProcessingUtils
 
 simpleStagingStockBuy = StagingTradeEventStockAcquired(
     ID="StockBought",
-    ISIN="US123",
-    Ticker="AAPL",
+    FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
     AssetClass=cf.GenericAssetClass.STOCK,
     Date=ar.get("2023-01-01"),
     Multiplier=1,
@@ -46,8 +45,7 @@ simpleStagingStockBuy = StagingTradeEventStockAcquired(
 
 simpleStagingStockSold = StagingTradeEventStockSold(
     ID="StockSold",
-    ISIN="US123",
-    Ticker="AAPL",
+    FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
     AssetClass=cf.GenericAssetClass.STOCK,
     Date=ar.get("2023-01-02"),
     Multiplier=1,
@@ -66,8 +64,7 @@ simpleStagingStockSold = StagingTradeEventStockSold(
 
 simpleStagingDividend = StagingTradeEventCashTransactionDividend(
     ID="Dividend",
-    ISIN="US123",
-    Ticker="AAPL",
+    FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
     AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
     Date=ar.get("2023-01-01"),
     Multiplier=1,
@@ -89,8 +86,7 @@ simpleStagingDividend = StagingTradeEventCashTransactionDividend(
 
 simpleStagingDividendWitholdingTax = StagingTradeEventCashTransactionWitholdingTax(
     ID="DividendWitholdingTax",
-    ISIN="US123",
-    Ticker="AAPL",
+    FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
     AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
     Date=ar.get("2023-01-01"),
     Multiplier=1,
@@ -112,8 +108,7 @@ simpleStagingDividendWitholdingTax = StagingTradeEventCashTransactionWitholdingT
 
 simpleStagingPaymentInLieuOfDividend = StagingTradeEventCashTransactionPaymentInLieuOfDividends(
     ID="PaymentInLieuOfDividend",
-    ISIN="US123",
-    Ticker="AAPL",
+    FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
     AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
     Date=ar.get("2023-01-01"),
     Multiplier=1,
@@ -135,8 +130,7 @@ simpleStagingPaymentInLieuOfDividend = StagingTradeEventCashTransactionPaymentIn
 
 simpleStagingPaymentInLieuOfDividendWitholdingTax = StagingTradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividends(
     ID="PaymentInLieuOfDividendWitholdingTax",
-    ISIN="US123",
-    Ticker="AAPL",
+    FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
     AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
     Date=ar.get("2023-01-01"),
     Multiplier=1,
@@ -157,8 +151,7 @@ simpleStagingPaymentInLieuOfDividendWitholdingTax = StagingTradeEventCashTransac
 
 simpleStagingStockLot = StagingTaxLot(
     ID="Lot",
-    Ticker="AAPL",
-    ISIN="US123",
+    FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
     Quantity=1,
     Acquired=StagingTaxLotMatchingDetails(ID="StockBought", DateTime=None),
     Sold=StagingTaxLotMatchingDetails(ID=None, DateTime=ar.get("2023-01-02")),
@@ -168,8 +161,7 @@ simpleStagingStockLot = StagingTaxLot(
 
 simpleStagingDerivativeBuy = StagingTradeEventDerivativeAcquired(
     ID="DerivativeBought",
-    ISIN="US123",
-    Ticker="AAPL",
+    FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
     AssetClass=cf.GenericAssetClass.STOCK,
     Date=ar.get("2023-01-01"),
     Multiplier=100,
@@ -188,8 +180,7 @@ simpleStagingDerivativeBuy = StagingTradeEventDerivativeAcquired(
 
 simpleStagingDerivativeSold = StagingTradeEventDerivativeSold(
     ID="DerivativeSold",
-    ISIN="US123",
-    Ticker="AAPL",
+    FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
     AssetClass=cf.GenericAssetClass.STOCK,
     Date=ar.get("2023-01-02"),
     Multiplier=1,
@@ -207,8 +198,7 @@ simpleStagingDerivativeSold = StagingTradeEventDerivativeSold(
 
 simpleStagingDerivativeLot = StagingTaxLot(
     ID="Lot",
-    ISIN="US123",
-    Ticker="AAPL",
+    FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
     Quantity=1,
     Acquired=StagingTaxLotMatchingDetails(ID="DerivativeBought", DateTime=None),
     Sold=StagingTaxLotMatchingDetails(ID=None, DateTime=ar.get("2023-01-02")),
@@ -220,7 +210,7 @@ class TestStagingFinancialGroupingProcessor:
     def testSimpleStockLotMatching(self):
         groupings = [
             StagingFinancialGrouping(
-                GroupingIdentity=sfg.StagingFinancialGroupingIdentifier(ISIN="US123"),
+                FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
                 CountryOfOrigin=None,
                 UnderlyingCategory=cf.GenericCategory.REGULAR,
                 StockTrades=[simpleStagingStockBuy, simpleStagingStockSold],
@@ -245,7 +235,7 @@ class TestStagingFinancialGroupingProcessor:
     def testPartialStockLotMatching(self):
         groupings = [
             StagingFinancialGrouping(
-                GroupingIdentity=sfg.StagingFinancialGroupingIdentifier(ISIN="US123"),
+                FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
                 CountryOfOrigin=None,
                 UnderlyingCategory=cf.GenericCategory.REGULAR,
                 StockTrades=[simpleStagingStockBuy],
@@ -264,7 +254,7 @@ class TestStagingFinancialGroupingProcessor:
     def testSimpleDerivativeLotMatching(self):
         groupings = [
             StagingFinancialGrouping(
-                GroupingIdentity=sfg.StagingFinancialGroupingIdentifier(ISIN="US123"),
+                FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
                 CountryOfOrigin=None,
                 UnderlyingCategory=cf.GenericCategory.REGULAR,
                 StockTrades=[],
@@ -292,7 +282,7 @@ class TestStagingFinancialGroupingProcessor:
     def testDividendWithWitholdingTax(self):
         groupings = [
             StagingFinancialGrouping(
-                GroupingIdentity=sfg.StagingFinancialGroupingIdentifier(ISIN="US123"),
+                FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
                 CountryOfOrigin=None,
                 UnderlyingCategory=cf.GenericCategory.REGULAR,
                 StockTrades=[],
@@ -324,7 +314,7 @@ class TestStagingFinancialGroupingProcessor:
     def testPaymentInLieuOfDividendWithWitholdingTax(self):
         groupings = [
             StagingFinancialGrouping(
-                GroupingIdentity=sfg.StagingFinancialGroupingIdentifier(ISIN="US123"),
+                FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN="US123", Ticker="AAPL", Name="AAPL"),
                 CountryOfOrigin=None,
                 UnderlyingCategory=cf.GenericCategory.REGULAR,
                 StockTrades=[],

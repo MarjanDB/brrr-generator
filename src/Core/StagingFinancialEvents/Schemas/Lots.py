@@ -3,6 +3,9 @@ from dataclasses import dataclass
 from arrow import Arrow
 
 from Core.FinancialEvents.Schemas.CommonFormats import GenericShortLong
+from Core.StagingFinancialEvents.Schemas.FinancialIdentifier import (
+    StagingFinancialIdentifier,
+)
 
 
 @dataclass
@@ -14,8 +17,7 @@ class StagingTaxLotMatchingDetails:
 @dataclass
 class StagingTaxLot:
     ID: str
-    ISIN: str
-    Ticker: str | None
+    FinancialIdentifier: StagingFinancialIdentifier
     Quantity: float
     Acquired: StagingTaxLotMatchingDetails
     Sold: StagingTaxLotMatchingDetails

@@ -5,7 +5,7 @@ from typing import Generic, Sequence, TypeVar
 import BrokerageExportProviders.Brokerages.IBKR.Schemas.Schemas as s
 import BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
 import Core.FinancialEvents.Schemas.CommonFormats as cf
-import Core.StagingFinancialEvents.Schemas.Grouping as sfg
+import Core.StagingFinancialEvents.Schemas.FinancialIdentifier as sfi
 from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEvent,
     StagingTradeEventCashTransactionDividend,
@@ -75,8 +75,10 @@ def convertToCashTransactions(
         if transaction.Type == s.CashTransactionType.DIVIDEND:
             return StagingTradeEventCashTransactionDividend(
                 ID=transaction.TransactionID,
-                ISIN=transaction.ISIN,
-                Ticker=transaction.Symbol,
+                FinancialIdentifier=sfi.StagingFinancialIdentifier(
+                    ISIN=transaction.ISIN,
+                    Ticker=transaction.Symbol,
+                ),
                 AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
                 Date=transaction.DateTime,
                 Multiplier=1,
@@ -99,8 +101,10 @@ def convertToCashTransactions(
         if transaction.Type == s.CashTransactionType.WITHOLDING_TAX and witholdingTaxForPaymentInLieuOfDividends:
             return StagingTradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividends(
                 ID=transaction.TransactionID,
-                ISIN=transaction.ISIN,
-                Ticker=transaction.Symbol,
+                FinancialIdentifier=sfi.StagingFinancialIdentifier(
+                    ISIN=transaction.ISIN,
+                    Ticker=transaction.Symbol,
+                ),
                 AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
                 Date=transaction.DateTime,
                 Multiplier=1,
@@ -122,8 +126,10 @@ def convertToCashTransactions(
         if transaction.Type == s.CashTransactionType.WITHOLDING_TAX:
             return StagingTradeEventCashTransactionWitholdingTax(
                 ID=transaction.TransactionID,
-                ISIN=transaction.ISIN,
-                Ticker=transaction.Symbol,
+                FinancialIdentifier=sfi.StagingFinancialIdentifier(
+                    ISIN=transaction.ISIN,
+                    Ticker=transaction.Symbol,
+                ),
                 AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
                 Date=transaction.DateTime,
                 Multiplier=1,
@@ -145,8 +151,10 @@ def convertToCashTransactions(
         if transaction.Type == s.CashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS:
             return StagingTradeEventCashTransactionPaymentInLieuOfDividends(
                 ID=transaction.TransactionID,
-                ISIN=transaction.ISIN,
-                Ticker=transaction.Symbol,
+                FinancialIdentifier=sfi.StagingFinancialIdentifier(
+                    ISIN=transaction.ISIN,
+                    Ticker=transaction.Symbol,
+                ),
                 AssetClass=cf.GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
                 Date=transaction.DateTime,
                 Multiplier=1,
@@ -180,8 +188,10 @@ def convertStockTradesToStockTradeEvents(
     ) -> StagingTradeEventStockAcquired:
         converted = StagingTradeEventStockAcquired(
             ID=trade.TransactionID,
-            ISIN=trade.ISIN,
-            Ticker=trade.Symbol,
+            FinancialIdentifier=sfi.StagingFinancialIdentifier(
+                ISIN=trade.ISIN,
+                Ticker=trade.Symbol,
+            ),
             AssetClass=cf.GenericAssetClass.STOCK,
             Date=trade.DateTime,
             AcquiredReason=cf.GenericTradeReportItemGainType.BOUGHT,  # TODO: Determine reason for acquire
@@ -204,8 +214,10 @@ def convertStockTradesToStockTradeEvents(
     ) -> StagingTradeEventStockSold:
         converted = StagingTradeEventStockSold(
             ID=trade.TransactionID,
-            ISIN=trade.ISIN,
-            Ticker=trade.Symbol,
+            FinancialIdentifier=sfi.StagingFinancialIdentifier(
+                ISIN=trade.ISIN,
+                Ticker=trade.Symbol,
+            ),
             AssetClass=cf.GenericAssetClass.STOCK,
             Date=trade.DateTime,
             Multiplier=1,
@@ -241,8 +253,10 @@ def convertStockLotsToStockLotEvents(
     def convertSingleLot(lot: s.LotStock) -> StagingTaxLot:
         converted = StagingTaxLot(
             lot.TransactionID,
-            ISIN=lot.ISIN,
-            Ticker=lot.Symbol,
+            FinancialIdentifier=sfi.StagingFinancialIdentifier(
+                ISIN=lot.ISIN,
+                Ticker=lot.Symbol,
+            ),
             Quantity=lot.Quantity,
             Acquired=StagingTaxLotMatchingDetails(ID=lot.TransactionID, DateTime=None),
             Sold=StagingTaxLotMatchingDetails(ID=None, DateTime=lot.DateTime),
@@ -263,8 +277,10 @@ def convertDerivativeTradesToDerivativeTradeEvents(
     ) -> StagingTradeEventDerivativeAcquired:
         converted = StagingTradeEventDerivativeAcquired(
             ID=trade.TransactionID,
-            ISIN=trade.UnderlyingSecurityID,
-            Ticker=trade.UnderlyingSymbol,
+            FinancialIdentifier=sfi.StagingFinancialIdentifier(
+                ISIN=trade.UnderlyingSecurityID,
+                Ticker=trade.UnderlyingSymbol,
+            ),
             AssetClass=cf.GenericAssetClass.OPTION,  # TODO: Could also be stock but leveraged (multiplier)
             Multiplier=trade.Multiplier,
             AcquiredReason=cf.GenericDerivativeReportItemGainType.BOUGHT,  # TODO: Determine reason for acquire
@@ -287,8 +303,10 @@ def convertDerivativeTradesToDerivativeTradeEvents(
     ) -> StagingTradeEventDerivativeSold:
         converted = StagingTradeEventDerivativeSold(
             ID=trade.TransactionID,
-            ISIN=trade.UnderlyingSecurityID,
-            Ticker=trade.UnderlyingSymbol,
+            FinancialIdentifier=sfi.StagingFinancialIdentifier(
+                ISIN=trade.UnderlyingSecurityID,
+                Ticker=trade.UnderlyingSymbol,
+            ),
             AssetClass=cf.GenericAssetClass.OPTION,
             Multiplier=trade.Multiplier,
             Date=trade.DateTime,
@@ -324,8 +342,10 @@ def convertDerivativeLotsToDerivativeLotEvents(
     def convertSingleLot(lot: s.LotDerivative) -> StagingTaxLot:
         converted = StagingTaxLot(
             lot.TransactionID,
-            ISIN=lot.UnderlyingSecurityID,
-            Ticker=lot.UnderlyingSymbol,
+            FinancialIdentifier=sfi.StagingFinancialIdentifier(
+                ISIN=lot.UnderlyingSecurityID,
+                Ticker=lot.UnderlyingSymbol,
+            ),
             Quantity=lot.Quantity,
             Acquired=StagingTaxLotMatchingDetails(ID=lot.TransactionID, DateTime=None),
             Sold=StagingTaxLotMatchingDetails(ID=None, DateTime=lot.DateTime),
@@ -361,29 +381,29 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
     derivativeTradeEvents = convertDerivativeTradesToDerivativeTradeEvents(derivativeTrades)
     derivativeLotEvents = convertDerivativeLotsToDerivativeLotEvents(derivativeLots)
 
-    def segmentTradeByIsin(
+    def segmentTradeByFinancialIdentifier(
         trades: list[StagingTradeEvent],
-    ) -> dict[str, Sequence[StagingTradeEvent]]:
-        segmented: dict[str, Sequence[StagingTradeEvent]] = {}
-        for key, valuesiter in groupby(trades, key=lambda trade: trade.ISIN):
+    ) -> dict[sfi.StagingFinancialIdentifier, Sequence[StagingTradeEvent]]:
+        segmented: dict[sfi.StagingFinancialIdentifier, Sequence[StagingTradeEvent]] = {}
+        for key, valuesiter in groupby(trades, key=lambda trade: trade.FinancialIdentifier):
             segmented[key] = list(v for v in valuesiter)
         return segmented
 
-    def segmentLotByIsin(
+    def segmentLotByFinancialIdentifier(
         lots: list[StagingTaxLot],
-    ) -> dict[str, Sequence[StagingTaxLot]]:
-        segmented: dict[str, Sequence[StagingTaxLot]] = {}
-        for key, valuesiter in groupby(lots, key=lambda trade: trade.ISIN):
+    ) -> dict[sfi.StagingFinancialIdentifier, Sequence[StagingTaxLot]]:
+        segmented: dict[sfi.StagingFinancialIdentifier, Sequence[StagingTaxLot]] = {}
+        for key, valuesiter in groupby(lots, key=lambda trade: trade.FinancialIdentifier):
             segmented[key] = list(v for v in valuesiter)
         return segmented
 
-    stocksSegmented = segmentTradeByIsin(stockTradeEvents)  # type: ignore
-    stockLotsSegmented = segmentLotByIsin(stockLotEvents)  # type: ignore
-    derivativesSegmented = segmentTradeByIsin(derivativeTradeEvents)  # type: ignore
-    derivativeLotsSegmented = segmentLotByIsin(derivativeLotEvents)  # type: ignore
-    dividendsSegmented = segmentTradeByIsin(cashTransactionEvents)  # type: ignore
+    stocksSegmented = segmentTradeByFinancialIdentifier(stockTradeEvents)  # type: ignore
+    stockLotsSegmented = segmentLotByFinancialIdentifier(stockLotEvents)  # type: ignore
+    derivativesSegmented = segmentTradeByFinancialIdentifier(derivativeTradeEvents)  # type: ignore
+    derivativeLotsSegmented = segmentLotByFinancialIdentifier(derivativeLotEvents)  # type: ignore
+    dividendsSegmented = segmentTradeByFinancialIdentifier(cashTransactionEvents)  # type: ignore
 
-    allIsinsPresent = list(
+    allFinancialIdentifiersPresent = list(
         set(
             list(stocksSegmented.keys())
             + list(derivativesSegmented.keys())
@@ -394,16 +414,16 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
     )
 
     generatedUnderlyingGroups: Sequence[StagingFinancialGrouping] = list()
-    for isin in allIsinsPresent:  # TODO: Respect that there are more than just ISIN groupings
+    for financialIdentifier in allFinancialIdentifiersPresent:
         wrapper = StagingFinancialGrouping(
-            GroupingIdentity=sfg.StagingFinancialGroupingIdentifier(ISIN=isin),
+            FinancialIdentifier=financialIdentifier,
             CountryOfOrigin=None,
             UnderlyingCategory=cf.GenericCategory.REGULAR,
-            StockTrades=stocksSegmented.get(isin, []),  # type: ignore
-            StockTaxLots=stockLotsSegmented.get(isin, []),
-            DerivativeTrades=derivativesSegmented.get(isin, []),  # type: ignore
-            DerivativeTaxLots=derivativeLotsSegmented.get(isin, []),
-            CashTransactions=dividendsSegmented.get(isin, []),  # type: ignore
+            StockTrades=stocksSegmented.get(financialIdentifier, []),  # type: ignore
+            StockTaxLots=stockLotsSegmented.get(financialIdentifier, []),
+            DerivativeTrades=derivativesSegmented.get(financialIdentifier, []),  # type: ignore
+            DerivativeTaxLots=derivativeLotsSegmented.get(financialIdentifier, []),
+            CashTransactions=dividendsSegmented.get(financialIdentifier, []),  # type: ignore
         )
         generatedUnderlyingGroups.append(wrapper)
 

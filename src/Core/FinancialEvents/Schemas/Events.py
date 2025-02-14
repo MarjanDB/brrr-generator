@@ -10,13 +10,13 @@ from Core.FinancialEvents.Schemas.CommonFormats import (
     GenericMonetaryExchangeInformation,
     GenericTradeReportItemGainType,
 )
+from Core.FinancialEvents.Schemas.FinancialIdentifier import FinancialIdentifier
 
 
 @dataclass
 class TradeEvent:
     ID: str
-    ISIN: str
-    Ticker: str
+    FinancialIdentifier: FinancialIdentifier
     AssetClass: GenericAssetClass  # Trades can have to do with different Asset Classes (Stock, Options, ...)
     Date: Arrow
     Multiplier: float  # for Leveraged trades

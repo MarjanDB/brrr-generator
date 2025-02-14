@@ -8,6 +8,7 @@ from Core.FinancialEvents.Schemas.Events import (
     TradeEventCashTransactionWitholdingTax,
     TradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividend,
 )
+from Core.FinancialEvents.Schemas.FinancialIdentifier import FinancialIdentifier
 from Core.StagingFinancialEvents.Contracts.EventProcessor import EventProcessor
 from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventCashTransaction,
@@ -21,11 +22,12 @@ from Core.StagingFinancialEvents.Schemas.Events import (
 class CashTransactionEventProcessor(EventProcessor[StagingTradeEventCashTransaction, pgf.TransactionCash]):
 
     def process(self, input: StagingTradeEventCashTransaction) -> pgf.TransactionCash:
+        converted: pgf.TransactionCash
+
         if isinstance(input, StagingTradeEventCashTransactionDividend):
             converted = TradeEventCashTransactionDividend(
                 ID=input.ID,
-                ISIN=input.ISIN,
-                Ticker=input.Ticker or "",
+                FinancialIdentifier=FinancialIdentifier.fromStagingIdentifier(input.FinancialIdentifier),
                 AssetClass=input.AssetClass,
                 Date=input.Date,
                 Multiplier=input.Multiplier,
@@ -49,8 +51,7 @@ class CashTransactionEventProcessor(EventProcessor[StagingTradeEventCashTransact
         if isinstance(input, StagingTradeEventCashTransactionWitholdingTax):
             converted = TradeEventCashTransactionWitholdingTax(
                 ID=input.ID,
-                ISIN=input.ISIN,
-                Ticker=input.Ticker or "",
+                FinancialIdentifier=FinancialIdentifier.fromStagingIdentifier(input.FinancialIdentifier),
                 AssetClass=input.AssetClass,
                 Date=input.Date,
                 Multiplier=input.Multiplier,
@@ -73,8 +74,7 @@ class CashTransactionEventProcessor(EventProcessor[StagingTradeEventCashTransact
         if isinstance(input, StagingTradeEventCashTransactionPaymentInLieuOfDividends):
             converted = TradeEventCashTransactionPaymentInLieuOfDividend(
                 ID=input.ID,
-                ISIN=input.ISIN,
-                Ticker=input.Ticker or "",
+                FinancialIdentifier=FinancialIdentifier.fromStagingIdentifier(input.FinancialIdentifier),
                 AssetClass=input.AssetClass,
                 Date=input.Date,
                 Multiplier=input.Multiplier,
@@ -98,8 +98,7 @@ class CashTransactionEventProcessor(EventProcessor[StagingTradeEventCashTransact
         if isinstance(input, StagingTradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividends):
             converted = TradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividend(
                 ID=input.ID,
-                ISIN=input.ISIN,
-                Ticker=input.Ticker or "",
+                FinancialIdentifier=FinancialIdentifier.fromStagingIdentifier(input.FinancialIdentifier),
                 AssetClass=input.AssetClass,
                 Date=input.Date,
                 Multiplier=input.Multiplier,
