@@ -119,19 +119,22 @@ class EDavkiGenericTradeReportItem:
 class EDavkiDerivativeSecurityType(str, Enum):
     FUTURES_CONTRACT = "01"
     CONTRACT_FOR_DIFFERENCE = "02"
-    OPTION = "03"
-    CERTIFICATE = "04"
+    OPTION_OR_CERTIFICATE = "03"
+    OTHER = "04"
+
+
+class EDavkiDerivativeSecurityTypeName(str, Enum):
+    FUTURES_CONTRACT = "terminska pogodba"
+    CONTRACT_FOR_DIFFERENCE = "finančne pogodbe na razliko"
+    OPTION_OR_CERTIFICATE = "opcija in certifikat"
+    OTHER = "drugo"
 
 
 class EDavkiDerivativeReportGainType(str, Enum):
-    CAPITAL_INVESTMENT = "A"  # guessing
-    BOUGHT = "B"
-    CAPITAL_RAISE = "C"  # guessing
-    CAPITAL_ASSET = "D"  # guessing
-    CAPITALIZATION_CHANGE = "E"  # guessing
-    INHERITENCE = "F"
-    GIFT = "G"
-    OTHER = "H"
+    BOUGHT = "A"
+    INHERITENCE = "B"
+    GIFT = "C"
+    OTHER = "D"
 
 
 class EDavkiDerivativeReportItemType(str, Enum):
@@ -175,7 +178,7 @@ class EDavkiGenericDerivativeReportItem:
     ItemType: EDavkiDerivativeReportItemType
     Name: str | None
     Code: str | None
-    ISIN: str
+    ISIN: str | None
     HasForeignTax: bool
     ForeignTax: float | None
     FTCountryID: str | None

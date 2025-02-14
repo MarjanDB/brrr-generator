@@ -39,7 +39,22 @@ def generateXmlReport(
 
         etree.SubElement(DIFI_ITEM, "TypeId").text = DIFI_item_entry.ItemType.value
         etree.SubElement(DIFI_ITEM, "Type").text = DIFI_item_entry.InventoryListType.value
-        etree.SubElement(DIFI_ITEM, "ISIN").text = DIFI_item_entry.ISIN
+
+        if DIFI_item_entry.InventoryListType == ss.EDavkiDerivativeSecurityType.OPTION_OR_CERTIFICATE:
+            etree.SubElement(DIFI_ITEM, "TypeName").text = ss.EDavkiDerivativeSecurityTypeName.OPTION_OR_CERTIFICATE.value
+        elif DIFI_item_entry.InventoryListType == ss.EDavkiDerivativeSecurityType.FUTURES_CONTRACT:
+            etree.SubElement(DIFI_ITEM, "TypeName").text = ss.EDavkiDerivativeSecurityTypeName.FUTURES_CONTRACT.value
+        elif DIFI_item_entry.InventoryListType == ss.EDavkiDerivativeSecurityType.CONTRACT_FOR_DIFFERENCE:
+            etree.SubElement(DIFI_ITEM, "TypeName").text = ss.EDavkiDerivativeSecurityTypeName.CONTRACT_FOR_DIFFERENCE.value
+        else:
+            etree.SubElement(DIFI_ITEM, "TypeName").text = ss.EDavkiDerivativeSecurityTypeName.OTHER.value
+
+        if DIFI_item_entry.Name is not None:
+            etree.SubElement(DIFI_ITEM, "Name").text = DIFI_item_entry.Name
+        if DIFI_item_entry.Code is not None:
+            etree.SubElement(DIFI_ITEM, "Code").text = DIFI_item_entry.Code
+        if DIFI_item_entry.ISIN is not None and DIFI_item_entry.ISIN != "":  # TODO: Figure out why ISIN is empty sometimes
+            etree.SubElement(DIFI_ITEM, "ISIN").text = DIFI_item_entry.ISIN
 
         etree.SubElement(DIFI_ITEM, "HasForeignTax").text = str(DIFI_item_entry.HasForeignTax).lower()
         if DIFI_item_entry.ForeignTax is not None:
