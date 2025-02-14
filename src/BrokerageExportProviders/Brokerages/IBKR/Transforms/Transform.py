@@ -381,29 +381,29 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
     derivativeTradeEvents = convertDerivativeTradesToDerivativeTradeEvents(derivativeTrades)
     derivativeLotEvents = convertDerivativeLotsToDerivativeLotEvents(derivativeLots)
 
-    def segmentTradeByIsin(
+    def segmentTradeByFinancialIdentifier(
         trades: list[StagingTradeEvent],
-    ) -> dict[str, Sequence[StagingTradeEvent]]:
-        segmented: dict[str, Sequence[StagingTradeEvent]] = {}
-        for key, valuesiter in groupby(trades, key=lambda trade: trade.FinancialIdentifier.getIsin()):
+    ) -> dict[sfi.StagingFinancialIdentifier, Sequence[StagingTradeEvent]]:
+        segmented: dict[sfi.StagingFinancialIdentifier, Sequence[StagingTradeEvent]] = {}
+        for key, valuesiter in groupby(trades, key=lambda trade: trade.FinancialIdentifier):
             segmented[key] = list(v for v in valuesiter)
         return segmented
 
-    def segmentLotByIsin(
+    def segmentLotByFinancialIdentifier(
         lots: list[StagingTaxLot],
-    ) -> dict[str, Sequence[StagingTaxLot]]:
-        segmented: dict[str, Sequence[StagingTaxLot]] = {}
-        for key, valuesiter in groupby(lots, key=lambda trade: trade.FinancialIdentifier.getIsin()):
+    ) -> dict[sfi.StagingFinancialIdentifier, Sequence[StagingTaxLot]]:
+        segmented: dict[sfi.StagingFinancialIdentifier, Sequence[StagingTaxLot]] = {}
+        for key, valuesiter in groupby(lots, key=lambda trade: trade.FinancialIdentifier):
             segmented[key] = list(v for v in valuesiter)
         return segmented
 
-    stocksSegmented = segmentTradeByIsin(stockTradeEvents)  # type: ignore
-    stockLotsSegmented = segmentLotByIsin(stockLotEvents)  # type: ignore
-    derivativesSegmented = segmentTradeByIsin(derivativeTradeEvents)  # type: ignore
-    derivativeLotsSegmented = segmentLotByIsin(derivativeLotEvents)  # type: ignore
-    dividendsSegmented = segmentTradeByIsin(cashTransactionEvents)  # type: ignore
+    stocksSegmented = segmentTradeByFinancialIdentifier(stockTradeEvents)  # type: ignore
+    stockLotsSegmented = segmentLotByFinancialIdentifier(stockLotEvents)  # type: ignore
+    derivativesSegmented = segmentTradeByFinancialIdentifier(derivativeTradeEvents)  # type: ignore
+    derivativeLotsSegmented = segmentLotByFinancialIdentifier(derivativeLotEvents)  # type: ignore
+    dividendsSegmented = segmentTradeByFinancialIdentifier(cashTransactionEvents)  # type: ignore
 
-    allIsinsPresent = list(
+    allFinancialIdentifiersPresent = list(
         set(
             list(stocksSegmented.keys())
             + list(derivativesSegmented.keys())
@@ -414,16 +414,16 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
     )
 
     generatedUnderlyingGroups: Sequence[StagingFinancialGrouping] = list()
-    for isin in allIsinsPresent:  # TODO: Respect that there are more than just ISIN groupings
+    for financialIdentifier in allFinancialIdentifiersPresent:
         wrapper = StagingFinancialGrouping(
-            FinancialIdentifier=sfi.StagingFinancialIdentifier(ISIN=isin),
+            FinancialIdentifier=financialIdentifier,
             CountryOfOrigin=None,
             UnderlyingCategory=cf.GenericCategory.REGULAR,
-            StockTrades=stocksSegmented.get(isin, []),  # type: ignore
-            StockTaxLots=stockLotsSegmented.get(isin, []),
-            DerivativeTrades=derivativesSegmented.get(isin, []),  # type: ignore
-            DerivativeTaxLots=derivativeLotsSegmented.get(isin, []),
-            CashTransactions=dividendsSegmented.get(isin, []),  # type: ignore
+            StockTrades=stocksSegmented.get(financialIdentifier, []),  # type: ignore
+            StockTaxLots=stockLotsSegmented.get(financialIdentifier, []),
+            DerivativeTrades=derivativesSegmented.get(financialIdentifier, []),  # type: ignore
+            DerivativeTaxLots=derivativeLotsSegmented.get(financialIdentifier, []),
+            CashTransactions=dividendsSegmented.get(financialIdentifier, []),  # type: ignore
         )
         generatedUnderlyingGroups.append(wrapper)
 
