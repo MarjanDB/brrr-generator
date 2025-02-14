@@ -18,19 +18,19 @@ from Core.LotMatching.Services.LotMatchingMethods.ProvidedLotMatchingMethod impo
 )
 
 SECURITY_MAPPING: dict[cf.GenericDerivativeReportAssetClassType, ss.EDavkiDerivativeSecurityType] = {
-    cf.GenericDerivativeReportAssetClassType.OPTION: ss.EDavkiDerivativeSecurityType.OPTION,
+    cf.GenericDerivativeReportAssetClassType.OPTION: ss.EDavkiDerivativeSecurityType.OPTION_OR_CERTIFICATE,
     cf.GenericDerivativeReportAssetClassType.FUTURES_CONTRACT: ss.EDavkiDerivativeSecurityType.FUTURES_CONTRACT,
     cf.GenericDerivativeReportAssetClassType.CONTRACT_FOR_DIFFERENCE: ss.EDavkiDerivativeSecurityType.CONTRACT_FOR_DIFFERENCE,
-    cf.GenericDerivativeReportAssetClassType.CERTIFICATE: ss.EDavkiDerivativeSecurityType.CERTIFICATE,
+    cf.GenericDerivativeReportAssetClassType.CERTIFICATE: ss.EDavkiDerivativeSecurityType.OTHER,
     # gf.GenericDerivativeReportAssetClassType.OTHER: ss.EDavkiDerivativeReportItemType.DERIVATIVE_SHORT,
 }
 
 GAIN_MAPPINGS: dict[cf.GenericDerivativeReportItemGainType, ss.EDavkiDerivativeReportGainType] = {
     cf.GenericDerivativeReportItemGainType.BOUGHT: ss.EDavkiDerivativeReportGainType.BOUGHT,
-    cf.GenericDerivativeReportItemGainType.CAPITAL_INVESTMENT: ss.EDavkiDerivativeReportGainType.CAPITAL_INVESTMENT,
-    cf.GenericDerivativeReportItemGainType.CAPITAL_RAISE: ss.EDavkiDerivativeReportGainType.CAPITAL_RAISE,
-    cf.GenericDerivativeReportItemGainType.CAPITAL_ASSET: ss.EDavkiDerivativeReportGainType.CAPITAL_ASSET,
-    cf.GenericDerivativeReportItemGainType.CAPITALIZATION_CHANGE: ss.EDavkiDerivativeReportGainType.CAPITALIZATION_CHANGE,
+    cf.GenericDerivativeReportItemGainType.CAPITAL_INVESTMENT: ss.EDavkiDerivativeReportGainType.OTHER,
+    cf.GenericDerivativeReportItemGainType.CAPITAL_RAISE: ss.EDavkiDerivativeReportGainType.OTHER,
+    cf.GenericDerivativeReportItemGainType.CAPITAL_ASSET: ss.EDavkiDerivativeReportGainType.OTHER,
+    cf.GenericDerivativeReportItemGainType.CAPITALIZATION_CHANGE: ss.EDavkiDerivativeReportGainType.OTHER,
     cf.GenericDerivativeReportItemGainType.INHERITENCE: ss.EDavkiDerivativeReportGainType.INHERITENCE,
     cf.GenericDerivativeReportItemGainType.GIFT: ss.EDavkiDerivativeReportGainType.GIFT,
     cf.GenericDerivativeReportItemGainType.OTHER: ss.EDavkiDerivativeReportGainType.OTHER,
@@ -100,16 +100,14 @@ def convertTradesToIfiItems(
         def matchingMethodFactory(grouping: pgf.FinancialGrouping) -> LotMatchingMethod:
             return FifoLotMatchingMethod()
 
-    for isinGrouping in data:
-        ISIN = isinGrouping.FinancialIdentifier.getIsin()
-
+    for financialGrouping in data:
         lotMatchingConfiguration = LotMatchingConfiguration(
             forDerivatives=matchingMethodFactory,
             fromDate=periodStart,
             toDate=periodEnd,
         )
 
-        interestingGrouping = countedProcessor.process(isinGrouping, lotMatchingConfiguration)
+        interestingGrouping = countedProcessor.process(financialGrouping, lotMatchingConfiguration)
 
         allLines = list(interestingGrouping.DerivativeTrades)
         allLines.sort(key=lambda line: line.Date)
@@ -127,11 +125,11 @@ def convertTradesToIfiItems(
             HasForeignTax = False
 
         ISINEntry = ss.EDavkiGenericDerivativeReportItem(
-            InventoryListType=ss.EDavkiDerivativeSecurityType.OPTION,  # TODO: respect listing type SECURITY_MAPPING[securityType],
+            InventoryListType=ss.EDavkiDerivativeSecurityType.OPTION_OR_CERTIFICATE,  # TODO: respect listing type SECURITY_MAPPING[securityType],
             ItemType=ss.EDavkiDerivativeReportItemType.DERIVATIVE,  # TODO: Actually check this for correct type
-            Code=None,
-            ISIN=ISIN or "",  # TODO: Security line has 3 possible identifiers, not just isin
-            Name=None,
+            Code=financialGrouping.FinancialIdentifier.getTicker(),
+            ISIN=financialGrouping.FinancialIdentifier.getIsin(),
+            Name=financialGrouping.FinancialIdentifier.getName(),
             HasForeignTax=HasForeignTax,
             ForeignTax=ForeignTaxPaid,
             FTCountryID=None,
