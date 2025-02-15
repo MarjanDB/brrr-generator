@@ -29,23 +29,34 @@ class FinancialEventsProcessor:
         lotMatchingMethodInstance = lotMatchingConfiguration.ForStocks(input)
         stockTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(lotMatchingMethodInstance, input.StockTrades)
 
-        lotMatchingMethodInstance = lotMatchingConfiguration.ForDerivatives(input)
-        derivativeTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(lotMatchingMethodInstance, input.DerivativeTrades)
-
         stockTradesOfInterestFiltered = stockTradesOfInterest.getTradesOfLotsClosedInPeriod(
             periodStart=lotMatchingConfiguration.fromDate, periodEnd=lotMatchingConfiguration.toDate
         )
 
-        derivativeTradesOfInterestFiltered = derivativeTradesOfInterest.getTradesOfLotsClosedInPeriod(
-            periodStart=lotMatchingConfiguration.fromDate, periodEnd=lotMatchingConfiguration.toDate
-        )
+        derivativeGroupingsOfInterest: list[pgf.UnderlyingDerivativeGrouping] = []
+        for derivativeGrouping in input.DerivativeGroupings:
+            lotMatchingMethodInstance = lotMatchingConfiguration.ForDerivatives(input)
+            derivativeTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(
+                lotMatchingMethodInstance, derivativeGrouping.DerivativeTrades
+            )
+
+            derivativeTradesOfInterestFiltered = derivativeTradesOfInterest.getTradesOfLotsClosedInPeriod(
+                periodStart=lotMatchingConfiguration.fromDate, periodEnd=lotMatchingConfiguration.toDate
+            )
+
+            derivativeGroupingsOfInterest.append(
+                pgf.UnderlyingDerivativeGrouping(
+                    FinancialIdentifier=derivativeGrouping.FinancialIdentifier,
+                    DerivativeTrades=derivativeTradesOfInterestFiltered.Trades,  # TODO: Types
+                )
+            )
 
         interestingGrouping = pgf.UnderlyingGroupingWithTradesOfInterest(
             FinancialIdentifier=input.FinancialIdentifier,
             CountryOfOrigin=input.CountryOfOrigin,
             UnderlyingCategory=input.UnderlyingCategory,
             StockTrades=stockTradesOfInterestFiltered.Trades,  # TODO: Types
-            DerivativeTrades=derivativeTradesOfInterestFiltered.Trades,  # TODO: Types
+            DerivativeGroupings=derivativeGroupingsOfInterest,
             CashTransactions=input.CashTransactions,
         )
 

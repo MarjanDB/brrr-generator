@@ -274,10 +274,10 @@ class TestStagingFinancialGroupingProcessor:
 
         assert len(results) == 1
 
-        assert results[0].DerivativeTaxLots[0].Acquired == results[0].DerivativeTrades[0]
-        assert results[0].DerivativeTaxLots[0].Acquired.ExchangedMoney.UnderlyingQuantity == 1
-        assert results[0].DerivativeTaxLots[0].Sold == results[0].DerivativeTrades[1]
-        assert results[0].DerivativeTaxLots[0].Sold.ExchangedMoney.UnderlyingQuantity == -1
+        assert results[0].DerivativeGroupings[0].DerivativeTaxLots[0].Acquired == results[0].DerivativeGroupings[0].DerivativeTrades[0]
+        assert results[0].DerivativeGroupings[0].DerivativeTaxLots[0].Acquired.ExchangedMoney.UnderlyingQuantity == 1
+        assert results[0].DerivativeGroupings[0].DerivativeTaxLots[0].Sold == results[0].DerivativeGroupings[0].DerivativeTrades[1]
+        assert results[0].DerivativeGroupings[0].DerivativeTaxLots[0].Sold.ExchangedMoney.UnderlyingQuantity == -1
 
     def testDividendWithWitholdingTax(self):
         groupings = [
