@@ -31,13 +31,55 @@ class FinancialIdentifier:
     def getName(self) -> str | None:
         return self._Name
 
-    def isTheSameAs(self, other: Self) -> bool:
-        sameIsin = self._Isin is not None and self._Isin == other._Isin
-        sameTicker = self._Ticker is not None and self._Ticker == other._Ticker
-        sameName = self._Name is not None and self._Name == other._Name
+    def isTheSameAs(self, other: "FinancialIdentifier") -> bool:
+        hasIsin = self._Isin is not None and other._Isin is not None
+        hasTicker = self._Ticker is not None and other._Ticker is not None
+        hasName = self._Name is not None and other._Name is not None
 
-        return sameIsin or sameTicker or sameName
+        sameIsin = hasIsin and self._Isin == other._Isin
+        sameTicker = hasTicker and self._Ticker == other._Ticker
+        sameName = hasName and self._Name == other._Name
+
+        # While ISIN and the Ticker are enough for identifying a company ticker,
+        # it is not enough to identify a specific traded instrument (options with different strike prices / expiration dates)
+        # TODO: Should probably rething the FinancialIdentifier class
+        isinEquality = sameIsin and not hasTicker and not hasName
+        tickerEquality = sameIsin and sameTicker and not hasName
+        nameEquality = sameIsin and sameTicker and sameName
+
+        return isinEquality or tickerEquality or nameEquality
 
     @staticmethod
     def fromStagingIdentifier(identifier: StagingFinancialIdentifier) -> "FinancialIdentifier":
         return FinancialIdentifier(ISIN=identifier.getIsin(), Ticker=identifier.getTicker(), Name=identifier.getName())
+
+    def __str__(self) -> str:
+        return "FinancialIdentifier(ISIN: {}, Ticker: {}, Name: {})".format(self._Isin, self._Ticker, self._Name)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, FinancialIdentifier):
+            return self.isTheSameAs(other)
+        return False
+
+    def __hash__(self) -> int:
+        return hash((self._Isin, self._Ticker, self._Name))
+
+    def __lt__(self, other: Self) -> bool:
+
+        self_values = (self._Isin, self._Ticker, self._Name)
+        other_values = (other._Isin, other._Ticker, other._Name)
+
+        for self_val, other_val in zip(self_values, other_values):
+            if self_val is not None and other_val is not None:
+                return self_val < other_val
+
+        return False
+
+    def __le__(self, other: Self) -> bool:
+        return self < other or self == other
+
+    def __gt__(self, other: Self) -> bool:
+        return not (self <= other)
+
+    def __ge__(self, other: Self) -> bool:
+        return not (self < other)

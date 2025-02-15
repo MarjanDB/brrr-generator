@@ -109,6 +109,7 @@ def convertTradesToKdvpItems(
             fromDate=periodStart,
             toDate=periodEnd,
             forStocks=matchingMethodFactory,
+            forDerivatives=matchingMethodFactory,
         )
 
         interestingGrouping = countedProcessor.process(isinGrouping, lotMatchingConfiguration)

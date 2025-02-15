@@ -110,8 +110,11 @@ testData = pgf.FinancialGrouping(
     UnderlyingCategory=cf.GenericCategory.REGULAR,
     StockTrades=[stockAcquired, stockSold],
     StockTaxLots=[],
-    DerivativeTrades=[optionBought, optionSold],
-    DerivativeTaxLots=[],
+    DerivativeGroupings=[
+        pgf.DerivativeGrouping(
+            FinancialIdentifier=pgf.FinancialIdentifier(ISIN="ISIN"), DerivativeTrades=[optionBought, optionSold], DerivativeTaxLots=[]
+        )
+    ],
     CashTransactions=[],
 )
 

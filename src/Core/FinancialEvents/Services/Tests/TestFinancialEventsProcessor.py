@@ -75,14 +75,18 @@ class TestFinancialEventsProcessor:
             UnderlyingCategory=cf.GenericCategory.REGULAR,
             StockTrades=[simpleStockBuy, simpleStockSold],
             StockTaxLots=[simpleStockLot],
-            DerivativeTrades=[],
-            DerivativeTaxLots=[],
+            DerivativeGroupings=[],
             CashTransactions=[],
         )
 
         utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
 
-        lotMatchingConfiguration = LotMatchingConfiguration(fromDate=ar.get("2023-01-01"), toDate=ar.get("2023-01-02"))
+        lotMatchingConfiguration = LotMatchingConfiguration(
+            fromDate=ar.get("2023-01-01"),
+            toDate=ar.get("2023-01-02"),
+            forStocks=matchingMethodFactory,
+            forDerivatives=matchingMethodFactory,
+        )
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping], lotMatchingConfiguration)
 
@@ -94,7 +98,7 @@ class TestFinancialEventsProcessor:
             len(iGrouping.StockTrades) == 2
         ), "There should only be 2 trades after matching trades with lots, as there were only 2 trades and 1 lot to which they belong to"
         assert (
-            len(iGrouping.DerivativeTrades) == 0
+            len(iGrouping.DerivativeGroupings) == 0
         ), "There should be no derivative trades, since there were no derivative trades whatsoever"
 
     def testSimpleFilteringTradesOfLotsClosedInPeriod(self):
@@ -104,14 +108,18 @@ class TestFinancialEventsProcessor:
             UnderlyingCategory=cf.GenericCategory.REGULAR,
             StockTrades=[simpleStockBuy, simpleStockSold],
             StockTaxLots=[simpleStockLot],
-            DerivativeTrades=[],
-            DerivativeTaxLots=[],
+            DerivativeGroupings=[],
             CashTransactions=[],
         )
 
         utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
 
-        lotMatchingConfiguration = LotMatchingConfiguration(fromDate=ar.get("2022-01-01"), toDate=ar.get("2022-01-02"))
+        lotMatchingConfiguration = LotMatchingConfiguration(
+            fromDate=ar.get("2022-01-01"),
+            toDate=ar.get("2022-01-02"),
+            forStocks=matchingMethodFactory,
+            forDerivatives=matchingMethodFactory,
+        )
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping], lotMatchingConfiguration)
 
@@ -130,14 +138,18 @@ class TestFinancialEventsProcessor:
             UnderlyingCategory=cf.GenericCategory.REGULAR,
             StockTrades=[simpleStockBuy, simpleStockSold],
             StockTaxLots=[],
-            DerivativeTrades=[],
-            DerivativeTaxLots=[],
+            DerivativeGroupings=[],
             CashTransactions=[],
         )
 
         utils = cgp.FinancialEventsProcessor(pu.ProcessingUtils(), LotMatcher())
 
-        lotMatchingConfiguration = LotMatchingConfiguration(fromDate=ar.get("2023-01-01"), toDate=ar.get("2023-01-02"))
+        lotMatchingConfiguration = LotMatchingConfiguration(
+            fromDate=ar.get("2023-01-01"),
+            toDate=ar.get("2023-01-02"),
+            forStocks=matchingMethodFactory,
+            forDerivatives=matchingMethodFactory,
+        )
 
         interesting = utils.generateInterestingUnderlyingGroupings([grouping], lotMatchingConfiguration)
 
@@ -147,5 +159,5 @@ class TestFinancialEventsProcessor:
 
         assert len(iGrouping.StockTrades) == 0, "There should be no stock trades, since there were no trade lots matching them"
         assert (
-            len(iGrouping.DerivativeTrades) == 0
+            len(iGrouping.DerivativeGroupings) == 0
         ), "There should be no derivative trades, since there were no derivative trades whatsoever"

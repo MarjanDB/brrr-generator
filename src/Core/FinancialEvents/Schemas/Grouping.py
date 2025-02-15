@@ -14,6 +14,13 @@ from Core.FinancialEvents.Schemas.Lots import TaxLotDerivative, TaxLotStock
 
 
 @dataclass
+class DerivativeGrouping:
+    FinancialIdentifier: FinancialIdentifier
+    DerivativeTrades: Sequence[TradeEventDerivativeAcquired | TradeEventDerivativeSold]
+    DerivativeTaxLots: Sequence[TaxLotDerivative]
+
+
+@dataclass
 class FinancialGrouping:
     FinancialIdentifier: FinancialIdentifier
     CountryOfOrigin: str | None  # None for unknown
@@ -23,10 +30,15 @@ class FinancialGrouping:
     StockTrades: Sequence[TradeEventStockAcquired | TradeEventStockSold]
     StockTaxLots: Sequence[TaxLotStock]
 
-    DerivativeTrades: Sequence[TradeEventDerivativeAcquired | TradeEventDerivativeSold]
-    DerivativeTaxLots: Sequence[TaxLotDerivative]
+    DerivativeGroupings: Sequence[DerivativeGrouping]
 
     CashTransactions: Sequence[TransactionCash]
+
+
+@dataclass
+class UnderlyingDerivativeGrouping:
+    FinancialIdentifier: FinancialIdentifier
+    DerivativeTrades: Sequence[TradeEventDerivativeAcquired | TradeEventDerivativeSold]
 
 
 @dataclass
@@ -38,6 +50,6 @@ class UnderlyingGroupingWithTradesOfInterest:
 
     StockTrades: Sequence[TradeEventStockAcquired | TradeEventStockSold]
 
-    DerivativeTrades: Sequence[TradeEventDerivativeAcquired | TradeEventDerivativeSold]
+    DerivativeGroupings: Sequence[UnderlyingDerivativeGrouping]
 
     CashTransactions: Sequence[TransactionCash]

@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Callable, Sequence
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
 import Core.FinancialEvents.Schemas.Grouping as pgf
@@ -85,6 +85,15 @@ def convertEvent(
     return convertSell(line)
 
 
+def getMatchingMethodFactory(
+    reportConfig: tc.TaxAuthorityConfiguration, grouping: pgf.FinancialGrouping
+) -> Callable[[pgf.FinancialGrouping], LotMatchingMethod]:
+    if reportConfig.lotMatchingMethod == tc.TaxAuthorityLotMatchingMethod.PROVIDED:
+        return lambda grouping: ProvidedLotMatchingMethod([])  # TODO: Figure out how to get lots
+    else:
+        return lambda grouping: FifoLotMatchingMethod()
+
+
 def convertTradesToIfiItems(
     reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.FinancialGrouping], countedProcessor: g.FinancialEventsProcessor
 ) -> list[ss.EDavkiGenericDerivativeReportItem]:
@@ -92,18 +101,12 @@ def convertTradesToIfiItems(
     periodStart = reportConfig.fromDate
     periodEnd = reportConfig.toDate
 
-    if reportConfig.lotMatchingMethod == tc.TaxAuthorityLotMatchingMethod.PROVIDED:
-
-        def matchingMethodFactory(grouping: pgf.FinancialGrouping) -> LotMatchingMethod:
-            return ProvidedLotMatchingMethod(grouping.DerivativeTaxLots)
-
-    else:
-
-        def matchingMethodFactory(grouping: pgf.FinancialGrouping) -> LotMatchingMethod:
-            return FifoLotMatchingMethod()
-
     for financialGrouping in data:
+
+        matchingMethodFactory = getMatchingMethodFactory(reportConfig, financialGrouping)
+
         lotMatchingConfiguration = LotMatchingConfiguration(
+            forStocks=matchingMethodFactory,  # This needs to be fixed, as we're reusing derivative lot matching for stocks
             forDerivatives=matchingMethodFactory,
             fromDate=periodStart,
             toDate=periodEnd,
@@ -111,34 +114,35 @@ def convertTradesToIfiItems(
 
         interestingGrouping = countedProcessor.process(financialGrouping, lotMatchingConfiguration)
 
-        allLines = list(interestingGrouping.DerivativeTrades)
-        allLines.sort(key=lambda line: line.Date)
+        for derivativeGrouping in interestingGrouping.DerivativeGroupings:
+            allLines = list(derivativeGrouping.DerivativeTrades)
+            allLines.sort(key=lambda line: line.Date)
 
-        # If there are no lines to report on, do not add it to the ISIN to be reported
-        if len(allLines) == 0:
-            continue
+            # If there are no lines to report on, do not add it to the ISIN to be reported
+            if len(allLines) == 0:
+                continue
 
-        convertedLines = list(map(convertEvent, allLines))
+            convertedLines = list(map(convertEvent, allLines))
 
-        ForeignTaxPaid = sum(map(lambda entry: entry.ExchangedMoney.TaxTotal, allLines))
-        HasForeignTax = True
-        if ForeignTaxPaid <= 0:
-            ForeignTaxPaid = None
-            HasForeignTax = False
+            ForeignTaxPaid = sum(map(lambda entry: entry.ExchangedMoney.TaxTotal, allLines))
+            HasForeignTax = True
+            if ForeignTaxPaid <= 0:
+                ForeignTaxPaid = None
+                HasForeignTax = False
 
-        ISINEntry = ss.EDavkiGenericDerivativeReportItem(
-            InventoryListType=ss.EDavkiDerivativeSecurityType.OPTION_OR_CERTIFICATE,  # TODO: respect listing type SECURITY_MAPPING[securityType],
-            ItemType=ss.EDavkiDerivativeReportItemType.DERIVATIVE,  # TODO: Actually check this for correct type
-            Code=financialGrouping.FinancialIdentifier.getTicker(),
-            ISIN=financialGrouping.FinancialIdentifier.getIsin(),
-            Name=financialGrouping.FinancialIdentifier.getName(),
-            HasForeignTax=HasForeignTax,
-            ForeignTax=ForeignTaxPaid,
-            FTCountryID=None,
-            FTCountryName=None,
-            Items=convertedLines,
-        )
+            ISINEntry = ss.EDavkiGenericDerivativeReportItem(
+                InventoryListType=ss.EDavkiDerivativeSecurityType.OPTION_OR_CERTIFICATE,  # TODO: respect listing type SECURITY_MAPPING[securityType],
+                ItemType=ss.EDavkiDerivativeReportItemType.DERIVATIVE,  # TODO: Actually check this for correct type
+                Code=financialGrouping.FinancialIdentifier.getTicker(),
+                ISIN=financialGrouping.FinancialIdentifier.getIsin(),
+                Name=financialGrouping.FinancialIdentifier.getName(),
+                HasForeignTax=HasForeignTax,
+                ForeignTax=ForeignTaxPaid,
+                FTCountryID=None,
+                FTCountryName=None,
+                Items=convertedLines,
+            )
 
-        converted.append(ISINEntry)
+            converted.append(ISINEntry)
 
     return converted

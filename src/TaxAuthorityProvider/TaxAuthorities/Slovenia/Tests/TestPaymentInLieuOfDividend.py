@@ -125,8 +125,7 @@ testData = pgf.FinancialGrouping(
     UnderlyingCategory=cf.GenericCategory.REGULAR,
     StockTrades=[],
     StockTaxLots=[],
-    DerivativeTrades=[],
-    DerivativeTaxLots=[],
+    DerivativeGroupings=[],
     CashTransactions=[
         cashTransactionDividend,
         cashTransactionPaymentInLieuOfDividend,

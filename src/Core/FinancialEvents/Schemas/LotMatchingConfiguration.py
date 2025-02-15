@@ -1,21 +1,9 @@
-from dataclasses import dataclass
 from typing import Callable
 
 from arrow import Arrow
 
 import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.LotMatching.Contracts.LotMatchingMethod import LotMatchingMethod
-from Core.LotMatching.Services.LotMatchingMethods.ProvidedLotMatchingMethod import (
-    ProvidedLotMatchingMethod,
-)
-
-
-def defaultForStocks(grouping: pgf.FinancialGrouping) -> LotMatchingMethod:
-    return ProvidedLotMatchingMethod(grouping.StockTaxLots)
-
-
-def defaultForDerivatives(grouping: pgf.FinancialGrouping) -> LotMatchingMethod:
-    return ProvidedLotMatchingMethod(grouping.DerivativeTaxLots)
 
 
 class LotMatchingConfiguration:
@@ -29,10 +17,10 @@ class LotMatchingConfiguration:
         self,
         fromDate: Arrow,
         toDate: Arrow,
-        forStocks: Callable[[pgf.FinancialGrouping], LotMatchingMethod] | None = None,
-        forDerivatives: Callable[[pgf.FinancialGrouping], LotMatchingMethod] | None = None,
+        forStocks: Callable[[pgf.FinancialGrouping], LotMatchingMethod],
+        forDerivatives: Callable[[pgf.FinancialGrouping], LotMatchingMethod],
     ) -> None:
-        self.ForStocks = forStocks or defaultForStocks
-        self.ForDerivatives = forDerivatives or defaultForDerivatives
+        self.ForStocks = forStocks
+        self.ForDerivatives = forDerivatives
         self.fromDate = fromDate
         self.toDate = toDate

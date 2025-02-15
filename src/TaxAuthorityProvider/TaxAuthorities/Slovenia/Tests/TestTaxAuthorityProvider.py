@@ -165,15 +165,20 @@ testData = pgf.FinancialGrouping(
             ShortLongType=cf.GenericShortLong.LONG,
         )
     ],
-    DerivativeTrades=[optionBought, optionSold],
-    DerivativeTaxLots=[
-        pgf.TaxLotDerivative(
-            ID="ID1",
+    DerivativeGroupings=[
+        pgf.DerivativeGrouping(
             FinancialIdentifier=pgf.FinancialIdentifier(ISIN="ISIN"),
-            Quantity=1.0,
-            Acquired=optionBought,
-            Sold=optionSold,
-            ShortLongType=cf.GenericShortLong.LONG,
+            DerivativeTrades=[optionBought, optionSold],
+            DerivativeTaxLots=[
+                pgf.TaxLotDerivative(
+                    ID="ID1",
+                    FinancialIdentifier=pgf.FinancialIdentifier(ISIN="ISIN"),
+                    Quantity=1.0,
+                    Acquired=optionBought,
+                    Sold=optionSold,
+                    ShortLongType=cf.GenericShortLong.LONG,
+                )
+            ],
         )
     ],
     CashTransactions=[cashTransactionDivided, cashTransactionWitholdingTax],
@@ -182,7 +187,7 @@ testData = pgf.FinancialGrouping(
 
 class TestSlovenianTaxAuthorityProvider:
     def testKdvpSimpleCsv(self):
-        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.PROVIDED)
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.FIFO)
 
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
@@ -193,7 +198,7 @@ class TestSlovenianTaxAuthorityProvider:
         assert export["Quantity"][1] == -1, "The second line should be the sell line"
 
     def testKdvpSimpleXml(self):
-        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.PROVIDED)
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.FIFO)
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
         export = provider.generateExportForTaxAuthority(rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP, [testData])
@@ -212,7 +217,7 @@ class TestSlovenianTaxAuthorityProvider:
         ), "The sale's 3rd F3 element should contain a positive Quantity"  # This appears to have changed to a non-negative quantity???
 
     def testIfiSimpleCsv(self):
-        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.PROVIDED)
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.FIFO)
 
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
@@ -223,7 +228,7 @@ class TestSlovenianTaxAuthorityProvider:
         assert export["Quantity"][1] == -1, "The second line should be the sell line"
 
     def testIfiSimpleXml(self):
-        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.PROVIDED)
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.FIFO)
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
         export = provider.generateExportForTaxAuthority(rt.SlovenianTaxAuthorityReportTypes.D_IFI, [testData])
