@@ -133,9 +133,9 @@ def convertTradesToIfiItems(
             ISINEntry = ss.EDavkiGenericDerivativeReportItem(
                 InventoryListType=ss.EDavkiDerivativeSecurityType.OPTION_OR_CERTIFICATE,  # TODO: respect listing type SECURITY_MAPPING[securityType],
                 ItemType=ss.EDavkiDerivativeReportItemType.DERIVATIVE,  # TODO: Actually check this for correct type
-                Code=financialGrouping.FinancialIdentifier.getTicker(),
-                ISIN=financialGrouping.FinancialIdentifier.getIsin(),
-                Name=financialGrouping.FinancialIdentifier.getName(),
+                Code=derivativeGrouping.FinancialIdentifier.getTicker(),
+                ISIN=derivativeGrouping.FinancialIdentifier.getIsin(),
+                Name=derivativeGrouping.FinancialIdentifier.getName(),
                 HasForeignTax=HasForeignTax,
                 ForeignTax=ForeignTaxPaid,
                 FTCountryID=None,
