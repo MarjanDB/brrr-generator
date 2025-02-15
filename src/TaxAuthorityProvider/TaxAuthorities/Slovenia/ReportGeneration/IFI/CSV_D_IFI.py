@@ -40,4 +40,6 @@ def generateDataFrameReport(
 
     combinedData = pd.concat(mappedData)
 
+    combinedData.insert(0, "Name", combinedData.pop("Name"))
+
     return combinedData

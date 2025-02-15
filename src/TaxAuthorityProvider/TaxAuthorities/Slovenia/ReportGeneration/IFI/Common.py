@@ -145,4 +145,7 @@ def convertTradesToIfiItems(
 
             converted.append(ISINEntry)
 
+    # For consistent listing between report types, sort by Name
+    converted.sort(key=lambda entry: entry.Name or "")
+
     return converted
