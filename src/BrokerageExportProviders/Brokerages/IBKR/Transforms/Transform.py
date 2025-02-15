@@ -280,6 +280,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(
             FinancialIdentifier=sfi.StagingFinancialIdentifier(
                 ISIN=trade.UnderlyingSecurityID,
                 Ticker=trade.UnderlyingSymbol,
+                Name=trade.Description,
             ),
             AssetClass=cf.GenericAssetClass.OPTION,  # TODO: Could also be stock but leveraged (multiplier)
             Multiplier=trade.Multiplier,
@@ -304,8 +305,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(
         converted = StagingTradeEventDerivativeSold(
             ID=trade.TransactionID,
             FinancialIdentifier=sfi.StagingFinancialIdentifier(
-                ISIN=trade.UnderlyingSecurityID,
-                Ticker=trade.UnderlyingSymbol,
+                ISIN=trade.UnderlyingSecurityID, Ticker=trade.UnderlyingSymbol, Name=trade.Description
             ),
             AssetClass=cf.GenericAssetClass.OPTION,
             Multiplier=trade.Multiplier,

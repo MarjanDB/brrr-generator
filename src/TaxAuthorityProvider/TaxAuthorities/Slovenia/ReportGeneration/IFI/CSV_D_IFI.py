@@ -25,6 +25,7 @@ def generateDataFrameReport(
         lines = pd.DataFrame(entry.Items)
         lines["ISIN"] = entry.ISIN
         lines["Ticker"] = entry.Code
+        lines["Name"] = entry.Name
         lines["HasForeignTax"] = entry.HasForeignTax
         lines["ForeignTax"] = entry.ForeignTax
         lines["ForeignTaxCountryID"] = entry.FTCountryID
