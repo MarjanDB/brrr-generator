@@ -43,4 +43,6 @@ def generateDataFrameReport(
 
     combinedData = pd.concat(flattenedData)  # type: ignore
 
+    combinedData.insert(0, "Ticker", combinedData.pop("Ticker"))
+
     return combinedData
