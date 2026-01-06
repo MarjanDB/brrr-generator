@@ -2,11 +2,11 @@
 line-length = 140
 
 
-[tool.pytest.ini_options]
-pythonpath = "src"
-python_files = "Test*.py"
-python_classes = "Test*"
-python_functions = "test*"
+[tool.pytest]
+pythonpath = ["src"]
+python_files = ["Test*.py"]
+python_classes = ["Test*"]
+python_functions = ["test*"]
 
 
 [tool.coverage.html]
