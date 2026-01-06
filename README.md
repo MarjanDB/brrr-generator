@@ -2,6 +2,8 @@
 
 Generated exports can be wrong, so verify the generated reports before submitting to your tax authority.
 
+<!-- Pytest Coverage Comment:Begin -->
+<!-- Pytest Coverage Comment:End -->
 
 ## Usage Examples Translations
 
@@ -11,9 +13,10 @@ Generated exports can be wrong, so verify the generated reports before submittin
 ## Technical Translations
 
 ### Repository setup
+
 [![Repository translation](https://img.shields.io/badge/Repository_setup-english-green)](resources/docs/repo-setup/translations/README.en.md)
 [![Slovenski prevod](https://img.shields.io/badge/Vzpostavitev_repositorija-slovenščina-blue)](resources/docs/repo-setup/translations/README.si.md)
 
-
 ### Broker implementation
+
 [![English translation](https://img.shields.io/badge/translation-english-green)](resources/docs/brokerage-development/translations/README.en.md)
