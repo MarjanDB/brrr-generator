@@ -4,24 +4,24 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pandas = "2.2.*"
+pandas = "2.3.*"
 numpy = "1.26.*"
-arrow = "1.3.*"
-yfinance = "0.2.*"
+arrow = "1.4.*"
+yfinance = "1.0.*"
 pycountry = "24.6.*"
-lxml = "5.3.*"
+lxml = "6.0.*"
 pyyaml = "6.0.*"
 opyoid = "3.0.*"
 
 [dev-packages]
-ipykernel = "6.29.*"
-pytest = "8.3.*"
-types-lxml = "2024.11.*"
-pytest-cov = "6.0.*"
+ipykernel = "7.1.*"
+pytest = "9.0.*"
+types-lxml = "2026.1.*"
+pytest-cov = "7.0.*"
 pytest-md = "0.2.*"
-black = "24.10.*"
+black = "25.12.*"
 nbconvert = "7.16.*"
-mypy = "1.15.*"
+mypy = "1.19.*"
 
 [requires]
 python_version = "3.12"

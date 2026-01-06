@@ -2,10 +2,10 @@ import arrow
 
 
 def safeDateParse(dateString: str) -> arrow.Arrow:
-    safeDateString = dateString.replace("EDT", "UTC-4").replace("EST", "UTC-5")
+    dateString = dateString.replace("EDT", "-04:00").replace("EST", "-05:00")
     return arrow.get(
-        safeDateString,
-        ["YYYY-MM-DD HH:mm:ss ZZZ", "YYYY-MM-DD;HH:mm:ss ZZZ", "YYYY-MM-DD"],
+        dateString,
+        ["YYYY-MM-DD HH:mm:ss ZZ", "YYYY-MM-DD;HH:mm:ss ZZ", "YYYY-MM-DD"],
     )
 
 
