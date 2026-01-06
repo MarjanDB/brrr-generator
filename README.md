@@ -3,6 +3,7 @@
 Generated exports can be wrong, so verify the generated reports before submitting to your tax authority.
 
 <!-- Pytest Coverage Comment:Begin -->
+<a href="https://github.com/MarjanDB/brrr-generator/blob/master/README.md"><img alt="Coverage" src="https://img.shields.io/badge/Coverage-95%25-brightgreen.svg" /></a>
 <!-- Pytest Coverage Comment:End -->
 
 ## Usage Examples Translations
