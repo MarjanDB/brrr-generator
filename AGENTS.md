@@ -6,6 +6,7 @@ This is a Python project for generating tax reports given activity statements fr
 
 The project uses pipenv for virtual python environments.
 Entrypoints are notebooks in the `notebooks/` directory.
+We are using PascalCase.
 
 ## Design
 
@@ -32,7 +33,7 @@ Flow: **imports → broker Extract/Transform → StagingFinancialGrouping → St
 - **CommonBrokerageEvents** – Broker-specific container: cash transactions, corporate actions, stock trades/lots, derivative trades/lots. Each broker uses its own concrete type (e.g. IBKR: `SegmentedTrades`).
 - **StagingFinancialGrouping** – Broker-agnostic staging model per financial identifier (staging events and lots). Output of broker Transform; input to StagingFinancialGroupingProcessor.
 - **FinancialGrouping** – Core domain model (processed events, lot-matched lots). Output of StagingFinancialGroupingProcessor; input to TaxAuthorityProvider and IdentifierRelationshipService.
-- **IdentifierRelationships** – Directed, typed relationships between financial identifiers (e.g. from_identifier changed to to_identifier; types: RENAME, SPLIT, REVERSE_SPLIT). Output of IdentifierRelationshipService; for future use when reports merge by company.
+- **IdentifierRelationships** – Directed, typed relationships between financial identifiers (e.g. FromIdentifier changed to ToIdentifier; types: RENAME, SPLIT, REVERSE_SPLIT). Output of IdentifierRelationshipService; for future use when reports merge by company.
 - **Staging** = raw broker-agnostic representation; **Core FinancialEvents** = processed, lot-matched representation used for tax report generation.
 
 ### Directory and config conventions

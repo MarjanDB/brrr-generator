@@ -154,9 +154,9 @@ class TestIbkrTransformStock:
 
         extract = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
 
-        assert len(extract) == 1, "Given a single trade, there should only be a single underlying group"
+        assert len(extract.Groupings) == 1, "Given a single trade, there should only be a single underlying group"
 
-        extracted = extract[0]
+        extracted = extract.Groupings[0]
 
         assert extracted.FinancialIdentifier.getIsin() == "US21212112", "Underlying group ISIN should match the trade ISIN"
         assert extracted.StockTrades[0].FinancialIdentifier.getIsin() == "US21212112", "The trade ISIN should match the ISIN of the group"
@@ -174,9 +174,9 @@ class TestIbkrTransformStock:
 
         extract = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
 
-        assert len(extract) == 1, "Given a single trade, there should only be a single underlying group"
+        assert len(extract.Groupings) == 1, "Given a single trade, there should only be a single underlying group"
 
-        extracted = extract[0]
+        extracted = extract.Groupings[0]
 
         assert extracted.FinancialIdentifier.getIsin() == "US21212112", "Underlying group ISIN should match the trade ISIN"
         assert extracted.StockTrades[0].FinancialIdentifier.getIsin() == "US21212112", "The trade ISIN should match the ISIN of the group"
@@ -194,9 +194,9 @@ class TestIbkrTransformStock:
 
         extract = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
 
-        assert len(extract) == 1, "Given a single trade, there should only be a single underlying group"
+        assert len(extract.Groupings) == 1, "Given a single trade, there should only be a single underlying group"
 
-        extracted = extract[0]
+        extracted = extract.Groupings[0]
 
         assert extracted.FinancialIdentifier.getIsin() == "US21212112", "Underlying group ISIN should match the lot ISIN"
         assert extracted.StockTaxLots[0].FinancialIdentifier.getIsin() == "US21212112", "The lot ISIN should match the ISIN of the group"
@@ -318,9 +318,9 @@ class TestIbkrTransformCashTransaction:
 
         extract = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
 
-        assert len(extract) == 1, "Given a single cash transaction, there should only be a single underlying group"
+        assert len(extract.Groupings) == 1, "Given a single cash transaction, there should only be a single underlying group"
 
-        extracted = extract[0]
+        extracted = extract.Groupings[0]
 
         assert extracted.FinancialIdentifier.getIsin() == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
         assert (
@@ -344,9 +344,9 @@ class TestIbkrTransformCashTransaction:
 
         extract = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
 
-        assert len(extract) == 1, "Given a single cash transaction, there should only be a single underlying group"
+        assert len(extract.Groupings) == 1, "Given a single cash transaction, there should only be a single underlying group"
 
-        extracted = extract[0]
+        extracted = extract.Groupings[0]
 
         assert extracted.FinancialIdentifier.getIsin() == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
         assert (
@@ -375,9 +375,9 @@ class TestIbkrTransformCashTransaction:
 
         extract = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
 
-        assert len(extract) == 1, "Given a single cash transaction, there should only be a single underlying group"
+        assert len(extract.Groupings) == 1, "Given a single cash transaction, there should only be a single underlying group"
 
-        extracted = extract[0]
+        extracted = extract.Groupings[0]
 
         assert extracted.FinancialIdentifier.getIsin() == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
         assert (
@@ -404,9 +404,9 @@ class TestIbkrTransformCashTransaction:
 
         extract = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
 
-        assert len(extract) == 1, "Given a single cash transaction, there should only be a single underlying group"
+        assert len(extract.Groupings) == 1, "Given a single cash transaction, there should only be a single underlying group"
 
-        extracted = extract[0]
+        extracted = extract.Groupings[0]
 
         assert extracted.FinancialIdentifier.getIsin() == "FR0000120271", "Underlying group ISIN should match the cash transaction ISIN"
         assert (

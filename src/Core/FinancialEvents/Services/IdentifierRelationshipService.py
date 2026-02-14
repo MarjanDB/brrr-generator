@@ -15,4 +15,4 @@ class IdentifierRelationshipService:
         self, groupings: Sequence[pgf.FinancialGrouping]
     ) -> tuple[Sequence[pgf.FinancialGrouping], IdentifierRelationships]:
         """Return groupings unchanged and relationship set (empty for now)."""
-        return (groupings, IdentifierRelationships(relationships=[]))
+        return (groupings, IdentifierRelationships(Relationships=[]))

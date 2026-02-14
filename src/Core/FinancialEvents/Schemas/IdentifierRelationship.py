@@ -22,14 +22,13 @@ class IdentifierChangeType(Enum):
 
 @dataclass
 class IdentifierRelationship:
-    """Directed edge: from_identifier was superseded/changed to to_identifier."""
+    """Directed edge: FromIdentifier was superseded/changed to ToIdentifier."""
 
-    from_identifier: FinancialIdentifier
-    to_identifier: FinancialIdentifier
-    change_type: IdentifierChangeType
-
+    FromIdentifier: FinancialIdentifier
+    ToIdentifier: FinancialIdentifier
+    ChangeType: IdentifierChangeType
     """When the change took effect (e.g. corporate action date). Optional; some countries need it for reporting."""
-    effective_date: Arrow
+    EffectiveDate: Arrow
 
 
 @dataclass
@@ -39,4 +38,4 @@ class IdentifierRelationships:
     Enables later helpers such as resolving the proper identifier by following the chain.
     """
 
-    relationships: Sequence[IdentifierRelationship]
+    Relationships: Sequence[IdentifierRelationship]

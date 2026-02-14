@@ -20,4 +20,4 @@ def test_compute_returns_same_groupings_and_empty_relationships() -> None:
     service = IdentifierRelationshipService()
     result_groupings, identifier_relationships = service.compute(groupings)
     assert result_groupings is groupings
-    assert list(identifier_relationships.relationships) == []
+    assert list(identifier_relationships.Relationships) == []

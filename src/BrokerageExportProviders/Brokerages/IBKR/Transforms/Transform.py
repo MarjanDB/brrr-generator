@@ -21,10 +21,12 @@ from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTransactionCash,
 )
 from Core.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
+from Core.StagingFinancialEvents.Schemas.IdentifierRelationship import StagingIdentifierRelationships
 from Core.StagingFinancialEvents.Schemas.Lots import (
     StagingTaxLot,
     StagingTaxLotMatchingDetails,
 )
+from Core.StagingFinancialEvents.Schemas.StagingFinancialEvents import StagingFinancialEvents
 
 LINE_GENERIC_BUY = TypeVar("LINE_GENERIC_BUY")
 LINE_GENERIC_SELL = TypeVar("LINE_GENERIC_SELL")
@@ -362,7 +364,7 @@ def convertDerivativeLotsToDerivativeLotEvents(
 
 def convertSegmentedTradesToGenericUnderlyingGroups(
     segmented: st.SegmentedTrades,
-) -> Sequence[StagingFinancialGrouping]:
+) -> StagingFinancialEvents:
     stockTrades = segmented.stockTrades
     stockLots = segmented.stockLots
 
@@ -416,7 +418,7 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
         )
     )
 
-    generatedUnderlyingGroups: Sequence[StagingFinancialGrouping] = list()
+    generatedUnderlyingGroups: list[StagingFinancialGrouping] = []
     for financialIdentifier in allFinancialIdentifiersPresent:
         wrapper = StagingFinancialGrouping(
             FinancialIdentifier=financialIdentifier,
@@ -430,4 +432,7 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
         )
         generatedUnderlyingGroups.append(wrapper)
 
-    return generatedUnderlyingGroups
+    return StagingFinancialEvents(
+        Groupings=generatedUnderlyingGroups,
+        IdentifierRelationships=StagingIdentifierRelationships(Relationships=[]),
+    )
