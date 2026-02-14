@@ -26,11 +26,29 @@ class StagingFinancialIdentifier:
         return self._Name
 
     def isTheSameAs(self, other: "StagingFinancialIdentifier") -> bool:
-        sameIsin = self._Isin is not None and self._Isin == other._Isin
-        sameTicker = self._Ticker is not None and self._Ticker == other._Ticker
-        sameName = self._Name is not None and self._Name == other._Name
+        hasIsin = self._Isin is not None and other._Isin is not None
+        hasTicker = self._Ticker is not None and other._Ticker is not None
+        hasName = self._Name is not None and other._Name is not None
 
-        return sameIsin or sameTicker or sameName
+        # Do not match when Name differs (one has name, other has different or missing).
+        if (self._Name is None) != (other._Name is None) or (hasName and self._Name != other._Name):
+            return False
+        # Do not match when both have ISIN but they differ (e.g. ISIN change).
+        if hasIsin and self._Isin != other._Isin:
+            return False
+
+        sameIsin = hasIsin and self._Isin == other._Isin
+        sameTicker = hasTicker and self._Ticker == other._Ticker
+        sameName = hasName and self._Name == other._Name
+
+        # Core-style branches when ISIN is present.
+        isinEquality = sameIsin and not hasTicker and not hasName
+        tickerEquality = sameIsin and sameTicker and not hasName
+        nameEquality = sameIsin and sameTicker and sameName
+        # Staging: same ticker matches when no name conflict (e.g. no ISIN from broker yet).
+        tickerOnlyEquality = sameTicker and (not hasName or sameName)
+
+        return isinEquality or tickerEquality or nameEquality or tickerOnlyEquality
 
     def __str__(self) -> str:
         return "FinancialIdentifier(ISIN: {}, Ticker: {}, Name: {})".format(self._Isin, self._Ticker, self._Name)
