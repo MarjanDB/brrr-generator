@@ -1,11 +1,12 @@
-from typing import Any, Sequence
+from typing import Any
 
 import arrow
 import pandas as pd
 from lxml import etree
 
 import ConfigurationProvider.Configuration as cpc
-import Core.FinancialEvents.Schemas.Grouping as pgf
+import Core.FinancialEvents.Schemas.FinancialEvents as pfe
+import Core.FinancialEvents.Schemas.IdentifierRelationship as ir
 import TaxAuthorityProvider.Common.TaxAuthorityProvider as tap
 import TaxAuthorityProvider.Schemas.Configuration as c
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.CSV_Doh_DIV as csv_div
@@ -63,7 +64,11 @@ class SlovenianTaxAuthorityProvider(
 
         return Envelope
 
-    def generateExportForTaxAuthority(self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[pgf.FinancialGrouping]) -> Any:
+    def generateExportForTaxAuthority(self, reportType: rt.SlovenianTaxAuthorityReportTypes, events: pfe.FinancialEvents) -> Any:
+        applied = self.applyIdentifierRelationshipsService.apply(
+            events, changeTypesToApply=[ir.IdentifierChangeType.RENAME]
+        )
+        data = applied.Groupings
         envelope = self.createReportEnvelope()
 
         if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP:
@@ -80,8 +85,12 @@ class SlovenianTaxAuthorityProvider(
             return xml_ifi.generateXmlReport(self.reportConfig, data, envelope, self.countedGroupingProcessor)
 
     def generateSpreadsheetExport(
-        self, reportType: rt.SlovenianTaxAuthorityReportTypes, data: Sequence[pgf.FinancialGrouping]
+        self, reportType: rt.SlovenianTaxAuthorityReportTypes, events: pfe.FinancialEvents
     ) -> pd.DataFrame:
+        applied = self.applyIdentifierRelationshipsService.apply(
+            events, changeTypesToApply=[ir.IdentifierChangeType.RENAME]
+        )
+        data = applied.Groupings
         if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP:
             return csv_kdvp.generateDataFrameReport(self.reportConfig, data, self.countedGroupingProcessor)
 

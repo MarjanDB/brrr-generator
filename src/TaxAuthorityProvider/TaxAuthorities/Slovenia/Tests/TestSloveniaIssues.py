@@ -49,7 +49,7 @@ class TestSloveniaIssues:
 
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=taxPayerInfo, reportConfig=reportconfig)
 
-        tradeCsv = provider.generateSpreadsheetExport(reportType=rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP, data=financialEvents.Groupings)
+        tradeCsv = provider.generateSpreadsheetExport(reportType=rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP, events=financialEvents)
 
         # Issue:
         # 2024-07-19 -> 10

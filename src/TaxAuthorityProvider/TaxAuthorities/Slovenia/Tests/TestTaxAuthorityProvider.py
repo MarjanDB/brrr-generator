@@ -3,6 +3,7 @@ from lxml import etree
 
 import ConfigurationProvider.Configuration as cpc
 import Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.FinancialEvents.Schemas.FinancialEvents as pfe
 import Core.FinancialEvents.Schemas.Grouping as pgf
 import TaxAuthorityProvider.Schemas.Configuration as tapc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
@@ -191,7 +192,7 @@ class TestSlovenianTaxAuthorityProvider:
 
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
-        export = provider.generateSpreadsheetExport(rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP, [testData])
+        export = provider.generateSpreadsheetExport(rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP, pfe.FinancialEvents(Groupings=[testData], IdentifierRelationships=[]))
 
         assert export.shape[0] == 2, "Only 2 rows should be present"
         assert export["Quantity"][0] == 1, "The first line should be the buy line"
@@ -201,7 +202,7 @@ class TestSlovenianTaxAuthorityProvider:
         config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.FIFO)
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
-        export = provider.generateExportForTaxAuthority(rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP, [testData])
+        export = provider.generateExportForTaxAuthority(rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP, pfe.FinancialEvents(Groupings=[testData], IdentifierRelationships=[]))
 
         tradePurchaseFinder = etree.XPath("/Envelope/body/Doh_KDVP/KDVPItem/Securities/Row/Purchase")
         tradeSaleFinder = etree.XPath("/Envelope/body/Doh_KDVP/KDVPItem/Securities/Row/Sale")
@@ -221,7 +222,7 @@ class TestSlovenianTaxAuthorityProvider:
 
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
-        export = provider.generateSpreadsheetExport(rt.SlovenianTaxAuthorityReportTypes.D_IFI, [testData])
+        export = provider.generateSpreadsheetExport(rt.SlovenianTaxAuthorityReportTypes.D_IFI, pfe.FinancialEvents(Groupings=[testData], IdentifierRelationships=[]))
 
         assert export.shape[0] == 2, "Only 2 rows should be present"
         assert export["Quantity"][0] == 1, "The first line should be the buy line"
@@ -231,7 +232,7 @@ class TestSlovenianTaxAuthorityProvider:
         config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.FIFO)
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
-        export = provider.generateExportForTaxAuthority(rt.SlovenianTaxAuthorityReportTypes.D_IFI, [testData])
+        export = provider.generateExportForTaxAuthority(rt.SlovenianTaxAuthorityReportTypes.D_IFI, pfe.FinancialEvents(Groupings=[testData], IdentifierRelationships=[]))
 
         tradePurchaseFinder = etree.XPath("/Envelope/body/D_IFI/TItem/TSubItem/Purchase")
         tradeSaleFinder = etree.XPath("/Envelope/body/D_IFI/TItem/TSubItem/Sale")
@@ -249,7 +250,7 @@ class TestSlovenianTaxAuthorityProvider:
 
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
-        export = provider.generateSpreadsheetExport(rt.SlovenianTaxAuthorityReportTypes.DOH_DIV, [testData])
+        export = provider.generateSpreadsheetExport(rt.SlovenianTaxAuthorityReportTypes.DOH_DIV, pfe.FinancialEvents(Groupings=[testData], IdentifierRelationships=[]))
 
         assert export.shape[0] == 1, "Only 1 rows should be present, because the dividend and witholding tax are related"
         assert export["Znesek dividend (v EUR)"][0] == 10.0, "The dividend amount should equal 10"
@@ -261,7 +262,7 @@ class TestSlovenianTaxAuthorityProvider:
         config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.NONE)
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
-        export = provider.generateExportForTaxAuthority(rt.SlovenianTaxAuthorityReportTypes.DOH_DIV, [testData])
+        export = provider.generateExportForTaxAuthority(rt.SlovenianTaxAuthorityReportTypes.DOH_DIV, pfe.FinancialEvents(Groupings=[testData], IdentifierRelationships=[]))
 
         dividendLinesfinder = etree.XPath("/Envelope/body/Dividend")
         dividendLines = dividendLinesfinder(export)
