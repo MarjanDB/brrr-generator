@@ -21,7 +21,7 @@ class TestSloveniaIssues:
         events = ibkrProvider.getBrokerEventsForReport(os.path.join(issueReportsDirectory, "DuplicatingTrades.xml"))
         convertedCommonFormat = ibkrProvider.transformBrokerEventsToBrokerAgnosticEvents(events)
         groupingProcessor = sgp.StagingFinancialGroupingProcessor(pu.ProcessingUtils())
-        converted = groupingProcessor.generateGenericGroupings(convertedCommonFormat)
+        financialEvents = groupingProcessor.processStagingFinancialEvents(convertedCommonFormat)
 
         taxPayerInfo = TaxPayerInfo(
             taxNumber="1234567890",
@@ -49,7 +49,7 @@ class TestSloveniaIssues:
 
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=taxPayerInfo, reportConfig=reportconfig)
 
-        tradeCsv = provider.generateSpreadsheetExport(reportType=rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP, data=converted)
+        tradeCsv = provider.generateSpreadsheetExport(reportType=rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP, events=financialEvents)
 
         # Issue:
         # 2024-07-19 -> 10

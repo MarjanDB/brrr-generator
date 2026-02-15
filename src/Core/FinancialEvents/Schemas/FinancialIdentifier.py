@@ -32,6 +32,9 @@ class FinancialIdentifier:
         return self._Name
 
     def isTheSameAs(self, other: "FinancialIdentifier") -> bool:
+        """Strict equality: same instrument only when ISIN/ticker/name align per rules below.
+        Use sameInstrumentByIsin for rename/corporate-action resolution where ISIN alone identifies the instrument.
+        """
         hasIsin = self._Isin is not None and other._Isin is not None
         hasTicker = self._Ticker is not None and other._Ticker is not None
         hasName = self._Name is not None and other._Name is not None
@@ -48,6 +51,17 @@ class FinancialIdentifier:
         nameEquality = sameIsin and sameTicker and sameName
 
         return isinEquality or tickerEquality or nameEquality
+
+    def sameInstrumentByIsin(self, other: "FinancialIdentifier") -> bool:
+        """True when both have ISIN and it is the same. Use for rename/corporate-action resolution
+        where only ISIN identifies the instrument (e.g. ticker may differ: RKLB.OLD vs RKLB).
+        Not for options/distinct instruments where ISIN + ticker are needed.
+        """
+        return (
+            self._Isin is not None
+            and other._Isin is not None
+            and self._Isin == other._Isin
+        )
 
     @staticmethod
     def fromStagingIdentifier(identifier: StagingFinancialIdentifier) -> "FinancialIdentifier":

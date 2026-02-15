@@ -11,6 +11,7 @@ locationOfFiles = pathlib.Path(__file__).parent
 simpleStockTradeXml = os.path.join(locationOfFiles, "SimpleStockTrade.xml")
 simpleOptionTradeXml = os.path.join(locationOfFiles, "SimpleOptionTrade.xml")
 simpleCorporateActionXml = os.path.join(locationOfFiles, "SimpleCorporateAction.xml")
+corporateActionsTwoRowsXml = os.path.join(locationOfFiles, "CorporateActionsTwoRows.xml")
 simpleCashTransactionsOfDividendsXml = os.path.join(locationOfFiles, "SimpleCashTransactionOfDividends.xml")
 simpleCashTransactionsOfPaymentInLieuOfDividendsXml = os.path.join(locationOfFiles, "SimpleCashTransactionOfPaymentInLieuOfDividends.xml")
 
@@ -25,6 +26,10 @@ with open(simpleOptionTradeXml) as fobj:
 with open(simpleCorporateActionXml) as fobj:
     tradeString = fobj.read()
     simpleCorporateAction: etree._Element = etree.fromstring(tradeString)
+
+with open(corporateActionsTwoRowsXml) as fobj:
+    tradeString = fobj.read()
+    corporateActionsTwoRows: etree._Element = etree.fromstring(tradeString)
 
 with open(simpleCashTransactionsOfDividendsXml) as fobj:
     tradeString = fobj.read()
@@ -137,6 +142,15 @@ class TestIbkrExtractCorporateActions:
         assert (
             len(merged.corporateActions) == 1
         ), "There should only be one Corporate Action when merging 2 SegmentedTrades containing the same Corporate Action"
+
+    def testCorporateActionsTwoRowsExtract(self):
+        segmented = ex.extractFromXML(corporateActionsTwoRows)
+        assert isinstance(segmented, st.SegmentedTrades)
+        assert len(segmented.corporateActions) == 2, "CorporateActionsTwoRows.xml has two CorporateAction elements"
+        actionIds = {ca.ActionID for ca in segmented.corporateActions}
+        assert len(actionIds) == 1 and "141913764" in actionIds, "Both rows share the same ActionID"
+        isins = {ca.ISIN for ca in segmented.corporateActions}
+        assert isins == {"US86800U1043", "US86800U3023"}, "One row is old ISIN, one is new ISIN"
 
 
 class TestIbkrExtractCashTransactionsDividends:

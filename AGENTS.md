@@ -6,6 +6,8 @@ This is a Python project for generating tax reports given activity statements fr
 
 The project uses pipenv for virtual python environments.
 Entrypoints are notebooks in the `notebooks/` directory.
+We are using PascalCase in general, but methods and functions use camelCase.
+Dependencies are managed using opyoid modules.
 
 ## Design
 
@@ -20,17 +22,19 @@ General architecture of the project consists of:
 ### Pipeline and data flow
 
 1. **Input:** Broker activity XML files in `imports/`. Currently only **IBKR Flex Query** XML is supported.
-2. **Broker layer:** A brokerage provider (e.g. `IbkrBrokerageExportProvider`) discovers files, loads each into **CommonBrokerageEvents** (broker-specific; for IBKR this is `SegmentedTrades`), merges them, then transforms to a sequence of **StagingFinancialGrouping** (one per financial identifier / instrument).
-3. **Staging → core:** **StagingFinancialGroupingProcessor** converts each StagingFinancialGrouping into **FinancialGrouping** (core domain model with processed events and lot-matched lots).
-4. **Output:** A **TaxAuthorityProvider** takes `Sequence[FinancialGrouping]` plus report configuration and produces XML (and optionally CSV) in `exports/`.
+2. **Broker layer:** A brokerage provider (e.g. `IbkrBrokerageExportProvider`) discovers files, loads each into **CommonBrokerageEvents** (broker-specific; for IBKR this is `SegmentedTrades`), merges them, then transforms to **StagingFinancialEvents** (groupings—one per financial identifier—and identifier relationship partials). Staging identifiers use **strict equality** (exact match on ISIN, Ticker, Name), so related instruments (e.g. after an ISIN change) remain in separate groupings; relationship logic handles “same company” later.
+3. **Staging → core:** **StagingFinancialGroupingProcessor** takes **StagingFinancialEvents** (groupings + staging relationships), resolves partial relationships, and returns **FinancialEvents** (core **FinancialGrouping**s plus core **IdentifierRelationships**). Each StagingFinancialGrouping becomes a **FinancialGrouping** (processed events and lot-matched lots).
+4. **Output:** A **TaxAuthorityProvider** accepts **FinancialEvents** (groupings + identifier relationships) and report configuration. The provider applies identifier relationships (e.g. RENAME via **ApplyIdentifierRelationshipsService**) internally, then produces XML (and optionally CSV) in `exports/`. Lot matching runs on the applied groupings.
 
-Flow: **imports → broker Extract/Transform → StagingFinancialGrouping → StagingFinancialGroupingProcessor → FinancialGrouping → TaxAuthorityProvider → exports.**
+Flow: **imports → broker Extract/Transform → StagingFinancialEvents → StagingFinancialGroupingProcessor → FinancialEvents → TaxAuthorityProvider (applies relationships, then generates report) → exports.**
 
 ### Key types and layers
 
 - **CommonBrokerageEvents** – Broker-specific container: cash transactions, corporate actions, stock trades/lots, derivative trades/lots. Each broker uses its own concrete type (e.g. IBKR: `SegmentedTrades`).
 - **StagingFinancialGrouping** – Broker-agnostic staging model per financial identifier (staging events and lots). Output of broker Transform; input to StagingFinancialGroupingProcessor.
-- **FinancialGrouping** – Core domain model (processed events, lot-matched lots). Output of StagingFinancialGroupingProcessor; input to TaxAuthorityProvider.
+- **FinancialEvents** – Core container: `Groupings` (sequence of **FinancialGrouping**) and `IdentifierRelationships`. Output of StagingFinancialGroupingProcessor; input to ApplyIdentifierRelationshipsService.
+- **FinancialGrouping** – Core domain model (processed events, lot-matched lots). Tax authority providers receive **FinancialEvents** and apply identifier relationships to obtain groupings for report generation.
+- **IdentifierRelationships** – Directed, typed relationships between financial identifiers (e.g. FromIdentifier changed to ToIdentifier; types: RENAME, SPLIT, REVERSE_SPLIT). Carried in FinancialEvents; the tax authority provider uses **ApplyIdentifierRelationshipsService** to bake selected types (e.g. RENAME) into merged groupings before generating reports.
 - **Staging** = raw broker-agnostic representation; **Core FinancialEvents** = processed, lot-matched representation used for tax report generation.
 
 ### Directory and config conventions
@@ -41,7 +45,7 @@ Flow: **imports → broker Extract/Transform → StagingFinancialGrouping → St
 
 ### Notebooks
 
-All three notebooks share the same pattern: load broker exports from `imports/`, merge, transform to broker-agnostic format, run **StagingFinancialGroupingProcessor**, then call the tax authority provider for a specific report type and date range. Only the report type and configuration (e.g. lot matching, date range) differ per notebook.
+All three notebooks share the same pattern: load broker exports from `imports/`, merge, transform to broker-agnostic format, run **StagingFinancialGroupingProcessor** (get **FinancialEvents**), then pass **FinancialEvents** to the tax authority provider for a specific report type and date range. The provider applies identifier relationships (e.g. RENAME) internally. Only the report type and configuration (e.g. lot matching, date range) differ per notebook.
 
 - **dividends** – Dividend report; typically uses NONE for lot matching.
 - **stock trades** – Security/share report; typically uses FIFO.

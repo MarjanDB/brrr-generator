@@ -8,7 +8,9 @@ import BrokerageExportProviders.Brokerages.IBKR.Schemas.SegmentedTrades as st
 import BrokerageExportProviders.Brokerages.IBKR.Transforms.Extract as e
 import BrokerageExportProviders.Brokerages.IBKR.Transforms.Transform as t
 import BrokerageExportProviders.Common.CommonBrokerageExportProvider as cbep
-from Core.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
+from Core.StagingFinancialEvents.Schemas.StagingFinancialEvents import (
+    StagingFinancialEvents,
+)
 
 
 class IbkrBrokerageExportProvider(cbep.CommonBrokerageExportProvider[st.SegmentedTrades]):
@@ -31,5 +33,5 @@ class IbkrBrokerageExportProvider(cbep.CommonBrokerageExportProvider[st.Segmente
     def mergeBrokerEvents(self, events: Sequence[st.SegmentedTrades]) -> st.SegmentedTrades:
         return e.mergeTrades(list(events))
 
-    def transformBrokerEventsToBrokerAgnosticEvents(self, events: st.SegmentedTrades) -> Sequence[StagingFinancialGrouping]:
+    def transformBrokerEventsToBrokerAgnosticEvents(self, events: st.SegmentedTrades) -> StagingFinancialEvents:
         return t.convertSegmentedTradesToGenericUnderlyingGroups(events)

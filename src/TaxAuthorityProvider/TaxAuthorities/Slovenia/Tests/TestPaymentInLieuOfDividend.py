@@ -2,6 +2,7 @@ import arrow
 
 import ConfigurationProvider.Configuration as cpc
 import Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.FinancialEvents.Schemas.FinancialEvents as pfe
 import Core.FinancialEvents.Schemas.Grouping as pgf
 import TaxAuthorityProvider.Schemas.Configuration as tapc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
@@ -141,7 +142,7 @@ class TestPaymentInLieuOfDividend:
 
         provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
 
-        export = provider.generateSpreadsheetExport(rt.SlovenianTaxAuthorityReportTypes.DOH_DIV, [testData])
+        export = provider.generateSpreadsheetExport(rt.SlovenianTaxAuthorityReportTypes.DOH_DIV, pfe.FinancialEvents(Groupings=[testData], IdentifierRelationships=[]))
 
         assert export.shape[0] == 2, "2 rows should be present, as there's one dividend event and one payment in lieu of dividend event"
 

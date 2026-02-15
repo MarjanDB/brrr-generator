@@ -2,7 +2,14 @@ import arrow as ar
 import pytest
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
+import Core.FinancialEvents.Schemas.IdentifierRelationship as cir
 import Core.StagingFinancialEvents.Schemas.FinancialIdentifier as sfi
+from Core.StagingFinancialEvents.Schemas.IdentifierRelationship import (
+    StagingIdentifierChangeType,
+    StagingIdentifierRelationship,
+    StagingIdentifierRelationships,
+)
+from Core.StagingFinancialEvents.Schemas.StagingFinancialEvents import StagingFinancialEvents
 from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventCashTransactionDividend,
     StagingTradeEventCashTransactionPaymentInLieuOfDividends,
@@ -342,3 +349,44 @@ class TestStagingFinancialGroupingProcessor:
 
         assert results[0].CashTransactions[0].ExchangedMoney.UnderlyingTradePrice == 5
         assert results[0].CashTransactions[1].ExchangedMoney.UnderlyingTradePrice == -2.5
+
+    def testProcessStagingFinancialEventsReturnsFinancialEventsWithConvertedRelationships(self):
+        stagingIdA = sfi.StagingFinancialIdentifier(ISIN="US111", Ticker="OLD", Name="Old")
+        stagingIdB = sfi.StagingFinancialIdentifier(ISIN="US222", Ticker="NEW", Name="New")
+        stagingRel = StagingIdentifierRelationship(
+            FromIdentifier=stagingIdA,
+            ToIdentifier=stagingIdB,
+            ChangeType=StagingIdentifierChangeType.RENAME,
+            EffectiveDate=ar.get("2024-06-01"),
+        )
+        groupings = [
+            StagingFinancialGrouping(
+                FinancialIdentifier=stagingIdA,
+                CountryOfOrigin=None,
+                UnderlyingCategory=cf.GenericCategory.REGULAR,
+                StockTrades=[],
+                StockTaxLots=[],
+                DerivativeTrades=[],
+                DerivativeTaxLots=[],
+                CashTransactions=[],
+            )
+        ]
+        events = StagingFinancialEvents(
+            Groupings=groupings,
+            IdentifierRelationships=StagingIdentifierRelationships(
+                Relationships=(stagingRel,),
+                PartialRelationships=(),
+            ),
+        )
+        utils = StagingFinancialGroupingProcessor(ProcessingUtils())
+        result = utils.processStagingFinancialEvents(events)
+        assert hasattr(result, "Groupings")
+        assert hasattr(result, "IdentifierRelationships")
+        assert len(result.Groupings) == 1
+        assert result.Groupings[0].FinancialIdentifier.getIsin() == "US111"
+        assert len(result.IdentifierRelationships) == 1
+        coreRel = result.IdentifierRelationships[0]
+        assert coreRel.FromIdentifier.getIsin() == "US111"
+        assert coreRel.ToIdentifier.getIsin() == "US222"
+        assert coreRel.ChangeType == cir.IdentifierChangeType.RENAME
+        assert coreRel.EffectiveDate is not None
