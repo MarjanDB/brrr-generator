@@ -209,7 +209,7 @@ def convertStockTradesToStockTradeEvents(
                 UnderlyingQuantity=trade.Quantity,
                 UnderlyingTradePrice=trade.TradePrice * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
                 ComissionCurrency=trade.IBCommissionCurrency,
-                ComissionTotal=trade.IBCommission,
+                ComissionTotal=trade.IBCommission * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
                 TaxCurrency=trade.Currency,  # NOTE: Taxes Currency == Trade Currency ??
                 TaxTotal=trade.Taxes,
                 FxRateToBase=trade.FXRateToBase,
@@ -234,7 +234,7 @@ def convertStockTradesToStockTradeEvents(
                 UnderlyingQuantity=trade.Quantity,
                 UnderlyingTradePrice=trade.TradePrice * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
                 ComissionCurrency=trade.IBCommissionCurrency,
-                ComissionTotal=trade.IBCommission,
+                ComissionTotal=trade.IBCommission * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
                 TaxCurrency=trade.Currency,  # NOTE: Taxes Currency == Trade Currency ??
                 TaxTotal=trade.Taxes,
                 FxRateToBase=trade.FXRateToBase,
@@ -299,7 +299,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(
                 UnderlyingQuantity=trade.Quantity,
                 UnderlyingTradePrice=trade.TradePrice * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
                 ComissionCurrency=trade.IBCommissionCurrency,
-                ComissionTotal=trade.IBCommission,
+                ComissionTotal=trade.IBCommission * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
                 TaxCurrency=trade.Currency,  # NOTE: Taxes Currency == Trade Currency ??
                 TaxTotal=trade.Taxes,
                 FxRateToBase=trade.FXRateToBase,
@@ -325,7 +325,7 @@ def convertDerivativeTradesToDerivativeTradeEvents(
                 UnderlyingQuantity=trade.Quantity,
                 UnderlyingTradePrice=trade.TradePrice * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
                 ComissionCurrency=trade.IBCommissionCurrency,
-                ComissionTotal=trade.IBCommission,
+                ComissionTotal=trade.IBCommission * trade.FXRateToBase,  # TODO: Remove in favor of currency conversion provider
                 TaxCurrency=trade.Currency,  # NOTE: Taxes Currency == Trade Currency ??
                 TaxTotal=trade.Taxes,
                 FxRateToBase=trade.FXRateToBase,
