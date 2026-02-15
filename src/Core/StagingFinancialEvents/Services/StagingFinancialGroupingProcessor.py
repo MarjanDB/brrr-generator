@@ -4,6 +4,12 @@ import Core.FinancialEvents.Schemas.Events as pe
 import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
 from Core.StagingFinancialEvents.Schemas.Lots import StagingTaxLot
+from Core.StagingFinancialEvents.Schemas.StagingFinancialEvents import (
+    StagingFinancialEvents,
+)
+from Core.StagingFinancialEvents.Services.IdentifierRelationshipResolution import (
+    IdentifierRelationshipResolution,
+)
 from Core.StagingFinancialEvents.Services.Transformers.EventProcessors.CashTransactionEventProcessor import (
     CashTransactionEventProcessor,
 )
@@ -29,6 +35,7 @@ class StagingFinancialGroupingProcessor:
         self.stockLotProcessor = StockLotProcessor(utils)
         self.derivativeLotProcessor = DerivativeLotProcessor(utils)
         self.cashTransactionProcessor = CashTransactionEventProcessor(utils)
+        self.identifierRelationshipResolution = IdentifierRelationshipResolution()
 
     def _processAndGroupDerivativeTrades(self, input: StagingFinancialGrouping) -> Sequence[pgf.DerivativeGrouping]:
         derivativeTrades = input.DerivativeTrades
@@ -107,3 +114,8 @@ class StagingFinancialGroupingProcessor:
     def generateGenericGroupings(self, groupings: Sequence[StagingFinancialGrouping]) -> Sequence[pgf.FinancialGrouping]:
         processedGroupings = list(map(self.process, groupings))
         return processedGroupings
+
+    def processStagingFinancialEvents(self, events: StagingFinancialEvents) -> Sequence[pgf.FinancialGrouping]:
+        """Resolve partial identifier relationships (merge by CorrelationKey), then process groupings."""
+        resolved = self.identifierRelationshipResolution.resolveStagingFinancialEventsPartialRelationships(events)
+        return self.generateGenericGroupings(resolved.Groupings)

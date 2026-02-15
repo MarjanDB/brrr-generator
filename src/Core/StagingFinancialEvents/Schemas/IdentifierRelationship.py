@@ -4,7 +4,9 @@ from typing import Sequence
 
 from arrow import Arrow
 
-from Core.StagingFinancialEvents.Schemas.FinancialIdentifier import StagingFinancialIdentifier
+from Core.StagingFinancialEvents.Schemas.FinancialIdentifier import (
+    StagingFinancialIdentifier,
+)
 
 
 class StagingIdentifierChangeType(Enum):
@@ -19,6 +21,8 @@ class StagingIdentifierChangeType(Enum):
     SPLIT = "SPLIT"
     REVERSE_SPLIT = "REVERSE_SPLIT"
 
+    UNKNOWN = "UNKNOWN"
+
 
 @dataclass
 class StagingIdentifierRelationship:
@@ -32,7 +36,27 @@ class StagingIdentifierRelationship:
 
 
 @dataclass
+class StagingIdentifierRelationshipPartial:
+    """
+    One side of an identifier relationship, with a correlation key so it can be merged
+    with another partial (from another row or file) into a full StagingIdentifierRelationship.
+    Exactly one of FromIdentifier or ToIdentifier is set.
+    """
+
+    FromIdentifier: StagingFinancialIdentifier | None
+    ToIdentifier: StagingFinancialIdentifier | None
+    CorrelationKey: str
+    ChangeType: StagingIdentifierChangeType
+    EffectiveDate: Arrow
+
+
+@dataclass
 class StagingIdentifierRelationships:
-    """Container for directed, typed staging identifier relationships (e.g. ISIN change, split)."""
+    """Container for full and partial staging identifier relationships.
+
+    Full Relationships are ready to use; PartialRelationships can be merged (by CorrelationKey)
+    into full relationships in a later, broker-agnostic step (e.g. after combining multiple files).
+    """
 
     Relationships: Sequence[StagingIdentifierRelationship]
+    PartialRelationships: Sequence[StagingIdentifierRelationshipPartial]

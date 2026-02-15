@@ -5,7 +5,13 @@ def safeDateParse(dateString: str) -> arrow.Arrow:
     dateString = dateString.replace("EDT", "-04:00").replace("EST", "-05:00")
     return arrow.get(
         dateString,
-        ["YYYY-MM-DD HH:mm:ss ZZ", "YYYY-MM-DD;HH:mm:ss ZZ", "YYYY-MM-DD"],
+        [
+            "YYYY-MM-DD HH:mm:ss ZZ",
+            "YYYY-MM-DD;HH:mm:ss ZZ",
+            "YYYY-MM-DD",
+            "YYYYMMDD;HHmmss",
+            "YYYYMMDD",
+        ],
     )
 
 

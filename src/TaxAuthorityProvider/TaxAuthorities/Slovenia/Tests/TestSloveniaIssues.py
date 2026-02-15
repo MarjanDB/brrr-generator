@@ -21,7 +21,7 @@ class TestSloveniaIssues:
         events = ibkrProvider.getBrokerEventsForReport(os.path.join(issueReportsDirectory, "DuplicatingTrades.xml"))
         convertedCommonFormat = ibkrProvider.transformBrokerEventsToBrokerAgnosticEvents(events)
         groupingProcessor = sgp.StagingFinancialGroupingProcessor(pu.ProcessingUtils())
-        converted = groupingProcessor.generateGenericGroupings(convertedCommonFormat.Groupings)
+        converted = groupingProcessor.processStagingFinancialEvents(convertedCommonFormat)
 
         taxPayerInfo = TaxPayerInfo(
             taxNumber="1234567890",

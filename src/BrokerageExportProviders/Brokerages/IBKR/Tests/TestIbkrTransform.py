@@ -9,6 +9,110 @@ from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTradeEventCashTransactionWitholdingTax,
     StagingTradeEventCashTransactionWitholdingTaxForPaymentInLieuOfDividends,
 )
+from Core.StagingFinancialEvents.Schemas.IdentifierRelationship import (
+    StagingIdentifierChangeType,
+)
+from Core.StagingFinancialEvents.Services.IdentifierRelationshipResolution import (
+    IdentifierRelationshipResolution,
+)
+
+# Two corporate action rows (same ActionID) for transform tests: old ISIN -> new ISIN (SPLIT 10 FOR 1).
+_corporateActionOld = es.CorporateAction(
+    ClientAccountID="U1",
+    AccountAlias=None,
+    Model=None,
+    Currency="USD",
+    FXRateToBase=0.90354,
+    AssetClass=es.AssetClass.STOCK,
+    SubCategory=es.SubCategory.COMMON,
+    Symbol="SMCI.OLD",
+    Description="SMCI(US86800U1043) SPLIT 10 FOR 1 (SMCI.OLD, SUPER MICRO COMPUTER INC, US86800U1043)",
+    Conid="43261373",
+    SecurityID="US86800U1043",
+    SecurityIDType=es.SecurityIDType.ISIN,
+    CUSIP="86800U104",
+    ISIN="US86800U1043",
+    FIGI=None,
+    ListingExchange="NASDAQ",
+    UnderlyingConid=None,
+    UnderlyingSymbol=None,
+    UnderlyingSecurityID=None,
+    UnderlyingListingExchange=None,
+    Multiplier=1.0,
+    Strike=None,
+    Expiry=None,
+    PutOrCall=None,
+    PrincipalAdjustFactor=None,
+    ReportDate=ar.get("2024-10-01"),
+    DateTime=ar.get("2024-09-30 20:25:00"),
+    ActionDescription="SMCI(US86800U1043) SPLIT 10 FOR 1 (SMCI.OLD, SUPER MICRO COMPUTER INC, US86800U1043)",
+    Amount=0.0,
+    Proceeds=0.0,
+    Value=0.0,
+    Quantity=-4.0,
+    FifoProfitAndLossRealized=0.0,
+    CapitalGainsProfitAndLoss=0.0,
+    ForexProfitAndLoss=0.0,
+    MarketToMarketProfitAndLoss=0.0,
+    NotesAndCodes=[],
+    Type="FI",
+    TransactionID="3131760419",
+    ActionID="141913764",
+    LevelOfDetail=es.LevelOfDetail.DETAIL,
+    SerialNumber=None,
+    DeliveryType=None,
+    CommodityType=None,
+    Fineness=0.0,
+    Weight=0.0,
+)
+_corporateActionNew = es.CorporateAction(
+    ClientAccountID="U1",
+    AccountAlias=None,
+    Model=None,
+    Currency="USD",
+    FXRateToBase=0.90354,
+    AssetClass=es.AssetClass.STOCK,
+    SubCategory=es.SubCategory.COMMON,
+    Symbol="SMCI",
+    Description="SMCI(US86800U1043) SPLIT 10 FOR 1 (SMCI, SUPER MICRO COMPUTER INC, US86800U3023)",
+    Conid="731466419",
+    SecurityID="US86800U3023",
+    SecurityIDType=es.SecurityIDType.ISIN,
+    CUSIP="86800U302",
+    ISIN="US86800U3023",
+    FIGI=None,
+    ListingExchange="NASDAQ",
+    UnderlyingConid=None,
+    UnderlyingSymbol=None,
+    UnderlyingSecurityID=None,
+    UnderlyingListingExchange=None,
+    Multiplier=1.0,
+    Strike=None,
+    Expiry=None,
+    PutOrCall=None,
+    PrincipalAdjustFactor=None,
+    ReportDate=ar.get("2024-10-01"),
+    DateTime=ar.get("2024-09-30 20:25:00"),
+    ActionDescription="SMCI(US86800U1043) SPLIT 10 FOR 1 (SMCI, SUPER MICRO COMPUTER INC, US86800U3023)",
+    Amount=0.0,
+    Proceeds=0.0,
+    Value=0.0,
+    Quantity=40.0,
+    FifoProfitAndLossRealized=0.0,
+    CapitalGainsProfitAndLoss=0.0,
+    ForexProfitAndLoss=0.0,
+    MarketToMarketProfitAndLoss=0.0,
+    NotesAndCodes=[],
+    Type="FI",
+    TransactionID="3131760429",
+    ActionID="141913764",
+    LevelOfDetail=es.LevelOfDetail.DETAIL,
+    SerialNumber=None,
+    DeliveryType=None,
+    CommodityType=None,
+    Fineness=0.0,
+    Weight=0.0,
+)
 
 simpleTradeBuy = es.TradeStock(
     ClientAccountID="test",
@@ -420,3 +524,60 @@ class TestIbkrTransformCashTransaction:
             == witholdingTaxForPaymentInLieuOfDividend.Amount * witholdingTaxForPaymentInLieuOfDividend.FXRateToBase
         ), "The Dividend Trade Price should match the dividend"
         assert extracted.CashTransactions[0].ExchangedMoney.UnderlyingQuantity == 1, "There was only one instance of the witholding tax"
+
+
+class TestIbkrTransformCorporateActions:
+    def testCorporateActionsProducePartialRelationshipsOnly(self):
+        """Transform emits one partial per row (no pairing); full relationships come from a later merge step."""
+        segmented = st.SegmentedTrades(
+            cashTransactions=[],
+            corporateActions=[_corporateActionOld, _corporateActionNew],
+            stockTrades=[],
+            stockLots=[],
+            derivativeTrades=[],
+            derivativeLots=[],
+        )
+        result = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
+        assert len(result.IdentifierRelationships.Relationships) == 0, "Transform should not produce full relationships"
+        partials = result.IdentifierRelationships.PartialRelationships
+        assert len(partials) == 2, "One partial per corporate action row"
+        keys = {p.CorrelationKey for p in partials}
+        assert keys == {"141913764"}, "Same ActionID so same CorrelationKey for later merge"
+        from_partial = next(p for p in partials if p.FromIdentifier is not None and p.ToIdentifier is None)
+        to_partial = next(p for p in partials if p.ToIdentifier is not None and p.FromIdentifier is None)
+        assert from_partial.FromIdentifier.getIsin() == "US86800U1043"
+        assert to_partial.ToIdentifier.getIsin() == "US86800U3023"
+        assert from_partial.ChangeType == StagingIdentifierChangeType.SPLIT
+
+    def testResolvePartialsProducesFullRelationship(self):
+        """After broker-agnostic resolve, partials with same CorrelationKey become one full relationship."""
+        segmented = st.SegmentedTrades(
+            cashTransactions=[],
+            corporateActions=[_corporateActionOld, _corporateActionNew],
+            stockTrades=[],
+            stockLots=[],
+            derivativeTrades=[],
+            derivativeLots=[],
+        )
+        staging = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
+        resolved = IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(staging)
+        rels = resolved.IdentifierRelationships.Relationships
+        assert len(rels) == 1
+        r = rels[0]
+        assert r.FromIdentifier.getIsin() == "US86800U1043"
+        assert r.ToIdentifier.getIsin() == "US86800U3023"
+        assert r.ChangeType == StagingIdentifierChangeType.SPLIT
+        assert r.EffectiveDate is not None
+
+    def testNoCorporateActionsProduceNoPartials(self):
+        segmented = st.SegmentedTrades(
+            cashTransactions=[],
+            corporateActions=[],
+            stockTrades=[],
+            stockLots=[],
+            derivativeTrades=[],
+            derivativeLots=[],
+        )
+        result = t.convertSegmentedTradesToGenericUnderlyingGroups(segmented)
+        assert len(result.IdentifierRelationships.Relationships) == 0
+        assert len(result.IdentifierRelationships.PartialRelationships) == 0

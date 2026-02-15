@@ -6,7 +6,7 @@ This is a Python project for generating tax reports given activity statements fr
 
 The project uses pipenv for virtual python environments.
 Entrypoints are notebooks in the `notebooks/` directory.
-We are using PascalCase.
+We are using PascalCase in general, but methods and functions use camelCase.
 
 ## Design
 

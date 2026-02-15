@@ -21,12 +21,18 @@ from Core.StagingFinancialEvents.Schemas.Events import (
     StagingTransactionCash,
 )
 from Core.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
-from Core.StagingFinancialEvents.Schemas.IdentifierRelationship import StagingIdentifierRelationships
+from Core.StagingFinancialEvents.Schemas.IdentifierRelationship import (
+    StagingIdentifierChangeType,
+    StagingIdentifierRelationshipPartial,
+    StagingIdentifierRelationships,
+)
 from Core.StagingFinancialEvents.Schemas.Lots import (
     StagingTaxLot,
     StagingTaxLotMatchingDetails,
 )
-from Core.StagingFinancialEvents.Schemas.StagingFinancialEvents import StagingFinancialEvents
+from Core.StagingFinancialEvents.Schemas.StagingFinancialEvents import (
+    StagingFinancialEvents,
+)
 
 LINE_GENERIC_BUY = TypeVar("LINE_GENERIC_BUY")
 LINE_GENERIC_SELL = TypeVar("LINE_GENERIC_SELL")
@@ -362,6 +368,45 @@ def convertDerivativeLotsToDerivativeLotEvents(
     return lotEvents
 
 
+def convertCorporateActionsToPartialRelationships(
+    corporateActions: list[s.CorporateAction],
+) -> list[StagingIdentifierRelationshipPartial]:
+    """
+    Map each IBKR corporate action row to one partial relationship (no pairing or lookups).
+    CorrelationKey = ActionID so a later broker-agnostic step can merge partials from the same event.
+    From vs To is determined from this row only: negative quantity or .OLD symbol → from side; else to side.
+    """
+
+    def inferIdentifierChangeType(corporateAction: s.CorporateAction) -> StagingIdentifierChangeType:
+        actionType = (corporateAction.Type or "").upper()
+        if actionType == "IC":
+            return StagingIdentifierChangeType.RENAME
+        if actionType == "FI":
+            return StagingIdentifierChangeType.SPLIT
+
+        return StagingIdentifierChangeType.UNKNOWN
+
+    partials: list[StagingIdentifierRelationshipPartial] = []
+    for row in corporateActions:
+        identifier = sfi.StagingFinancialIdentifier(
+            ISIN=row.ISIN,
+            Ticker=row.Symbol,
+            Name=None,
+        )
+        isFromSide = row.Symbol.endswith(".OLD")
+        changeType = inferIdentifierChangeType(row)
+        partials.append(
+            StagingIdentifierRelationshipPartial(
+                FromIdentifier=identifier if isFromSide else None,
+                ToIdentifier=None if isFromSide else identifier,
+                CorrelationKey=row.ActionID,
+                ChangeType=changeType,
+                EffectiveDate=row.DateTime,
+            )
+        )
+    return partials
+
+
 def convertSegmentedTradesToGenericUnderlyingGroups(
     segmented: st.SegmentedTrades,
 ) -> StagingFinancialEvents:
@@ -432,7 +477,11 @@ def convertSegmentedTradesToGenericUnderlyingGroups(
         )
         generatedUnderlyingGroups.append(wrapper)
 
+    partials = convertCorporateActionsToPartialRelationships(segmented.corporateActions)
     return StagingFinancialEvents(
         Groupings=generatedUnderlyingGroups,
-        IdentifierRelationships=StagingIdentifierRelationships(Relationships=[]),
+        IdentifierRelationships=StagingIdentifierRelationships(
+            Relationships=(),
+            PartialRelationships=partials,
+        ),
     )
