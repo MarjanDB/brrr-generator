@@ -169,3 +169,26 @@ class TestApplyIdentifierRelationshipsServiceRename:
         merged = result.Groupings[0]
         assert merged.FinancialIdentifier.isTheSameAs(idNewInRel)
         assert len(merged.StockTrades) == 2
+
+    def test_same_isin_different_ticker_matches_rename_chain(self) -> None:
+        """Grouping with same ISIN as relationship 'from' but different ticker (e.g. RKLB vs RKLB.OLD) still merges."""
+        idOldInRel = FinancialIdentifier(ISIN="US7731221062", Ticker="RKLB.OLD", Name=None)
+        idNew = FinancialIdentifier(ISIN="US7731211089", Ticker="RKLB", Name="ROCKET LAB CORP")
+        rel = ir.IdentifierRelationship(
+            FromIdentifier=idOldInRel,
+            ToIdentifier=idNew,
+            ChangeType=ir.IdentifierChangeType.RENAME,
+            EffectiveDate=ar.get("2024-06-01"),
+        )
+        # Grouping has old ISIN but ticker RKLB (not RKLB.OLD) – isTheSameAs would be False; ISIN fallback should match.
+        idInGrouping = FinancialIdentifier(ISIN="US7731221062", Ticker="RKLB", Name=None)
+        g = _makeGrouping(idInGrouping, [_makeTrade("t1", idInGrouping, 5.0, "2024-01-01")])
+        events = pfe.FinancialEvents(
+            Groupings=[g],
+            IdentifierRelationships=[rel],
+        )
+        service = ApplyIdentifierRelationshipsService()
+        result = service.apply(events, changeTypesToApply=[ir.IdentifierChangeType.RENAME])
+        assert len(result.Groupings) == 1
+        assert result.Groupings[0].FinancialIdentifier.isTheSameAs(idNew)
+        assert len(result.Groupings[0].StockTrades) == 1

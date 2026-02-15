@@ -65,7 +65,7 @@ class ApplyIdentifierRelationshipsService:
 
         def _getSink(identifier: FinancialIdentifier) -> FinancialIdentifier | None:
             for node, sink in id_to_sink.items():
-                if node.isTheSameAs(identifier) or sink.isTheSameAs(identifier):
+                if node.sameInstrumentByIsin(identifier) or sink.sameInstrumentByIsin(identifier):
                     return sink
             return None
 
