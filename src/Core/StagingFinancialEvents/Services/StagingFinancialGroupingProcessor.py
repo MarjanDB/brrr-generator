@@ -1,8 +1,18 @@
 from typing import Sequence
 
+import arrow
+
 import Core.FinancialEvents.Schemas.Events as pe
+import Core.FinancialEvents.Schemas.FinancialEvents as pfe
 import Core.FinancialEvents.Schemas.Grouping as pgf
+from Core.FinancialEvents.Schemas.IdentifierRelationship import (
+    IdentifierChangeType,
+    IdentifierRelationship,
+)
 from Core.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
+from Core.StagingFinancialEvents.Schemas.IdentifierRelationship import (
+    StagingIdentifierChangeType,
+)
 from Core.StagingFinancialEvents.Schemas.Lots import StagingTaxLot
 from Core.StagingFinancialEvents.Schemas.StagingFinancialEvents import (
     StagingFinancialEvents,
@@ -115,7 +125,25 @@ class StagingFinancialGroupingProcessor:
         processedGroupings = list(map(self.process, groupings))
         return processedGroupings
 
-    def processStagingFinancialEvents(self, events: StagingFinancialEvents) -> Sequence[pgf.FinancialGrouping]:
-        """Resolve partial identifier relationships (merge by CorrelationKey), then process groupings."""
+    def processStagingFinancialEvents(self, events: StagingFinancialEvents) -> pfe.FinancialEvents:
+        """Resolve partial identifier relationships (merge by CorrelationKey), then process groupings and convert to core FinancialEvents."""
         resolved = self.identifierRelationshipResolution.resolveStagingFinancialEventsPartialRelationships(events)
-        return self.generateGenericGroupings(resolved.Groupings)
+        processedGroupings = self.generateGenericGroupings(resolved.Groupings)
+
+        coreRels: list[IdentifierRelationship] = []
+        for r in resolved.IdentifierRelationships.Relationships:
+            if r.ChangeType == StagingIdentifierChangeType.UNKNOWN:
+                continue
+            effective_date = r.EffectiveDate if r.EffectiveDate is not None else arrow.get(1970, 1, 1)
+            coreRels.append(
+                IdentifierRelationship(
+                    FromIdentifier=pgf.FinancialIdentifier.fromStagingIdentifier(r.FromIdentifier),
+                    ToIdentifier=pgf.FinancialIdentifier.fromStagingIdentifier(r.ToIdentifier),
+                    ChangeType=IdentifierChangeType[r.ChangeType.name],
+                    EffectiveDate=effective_date,
+                )
+            )
+        return pfe.FinancialEvents(
+            Groupings=processedGroupings,
+            IdentifierRelationships=coreRels,
+        )

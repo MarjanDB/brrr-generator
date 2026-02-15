@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Sequence
 
 from arrow import Arrow
 
@@ -27,15 +26,5 @@ class IdentifierRelationship:
     FromIdentifier: FinancialIdentifier
     ToIdentifier: FinancialIdentifier
     ChangeType: IdentifierChangeType
-    """When the change took effect (e.g. corporate action date). Optional; some countries need it for reporting."""
+    """When the change took effect (e.g. corporate action date). Required for reporting in some countries."""
     EffectiveDate: Arrow
-
-
-@dataclass
-class IdentifierRelationships:
-    """Container for directed, typed identifier relationships (e.g. ISIN change, split).
-
-    Enables later helpers such as resolving the proper identifier by following the chain.
-    """
-
-    Relationships: Sequence[IdentifierRelationship]
