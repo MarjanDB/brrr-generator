@@ -21,10 +21,18 @@ class IdentifierChangeType(Enum):
 
 @dataclass
 class IdentifierRelationship:
-    """Directed edge: FromIdentifier was superseded/changed to ToIdentifier."""
+    """Directed edge: FromIdentifier was superseded/changed to ToIdentifier (e.g. RENAME)."""
 
     FromIdentifier: FinancialIdentifier
     ToIdentifier: FinancialIdentifier
     ChangeType: IdentifierChangeType
     """When the change took effect (e.g. corporate action date). Required for reporting in some countries."""
     EffectiveDate: Arrow
+
+
+@dataclass
+class IdentifierRelationshipSplit(IdentifierRelationship):
+    """SPLIT or REVERSE_SPLIT: same as base plus required quantity context for scaling."""
+
+    QuantityBefore: float
+    QuantityAfter: float

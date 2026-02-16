@@ -12,7 +12,11 @@ from typing import Sequence
 from Core.StagingFinancialEvents.Schemas.IdentifierRelationship import (
     StagingIdentifierChangeType,
     StagingIdentifierRelationship,
+    StagingIdentifierRelationshipAny,
     StagingIdentifierRelationshipPartial,
+    StagingIdentifierRelationshipPartialAny,
+    StagingIdentifierRelationshipPartialWithQuantity,
+    StagingIdentifierRelationshipSplit,
     StagingIdentifierRelationships,
 )
 from Core.StagingFinancialEvents.Schemas.StagingFinancialEvents import (
@@ -23,8 +27,8 @@ from Core.StagingFinancialEvents.Schemas.StagingFinancialEvents import (
 class IdentifierRelationshipResolution:
     def mergePartialIdentifierRelationships(
         self,
-        partials: Sequence[StagingIdentifierRelationshipPartial],
-    ) -> Sequence[StagingIdentifierRelationship]:
+        partials: Sequence[StagingIdentifierRelationshipPartialAny],
+    ) -> Sequence[StagingIdentifierRelationshipAny]:
         """
         Group PartialRelationships by CorrelationKey; for each key with exactly one from-partial
         and one to-partial, build one full StagingIdentifierRelationship. Existing full
@@ -34,12 +38,12 @@ class IdentifierRelationshipResolution:
         if not partials:
             return []
 
-        def key_fn(p: StagingIdentifierRelationshipPartial) -> str:
+        def key_fn(p: StagingIdentifierRelationshipPartialAny) -> str:
             return p.CorrelationKey
 
         sorted_partials = sorted(partials, key=key_fn)
         grouped = groupby(sorted_partials, key=key_fn)
-        merged: list[StagingIdentifierRelationship] = []
+        merged: list[StagingIdentifierRelationshipAny] = []
         for _key, group in grouped:
             rows = list(group)
             from_partial = next((r for r in rows if r.FromIdentifier is not None and r.ToIdentifier is None), None)
@@ -48,14 +52,33 @@ class IdentifierRelationshipResolution:
                 continue
             change_type = from_partial.ChangeType or to_partial.ChangeType or StagingIdentifierChangeType.RENAME
             effective_date = from_partial.EffectiveDate or to_partial.EffectiveDate
-            merged.append(
-                StagingIdentifierRelationship(
-                    FromIdentifier=from_partial.FromIdentifier,
-                    ToIdentifier=to_partial.ToIdentifier,
-                    ChangeType=change_type,
-                    EffectiveDate=effective_date,
+
+            if isinstance(from_partial, StagingIdentifierRelationshipPartialWithQuantity) and isinstance(
+                to_partial, StagingIdentifierRelationshipPartialWithQuantity
+            ):
+                quantity_before = abs(from_partial.Quantity)
+                quantity_after = abs(to_partial.Quantity)
+                if quantity_after < quantity_before:
+                    change_type = StagingIdentifierChangeType.REVERSE_SPLIT
+                merged.append(
+                    StagingIdentifierRelationshipSplit(
+                        FromIdentifier=from_partial.FromIdentifier,
+                        ToIdentifier=to_partial.ToIdentifier,
+                        ChangeType=change_type,
+                        EffectiveDate=effective_date,
+                        QuantityBefore=quantity_before,
+                        QuantityAfter=quantity_after,
+                    )
                 )
-            )
+            else:
+                merged.append(
+                    StagingIdentifierRelationship(
+                        FromIdentifier=from_partial.FromIdentifier,
+                        ToIdentifier=to_partial.ToIdentifier,
+                        ChangeType=change_type,
+                        EffectiveDate=effective_date,
+                    )
+                )
         return merged
 
     def resolveStagingFinancialEventsPartialRelationships(

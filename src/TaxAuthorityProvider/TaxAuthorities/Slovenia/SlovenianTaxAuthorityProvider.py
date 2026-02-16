@@ -66,7 +66,8 @@ class SlovenianTaxAuthorityProvider(
 
     def generateExportForTaxAuthority(self, reportType: rt.SlovenianTaxAuthorityReportTypes, events: pfe.FinancialEvents) -> Any:
         applied = self.applyIdentifierRelationshipsService.apply(
-            events, changeTypesToApply=[ir.IdentifierChangeType.RENAME]
+            events,
+            changeTypesToApply=[ir.IdentifierChangeType.RENAME, ir.IdentifierChangeType.SPLIT, ir.IdentifierChangeType.REVERSE_SPLIT],
         )
         data = applied.Groupings
         envelope = self.createReportEnvelope()
@@ -84,13 +85,13 @@ class SlovenianTaxAuthorityProvider(
         if reportType == rt.SlovenianTaxAuthorityReportTypes.D_IFI:
             return xml_ifi.generateXmlReport(self.reportConfig, data, envelope, self.countedGroupingProcessor)
 
-    def generateSpreadsheetExport(
-        self, reportType: rt.SlovenianTaxAuthorityReportTypes, events: pfe.FinancialEvents
-    ) -> pd.DataFrame:
+    def generateSpreadsheetExport(self, reportType: rt.SlovenianTaxAuthorityReportTypes, events: pfe.FinancialEvents) -> pd.DataFrame:
         applied = self.applyIdentifierRelationshipsService.apply(
-            events, changeTypesToApply=[ir.IdentifierChangeType.RENAME]
+            events,
+            changeTypesToApply=[ir.IdentifierChangeType.RENAME, ir.IdentifierChangeType.SPLIT, ir.IdentifierChangeType.REVERSE_SPLIT],
         )
         data = applied.Groupings
+
         if reportType == rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP:
             return csv_kdvp.generateDataFrameReport(self.reportConfig, data, self.countedGroupingProcessor)
 

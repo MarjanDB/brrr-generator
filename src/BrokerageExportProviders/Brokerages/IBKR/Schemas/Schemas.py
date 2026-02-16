@@ -344,15 +344,15 @@ class TradeStock:
     IBCommission: float
     IBCommissionCurrency: str
     NetCash: float
-    NetCashInBase: float
+    NetCashInBase: float | None
     ClosePrice: float
     OpenCloseIndicator: OpenCloseIndicator
     NotesAndCodes: list[Codes]
     CostBasis: float
     FifoProfitAndLossRealized: float
-    CapitalGainsProfitAndLoss: float
-    ForexProfitAndLoss: float
-    MarketToMarketProfitAndLoss: float
+    CapitalGainsProfitAndLoss: float | None
+    ForexProfitAndLoss: float | None
+    MarketToMarketProfitAndLoss: float | None
     BuyOrSell: BuyOrSell
     TransactionID: str
     OrderTime: Arrow

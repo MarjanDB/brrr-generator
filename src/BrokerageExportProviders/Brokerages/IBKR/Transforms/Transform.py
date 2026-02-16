@@ -24,6 +24,8 @@ from Core.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGroupin
 from Core.StagingFinancialEvents.Schemas.IdentifierRelationship import (
     StagingIdentifierChangeType,
     StagingIdentifierRelationshipPartial,
+    StagingIdentifierRelationshipPartialAny,
+    StagingIdentifierRelationshipPartialWithQuantity,
     StagingIdentifierRelationships,
 )
 from Core.StagingFinancialEvents.Schemas.Lots import (
@@ -370,11 +372,12 @@ def convertDerivativeLotsToDerivativeLotEvents(
 
 def convertCorporateActionsToPartialRelationships(
     corporateActions: list[s.CorporateAction],
-) -> list[StagingIdentifierRelationshipPartial]:
+) -> list[StagingIdentifierRelationshipPartialAny]:
     """
     Map each IBKR corporate action row to one partial relationship (no pairing or lookups).
     CorrelationKey = ActionID so a later broker-agnostic step can merge partials from the same event.
     From vs To is determined from this row only: negative quantity or .OLD symbol → from side; else to side.
+    Split actions (FI) emit PartialWithQuantity so resolution can build StagingIdentifierRelationshipSplit.
     """
 
     def inferIdentifierChangeType(corporateAction: s.CorporateAction) -> StagingIdentifierChangeType:
@@ -386,7 +389,7 @@ def convertCorporateActionsToPartialRelationships(
 
         return StagingIdentifierChangeType.UNKNOWN
 
-    partials: list[StagingIdentifierRelationshipPartial] = []
+    partials: list[StagingIdentifierRelationshipPartialAny] = []
     for row in corporateActions:
         identifier = sfi.StagingFinancialIdentifier(
             ISIN=row.ISIN,
@@ -395,15 +398,30 @@ def convertCorporateActionsToPartialRelationships(
         )
         isFromSide = row.Symbol.endswith(".OLD")
         changeType = inferIdentifierChangeType(row)
-        partials.append(
-            StagingIdentifierRelationshipPartial(
-                FromIdentifier=identifier if isFromSide else None,
-                ToIdentifier=None if isFromSide else identifier,
-                CorrelationKey=row.ActionID,
-                ChangeType=changeType,
-                EffectiveDate=row.DateTime,
+        from_id: sfi.StagingFinancialIdentifier | None = identifier if isFromSide else None
+        to_id: sfi.StagingFinancialIdentifier | None = None if isFromSide else identifier
+        if changeType == StagingIdentifierChangeType.SPLIT:
+            partials.append(
+                StagingIdentifierRelationshipPartialWithQuantity(
+                    FromIdentifier=from_id,
+                    ToIdentifier=to_id,
+                    CorrelationKey=row.ActionID,
+                    ChangeType=changeType,
+                    EffectiveDate=row.DateTime,
+                    Quantity=row.Quantity,
+                )
             )
-        )
+        else:
+            partials.append(
+                StagingIdentifierRelationshipPartial(
+                    FromIdentifier=from_id,
+                    ToIdentifier=to_id,
+                    CorrelationKey=row.ActionID,
+                    ChangeType=changeType,
+                    EffectiveDate=row.DateTime,
+                    Quantity=row.Quantity,
+                )
+            )
     return partials
 
 
