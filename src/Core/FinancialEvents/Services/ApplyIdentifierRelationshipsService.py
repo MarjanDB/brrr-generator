@@ -15,9 +15,26 @@ from Core.FinancialEvents.Schemas.IdentifierRelationship import (
 class ApplyIdentifierRelationshipsService:
     """
     Bakes in selected identifier relationship types (e.g. RENAME, SPLIT, REVERSE_SPLIT)
-    by producing new financial groupings. RENAME merges groupings and normalizes to the
-    proper identifier; SPLIT/REVERSE_SPLIT adjust quantities in date order.
+    by producing new financial groupings.
+
+    - RENAME: merges groupings along rename chains and normalizes to the sink identifier.
+    - SPLIT / REVERSE_SPLIT: a corporate action changes the instrument identifier (e.g. ISIN).
+      We treat the relationship as FromIdentifier (old ISIN) → ToIdentifier (new ISIN).
+      Only the old-ISIN (From) grouping is scaled for that split; the new ISIN (To) is not.
+      We scale pre-effective-date quantities in the From grouping, then merge it into the To
+      grouping so all events end up under the new identifier. Applied in EffectiveDate order.
+      In a chain (e.g. ISIN.OLD.OLD → split → ISIN.OLD → split → ISIN), each split is applied
+      in order: the oldest ISIN is scaled and merged into the next, then that grouping is
+      scaled by the next split and merged again, so the original position is scaled by every
+      ratio along the chain.
+
     Tax authorities (or the pipeline) decide which change types to apply.
+
+    Application order: RENAME first, then SPLIT/REVERSE_SPLIT by EffectiveDate.
+    We apply renames before splits so that all same-instrument groupings (e.g. same ISIN,
+    different ticker merged by a rename) are consolidated into one before we apply a split.
+    Otherwise a split would only scale and merge the first matching "old ISIN" grouping
+    (next()), leaving other same-ISIN groupings (e.g. other ticker) behind.
     """
 
     def apply(
@@ -25,7 +42,7 @@ class ApplyIdentifierRelationshipsService:
         events: pfe.FinancialEvents,
         changeTypesToApply: Sequence[IdentifierChangeType],
     ) -> pfe.FinancialEvents:
-        """Entrypoint: apply selected relationship types. RENAME first, then SPLIT/REVERSE_SPLIT by EffectiveDate."""
+        """Apply selected relationship types: RENAME first, then SPLIT/REVERSE_SPLIT by EffectiveDate."""
         current = events
 
         if IdentifierChangeType.RENAME in changeTypesToApply:
@@ -89,7 +106,12 @@ class ApplyIdentifierRelationshipsService:
         events: pfe.FinancialEvents,
         relationship: IdentifierRelationshipSplit,
     ) -> pfe.FinancialEvents:
-        """Scale quantities in the From grouping for events before EffectiveDate, then merge From into To."""
+        """
+        Apply one SPLIT or REVERSE_SPLIT: scale pre-effective-date quantities in the grouping
+        for the old identifier (FromIdentifier), then merge that grouping into the one for the
+        new identifier (ToIdentifier). Result: a single grouping under the new ISIN with scaled
+        historical quantities and any post-split activity already under that ISIN.
+        """
         if relationship.QuantityBefore == 0:
             return events
         ratio = relationship.QuantityAfter / relationship.QuantityBefore
