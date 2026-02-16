@@ -8,10 +8,12 @@ import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.FinancialEvents.Schemas.IdentifierRelationship import (
     IdentifierChangeType,
     IdentifierRelationship,
+    IdentifierRelationshipSplit,
 )
 from Core.StagingFinancialEvents.Schemas.Grouping import StagingFinancialGrouping
 from Core.StagingFinancialEvents.Schemas.IdentifierRelationship import (
     StagingIdentifierChangeType,
+    StagingIdentifierRelationshipSplit,
 )
 from Core.StagingFinancialEvents.Schemas.Lots import StagingTaxLot
 from Core.StagingFinancialEvents.Schemas.StagingFinancialEvents import (
@@ -135,14 +137,29 @@ class StagingFinancialGroupingProcessor:
             if r.ChangeType == StagingIdentifierChangeType.UNKNOWN:
                 continue
             effective_date = r.EffectiveDate if r.EffectiveDate is not None else arrow.get(1970, 1, 1)
-            coreRels.append(
-                IdentifierRelationship(
-                    FromIdentifier=pgf.FinancialIdentifier.fromStagingIdentifier(r.FromIdentifier),
-                    ToIdentifier=pgf.FinancialIdentifier.fromStagingIdentifier(r.ToIdentifier),
-                    ChangeType=IdentifierChangeType[r.ChangeType.name],
-                    EffectiveDate=effective_date,
+            from_id = pgf.FinancialIdentifier.fromStagingIdentifier(r.FromIdentifier)
+            to_id = pgf.FinancialIdentifier.fromStagingIdentifier(r.ToIdentifier)
+            change_type = IdentifierChangeType[r.ChangeType.name]
+            if isinstance(r, StagingIdentifierRelationshipSplit):
+                coreRels.append(
+                    IdentifierRelationshipSplit(
+                        FromIdentifier=from_id,
+                        ToIdentifier=to_id,
+                        ChangeType=change_type,
+                        EffectiveDate=effective_date,
+                        QuantityBefore=r.QuantityBefore,
+                        QuantityAfter=r.QuantityAfter,
+                    )
                 )
-            )
+            else:
+                coreRels.append(
+                    IdentifierRelationship(
+                        FromIdentifier=from_id,
+                        ToIdentifier=to_id,
+                        ChangeType=change_type,
+                        EffectiveDate=effective_date,
+                    )
+                )
         return pfe.FinancialEvents(
             Groupings=processedGroupings,
             IdentifierRelationships=coreRels,

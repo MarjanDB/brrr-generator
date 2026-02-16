@@ -8,6 +8,7 @@ The project uses pipenv for virtual python environments.
 Entrypoints are notebooks in the `notebooks/` directory.
 We are using PascalCase in general, but methods and functions use camelCase.
 Dependencies are managed using opyoid modules.
+Imports are only allowed at the top of the file.
 
 ## Design
 

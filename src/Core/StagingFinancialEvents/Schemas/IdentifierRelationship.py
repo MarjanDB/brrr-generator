@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Sequence
+from typing import Sequence, Union
 
 from arrow import Arrow
 
@@ -26,13 +26,25 @@ class StagingIdentifierChangeType(Enum):
 
 @dataclass
 class StagingIdentifierRelationship:
-    """Directed edge: FromIdentifier was superseded/changed to ToIdentifier (staging identifiers)."""
+    """Directed edge: FromIdentifier was superseded/changed to ToIdentifier (staging identifiers; e.g. RENAME)."""
 
     FromIdentifier: StagingFinancialIdentifier
     ToIdentifier: StagingFinancialIdentifier
     ChangeType: StagingIdentifierChangeType
     """When the change took effect (e.g. corporate action date). Optional; some countries need it for reporting."""
     EffectiveDate: Arrow | None = None
+
+
+@dataclass
+class StagingIdentifierRelationshipSplit:
+    """SPLIT or REVERSE_SPLIT: same shape as base plus required quantity context for scaling (standalone to avoid dataclass default ordering)."""
+
+    FromIdentifier: StagingFinancialIdentifier
+    ToIdentifier: StagingFinancialIdentifier
+    ChangeType: StagingIdentifierChangeType
+    EffectiveDate: Arrow | None
+    QuantityBefore: float
+    QuantityAfter: float
 
 
 @dataclass
@@ -48,6 +60,29 @@ class StagingIdentifierRelationshipPartial:
     CorrelationKey: str
     ChangeType: StagingIdentifierChangeType
     EffectiveDate: Arrow
+    """Absolute quantity for this side (from-side = before, to-side = after). Used for SPLIT/REVERSE_SPLIT."""
+    Quantity: float | None = None
+
+
+@dataclass
+class StagingIdentifierRelationshipPartialWithQuantity:
+    """Partial that carries a required quantity for this side (used when merging into StagingIdentifierRelationshipSplit).
+    Standalone dataclass to avoid overriding base Partial's Quantity type (float | None) with float.
+    """
+
+    FromIdentifier: StagingFinancialIdentifier | None
+    ToIdentifier: StagingFinancialIdentifier | None
+    CorrelationKey: str
+    ChangeType: StagingIdentifierChangeType
+    EffectiveDate: Arrow
+    Quantity: float
+
+
+StagingIdentifierRelationshipPartialAny = Union[
+    StagingIdentifierRelationshipPartial,
+    StagingIdentifierRelationshipPartialWithQuantity,
+]
+StagingIdentifierRelationshipAny = Union[StagingIdentifierRelationship, StagingIdentifierRelationshipSplit]
 
 
 @dataclass
@@ -58,5 +93,5 @@ class StagingIdentifierRelationships:
     into full relationships in a later, broker-agnostic step (e.g. after combining multiple files).
     """
 
-    Relationships: Sequence[StagingIdentifierRelationship]
-    PartialRelationships: Sequence[StagingIdentifierRelationshipPartial]
+    Relationships: Sequence[StagingIdentifierRelationshipAny]
+    PartialRelationships: Sequence[StagingIdentifierRelationshipPartialAny]

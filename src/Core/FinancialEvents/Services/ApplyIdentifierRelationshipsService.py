@@ -1,5 +1,6 @@
 from typing import Sequence
 
+import Core.FinancialEvents.Schemas.CommonFormats as cf
 import Core.FinancialEvents.Schemas.Events as pe
 import Core.FinancialEvents.Schemas.FinancialEvents as pfe
 import Core.FinancialEvents.Schemas.Grouping as pgf
@@ -7,6 +8,7 @@ from Core.FinancialEvents.Schemas.FinancialIdentifier import FinancialIdentifier
 from Core.FinancialEvents.Schemas.IdentifierRelationship import (
     IdentifierChangeType,
     IdentifierRelationship,
+    IdentifierRelationshipSplit,
 )
 
 
@@ -32,13 +34,11 @@ class ApplyIdentifierRelationshipsService:
         relsForSplits = [
             r
             for r in current.IdentifierRelationships
-            if r.ChangeType in changeTypesToApply and r.ChangeType in [IdentifierChangeType.SPLIT, IdentifierChangeType.REVERSE_SPLIT]
+            if isinstance(r, IdentifierRelationshipSplit)
+            and r.ChangeType in changeTypesToApply
         ]
         for rel in sorted(relsForSplits, key=lambda r: r.EffectiveDate):
-            if rel.ChangeType == IdentifierChangeType.SPLIT:
-                current = self._applySplit(current, rel)
-            elif rel.ChangeType == IdentifierChangeType.REVERSE_SPLIT:
-                current = self._applyReverseSplit(current, rel)
+            current = self._applySplitOrReverseSplit(current, rel)
 
         return current
 
@@ -84,13 +84,102 @@ class ApplyIdentifierRelationshipsService:
             IdentifierRelationships=events.IdentifierRelationships,
         )
 
-    def _applySplit(self, events: pfe.FinancialEvents, relationship: IdentifierRelationship) -> pfe.FinancialEvents:
-        """Apply a SPLIT (1 share -> 2+): adjust quantities in the affected grouping. Not yet implemented."""
-        return events
+    def _applySplitOrReverseSplit(
+        self,
+        events: pfe.FinancialEvents,
+        relationship: IdentifierRelationshipSplit,
+    ) -> pfe.FinancialEvents:
+        """Scale quantities in the From grouping for events before EffectiveDate, then merge From into To."""
+        if relationship.QuantityBefore == 0:
+            return events
+        ratio = relationship.QuantityAfter / relationship.QuantityBefore
+        from_grouping = next(
+            (g for g in events.Groupings if relationship.FromIdentifier.sameInstrumentByIsin(g.FinancialIdentifier)),
+            None,
+        )
+        if from_grouping is None:
+            return events
 
-    def _applyReverseSplit(self, events: pfe.FinancialEvents, relationship: IdentifierRelationship) -> pfe.FinancialEvents:
-        """Apply a REVERSE_SPLIT (2+ shares -> 1): adjust quantities in the affected grouping. Not yet implemented."""
-        return events
+        scaled_trades: list[pe.TradeEventStockAcquired | pe.TradeEventStockSold] = []
+        for t in from_grouping.StockTrades:
+            if t.Date < relationship.EffectiveDate:
+                m = t.ExchangedMoney
+                new_money = cf.GenericMonetaryExchangeInformation(
+                    UnderlyingCurrency=m.UnderlyingCurrency,
+                    UnderlyingQuantity=m.UnderlyingQuantity * ratio,
+                    UnderlyingTradePrice=m.UnderlyingTradePrice,
+                    ComissionCurrency=m.ComissionCurrency,
+                    ComissionTotal=m.ComissionTotal,
+                    TaxCurrency=m.TaxCurrency,
+                    TaxTotal=m.TaxTotal,
+                    FxRateToBase=m.FxRateToBase,
+                )
+                if isinstance(t, pe.TradeEventStockAcquired):
+                    scaled_trades.append(
+                        pe.TradeEventStockAcquired(
+                            ID=t.ID,
+                            FinancialIdentifier=t.FinancialIdentifier,
+                            AssetClass=t.AssetClass,
+                            Date=t.Date,
+                            Multiplier=t.Multiplier,
+                            ExchangedMoney=new_money,
+                            AcquiredReason=t.AcquiredReason,
+                        )
+                    )
+                else:
+                    scaled_trades.append(
+                        pe.TradeEventStockSold(
+                            ID=t.ID,
+                            FinancialIdentifier=t.FinancialIdentifier,
+                            AssetClass=t.AssetClass,
+                            Date=t.Date,
+                            Multiplier=t.Multiplier,
+                            ExchangedMoney=new_money,
+                        )
+                    )
+            else:
+                scaled_trades.append(t)
+
+        scaled_lots: list[pgf.TaxLotStock] = []
+        for lot in from_grouping.StockTaxLots:
+            if lot.Acquired.Date < relationship.EffectiveDate:
+                scaled_lots.append(
+                    pgf.TaxLotStock(
+                        ID=lot.ID,
+                        FinancialIdentifier=lot.FinancialIdentifier,
+                        Quantity=lot.Quantity * ratio,
+                        Acquired=lot.Acquired,
+                        Sold=lot.Sold,
+                        ShortLongType=lot.ShortLongType,
+                    )
+                )
+            else:
+                scaled_lots.append(lot)
+
+        scaled_from = pgf.FinancialGrouping(
+            FinancialIdentifier=from_grouping.FinancialIdentifier,
+            CountryOfOrigin=from_grouping.CountryOfOrigin,
+            UnderlyingCategory=from_grouping.UnderlyingCategory,
+            StockTrades=scaled_trades,
+            StockTaxLots=scaled_lots,
+            DerivativeGroupings=from_grouping.DerivativeGroupings,
+            CashTransactions=from_grouping.CashTransactions,
+        )
+
+        to_grouping = next(
+            (g for g in events.Groupings if relationship.ToIdentifier.sameInstrumentByIsin(g.FinancialIdentifier)),
+            None,
+        )
+        if to_grouping is not None:
+            merged = self._mergeGroupings(relationship.ToIdentifier, [scaled_from, to_grouping])
+        else:
+            merged = self._mergeGroupings(relationship.ToIdentifier, [scaled_from])
+
+        other = [g for g in events.Groupings if g is not from_grouping and g is not to_grouping]
+        return pfe.FinancialEvents(
+            Groupings=other + [merged],
+            IdentifierRelationships=events.IdentifierRelationships,
+        )
 
     def _mergeGroupings(
         self,
