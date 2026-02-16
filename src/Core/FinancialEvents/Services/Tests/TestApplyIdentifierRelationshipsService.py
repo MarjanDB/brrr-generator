@@ -43,11 +43,17 @@ def _makeGrouping(
     )
 
 
-def _makeTrade(id: str, identifier: FinancialIdentifier, qty: float, date_str: str) -> TradeEventStockAcquired | TradeEventStockSold:
+def _makeTrade(
+    id: str,
+    identifier: FinancialIdentifier,
+    qty: float,
+    date_str: str,
+    underlying_trade_price: float = 10.0,
+) -> TradeEventStockAcquired | TradeEventStockSold:
     money = cf.GenericMonetaryExchangeInformation(
         UnderlyingCurrency="USD",
         UnderlyingQuantity=qty,
-        UnderlyingTradePrice=10.0,
+        UnderlyingTradePrice=underlying_trade_price,
         ComissionCurrency="USD",
         ComissionTotal=0.0,
         TaxCurrency="USD",
@@ -232,6 +238,35 @@ class TestApplyIdentifierRelationshipsServiceSplit:
         assert merged.FinancialIdentifier.isTheSameAs(idTo)
         assert len(merged.StockTrades) == 1
         assert merged.StockTrades[0].ExchangedMoney.UnderlyingQuantity == 40.0
+        # 10-for-1 split: trade price must scale by 1/ratio so post-split price = 10.0 / 10 = 1.0
+        assert merged.StockTrades[0].ExchangedMoney.UnderlyingTradePrice == 1.0
+
+    def test_apply_split_scales_underlying_trade_price(self) -> None:
+        """Split must scale UnderlyingTradePrice by 1/ratio (not only quantity); notional qty*price preserved."""
+        idFrom = FinancialIdentifier(ISIN="US111", Ticker="OLD", Name="Old")
+        idTo = FinancialIdentifier(ISIN="US222", Ticker="NEW", Name="New")
+        rel = ir.IdentifierRelationshipSplit(
+            FromIdentifier=idFrom,
+            ToIdentifier=idTo,
+            ChangeType=ir.IdentifierChangeType.SPLIT,
+            EffectiveDate=ar.get("2024-10-01"),
+            QuantityBefore=1.0,
+            QuantityAfter=10.0,
+        )
+        gFrom = _makeGrouping(
+            idFrom,
+            [_makeTrade("t1", idFrom, 1.0, "2024-09-01", underlying_trade_price=100.0)],
+        )
+        events = pfe.FinancialEvents(
+            Groupings=[gFrom],
+            IdentifierRelationships=[rel],
+        )
+        service = ApplyIdentifierRelationshipsService()
+        result = service.apply(events, changeTypesToApply=[ir.IdentifierChangeType.SPLIT])
+        assert len(result.Groupings) == 1
+        trade = result.Groupings[0].StockTrades[0]
+        assert trade.ExchangedMoney.UnderlyingQuantity == 10.0
+        assert trade.ExchangedMoney.UnderlyingTradePrice == 10.0  # 100.0 * (1/10)
 
     def test_apply_split_does_not_scale_trades_on_or_after_effective_date(self) -> None:
         """Trades with Date >= EffectiveDate keep original quantity."""
@@ -310,6 +345,8 @@ class TestApplyIdentifierRelationshipsServiceSplit:
         assert len(result.Groupings) == 1
         assert result.Groupings[0].FinancialIdentifier.isTheSameAs(idTo)
         assert result.Groupings[0].StockTrades[0].ExchangedMoney.UnderlyingQuantity == 1.0
+        # 1-for-10 reverse: trade price must scale by 1/ratio = 10, so 10.0 -> 100.0
+        assert result.Groupings[0].StockTrades[0].ExchangedMoney.UnderlyingTradePrice == 100.0
 
     def test_apply_split_merges_from_into_existing_to_grouping(self) -> None:
         """When To grouping already exists, scaled From is merged into it."""

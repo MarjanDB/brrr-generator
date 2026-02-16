@@ -49,10 +49,7 @@ class ApplyIdentifierRelationshipsService:
             current = self._applyRename(current)
 
         relsForSplits = [
-            r
-            for r in current.IdentifierRelationships
-            if isinstance(r, IdentifierRelationshipSplit)
-            and r.ChangeType in changeTypesToApply
+            r for r in current.IdentifierRelationships if isinstance(r, IdentifierRelationshipSplit) and r.ChangeType in changeTypesToApply
         ]
         for rel in sorted(relsForSplits, key=lambda r: r.EffectiveDate):
             current = self._applySplitOrReverseSplit(current, rel)
@@ -124,43 +121,45 @@ class ApplyIdentifierRelationshipsService:
 
         scaled_trades: list[pe.TradeEventStockAcquired | pe.TradeEventStockSold] = []
         for t in from_grouping.StockTrades:
-            if t.Date < relationship.EffectiveDate:
-                m = t.ExchangedMoney
-                new_money = cf.GenericMonetaryExchangeInformation(
-                    UnderlyingCurrency=m.UnderlyingCurrency,
-                    UnderlyingQuantity=m.UnderlyingQuantity * ratio,
-                    UnderlyingTradePrice=m.UnderlyingTradePrice,
-                    ComissionCurrency=m.ComissionCurrency,
-                    ComissionTotal=m.ComissionTotal,
-                    TaxCurrency=m.TaxCurrency,
-                    TaxTotal=m.TaxTotal,
-                    FxRateToBase=m.FxRateToBase,
-                )
-                if isinstance(t, pe.TradeEventStockAcquired):
-                    scaled_trades.append(
-                        pe.TradeEventStockAcquired(
-                            ID=t.ID,
-                            FinancialIdentifier=t.FinancialIdentifier,
-                            AssetClass=t.AssetClass,
-                            Date=t.Date,
-                            Multiplier=t.Multiplier,
-                            ExchangedMoney=new_money,
-                            AcquiredReason=t.AcquiredReason,
-                        )
-                    )
-                else:
-                    scaled_trades.append(
-                        pe.TradeEventStockSold(
-                            ID=t.ID,
-                            FinancialIdentifier=t.FinancialIdentifier,
-                            AssetClass=t.AssetClass,
-                            Date=t.Date,
-                            Multiplier=t.Multiplier,
-                            ExchangedMoney=new_money,
-                        )
-                    )
-            else:
+            if not t.Date < relationship.EffectiveDate:
                 scaled_trades.append(t)
+                continue
+
+            m = t.ExchangedMoney
+            new_money = cf.GenericMonetaryExchangeInformation(
+                UnderlyingCurrency=m.UnderlyingCurrency,
+                UnderlyingQuantity=m.UnderlyingQuantity * ratio,
+                UnderlyingTradePrice=m.UnderlyingTradePrice * 1 / ratio,
+                ComissionCurrency=m.ComissionCurrency,
+                ComissionTotal=m.ComissionTotal,
+                TaxCurrency=m.TaxCurrency,
+                TaxTotal=m.TaxTotal,
+                FxRateToBase=m.FxRateToBase,
+            )
+
+            if isinstance(t, pe.TradeEventStockAcquired):
+                scaled_trades.append(
+                    pe.TradeEventStockAcquired(
+                        ID=t.ID,
+                        FinancialIdentifier=t.FinancialIdentifier,
+                        AssetClass=t.AssetClass,
+                        Date=t.Date,
+                        Multiplier=t.Multiplier,
+                        ExchangedMoney=new_money,
+                        AcquiredReason=t.AcquiredReason,
+                    )
+                )
+            else:
+                scaled_trades.append(
+                    pe.TradeEventStockSold(
+                        ID=t.ID,
+                        FinancialIdentifier=t.FinancialIdentifier,
+                        AssetClass=t.AssetClass,
+                        Date=t.Date,
+                        Multiplier=t.Multiplier,
+                        ExchangedMoney=new_money,
+                    )
+                )
 
         scaled_lots: list[pgf.TaxLotStock] = []
         for lot in from_grouping.StockTaxLots:
