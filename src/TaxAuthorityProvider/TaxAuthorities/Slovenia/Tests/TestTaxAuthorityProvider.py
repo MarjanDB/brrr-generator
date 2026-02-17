@@ -7,6 +7,7 @@ import Core.FinancialEvents.Schemas.FinancialEvents as pfe
 import Core.FinancialEvents.Schemas.Grouping as pgf
 import TaxAuthorityProvider.Schemas.Configuration as tapc
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
+import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.SlovenianTaxAuthorityProvider as tap
 from Core.FinancialEvents.Schemas.Events import (
     TradeEventCashTransactionDividend,
@@ -273,3 +274,41 @@ class TestSlovenianTaxAuthorityProvider:
         assert (
             dividendLines[0].getchildren()[8].text == "5.0"
         ), "The dividend line's ForeignTax should equal the withlend tax for the dividend line"
+
+    def testGenerateReportDataKdvpReturnsTypedList(self):
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.FIFO)
+        provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
+        reportData = provider.generateReportData(
+            rt.SlovenianTaxAuthorityReportTypes.DOH_KDVP,
+            pfe.FinancialEvents(Groupings=[testData], IdentifierRelationships=[]),
+        )
+        assert isinstance(reportData, list)
+        assert all(isinstance(item, ss.EDavkiGenericTradeReportItem) for item in reportData)
+        assert len(reportData) >= 1
+        assert reportData[0].Items is not None
+        assert len(reportData[0].Items[0].Events) == 2
+
+    def testGenerateReportDataDivReturnsTypedSequence(self):
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.NONE)
+        provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
+        reportData = provider.generateReportData(
+            rt.SlovenianTaxAuthorityReportTypes.DOH_DIV,
+            pfe.FinancialEvents(Groupings=[testData], IdentifierRelationships=[]),
+        )
+        assert hasattr(reportData, "__len__")
+        assert all(isinstance(line, ss.EDavkiDividendReportLine) for line in reportData)
+        assert len(reportData) == 1
+        assert reportData[0].DividendAmount == 10.0
+        assert reportData[0].ForeignTaxPaid == 5.0
+
+    def testGenerateReportDataIfiReturnsTypedList(self):
+        config = tapc.TaxAuthorityConfiguration(arrow.get("2023"), arrow.get("2024"), tapc.TaxAuthorityLotMatchingMethod.FIFO)
+        provider = tap.SlovenianTaxAuthorityProvider(taxPayerInfo=simpleTaxPayer, reportConfig=config)
+        reportData = provider.generateReportData(
+            rt.SlovenianTaxAuthorityReportTypes.D_IFI,
+            pfe.FinancialEvents(Groupings=[testData], IdentifierRelationships=[]),
+        )
+        assert isinstance(reportData, list)
+        assert all(isinstance(item, ss.EDavkiGenericDerivativeReportItem) for item in reportData)
+        assert len(reportData) >= 1
+        assert len(reportData[0].Items) == 2

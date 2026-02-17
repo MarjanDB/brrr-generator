@@ -3,26 +3,18 @@ from typing import Sequence
 from lxml import etree
 
 import ConfigurationProvider.Configuration as c
-import Core.FinancialEvents.Schemas.Grouping as pgf
 import TaxAuthorityProvider.Schemas.Configuration as tc
-import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.KDVP.Common as common
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.ReportTypes as rt
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
-from Core.FinancialEvents.Services.FinancialEventsProcessor import (
-    FinancialEventsProcessor,
-)
 
 
 def generateXmlReport(
     reportConfig: tc.TaxAuthorityConfiguration,
     userConfig: c.TaxPayerInfo,
     documentType: rt.EDavkiDocumentWorkflowType,
-    data: Sequence[pgf.FinancialGrouping],
+    kdvpItems: Sequence[ss.EDavkiGenericTradeReportItem],
     templateEnvelope: etree._Element,
-    countedProcessor: FinancialEventsProcessor,
 ) -> etree._Element:
-    convertedTrades = common.convertTradesToKdvpItems(reportConfig, data, countedProcessor)
-
     nsmap = templateEnvelope.nsmap
     nsmap[None] = "http://edavki.durs.si/Documents/Schemas/Doh_KDVP_9.xsd"
     envelope = etree.Element(templateEnvelope.tag, attrib=templateEnvelope.attrib, nsmap=nsmap)
@@ -47,7 +39,7 @@ def generateXmlReport(
     # etree.SubElement(KDVP, "TelephoneNumber").text = "telefonska"
     # etree.SubElement(KDVP, "Email").text = "email"
 
-    for KDVP_item_entry in convertedTrades:
+    for KDVP_item_entry in kdvpItems:
         KDVP_ITEM = etree.SubElement(Doh_KDVP, "KDVPItem")
 
         etree.SubElement(KDVP_ITEM, "InventoryListType").text = KDVP_item_entry.InventoryListType.value

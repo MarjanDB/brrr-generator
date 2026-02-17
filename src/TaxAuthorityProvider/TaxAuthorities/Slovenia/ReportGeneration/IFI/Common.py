@@ -96,7 +96,7 @@ def getMatchingMethodFactory(
 
 def convertTradesToIfiItems(
     reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.FinancialGrouping], countedProcessor: g.FinancialEventsProcessor
-) -> list[ss.EDavkiGenericDerivativeReportItem]:
+) -> Sequence[ss.EDavkiGenericDerivativeReportItem]:
     converted: list[ss.EDavkiGenericDerivativeReportItem] = list()
     periodStart = reportConfig.fromDate
     periodEnd = reportConfig.toDate

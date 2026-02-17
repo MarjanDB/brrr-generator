@@ -2,22 +2,12 @@ from typing import Sequence
 
 import pandas as pd
 
-import Core.FinancialEvents.Schemas.Grouping as pgf
-import TaxAuthorityProvider.Schemas.Configuration as tc
-import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.IFI.Common as common
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
-from Core.FinancialEvents.Services.FinancialEventsProcessor import (
-    FinancialEventsProcessor,
-)
 
 
 # NOTE: When comparing with exports from IBKR, take the realized P/L and add comissions. EDavki does reporting based on Trade Price, not Cost Basis !!!
 # The generated reports are going to show you made more money than you really did because Slovenia recognizes 1% of the Trade Price as the costs associated with buying/selling of the underlying.
-def generateDataFrameReport(
-    reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.FinancialGrouping], countedProcessor: FinancialEventsProcessor
-) -> pd.DataFrame:
-    convertedTrades = common.convertTradesToIfiItems(reportConfig, data, countedProcessor)
-
+def generateDataFrameReport(convertedTrades: Sequence[ss.EDavkiGenericDerivativeReportItem]) -> pd.DataFrame:
     def getLinesFromData(
         entry: ss.EDavkiGenericDerivativeReportItem,
     ) -> pd.DataFrame:
