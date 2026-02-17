@@ -103,6 +103,12 @@ class TestApplyIdentifierRelationshipsServiceRename:
         assert merged.FinancialIdentifier.isTheSameAs(idB)
         assert len(merged.StockTrades) == 2
         assert all(t.FinancialIdentifier.isTheSameAs(idB) for t in merged.StockTrades)
+        # Provenance: one rename step A -> B recorded on the grouping.
+        assert len(merged.Provenance) == 1
+        step = merged.Provenance[0]
+        assert step.FromIdentifier.isTheSameAs(idA)
+        assert step.ToIdentifier.isTheSameAs(idB)
+        assert step.ChangeType == ir.IdentifierChangeType.RENAME
 
     def test_empty_relationships_leaves_groupings_unchanged(self) -> None:
         idA = FinancialIdentifier(ISIN="US111", Ticker="A", Name="A")
@@ -161,8 +167,15 @@ class TestApplyIdentifierRelationshipsServiceRename:
         service = ApplyIdentifierRelationshipsService()
         result = service.apply(events, changeTypesToApply=[ir.IdentifierChangeType.RENAME])
         assert len(result.Groupings) == 1  # merged A+B+C under C (g3 at sink is merged in)
-        assert result.Groupings[0].FinancialIdentifier.isTheSameAs(idC)
-        assert len(result.Groupings[0].StockTrades) == 2
+        merged = result.Groupings[0]
+        assert merged.FinancialIdentifier.isTheSameAs(idC)
+        assert len(merged.StockTrades) == 2
+        # Provenance: rename chain A -> B -> C in order.
+        assert len(merged.Provenance) == 2
+        assert merged.Provenance[0].FromIdentifier.isTheSameAs(idA)
+        assert merged.Provenance[0].ToIdentifier.isTheSameAs(idB)
+        assert merged.Provenance[1].FromIdentifier.isTheSameAs(idB)
+        assert merged.Provenance[1].ToIdentifier.isTheSameAs(idC)
 
     def test_sink_grouping_with_different_instance_merges_into_one(self) -> None:
         """Sink (RKLB) grouping must be merged with renamed (RKLB.old) even when the sink id is a different object."""
@@ -237,9 +250,17 @@ class TestApplyIdentifierRelationshipsServiceSplit:
         merged = result.Groupings[0]
         assert merged.FinancialIdentifier.isTheSameAs(idTo)
         assert len(merged.StockTrades) == 1
-        assert merged.StockTrades[0].ExchangedMoney.UnderlyingQuantity == 40.0
+        trade = merged.StockTrades[0]
+        assert trade.ExchangedMoney.UnderlyingQuantity == 40.0
         # 10-for-1 split: trade price must scale by 1/ratio so post-split price = 10.0 / 10 = 1.0
-        assert merged.StockTrades[0].ExchangedMoney.UnderlyingTradePrice == 1.0
+        assert trade.ExchangedMoney.UnderlyingTradePrice == 1.0
+        # Provenance on the trade: one step with before-state and quantities reflecting the split.
+        assert len(trade.Provenance) == 1
+        step = trade.Provenance[0]
+        assert step.QuantityBefore == 4.0
+        assert step.QuantityAfter == 40.0
+        assert step.BeforeQuantity == 4.0
+        assert step.BeforeTradePrice == 10.0
 
     def test_apply_split_scales_underlying_trade_price(self) -> None:
         """Split must scale UnderlyingTradePrice by 1/ratio (not only quantity); notional qty*price preserved."""
@@ -321,7 +342,12 @@ class TestApplyIdentifierRelationshipsServiceSplit:
         result = service.apply(events, changeTypesToApply=[ir.IdentifierChangeType.SPLIT])
         assert len(result.Groupings) == 1
         assert len(result.Groupings[0].StockTaxLots) == 1
-        assert result.Groupings[0].StockTaxLots[0].Quantity == 20.0
+        scaled_lot = result.Groupings[0].StockTaxLots[0]
+        assert scaled_lot.Quantity == 20.0
+        # Provenance on the lot: one split step with per-lot before quantity.
+        assert len(scaled_lot.Provenance) == 1
+        step = scaled_lot.Provenance[0]
+        assert step.BeforeQuantity == 2.0
 
     def test_apply_reverse_split_scales_by_ratio(self) -> None:
         """REVERSE_SPLIT: 10 for 1 scales quantities by 1/10."""

@@ -7,8 +7,12 @@ import Core.FinancialEvents.Schemas.Grouping as pgf
 from Core.FinancialEvents.Schemas.FinancialIdentifier import FinancialIdentifier
 from Core.FinancialEvents.Schemas.IdentifierRelationship import (
     IdentifierChangeType,
-    IdentifierRelationship,
     IdentifierRelationshipSplit,
+)
+from Core.FinancialEvents.Schemas.Provenance import (
+    ProvenanceStep,
+    RenameProvenanceStep,
+    SplitProvenanceStep,
 )
 
 
@@ -83,7 +87,9 @@ class ApplyIdentifierRelationshipsService:
                     return sink
             return None
 
+        # Groupings that are not part of any rename chain.
         notAffected: list[pgf.FinancialGrouping] = []
+        # Groupings keyed by their sink identifier after applying the rename chain.
         by_sink: dict[FinancialIdentifier, list[pgf.FinancialGrouping]] = {}
         for g in events.Groupings:
             sink = _getSink(g.FinancialIdentifier)
@@ -92,7 +98,32 @@ class ApplyIdentifierRelationshipsService:
             else:
                 by_sink.setdefault(sink, []).append(g)
 
-        merged = [self._mergeGroupings(sink, group_list) for sink, group_list in by_sink.items()]
+        # For each sink identifier, collect the relationships that end up at that sink and
+        # build provenance steps that describe the rename chain for that sink/groupings.
+        sink_to_provenance: dict[FinancialIdentifier, Sequence[ProvenanceStep]] = {}
+        for r in rels:
+            sink = _sink(r.ToIdentifier)
+            step = RenameProvenanceStep(
+                FromIdentifier=r.FromIdentifier,
+                ToIdentifier=r.ToIdentifier,
+                ChangeType=r.ChangeType,
+                EffectiveDate=r.EffectiveDate,
+            )
+            existing = list(sink_to_provenance.get(sink, []))
+            # Avoid duplicate steps for the same relationship.
+            if step not in existing:
+                existing.append(step)
+            sink_to_provenance[sink] = existing
+
+        merged = [
+            self._mergeGroupings(
+                sink,
+                group_list,
+                groupingProvenance=sink_to_provenance.get(sink, []),
+            )
+            for sink, group_list in by_sink.items()
+        ]
+
         return pfe.FinancialEvents(
             Groupings=notAffected + merged,
             IdentifierRelationships=events.IdentifierRelationships,
@@ -126,6 +157,18 @@ class ApplyIdentifierRelationshipsService:
                 continue
 
             m = t.ExchangedMoney
+            step = SplitProvenanceStep(
+                FromIdentifier=relationship.FromIdentifier,
+                ToIdentifier=relationship.ToIdentifier,
+                ChangeType=relationship.ChangeType,
+                EffectiveDate=relationship.EffectiveDate,
+                QuantityBefore=m.UnderlyingQuantity,
+                QuantityAfter=m.UnderlyingQuantity * ratio,
+                BeforeQuantity=m.UnderlyingQuantity,
+                BeforeTradePrice=m.UnderlyingTradePrice,
+                BeforeExchangedMoney=m,
+            )
+
             new_money = cf.GenericMonetaryExchangeInformation(
                 UnderlyingCurrency=m.UnderlyingCurrency,
                 UnderlyingQuantity=m.UnderlyingQuantity * ratio,
@@ -147,6 +190,7 @@ class ApplyIdentifierRelationshipsService:
                         Multiplier=t.Multiplier,
                         ExchangedMoney=new_money,
                         AcquiredReason=t.AcquiredReason,
+                        Provenance=list(t.Provenance) + [step],
                     )
                 )
             else:
@@ -158,12 +202,23 @@ class ApplyIdentifierRelationshipsService:
                         Date=t.Date,
                         Multiplier=t.Multiplier,
                         ExchangedMoney=new_money,
+                        Provenance=list(t.Provenance) + [step],
                     )
                 )
 
         scaled_lots: list[pgf.TaxLotStock] = []
         for lot in from_grouping.StockTaxLots:
             if lot.Acquired.Date < relationship.EffectiveDate:
+                step = SplitProvenanceStep(
+                    FromIdentifier=relationship.FromIdentifier,
+                    ToIdentifier=relationship.ToIdentifier,
+                    ChangeType=relationship.ChangeType,
+                    EffectiveDate=relationship.EffectiveDate,
+                    QuantityBefore=relationship.QuantityBefore,
+                    QuantityAfter=relationship.QuantityAfter,
+                    BeforeQuantity=lot.Quantity,
+                )
+
                 scaled_lots.append(
                     pgf.TaxLotStock(
                         ID=lot.ID,
@@ -172,10 +227,20 @@ class ApplyIdentifierRelationshipsService:
                         Acquired=lot.Acquired,
                         Sold=lot.Sold,
                         ShortLongType=lot.ShortLongType,
+                        Provenance=list(lot.Provenance) + [step],
                     )
                 )
             else:
                 scaled_lots.append(lot)
+
+        split_step = SplitProvenanceStep(
+            FromIdentifier=relationship.FromIdentifier,
+            ToIdentifier=relationship.ToIdentifier,
+            ChangeType=relationship.ChangeType,
+            EffectiveDate=relationship.EffectiveDate,
+            QuantityBefore=relationship.QuantityBefore,
+            QuantityAfter=relationship.QuantityAfter,
+        )
 
         scaled_from = pgf.FinancialGrouping(
             FinancialIdentifier=from_grouping.FinancialIdentifier,
@@ -185,6 +250,7 @@ class ApplyIdentifierRelationshipsService:
             StockTaxLots=scaled_lots,
             DerivativeGroupings=from_grouping.DerivativeGroupings,
             CashTransactions=from_grouping.CashTransactions,
+            Provenance=list(from_grouping.Provenance) + [split_step],
         )
 
         to_grouping = next(
@@ -192,9 +258,17 @@ class ApplyIdentifierRelationshipsService:
             None,
         )
         if to_grouping is not None:
-            merged = self._mergeGroupings(relationship.ToIdentifier, [scaled_from, to_grouping])
+            merged = self._mergeGroupings(
+                relationship.ToIdentifier,
+                [scaled_from, to_grouping],
+                groupingProvenance=list(scaled_from.Provenance) + list(to_grouping.Provenance),
+            )
         else:
-            merged = self._mergeGroupings(relationship.ToIdentifier, [scaled_from])
+            merged = self._mergeGroupings(
+                relationship.ToIdentifier,
+                [scaled_from],
+                groupingProvenance=scaled_from.Provenance,
+            )
 
         other = [g for g in events.Groupings if g is not from_grouping and g is not to_grouping]
         return pfe.FinancialEvents(
@@ -206,6 +280,7 @@ class ApplyIdentifierRelationshipsService:
         self,
         properId: FinancialIdentifier,
         groupings: list[pgf.FinancialGrouping],
+        groupingProvenance: Sequence[ProvenanceStep],
     ) -> pgf.FinancialGrouping:
         first = groupings[0]
         allStockTrades: list[pe.TradeEventStockAcquired | pe.TradeEventStockSold] = []
@@ -231,6 +306,7 @@ class ApplyIdentifierRelationshipsService:
             StockTaxLots=allStockTaxLots,
             DerivativeGroupings=allDerivativeGroupings,
             CashTransactions=allCashTransactions,
+            Provenance=groupingProvenance,
         )
 
     def _withIdentifier(self, event: pe.TradeEvent, identifier: FinancialIdentifier) -> pe.TradeEvent:
@@ -245,6 +321,7 @@ class ApplyIdentifierRelationshipsService:
             Acquired=self._withIdentifier(lot.Acquired, identifier),
             Sold=self._withIdentifier(lot.Sold, identifier),
             ShortLongType=lot.ShortLongType,
+            Provenance=lot.Provenance,
         )
 
     def _derivativeGroupingWithIdentifier(
@@ -262,6 +339,7 @@ class ApplyIdentifierRelationshipsService:
                 Acquired=self._withIdentifier(lot.Acquired, identifier),
                 Sold=self._withIdentifier(lot.Sold, identifier),
                 ShortLongType=lot.ShortLongType,
+                Provenance=lot.Provenance,
             )
             for lot in dg.DerivativeTaxLots
         ]
@@ -270,4 +348,5 @@ class ApplyIdentifierRelationshipsService:
             FinancialIdentifier=identifier,
             DerivativeTrades=newTrades,
             DerivativeTaxLots=newLots,
+            Provenance=dg.Provenance,
         )
