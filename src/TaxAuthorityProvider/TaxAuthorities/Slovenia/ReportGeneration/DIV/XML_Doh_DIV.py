@@ -3,9 +3,7 @@ from typing import Sequence
 from lxml import etree
 
 import ConfigurationProvider.Configuration as c
-import Core.FinancialEvents.Schemas.Grouping as pgf
 import TaxAuthorityProvider.Schemas.Configuration as tc
-import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.DIV.Common as common
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
 
 
@@ -13,11 +11,9 @@ def generateXmlReport(
     reportConfig: tc.TaxAuthorityConfiguration,
     userConfig: c.TaxPayerInfo,
     selfReport: bool,
-    data: Sequence[pgf.FinancialGrouping],
+    divLines: Sequence[ss.EDavkiDividendReportLine],
     templateEnvelope: etree._Element,
 ) -> etree._Element:
-    convertedTrades = common.convertCashTransactionsToDivItems(reportConfig, data)
-
     nsmap = templateEnvelope.nsmap
     nsmap[None] = "http://edavki.durs.si/Documents/Schemas/Doh_Div_3.xsd"
     envelope = etree.Element(templateEnvelope.tag, attrib=templateEnvelope.attrib, nsmap=nsmap)
@@ -47,7 +43,7 @@ def generateXmlReport(
         etree.SubElement(dividendLine, "SourceCountry").text = line.CountryOfOrigin
         etree.SubElement(dividendLine, "ReliefStatement").text = line.TaxReliefParagraphInInternationalTreaty
 
-    for line in convertedTrades:
+    for line in divLines:
         transformDividendLineToXML(line)
 
     return envelope

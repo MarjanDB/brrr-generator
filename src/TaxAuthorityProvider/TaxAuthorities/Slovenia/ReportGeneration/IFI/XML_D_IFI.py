@@ -2,23 +2,15 @@ from typing import Sequence
 
 from lxml import etree
 
-import Core.FinancialEvents.Schemas.Grouping as pgf
 import TaxAuthorityProvider.Schemas.Configuration as tc
-import TaxAuthorityProvider.TaxAuthorities.Slovenia.ReportGeneration.IFI.Common as common
 import TaxAuthorityProvider.TaxAuthorities.Slovenia.Schemas.Schemas as ss
-from Core.FinancialEvents.Services.FinancialEventsProcessor import (
-    FinancialEventsProcessor,
-)
 
 
 def generateXmlReport(
     reportConfig: tc.TaxAuthorityConfiguration,
-    data: Sequence[pgf.FinancialGrouping],
+    ifiItems: Sequence[ss.EDavkiGenericDerivativeReportItem],
     templateEnvelope: etree._Element,
-    countedProcessor: FinancialEventsProcessor,
 ) -> etree._Element:
-    convertedTrades = common.convertTradesToIfiItems(reportConfig, data, countedProcessor)
-
     nsmap = templateEnvelope.nsmap
     nsmap[None] = "http://edavki.durs.si/Documents/Schemas/D_IFI_4.xsd"
     envelope = etree.Element(templateEnvelope.tag, attrib=templateEnvelope.attrib, nsmap=nsmap)
@@ -34,7 +26,7 @@ def generateXmlReport(
     # etree.SubElement(D_IFI, "TelephoneNumber").text = self.taxPayerInfo.PhoneNumber
     # etree.SubElement(D_IFI, "Email").text = self.taxPayerInfo.email
 
-    for DIFI_item_entry in convertedTrades:
+    for DIFI_item_entry in ifiItems:
         DIFI_ITEM = etree.SubElement(D_IFI, "TItem")
 
         etree.SubElement(DIFI_ITEM, "TypeId").text = DIFI_item_entry.ItemType.value

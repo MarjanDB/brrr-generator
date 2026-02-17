@@ -18,11 +18,11 @@ from Core.FinancialEvents.Services.FinancialEventsProcessor import (
 
 REPORT_CONFIG = TypeVar("REPORT_CONFIG", bound=tapc.TaxAuthorityConfiguration)
 TAX_PAYER_CONFIG = TypeVar("TAX_PAYER_CONFIG", bound=conf.TaxPayerInfo)
-
 TAX_AUTHORITY_REPORT = TypeVar("TAX_AUTHORITY_REPORT", bound=Enum)
+REPORT_DATA = TypeVar("REPORT_DATA")
 
 
-class GenericTaxAuthorityProvider(ABC, Generic[REPORT_CONFIG, TAX_PAYER_CONFIG, TAX_AUTHORITY_REPORT]):
+class GenericTaxAuthorityProvider(ABC, Generic[REPORT_CONFIG, TAX_PAYER_CONFIG, TAX_AUTHORITY_REPORT, REPORT_DATA]):
     taxPayerInfo: TAX_PAYER_CONFIG
     reportConfig: REPORT_CONFIG
 
@@ -38,6 +38,13 @@ class GenericTaxAuthorityProvider(ABC, Generic[REPORT_CONFIG, TAX_PAYER_CONFIG, 
         self.countryLookupProvider = appInjector.inject(ilp.CountryLookupProvider)
         self.countedGroupingProcessor = appInjector.inject(FinancialEventsProcessor)
         self.applyIdentifierRelationshipsService = appInjector.inject(ApplyIdentifierRelationshipsService)
+
+    @abstractmethod
+    def generateReportData(self, reportType: TAX_AUTHORITY_REPORT, events: pfe.FinancialEvents) -> REPORT_DATA:
+        """
+        Returns the report in the tax authority's own data types (after applying identifier
+        relationships), for inspection or passing to export builders.
+        """
 
     @abstractmethod
     def generateExportForTaxAuthority(self, reportType: TAX_AUTHORITY_REPORT, events: pfe.FinancialEvents) -> Any:

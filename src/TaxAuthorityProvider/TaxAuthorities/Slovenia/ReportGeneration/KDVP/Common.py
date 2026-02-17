@@ -87,7 +87,7 @@ def convertStock(
 
 def convertTradesToKdvpItems(
     reportConfig: tc.TaxAuthorityConfiguration, data: Sequence[pgf.FinancialGrouping], countedProcessor: g.FinancialEventsProcessor
-) -> list[ss.EDavkiGenericTradeReportItem]:
+) -> Sequence[ss.EDavkiGenericTradeReportItem]:
     converted: list[ss.EDavkiGenericTradeReportItem] = list()
     periodStart = reportConfig.fromDate
     periodEnd = reportConfig.toDate
