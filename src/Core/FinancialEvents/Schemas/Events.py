@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Union
+from dataclasses import dataclass, field
+from typing import Sequence, Union
 
 from arrow import Arrow
 
@@ -11,6 +11,7 @@ from Core.FinancialEvents.Schemas.CommonFormats import (
     GenericTradeReportItemGainType,
 )
 from Core.FinancialEvents.Schemas.FinancialIdentifier import FinancialIdentifier
+from Core.FinancialEvents.Schemas.Provenance import ProvenanceStep
 
 
 @dataclass
@@ -21,6 +22,8 @@ class TradeEvent:
     Date: Arrow
     Multiplier: float  # for Leveraged trades
     ExchangedMoney: GenericMonetaryExchangeInformation
+    # Keyword-only provenance so subclasses can add positional fields (e.g. AcquiredReason)
+    Provenance: Sequence[ProvenanceStep] = field(default_factory=list, kw_only=True)
 
 
 @dataclass

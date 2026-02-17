@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Sequence
 
 import Core.FinancialEvents.Schemas.CommonFormats as cf
@@ -10,6 +10,7 @@ from Core.FinancialEvents.Schemas.Events import (
     TransactionCash,
 )
 from Core.FinancialEvents.Schemas.FinancialIdentifier import FinancialIdentifier
+from Core.FinancialEvents.Schemas.Provenance import ProvenanceStep
 from Core.FinancialEvents.Schemas.Lots import TaxLotDerivative, TaxLotStock
 
 
@@ -18,6 +19,7 @@ class DerivativeGrouping:
     FinancialIdentifier: FinancialIdentifier
     DerivativeTrades: Sequence[TradeEventDerivativeAcquired | TradeEventDerivativeSold]
     DerivativeTaxLots: Sequence[TaxLotDerivative]
+    Provenance: Sequence[ProvenanceStep] = field(default_factory=list)
 
 
 @dataclass
@@ -33,6 +35,7 @@ class FinancialGrouping:
     DerivativeGroupings: Sequence[DerivativeGrouping]
 
     CashTransactions: Sequence[TransactionCash]
+    Provenance: Sequence[ProvenanceStep] = field(default_factory=list)
 
 
 @dataclass
