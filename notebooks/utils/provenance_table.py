@@ -52,11 +52,30 @@ def _ensureRowForStep(
     return key
 
 
+def _addStockAffectedColumns(
+    df: pd.DataFrame,
+    affected_by_key: dict[tuple[Any, Any, str, str], list[tuple[str, Any, Any, Any]]],
+) -> None:
+    """Add AffectedStockTrades, AffectedStockLots, AffectedCount (events only; grouping not counted)."""
+    trades = df.apply(
+        lambda r: sum(1 for it in affected_by_key.get(rowKeyFromRow(r), []) if it[0] == "StockTrade"),
+        axis=1,
+    )
+    lots = df.apply(
+        lambda r: sum(1 for it in affected_by_key.get(rowKeyFromRow(r), []) if it[0] == "StockLot"),
+        axis=1,
+    )
+    df["AffectedStockTrades"] = trades
+    df["AffectedStockLots"] = lots
+    df["AffectedCount"] = trades + lots
+
+
 def collectProvenanceTableForStocks(
     events: FinancialEvents,
 ) -> tuple[pd.DataFrame, dict[tuple[Any, Any, str, str], list[tuple[str, Any, Any, Any]]]]:
-    """Provenance table and affected-items map for stock reports (groupings, stock trades, stock lots).
-    Only groupings that have stock trades or stock lots are included."""
+    """Provenance table and affected-items map for stock reports (stock trades and stock lots only).
+    Only groupings that have stock trades or stock lots are included. The grouping itself is not
+    counted in affected totals; counts are split per asset category."""
     steps_seen: dict[tuple[Any, Any, str, str], int] = {}
     rows: list[dict[str, Any]] = []
     affected_by_key: dict[tuple[Any, Any, str, str], list[tuple[str, Any, Any, Any]]] = {}
@@ -64,12 +83,9 @@ def collectProvenanceTableForStocks(
     for g in events.Groupings:
         if not g.StockTrades and not g.StockTaxLots:
             continue
-        fid = g.FinancialIdentifier
-        id_str = fid.getIsin() or fid.getTicker() or fid.getName() or ""
 
         for step in g.Provenance:
-            key = _ensureRowForStep(step, steps_seen, rows, affected_by_key)
-            affected_by_key[key].append(("Grouping", id_str, None, None))
+            _ensureRowForStep(step, steps_seen, rows, affected_by_key)
 
         for t in g.StockTrades:
             for step in t.Provenance:
@@ -82,14 +98,36 @@ def collectProvenanceTableForStocks(
                 key = _ensureRowForStep(step, steps_seen, rows, affected_by_key)
                 affected_by_key[key].append(("StockLot", lot.ID, None, lot.Quantity))
 
-    return pd.DataFrame(rows), affected_by_key
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        _addStockAffectedColumns(df, affected_by_key)
+    return df, affected_by_key
+
+
+def _addDerivativeAffectedColumns(
+    df: pd.DataFrame,
+    affected_by_key: dict[tuple[Any, Any, str, str], list[tuple[str, Any, Any, Any]]],
+) -> None:
+    """Add AffectedDerivativeTrades, AffectedDerivativeLots, AffectedCount (events only; groupings not counted)."""
+    trades = df.apply(
+        lambda r: sum(1 for it in affected_by_key.get(rowKeyFromRow(r), []) if it[0] == "DerivativeTrade"),
+        axis=1,
+    )
+    lots = df.apply(
+        lambda r: sum(1 for it in affected_by_key.get(rowKeyFromRow(r), []) if it[0] == "DerivativeLot"),
+        axis=1,
+    )
+    df["AffectedDerivativeTrades"] = trades
+    df["AffectedDerivativeLots"] = lots
+    df["AffectedCount"] = trades + lots
 
 
 def collectProvenanceTableForDerivatives(
     events: FinancialEvents,
 ) -> tuple[pd.DataFrame, dict[tuple[Any, Any, str, str], list[tuple[str, Any, Any, Any]]]]:
-    """Provenance table and affected-items map for derivative reports.
-    Only groupings that have derivative trades or lots are included."""
+    """Provenance table and affected-items map for derivative reports (derivative trades and lots only).
+    Only groupings that have derivative trades or lots are included. Groupings are not counted in
+    affected totals; counts are split per asset category."""
     steps_seen: dict[tuple[Any, Any, str, str], int] = {}
     rows: list[dict[str, Any]] = []
     affected_by_key: dict[tuple[Any, Any, str, str], list[tuple[str, Any, Any, Any]]] = {}
@@ -100,18 +138,13 @@ def collectProvenanceTableForDerivatives(
         )
         if not has_derivative_content:
             continue
-        fid = g.FinancialIdentifier
-        id_str = fid.getIsin() or fid.getTicker() or fid.getName() or ""
 
         for step in g.Provenance:
-            key = _ensureRowForStep(step, steps_seen, rows, affected_by_key)
-            affected_by_key[key].append(("Grouping", id_str, None, None))
+            _ensureRowForStep(step, steps_seen, rows, affected_by_key)
 
         for dg in g.DerivativeGroupings:
             for step in dg.Provenance:
-                key = _ensureRowForStep(step, steps_seen, rows, affected_by_key)
-                did = dg.FinancialIdentifier.getIsin() or dg.FinancialIdentifier.getTicker() or ""
-                affected_by_key[key].append(("DerivativeGrouping", did, None, None))
+                _ensureRowForStep(step, steps_seen, rows, affected_by_key)
             for t in dg.DerivativeTrades:
                 for step in t.Provenance:
                     key = _ensureRowForStep(step, steps_seen, rows, affected_by_key)
@@ -122,14 +155,31 @@ def collectProvenanceTableForDerivatives(
                     key = _ensureRowForStep(step, steps_seen, rows, affected_by_key)
                     affected_by_key[key].append(("DerivativeLot", lot.ID, None, lot.Quantity))
 
-    return pd.DataFrame(rows), affected_by_key
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        _addDerivativeAffectedColumns(df, affected_by_key)
+    return df, affected_by_key
+
+
+def _addDividendAffectedColumns(
+    df: pd.DataFrame,
+    affected_by_key: dict[tuple[Any, Any, str, str], list[tuple[str, Any, Any, Any]]],
+) -> None:
+    """Add AffectedGroupings and AffectedCount (dividend report is grouping-level only)."""
+    groupings = df.apply(
+        lambda r: sum(1 for it in affected_by_key.get(rowKeyFromRow(r), []) if it[0] == "Grouping"),
+        axis=1,
+    )
+    df["AffectedGroupings"] = groupings
+    df["AffectedCount"] = groupings
 
 
 def collectProvenanceTableForDividends(
     events: FinancialEvents,
 ) -> tuple[pd.DataFrame, dict[tuple[Any, Any, str, str], list[tuple[str, Any, Any, Any]]]]:
     """Provenance table and affected-items map for dividend reports (grouping-level only).
-    Only groupings that have cash transactions (dividend-relevant) are listed as affected."""
+    Only groupings that have cash transactions (dividend-relevant) are listed as affected.
+    Counts are split per asset category (here: AffectedGroupings only)."""
     steps_seen: dict[tuple[Any, Any, str, str], int] = {}
     rows: list[dict[str, Any]] = []
     affected_by_key: dict[tuple[Any, Any, str, str], list[tuple[str, Any, Any, Any]]] = {}
@@ -144,7 +194,10 @@ def collectProvenanceTableForDividends(
             key = _ensureRowForStep(step, steps_seen, rows, affected_by_key)
             affected_by_key[key].append(("Grouping", id_str, None, None))
 
-    return pd.DataFrame(rows), affected_by_key
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        _addDividendAffectedColumns(df, affected_by_key)
+    return df, affected_by_key
 
 
 def rowKeyFromRow(r: pd.Series | dict[str, Any]) -> tuple[Any, Any, str, str]:
