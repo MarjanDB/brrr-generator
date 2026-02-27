@@ -1,0 +1,23 @@
+<FlexQueryResponse queryName="Tax Relevant Export" type="AF">
+    <FlexStatements count="1">
+        <FlexStatement accountId="FakeAccountId" fromDate="2022-01-01" toDate="2022-12-30" period=""
+            whenGenerated="2024-02-12;14:37:52 EST">
+            <CorporateActions>
+                <CorporateAction accountId="FakeAccountId" acctAlias="" model="" currency="USD"
+                    fxRateToBase="0.94837" assetCategory="STK" subCategory="COMMON" symbol="TORO"
+                    description="CTRM(MHY1146L1258) SPINOFF  1 FOR 10 (TORO, TORO CORP-W/I, MHY8900D1085)"
+                    conid="613919734" securityID="MHY8900D1085" securityIDType="ISIN" cusip=""
+                    isin="MHY8900D1085" figi="" listingExchange="NASDAQ" underlyingConid=""
+                    underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange=""
+                    issuer="" issuerCountryCode="" multiplier="1" strike="" expiry="" putCall=""
+                    principalAdjustFactor="" reportDate="2023-03-08"
+                    dateTime="2023-03-07;20:25:00 EST"
+                    actionDescription="CTRM(MHY1146L1258) SPINOFF  1 FOR 10 (TORO, TORO CORP-W/I, MHY8900D1085)"
+                    amount="0" proceeds="0" value="0" quantity="130" fifoPnlRealized="0"
+                    capitalGainsPnl="0" fxPnl="0" mtmPnl="0" code="" type="SO"
+                    transactionID="459779393" actionID="114947593" levelOfDetail="DETAIL"
+                    serialNumber="" deliveryType="" commodityType="" fineness="0.0" weight="0.0" />
+            </CorporateActions>
+        </FlexStatement>
+    </FlexStatements>
+</FlexQueryResponse>

@@ -1,0 +1,33 @@
+<FlexQueryResponse queryName="Tax Relevant Export" type="AF">
+    <FlexStatements count="1">
+        <FlexStatement accountId="FakeAccountId" fromDate="2022-01-01" toDate="2022-12-30" period=""
+            whenGenerated="2024-02-12;14:37:52 EST">
+            <CashTransactions>
+                <CashTransaction accountId="FakeAccountId" acctAlias="" model="" currency="EUR"
+                fxRateToBase="1" assetCategory="STK" subCategory="COMMON" symbol="TTE"
+                description="TTE(FR0000120271) CASH DIVIDEND EUR 0.66 PER SHARE (Ordinary Dividend)"
+                conid="29612193" securityID="FR0000120271" securityIDType="ISIN" cusip=""
+                isin="FR0000120271" figi="" listingExchange="SBF" underlyingConid=""
+                underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange=""
+                issuer="" issuerCountryCode="" multiplier="1" strike="" expiry="" putCall=""
+                principalAdjustFactor="" dateTime="2022-04-01;20:20:00 EDT"
+                settleDate="2022-04-01" amount="2.64" type="Dividends" tradeID="" code=""
+                transactionID="269176073" reportDate="2022-04-04" clientReference=""
+                actionID="102869793" levelOfDetail="DETAIL" serialNumber="" deliveryType=""
+                commodityType="" fineness="0.0" weight="0.0" />
+                <CashTransaction accountId="FakeAccountId" acctAlias="" model="" currency="EUR"
+                fxRateToBase="1" assetCategory="STK" subCategory="COMMON" symbol="TTE"
+                description="TTE(FR0000120271) CASH DIVIDEND EUR 0.66 PER SHARE - FR TAX"
+                conid="29612193" securityID="FR0000120271" securityIDType="ISIN" cusip=""
+                isin="FR0000120271" figi="" listingExchange="SBF" underlyingConid=""
+                underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange=""
+                issuer="" issuerCountryCode="" multiplier="1" strike="" expiry="" putCall=""
+                principalAdjustFactor="" dateTime="2022-04-01;20:20:00 EDT"
+                settleDate="2022-04-01" amount="-0.66" type="Withholding Tax" tradeID="" code=""
+                transactionID="323614082" reportDate="2022-04-01" clientReference=""
+                actionID="102869793" levelOfDetail="DETAIL" serialNumber="" deliveryType=""
+                commodityType="" fineness="0.0" weight="0.0" />
+            </CashTransactions>
+        </FlexStatement>
+    </FlexStatements>
+</FlexQueryResponse>
