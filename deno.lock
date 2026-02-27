@@ -1,0 +1,46 @@
+{
+  "version": "5",
+  "specifiers": {
+    "npm:@types/luxon@^3.7.1": "3.7.1",
+    "npm:csv-generate@^4.5.0": "4.5.0",
+    "npm:fast-xml-parser@^5.4.1": "5.4.1",
+    "npm:luxon@^3.7.2": "3.7.2"
+  },
+  "npm": {
+    "@types/luxon@3.7.1": {
+      "integrity": "sha512-H3iskjFIAn5SlJU7OuxUmTEpebK6TKB8rxZShDslBMZJ5u9S//KM1sbdAisiSrqwLQncVjnpi2OK2J51h+4lsg=="
+    },
+    "csv-generate@4.5.0": {
+      "integrity": "sha512-aQr/vmOKyBSBHNwYhAoXw1+kUsPnMSwmYgpNoo36rIXoG1ecWILnvPGZeQ6oUjzrWknZAD3+jfpqYOBAl4x15A=="
+    },
+    "fast-xml-builder@1.0.0": {
+      "integrity": "sha512-fpZuDogrAgnyt9oDDz+5DBz0zgPdPZz6D4IR7iESxRXElrlGTRkHJ9eEt+SACRJwT0FNFrt71DFQIUFBJfX/uQ=="
+    },
+    "fast-xml-parser@5.4.1": {
+      "integrity": "sha512-BQ30U1mKkvXQXXkAGcuyUA/GA26oEB7NzOtsxCDtyu62sjGw5QraKFhx2Em3WQNjPw9PG6MQ9yuIIgkSDfGu5A==",
+      "dependencies": [
+        "fast-xml-builder",
+        "strnum"
+      ],
+      "bin": true
+    },
+    "luxon@3.7.2": {
+      "integrity": "sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew=="
+    },
+    "strnum@2.1.2": {
+      "integrity": "sha512-l63NF9y/cLROq/yqKXSLtcMeeyOfnSQlfMSlzFt/K73oIaD8DGaQWd7Z34X9GPiKqP5rbSh84Hl4bOlLcjiSrQ=="
+    }
+  },
+  "workspace": {
+    "members": {
+      "lib": {
+        "dependencies": [
+          "npm:@types/luxon@^3.7.1",
+          "npm:csv-generate@^4.5.0",
+          "npm:fast-xml-parser@^5.4.1",
+          "npm:luxon@^3.7.2"
+        ]
+      }
+    }
+  }
+}

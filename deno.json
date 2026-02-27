@@ -1,0 +1,9 @@
+{
+  "workspace": ["lib"],
+  "tasks": {
+    "test": "deno test --allow-read",
+    "fmt": "deno fmt",
+    "lint": "deno lint",
+    "type-check": "deno check lib/**/*.ts"
+  }
+}

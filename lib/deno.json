@@ -1,0 +1,14 @@
+{
+  "name": "@brrr/lib",
+  "version": "0.1.0",
+  "exports": "./mod.ts",
+  "compilerOptions": {
+    "strict": true
+  },
+  "imports": {
+    "csv-generate": "npm:csv-generate@^4.5.0",
+    "fast-xml-parser": "npm:fast-xml-parser@^5.4.1",
+    "luxon": "npm:luxon@^3.7.2",
+    "@types/luxon": "npm:@types/luxon@^3.7.1"
+  }
+}
