@@ -9,7 +9,7 @@ import type {
 } from "@brrr/core/schemas/Events.ts";
 import type { TaxAuthorityConfiguration } from "@brrr/taxAuthorities/ConfigurationProvider.ts";
 import { type EDavkiDividendReportLine, EDavkiDividendType } from "@brrr/taxAuthorities/slovenia/schemas/Schemas.ts";
-import { CompanyLookupProvider, CountryLookupProvider, TreatyType } from "@brrr/infoProviders/InfoLookupProvider.ts";
+import { type CompanyLookupProvider, type CountryLookupProvider, TreatyType } from "@brrr/infoProviders/InfoLookupProvider.ts";
 
 function filterOutCashTransactionsBasedOnDate(
 	data: TransactionCash[],
@@ -139,9 +139,9 @@ function round(value: number, decimals: number): number {
 
 function fillInMissingCompanyInformationForDividendLineAndRoundAmounts(
 	lines: EDavkiDividendReportLine[],
+	companyLookupProvider: CompanyLookupProvider,
+	countryLookupProvider: CountryLookupProvider,
 ): EDavkiDividendReportLine[] {
-	const companyLookupProvider = new CompanyLookupProvider();
-	const countryLookupProvider = new CountryLookupProvider();
 
 	if (lines.length === 0) {
 		return lines;
@@ -187,6 +187,8 @@ function fillInMissingCompanyInformationForDividendLineAndRoundAmounts(
 function processSingleUnderlyingGroupingToDivLines(
 	reportConfig: TaxAuthorityConfiguration,
 	data: FinancialGrouping,
+	companyLookupProvider: CompanyLookupProvider,
+	countryLookupProvider: CountryLookupProvider,
 ): EDavkiDividendReportLine[] {
 	const relevantCashTransactions = filterOutCashTransactionsBasedOnDate(
 		data.cashTransactions,
@@ -208,17 +210,19 @@ function processSingleUnderlyingGroupingToDivLines(
 
 	const combinedLines = mergeDividendsReceivedOnSameDayForSingleIsin(processedDividendLines);
 
-	return fillInMissingCompanyInformationForDividendLineAndRoundAmounts(combinedLines);
+	return fillInMissingCompanyInformationForDividendLineAndRoundAmounts(combinedLines, companyLookupProvider, countryLookupProvider);
 }
 
 export function convertCashTransactionsToDivItems(
 	reportConfig: TaxAuthorityConfiguration,
 	data: FinancialGrouping[],
+	companyLookupProvider: CompanyLookupProvider,
+	countryLookupProvider: CountryLookupProvider,
 ): EDavkiDividendReportLine[] {
 	const allLines: EDavkiDividendReportLine[] = [];
 
 	for (const grouping of data) {
-		const divLinesForGrouping = processSingleUnderlyingGroupingToDivLines(reportConfig, grouping);
+		const divLinesForGrouping = processSingleUnderlyingGroupingToDivLines(reportConfig, grouping, companyLookupProvider, countryLookupProvider);
 		allLines.push(...divLinesForGrouping);
 	}
 

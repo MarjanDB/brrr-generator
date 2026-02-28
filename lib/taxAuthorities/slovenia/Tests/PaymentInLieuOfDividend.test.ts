@@ -10,10 +10,29 @@ import type {
 	TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
 } from "@brrr/core/schemas/Events.ts";
 import type { FinancialEvents } from "@brrr/core/schemas/FinancialEvents.ts";
+import { LotMatcher } from "@brrr/core/lotMatching/LotMatcher.ts";
+import { FinancialEventsProcessor } from "@brrr/core/financialEvents/FinancialEventsProcessor.ts";
+import { ApplyIdentifierRelationshipsService } from "@brrr/core/financialEvents/ApplyIdentifierRelationshipsService.ts";
+import { CompanyLookupProvider, CountryLookupProvider } from "@brrr/infoProviders/InfoLookupProvider.ts";
 import { TaxAuthorityLotMatchingMethod, TaxPayerType } from "@brrr/taxAuthorities/ConfigurationProvider.ts";
 import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/taxAuthorities/ConfigurationProvider.ts";
 import { SlovenianTaxAuthorityReportTypes } from "@brrr/taxAuthorities/slovenia/schemas/ReportTypes.ts";
 import { SlovenianTaxAuthorityProvider } from "@brrr/taxAuthorities/slovenia/SlovenianTaxAuthorityProvider.ts";
+import { KdvpReportGenerator } from "@brrr/taxAuthorities/slovenia/reportGeneration/kdvp/KdvpReportGenerator.ts";
+import { DivReportGenerator } from "@brrr/taxAuthorities/slovenia/reportGeneration/div/DivReportGenerator.ts";
+import { IfiReportGenerator } from "@brrr/taxAuthorities/slovenia/reportGeneration/ifi/IfiReportGenerator.ts";
+
+function makeProvider(taxPayerInfo: TaxPayerInfo, config: TaxAuthorityConfiguration): SlovenianTaxAuthorityProvider {
+	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	return new SlovenianTaxAuthorityProvider(
+		taxPayerInfo,
+		config,
+		new ApplyIdentifierRelationshipsService(),
+		new KdvpReportGenerator(processor),
+		new DivReportGenerator(new CompanyLookupProvider(), new CountryLookupProvider()),
+		new IfiReportGenerator(processor),
+	);
+}
 
 const simpleTaxPayer: TaxPayerInfo = {
 	taxNumber: "taxNumber",
@@ -157,7 +176,7 @@ Deno.test("PaymentInLieuOfDividend - withholding tax is reported separately from
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
 	};
 
-	const provider = new SlovenianTaxAuthorityProvider(simpleTaxPayer, config);
+	const provider = makeProvider(simpleTaxPayer, config);
 	const rows = provider.generateSpreadsheetExport(SlovenianTaxAuthorityReportTypes.DOH_DIV, testData);
 
 	assertEquals(

@@ -2,10 +2,17 @@ import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 import { IbkrBrokerageExportProvider } from "@brrr/brokerages/ibkr/IbkrBrokerageExportProvider.ts";
 import { StagingFinancialGroupingProcessor } from "@brrr/core/stagingProcessor/StagingFinancialGroupingProcessor.ts";
+import { LotMatcher } from "@brrr/core/lotMatching/LotMatcher.ts";
+import { FinancialEventsProcessor } from "@brrr/core/financialEvents/FinancialEventsProcessor.ts";
+import { ApplyIdentifierRelationshipsService } from "@brrr/core/financialEvents/ApplyIdentifierRelationshipsService.ts";
+import { CompanyLookupProvider, CountryLookupProvider } from "@brrr/infoProviders/InfoLookupProvider.ts";
 import { TaxAuthorityLotMatchingMethod, TaxPayerType } from "@brrr/taxAuthorities/ConfigurationProvider.ts";
 import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/taxAuthorities/ConfigurationProvider.ts";
 import { SlovenianTaxAuthorityReportTypes } from "@brrr/taxAuthorities/slovenia/schemas/ReportTypes.ts";
 import { SlovenianTaxAuthorityProvider } from "@brrr/taxAuthorities/slovenia/SlovenianTaxAuthorityProvider.ts";
+import { KdvpReportGenerator } from "@brrr/taxAuthorities/slovenia/reportGeneration/kdvp/KdvpReportGenerator.ts";
+import { DivReportGenerator } from "@brrr/taxAuthorities/slovenia/reportGeneration/div/DivReportGenerator.ts";
+import { IfiReportGenerator } from "@brrr/taxAuthorities/slovenia/reportGeneration/ifi/IfiReportGenerator.ts";
 
 const xmlPath = new URL("./DuplicatingTrades.xml", import.meta.url).pathname;
 
@@ -44,7 +51,15 @@ Deno.test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantiti
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const provider = new SlovenianTaxAuthorityProvider(taxPayerInfo, reportConfig);
+	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	const provider = new SlovenianTaxAuthorityProvider(
+		taxPayerInfo,
+		reportConfig,
+		new ApplyIdentifierRelationshipsService(),
+		new KdvpReportGenerator(processor),
+		new DivReportGenerator(new CompanyLookupProvider(), new CountryLookupProvider()),
+		new IfiReportGenerator(processor),
+	);
 	const tradeCsv = provider.generateSpreadsheetExport(SlovenianTaxAuthorityReportTypes.DOH_KDVP, financialEvents);
 
 	assertEquals(

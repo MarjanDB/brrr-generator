@@ -20,10 +20,29 @@ import type {
 } from "@brrr/core/schemas/Events.ts";
 import type { TaxLotDerivative, TaxLotStock } from "@brrr/core/schemas/Lots.ts";
 import type { FinancialEvents } from "@brrr/core/schemas/FinancialEvents.ts";
+import { LotMatcher } from "@brrr/core/lotMatching/LotMatcher.ts";
+import { FinancialEventsProcessor } from "@brrr/core/financialEvents/FinancialEventsProcessor.ts";
+import { ApplyIdentifierRelationshipsService } from "@brrr/core/financialEvents/ApplyIdentifierRelationshipsService.ts";
+import { CompanyLookupProvider, CountryLookupProvider } from "@brrr/infoProviders/InfoLookupProvider.ts";
 import { TaxAuthorityLotMatchingMethod, TaxPayerType } from "@brrr/taxAuthorities/ConfigurationProvider.ts";
 import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/taxAuthorities/ConfigurationProvider.ts";
 import { SlovenianTaxAuthorityReportTypes } from "@brrr/taxAuthorities/slovenia/schemas/ReportTypes.ts";
 import { SlovenianTaxAuthorityProvider } from "@brrr/taxAuthorities/slovenia/SlovenianTaxAuthorityProvider.ts";
+import { KdvpReportGenerator } from "@brrr/taxAuthorities/slovenia/reportGeneration/kdvp/KdvpReportGenerator.ts";
+import { DivReportGenerator } from "@brrr/taxAuthorities/slovenia/reportGeneration/div/DivReportGenerator.ts";
+import { IfiReportGenerator } from "@brrr/taxAuthorities/slovenia/reportGeneration/ifi/IfiReportGenerator.ts";
+
+function makeProvider(taxPayerInfo: TaxPayerInfo, config: TaxAuthorityConfiguration): SlovenianTaxAuthorityProvider {
+	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	return new SlovenianTaxAuthorityProvider(
+		taxPayerInfo,
+		config,
+		new ApplyIdentifierRelationshipsService(),
+		new KdvpReportGenerator(processor),
+		new DivReportGenerator(new CompanyLookupProvider(), new CountryLookupProvider()),
+		new IfiReportGenerator(processor),
+	);
+}
 
 const simpleTaxPayer: TaxPayerInfo = {
 	taxNumber: "taxNumber",
@@ -224,7 +243,7 @@ Deno.test("testKdvpSimpleCsv - 2 rows with correct quantities", () => {
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const provider = new SlovenianTaxAuthorityProvider(simpleTaxPayer, config);
+	const provider = makeProvider(simpleTaxPayer, config);
 	const rows = provider.generateSpreadsheetExport(SlovenianTaxAuthorityReportTypes.DOH_KDVP, testData);
 
 	assertEquals(rows.length, 2, "Only 2 rows should be present");
@@ -239,7 +258,7 @@ Deno.test("testKdvpSimpleXml - 1 purchase and 1 sale in XML", () => {
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const provider = new SlovenianTaxAuthorityProvider(simpleTaxPayer, config);
+	const provider = makeProvider(simpleTaxPayer, config);
 	const xml = provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.DOH_KDVP, testData);
 
 	const purchaseCount = (xml.match(/<Purchase>/g) ?? []).length;
@@ -256,7 +275,7 @@ Deno.test("testIfiSimpleCsv - 2 rows with correct quantities", () => {
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const provider = new SlovenianTaxAuthorityProvider(simpleTaxPayer, config);
+	const provider = makeProvider(simpleTaxPayer, config);
 	const rows = provider.generateSpreadsheetExport(SlovenianTaxAuthorityReportTypes.D_IFI, testData);
 
 	assertEquals(rows.length, 2, "Only 2 rows should be present");
@@ -271,7 +290,7 @@ Deno.test("testIfiSimpleXml - 1 purchase and 1 sale in XML", () => {
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const provider = new SlovenianTaxAuthorityProvider(simpleTaxPayer, config);
+	const provider = makeProvider(simpleTaxPayer, config);
 	const xml = provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.D_IFI, testData);
 
 	const purchaseCount = (xml.match(/<Purchase>/g) ?? []).length;
@@ -288,7 +307,7 @@ Deno.test("testDivSimpleCsv - 1 row with correct amounts", () => {
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
 	};
 
-	const provider = new SlovenianTaxAuthorityProvider(simpleTaxPayer, config);
+	const provider = makeProvider(simpleTaxPayer, config);
 	const rows = provider.generateSpreadsheetExport(SlovenianTaxAuthorityReportTypes.DOH_DIV, testData);
 
 	assertEquals(rows.length, 1, "Only 1 row should be present, because dividend and withholding tax are related");
@@ -305,7 +324,7 @@ Deno.test("testDivSimpleXml - 1 dividend line in XML", () => {
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
 	};
 
-	const provider = new SlovenianTaxAuthorityProvider(simpleTaxPayer, config);
+	const provider = makeProvider(simpleTaxPayer, config);
 	const xml = provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.DOH_DIV, testData);
 
 	const dividendCount = (xml.match(/<Dividend>/g) ?? []).length;
@@ -319,7 +338,7 @@ Deno.test("testGenerateReportDataKdvpReturnsTypedList - report has items with ev
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const provider = new SlovenianTaxAuthorityProvider(simpleTaxPayer, config);
+	const provider = makeProvider(simpleTaxPayer, config);
 	const reportData = provider.generateReportData(SlovenianTaxAuthorityReportTypes.DOH_KDVP, testData) as {
 		items: { events: unknown[] }[];
 	}[];
@@ -337,7 +356,7 @@ Deno.test("testGenerateReportDataDivReturnsTypedSequence - 1 dividend with corre
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
 	};
 
-	const provider = new SlovenianTaxAuthorityProvider(simpleTaxPayer, config);
+	const provider = makeProvider(simpleTaxPayer, config);
 	const reportData = provider.generateReportData(SlovenianTaxAuthorityReportTypes.DOH_DIV, testData) as {
 		dividendAmount: number;
 		foreignTaxPaid: number;
@@ -356,7 +375,7 @@ Deno.test("testGenerateReportDataIfiReturnsTypedList - report has items", () => 
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const provider = new SlovenianTaxAuthorityProvider(simpleTaxPayer, config);
+	const provider = makeProvider(simpleTaxPayer, config);
 	const reportData = provider.generateReportData(SlovenianTaxAuthorityReportTypes.D_IFI, testData) as {
 		items: unknown[];
 	}[];
