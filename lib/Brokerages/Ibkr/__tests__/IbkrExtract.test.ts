@@ -1,5 +1,5 @@
 import { BuyOrSell, CashTransactionType } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas.ts";
-import { extractFromXML, mergeTrades } from "@brrr/Brokerages/Ibkr/Transforms/Extract.ts";
+import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Transforms/Extract.ts";
 import { assertEquals } from "@std/assert";
 import path from "node:path";
 
@@ -10,14 +10,16 @@ function readXml(filename: string): string {
 	return Deno.readTextFileSync(path.join(casesDir, filename));
 }
 
+const service = new IbkrExtractService();
+
 Deno.test("stock trades: returns trades and lot", () => {
-	const segmented = extractFromXML(readXml("SimpleStockTrade.xml"));
+	const segmented = service.extractFromXML(readXml("SimpleStockTrade.xml"));
 	assertEquals(segmented.stockTrades.length, 2);
 	assertEquals(segmented.stockLots.length, 1);
 });
 
 Deno.test("stock trades: contains buy and sell event", () => {
-	const segmented = extractFromXML(readXml("SimpleStockTrade.xml"));
+	const segmented = service.extractFromXML(readXml("SimpleStockTrade.xml"));
 	const buyTrade = segmented.stockTrades[0];
 	assertEquals(buyTrade.buyOrSell, BuyOrSell.BUY);
 	assertEquals(buyTrade.isin, "FR0010242511");
@@ -32,26 +34,26 @@ Deno.test("stock trades: contains buy and sell event", () => {
 });
 
 Deno.test("stock trades: buy event transaction relates to lot", () => {
-	const segmented = extractFromXML(readXml("SimpleStockTrade.xml"));
+	const segmented = service.extractFromXML(readXml("SimpleStockTrade.xml"));
 	assertEquals(segmented.stockTrades[0].transactionID, "241234985");
 	assertEquals(segmented.stockLots[0].transactionID, "241234985");
 });
 
 Deno.test("stock trades: merging deduplicates", () => {
-	const s1 = extractFromXML(readXml("SimpleStockTrade.xml"));
-	const s2 = extractFromXML(readXml("SimpleStockTrade.xml"));
-	const merged = mergeTrades([s1, s2]);
+	const s1 = service.extractFromXML(readXml("SimpleStockTrade.xml"));
+	const s2 = service.extractFromXML(readXml("SimpleStockTrade.xml"));
+	const merged = service.mergeTrades([s1, s2]);
 	assertEquals(merged.stockTrades.length, 2);
 });
 
 Deno.test("option trades: returns trades and lot", () => {
-	const segmented = extractFromXML(readXml("SimpleOptionTrade.xml"));
+	const segmented = service.extractFromXML(readXml("SimpleOptionTrade.xml"));
 	assertEquals(segmented.derivativeTrades.length, 2);
 	assertEquals(segmented.derivativeLots.length, 1);
 });
 
 Deno.test("option trades: contains buy and sell event", () => {
-	const segmented = extractFromXML(readXml("SimpleOptionTrade.xml"));
+	const segmented = service.extractFromXML(readXml("SimpleOptionTrade.xml"));
 	const buyTrade = segmented.derivativeTrades[0];
 	assertEquals(buyTrade.buyOrSell, BuyOrSell.BUY);
 	assertEquals(buyTrade.underlyingSecurityID, "US0378331005");
@@ -66,33 +68,33 @@ Deno.test("option trades: contains buy and sell event", () => {
 });
 
 Deno.test("option trades: buy event relates to lot", () => {
-	const segmented = extractFromXML(readXml("SimpleOptionTrade.xml"));
+	const segmented = service.extractFromXML(readXml("SimpleOptionTrade.xml"));
 	assertEquals(segmented.derivativeTrades[0].transactionID, "635331370");
 	assertEquals(segmented.derivativeLots[0].transactionID, "635331370");
 });
 
 Deno.test("option trades: merging deduplicates", () => {
-	const s1 = extractFromXML(readXml("SimpleOptionTrade.xml"));
-	const s2 = extractFromXML(readXml("SimpleOptionTrade.xml"));
-	const merged = mergeTrades([s1, s2]);
+	const s1 = service.extractFromXML(readXml("SimpleOptionTrade.xml"));
+	const s2 = service.extractFromXML(readXml("SimpleOptionTrade.xml"));
+	const merged = service.mergeTrades([s1, s2]);
 	assertEquals(merged.derivativeTrades.length, 2);
 });
 
 Deno.test("corporate actions: returns one corporate action", () => {
-	const segmented = extractFromXML(readXml("SimpleCorporateAction.xml"));
+	const segmented = service.extractFromXML(readXml("SimpleCorporateAction.xml"));
 	assertEquals(segmented.derivativeTrades.length, 0);
 	assertEquals(segmented.corporateActions.length, 1);
 });
 
 Deno.test("corporate actions: merging deduplicates", () => {
-	const s1 = extractFromXML(readXml("SimpleCorporateAction.xml"));
-	const s2 = extractFromXML(readXml("SimpleCorporateAction.xml"));
-	const merged = mergeTrades([s1, s2]);
+	const s1 = service.extractFromXML(readXml("SimpleCorporateAction.xml"));
+	const s2 = service.extractFromXML(readXml("SimpleCorporateAction.xml"));
+	const merged = service.mergeTrades([s1, s2]);
 	assertEquals(merged.corporateActions.length, 1);
 });
 
 Deno.test("corporate actions two rows: extracts two actions with same actionID", () => {
-	const segmented = extractFromXML(readXml("CorporateActionsTwoRows.xml"));
+	const segmented = service.extractFromXML(readXml("CorporateActionsTwoRows.xml"));
 	assertEquals(segmented.corporateActions.length, 2);
 	const actionIds = new Set(segmented.corporateActions.map((ca) => ca.actionID));
 	assertEquals(actionIds.size, 1);
@@ -103,20 +105,20 @@ Deno.test("corporate actions two rows: extracts two actions with same actionID",
 });
 
 Deno.test("cash transactions dividends: returns 2 transactions", () => {
-	const segmented = extractFromXML(readXml("SimpleCashTransactionOfDividends.xml"));
+	const segmented = service.extractFromXML(readXml("SimpleCashTransactionOfDividends.xml"));
 	assertEquals(segmented.cashTransactions.length, 2);
 	assertEquals(segmented.corporateActions.length, 0);
 });
 
 Deno.test("cash transactions dividends: merging deduplicates", () => {
-	const s1 = extractFromXML(readXml("SimpleCashTransactionOfDividends.xml"));
-	const s2 = extractFromXML(readXml("SimpleCashTransactionOfDividends.xml"));
-	const merged = mergeTrades([s1, s2]);
+	const s1 = service.extractFromXML(readXml("SimpleCashTransactionOfDividends.xml"));
+	const s2 = service.extractFromXML(readXml("SimpleCashTransactionOfDividends.xml"));
+	const merged = service.mergeTrades([s1, s2]);
 	assertEquals(merged.cashTransactions.length, 2);
 });
 
 Deno.test("cash transactions dividends: contains dividend and withholding tax", () => {
-	const segmented = extractFromXML(readXml("SimpleCashTransactionOfDividends.xml"));
+	const segmented = service.extractFromXML(readXml("SimpleCashTransactionOfDividends.xml"));
 	const dividend = segmented.cashTransactions[0];
 	assertEquals(dividend.transactionID, "269176073");
 	assertEquals(dividend.isin, "FR0000120271");
@@ -129,19 +131,19 @@ Deno.test("cash transactions dividends: contains dividend and withholding tax", 
 });
 
 Deno.test("cash transactions payment in lieu: returns 2 transactions", () => {
-	const segmented = extractFromXML(readXml("SimpleCashTransactionOfPaymentInLieuOfDividends.xml"));
+	const segmented = service.extractFromXML(readXml("SimpleCashTransactionOfPaymentInLieuOfDividends.xml"));
 	assertEquals(segmented.cashTransactions.length, 2);
 });
 
 Deno.test("cash transactions payment in lieu: merging deduplicates", () => {
-	const s1 = extractFromXML(readXml("SimpleCashTransactionOfPaymentInLieuOfDividends.xml"));
-	const s2 = extractFromXML(readXml("SimpleCashTransactionOfPaymentInLieuOfDividends.xml"));
-	const merged = mergeTrades([s1, s2]);
+	const s1 = service.extractFromXML(readXml("SimpleCashTransactionOfPaymentInLieuOfDividends.xml"));
+	const s2 = service.extractFromXML(readXml("SimpleCashTransactionOfPaymentInLieuOfDividends.xml"));
+	const merged = service.mergeTrades([s1, s2]);
 	assertEquals(merged.cashTransactions.length, 2);
 });
 
 Deno.test("cash transactions payment in lieu: contains payment and withholding", () => {
-	const segmented = extractFromXML(readXml("SimpleCashTransactionOfPaymentInLieuOfDividends.xml"));
+	const segmented = service.extractFromXML(readXml("SimpleCashTransactionOfPaymentInLieuOfDividends.xml"));
 	assertEquals(segmented.cashTransactions[0].transactionID, "814208300");
 	assertEquals(segmented.cashTransactions[0].isin, "US5801351017");
 	assertEquals(segmented.cashTransactions[0].type, CashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS);

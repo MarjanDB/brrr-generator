@@ -12,7 +12,7 @@ import {
 	TransactionType,
 } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas.ts";
 import type { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades.ts";
-import { convertSegmentedTradesToGenericUnderlyingGroups } from "@brrr/Brokerages/Ibkr/Transforms/Transform.ts";
+import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transforms/Transform.ts";
 import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution.ts";
 import {
@@ -23,6 +23,8 @@ import {
 } from "@brrr/Core/Schemas/Staging/Events.ts";
 import { assertEquals, assertInstanceOf } from "@std/assert";
 import { DateTime } from "luxon";
+
+const service = new IbkrTransformService();
 
 function makeDate(iso: string) {
 	return DateTime.fromISO(iso)!;
@@ -240,7 +242,7 @@ const corporateActionNew: CorporateAction = {
 };
 
 Deno.test("transform: single stock trade buy", () => {
-	const result = convertSegmentedTradesToGenericUnderlyingGroups(
+	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ stockTrades: [simpleTradeBuy] }),
 	);
 	assertEquals(result.groupings.length, 1);
@@ -250,7 +252,7 @@ Deno.test("transform: single stock trade buy", () => {
 });
 
 Deno.test("transform: single stock trade sell", () => {
-	const result = convertSegmentedTradesToGenericUnderlyingGroups(
+	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ stockTrades: [simpleTradeSell] }),
 	);
 	assertEquals(result.groupings.length, 1);
@@ -258,7 +260,7 @@ Deno.test("transform: single stock trade sell", () => {
 });
 
 Deno.test("transform: single stock lot", () => {
-	const result = convertSegmentedTradesToGenericUnderlyingGroups(
+	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ stockLots: [simpleStockLot] }),
 	);
 	assertEquals(result.groupings.length, 1);
@@ -267,7 +269,7 @@ Deno.test("transform: single stock lot", () => {
 });
 
 Deno.test("transform: single dividend", () => {
-	const result = convertSegmentedTradesToGenericUnderlyingGroups(
+	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ cashTransactions: [dividend] }),
 	);
 	assertEquals(result.groupings.length, 1);
@@ -278,7 +280,7 @@ Deno.test("transform: single dividend", () => {
 });
 
 Deno.test("transform: single payment in lieu of dividend", () => {
-	const result = convertSegmentedTradesToGenericUnderlyingGroups(
+	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ cashTransactions: [paymentInLieuOfDividend] }),
 	);
 	assertInstanceOf(result.groupings[0].cashTransactions[0], StagingTradeEventCashTransactionPaymentInLieuOfDividends);
@@ -289,7 +291,7 @@ Deno.test("transform: single payment in lieu of dividend", () => {
 });
 
 Deno.test("transform: single withholding tax", () => {
-	const result = convertSegmentedTradesToGenericUnderlyingGroups(
+	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ cashTransactions: [withholdingTaxForDividend] }),
 	);
 	assertInstanceOf(result.groupings[0].cashTransactions[0], StagingTradeEventCashTransactionWithholdingTax);
@@ -300,14 +302,14 @@ Deno.test("transform: single withholding tax", () => {
 });
 
 Deno.test("transform: withholding tax for payment in lieu", () => {
-	const result = convertSegmentedTradesToGenericUnderlyingGroups(
+	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ cashTransactions: [withholdingTaxForPaymentInLieu] }),
 	);
 	assertInstanceOf(result.groupings[0].cashTransactions[0], StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends);
 });
 
 Deno.test("transform: corporate actions produce partial relationships only", () => {
-	const result = convertSegmentedTradesToGenericUnderlyingGroups(
+	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ corporateActions: [corporateActionOld, corporateActionNew] }),
 	);
 	assertEquals(result.identifierRelationships.relationships.length, 0);
@@ -326,7 +328,7 @@ Deno.test("transform: corporate actions produce partial relationships only", () 
 });
 
 Deno.test("transform: resolve partials produces full relationship", () => {
-	const staging = convertSegmentedTradesToGenericUnderlyingGroups(
+	const staging = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ corporateActions: [corporateActionOld, corporateActionNew] }),
 	);
 	const resolved = new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(staging);
@@ -337,7 +339,7 @@ Deno.test("transform: resolve partials produces full relationship", () => {
 });
 
 Deno.test("transform: no corporate actions produces no partials", () => {
-	const result = convertSegmentedTradesToGenericUnderlyingGroups(makeEmptySegmented({}));
+	const result = service.convertSegmentedTradesToStagingEvents(makeEmptySegmented({}));
 	assertEquals(result.identifierRelationships.relationships.length, 0);
 	assertEquals(result.identifierRelationships.partialRelationships.length, 0);
 });

@@ -1,6 +1,8 @@
 import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 import { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider.ts";
+import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Transforms/Extract.ts";
+import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transforms/Transform.ts";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor.ts";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
@@ -19,7 +21,7 @@ const xmlPath = new URL("./DuplicatingTrades.xml", import.meta.url).pathname;
 Deno.test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantities", () => {
 	const xmlContent = Deno.readTextFileSync(xmlPath);
 
-	const ibkrProvider = new IbkrBrokerageExportProvider();
+	const ibkrProvider = new IbkrBrokerageExportProvider(new IbkrExtractService(), new IbkrTransformService());
 	const stagingEvents = ibkrProvider.loadAndTransform([xmlContent]);
 
 	const groupingProcessor = new StagingFinancialGroupingProcessor();
