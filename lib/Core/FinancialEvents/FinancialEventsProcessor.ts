@@ -1,8 +1,5 @@
-import type {
-	FinancialGrouping,
-	UnderlyingDerivativeGrouping,
-	UnderlyingGroupingWithTradesOfInterest,
-} from "@brrr/Core/Schemas/Grouping.ts";
+import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
+import { UnderlyingDerivativeGrouping, UnderlyingGroupingWithTradesOfInterest } from "@brrr/Core/Schemas/Grouping.ts";
 import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration.ts";
 import type { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
 import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod.ts";
@@ -38,20 +35,20 @@ export class FinancialEventsProcessor {
 				lotMatchingConfiguration.toDate,
 			);
 
-			derivativeGroupingsOfInterest.push({
+			derivativeGroupingsOfInterest.push(new UnderlyingDerivativeGrouping({
 				financialIdentifier: derivativeGrouping.financialIdentifier,
 				derivativeTrades: derivativeTradesOfInterestFiltered.trades as never,
-			});
+			}));
 		}
 
-		return {
+		return new UnderlyingGroupingWithTradesOfInterest({
 			financialIdentifier: input.financialIdentifier,
 			countryOfOrigin: input.countryOfOrigin,
 			underlyingCategory: input.underlyingCategory,
 			stockTrades: stockTradesOfInterestFiltered.trades as never,
 			derivativeGroupings: derivativeGroupingsOfInterest,
 			cashTransactions: input.cashTransactions,
-		};
+		});
 	}
 
 	generateInterestingUnderlyingGroupings(

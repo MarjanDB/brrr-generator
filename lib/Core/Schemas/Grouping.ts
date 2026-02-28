@@ -10,42 +10,118 @@ import type {
 } from "@brrr/Core/Schemas/Events.ts";
 import type { TaxLotDerivative, TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
 
-export type DerivativeGrouping = {
+type DerivativeGroupingArgs = {
 	financialIdentifier: FinancialIdentifier;
 	derivativeTrades: (TradeEventDerivativeAcquired | TradeEventDerivativeSold)[];
 	derivativeTaxLots: TaxLotDerivative[];
 	provenance: AnyProvenanceStep[];
 };
 
-export type FinancialGrouping = {
+export class DerivativeGrouping {
+	public readonly financialIdentifier: FinancialIdentifier;
+	public readonly derivativeTrades: (TradeEventDerivativeAcquired | TradeEventDerivativeSold)[];
+	public readonly derivativeTaxLots: TaxLotDerivative[];
+	public readonly provenance: AnyProvenanceStep[];
+
+	constructor(args: DerivativeGroupingArgs) {
+		this.financialIdentifier = args.financialIdentifier;
+		this.derivativeTrades = args.derivativeTrades;
+		this.derivativeTaxLots = args.derivativeTaxLots;
+		this.provenance = args.provenance;
+	}
+
+	copy(overrides: Partial<DerivativeGroupingArgs>): DerivativeGrouping {
+		return new DerivativeGrouping({
+			financialIdentifier: this.financialIdentifier,
+			derivativeTrades: this.derivativeTrades,
+			derivativeTaxLots: this.derivativeTaxLots,
+			provenance: this.provenance,
+			...overrides,
+		});
+	}
+}
+
+type FinancialGroupingArgs = {
 	financialIdentifier: FinancialIdentifier;
 	countryOfOrigin: string | null;
-
 	underlyingCategory: GenericCategory;
-
 	stockTrades: (TradeEventStockAcquired | TradeEventStockSold)[];
 	stockTaxLots: TaxLotStock[];
-
 	derivativeGroupings: DerivativeGrouping[];
-
 	cashTransactions: TransactionCash[];
 	provenance: AnyProvenanceStep[];
 };
 
-export type UnderlyingDerivativeGrouping = {
-	financialIdentifier: FinancialIdentifier;
-	derivativeTrades: (TradeEventDerivativeAcquired | TradeEventDerivativeSold)[];
-};
+export class FinancialGrouping {
+	public readonly financialIdentifier: FinancialIdentifier;
+	public readonly countryOfOrigin: string | null;
+	public readonly underlyingCategory: GenericCategory;
+	public readonly stockTrades: (TradeEventStockAcquired | TradeEventStockSold)[];
+	public readonly stockTaxLots: TaxLotStock[];
+	public readonly derivativeGroupings: DerivativeGrouping[];
+	public readonly cashTransactions: TransactionCash[];
+	public readonly provenance: AnyProvenanceStep[];
 
-export type UnderlyingGroupingWithTradesOfInterest = {
-	financialIdentifier: FinancialIdentifier;
-	countryOfOrigin: string | null;
+	constructor(args: FinancialGroupingArgs) {
+		this.financialIdentifier = args.financialIdentifier;
+		this.countryOfOrigin = args.countryOfOrigin;
+		this.underlyingCategory = args.underlyingCategory;
+		this.stockTrades = args.stockTrades;
+		this.stockTaxLots = args.stockTaxLots;
+		this.derivativeGroupings = args.derivativeGroupings;
+		this.cashTransactions = args.cashTransactions;
+		this.provenance = args.provenance;
+	}
 
-	underlyingCategory: GenericCategory;
+	copy(overrides: Partial<FinancialGroupingArgs>): FinancialGrouping {
+		return new FinancialGrouping({
+			financialIdentifier: this.financialIdentifier,
+			countryOfOrigin: this.countryOfOrigin,
+			underlyingCategory: this.underlyingCategory,
+			stockTrades: this.stockTrades,
+			stockTaxLots: this.stockTaxLots,
+			derivativeGroupings: this.derivativeGroupings,
+			cashTransactions: this.cashTransactions,
+			provenance: this.provenance,
+			...overrides,
+		});
+	}
+}
 
-	stockTrades: (TradeEventStockAcquired | TradeEventStockSold)[];
+export class UnderlyingDerivativeGrouping {
+	public readonly financialIdentifier: FinancialIdentifier;
+	public readonly derivativeTrades: (TradeEventDerivativeAcquired | TradeEventDerivativeSold)[];
 
-	derivativeGroupings: UnderlyingDerivativeGrouping[];
+	constructor(args: {
+		financialIdentifier: FinancialIdentifier;
+		derivativeTrades: (TradeEventDerivativeAcquired | TradeEventDerivativeSold)[];
+	}) {
+		this.financialIdentifier = args.financialIdentifier;
+		this.derivativeTrades = args.derivativeTrades;
+	}
+}
 
-	cashTransactions: TransactionCash[];
-};
+export class UnderlyingGroupingWithTradesOfInterest {
+	public readonly financialIdentifier: FinancialIdentifier;
+	public readonly countryOfOrigin: string | null;
+	public readonly underlyingCategory: GenericCategory;
+	public readonly stockTrades: (TradeEventStockAcquired | TradeEventStockSold)[];
+	public readonly derivativeGroupings: UnderlyingDerivativeGrouping[];
+	public readonly cashTransactions: TransactionCash[];
+
+	constructor(args: {
+		financialIdentifier: FinancialIdentifier;
+		countryOfOrigin: string | null;
+		underlyingCategory: GenericCategory;
+		stockTrades: (TradeEventStockAcquired | TradeEventStockSold)[];
+		derivativeGroupings: UnderlyingDerivativeGrouping[];
+		cashTransactions: TransactionCash[];
+	}) {
+		this.financialIdentifier = args.financialIdentifier;
+		this.countryOfOrigin = args.countryOfOrigin;
+		this.underlyingCategory = args.underlyingCategory;
+		this.stockTrades = args.stockTrades;
+		this.derivativeGroupings = args.derivativeGroupings;
+		this.cashTransactions = args.cashTransactions;
+	}
+}

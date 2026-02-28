@@ -1,7 +1,7 @@
 import type { TradeEventStockAcquired, TradeEventStockSold, TransactionCash } from "@brrr/Core/Schemas/Events.ts";
-import type { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
+import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
-import type { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
+import { type DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import { IdentifierChangeType, IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
 import type { TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
 import { type AnyProvenanceStep, RenameProvenanceStep, SplitProvenanceStep } from "@brrr/Core/Schemas/Provenance.ts";
@@ -94,10 +94,10 @@ export class ApplyIdentifierRelationshipsService {
 			this._mergeGroupings(sink, groupings, sinkToProvenance.get(sink.toKey()) ?? [])
 		);
 
-		return {
+		return new FinancialEvents({
 			groupings: [...notAffected, ...merged],
 			identifierRelationships: events.identifierRelationships,
-		};
+		});
 	}
 
 	private _applySplitOrReverseSplit(events: FinancialEvents, relationship: IdentifierRelationshipSplit): FinancialEvents {
@@ -151,11 +151,10 @@ export class ApplyIdentifierRelationshipsService {
 					quantityAfter: relationship.quantityAfter,
 					beforeQuantity: lot.quantity,
 				});
-				scaledLots.push({
-					...lot,
+				scaledLots.push(lot.copy({
 					quantity: lot.quantity * ratio,
 					provenance: [...lot.provenance, step],
-				});
+				}));
 			} else {
 				scaledLots.push(lot);
 			}
@@ -170,12 +169,11 @@ export class ApplyIdentifierRelationshipsService {
 			quantityAfter: relationship.quantityAfter,
 		});
 
-		const scaledFrom: FinancialGrouping = {
-			...fromGrouping,
+		const scaledFrom = fromGrouping.copy({
 			stockTrades: scaledTrades,
 			stockTaxLots: scaledLots,
 			provenance: [...fromGrouping.provenance, splitStep],
-		};
+		});
 
 		const toGrouping =
 			events.groupings.find((g) => g !== fromGrouping && relationship.toIdentifier.sameInstrumentByIsin(g.financialIdentifier)) ??
@@ -197,10 +195,10 @@ export class ApplyIdentifierRelationshipsService {
 		}
 
 		const other = events.groupings.filter((g) => g !== fromGrouping && g !== toGrouping);
-		return {
+		return new FinancialEvents({
 			groupings: [...other, mergedGrouping],
 			identifierRelationships: events.identifierRelationships,
-		};
+		});
 	}
 
 	private _mergeGroupings(
@@ -217,30 +215,27 @@ export class ApplyIdentifierRelationshipsService {
 		for (const g of groupings) {
 			for (const t of g.stockTrades) allStockTrades.push(t.copy({ financialIdentifier: properId }));
 			for (const lot of g.stockTaxLots) {
-				allStockTaxLots.push({
-					...lot,
+				allStockTaxLots.push(lot.copy({
 					financialIdentifier: properId,
 					acquired: lot.acquired.copy({ financialIdentifier: properId }),
 					sold: lot.sold.copy({ financialIdentifier: properId }),
-				});
+				}));
 			}
 			for (const dg of g.derivativeGroupings) {
-				allDerivativeGroupings.push({
-					...dg,
+				allDerivativeGroupings.push(dg.copy({
 					financialIdentifier: properId,
 					derivativeTrades: dg.derivativeTrades.map((t) => t.copy({ financialIdentifier: properId })),
-					derivativeTaxLots: dg.derivativeTaxLots.map((lot) => ({
-						...lot,
+					derivativeTaxLots: dg.derivativeTaxLots.map((lot) => lot.copy({
 						financialIdentifier: properId,
 						acquired: lot.acquired.copy({ financialIdentifier: properId }),
 						sold: lot.sold.copy({ financialIdentifier: properId }),
 					})),
-				});
+				}));
 			}
 			for (const c of g.cashTransactions) allCashTransactions.push(c.copy({ financialIdentifier: properId }));
 		}
 
-		return {
+		return new FinancialGrouping({
 			financialIdentifier: properId,
 			countryOfOrigin: first.countryOfOrigin,
 			underlyingCategory: first.underlyingCategory,
@@ -249,6 +244,6 @@ export class ApplyIdentifierRelationshipsService {
 			derivativeGroupings: allDerivativeGroupings,
 			cashTransactions: allCashTransactions,
 			provenance: groupingProvenance,
-		};
+		});
 	}
 }

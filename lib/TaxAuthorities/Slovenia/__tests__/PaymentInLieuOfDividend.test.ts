@@ -1,15 +1,15 @@
 import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
-import { GenericAssetClass, GenericCategory, GenericDividendType } from "@brrr/Core/Schemas/CommonFormats.ts";
-import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
+import { GenericAssetClass, GenericCategory, GenericDividendType, GenericMonetaryExchangeInformation } from "@brrr/Core/Schemas/CommonFormats.ts";
+import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import {
 	TradeEventCashTransactionDividend,
 	TradeEventCashTransactionPaymentInLieuOfDividend,
 	TradeEventCashTransactionWithholdingTax,
 	TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
 } from "@brrr/Core/Schemas/Events.ts";
-import type { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
+import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts";
@@ -60,7 +60,7 @@ const cashTransactionDividend = new TradeEventCashTransactionDividend({
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: DateTime.fromISO("2023-06-07"),
 	multiplier: 1,
-	exchangedMoney: {
+	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
 		underlyingQuantity: 1.0,
 		underlyingTradePrice: 10.0,
@@ -69,7 +69,7 @@ const cashTransactionDividend = new TradeEventCashTransactionDividend({
 		taxCurrency: "EUR",
 		taxTotal: 0.0,
 		fxRateToBase: 1,
-	},
+	}),
 	actionId: "DivAction",
 	transactionId: "TranId1",
 	listingExchange: "EXH",
@@ -83,7 +83,7 @@ const cashTransactionPaymentInLieuOfDividend = new TradeEventCashTransactionPaym
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: DateTime.fromISO("2023-06-08"),
 	multiplier: 1,
-	exchangedMoney: {
+	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
 		underlyingQuantity: 1.0,
 		underlyingTradePrice: 5.0,
@@ -92,7 +92,7 @@ const cashTransactionPaymentInLieuOfDividend = new TradeEventCashTransactionPaym
 		taxCurrency: "EUR",
 		taxTotal: 0.0,
 		fxRateToBase: 1,
-	},
+	}),
 	actionId: "DivAction2",
 	transactionId: "TranId2",
 	listingExchange: "EXH",
@@ -106,7 +106,7 @@ const cashTransactionDividendWithholdingTax = new TradeEventCashTransactionWithh
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: DateTime.fromISO("2023-06-07"),
 	multiplier: 1,
-	exchangedMoney: {
+	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
 		underlyingQuantity: 1.0,
 		underlyingTradePrice: -5.0,
@@ -115,7 +115,7 @@ const cashTransactionDividendWithholdingTax = new TradeEventCashTransactionWithh
 		taxCurrency: "EUR",
 		taxTotal: 0.0,
 		fxRateToBase: 1,
-	},
+	}),
 	actionId: "DivAction",
 	transactionId: "TranId3",
 	listingExchange: "EXH",
@@ -128,7 +128,7 @@ const cashTransactionPaymentInLieuOfDividendWithholdingTax = new TradeEventCashT
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: DateTime.fromISO("2023-06-08"),
 	multiplier: 1,
-	exchangedMoney: {
+	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
 		underlyingQuantity: 1.0,
 		underlyingTradePrice: -2.5,
@@ -137,14 +137,14 @@ const cashTransactionPaymentInLieuOfDividendWithholdingTax = new TradeEventCashT
 		taxCurrency: "EUR",
 		taxTotal: 0.0,
 		fxRateToBase: 1,
-	},
+	}),
 	actionId: "DivAction2",
 	transactionId: "TranId4",
 	listingExchange: "EXH",
 	provenance: [],
 });
 
-const testGrouping: FinancialGrouping = {
+const testGrouping = new FinancialGrouping({
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN" }),
 	countryOfOrigin: null,
 	underlyingCategory: GenericCategory.REGULAR,
@@ -158,12 +158,12 @@ const testGrouping: FinancialGrouping = {
 		cashTransactionPaymentInLieuOfDividendWithholdingTax,
 	],
 	provenance: [],
-};
+});
 
-const testData: FinancialEvents = {
+const testData = new FinancialEvents({
 	groupings: [testGrouping],
 	identifierRelationships: [],
-};
+});
 
 Deno.test("PaymentInLieuOfDividend - withholding tax is reported separately from dividend withholding tax", () => {
 	const config: TaxAuthorityConfiguration = {

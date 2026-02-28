@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats.ts";
 import { TradeEventStockAcquired, type TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
-import type { TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
+import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
 import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots.ts";
 
 function findById<T extends { id: string }>(id: string, items: T[]): T {
@@ -36,7 +36,7 @@ export function processStockLot(
 		throw new Error(`LookupError: Failed to match stock lot (ID: ${input.id})`);
 	}
 
-	return {
+	return new TaxLot({
 		id: input.id,
 		financialIdentifier: FinancialIdentifier.fromStagingIdentifier(input.financialIdentifier),
 		quantity: input.quantity,
@@ -44,5 +44,5 @@ export function processStockLot(
 		sold: matchingSell,
 		shortLongType: GenericShortLong.LONG,
 		provenance: [],
-	};
+	});
 }

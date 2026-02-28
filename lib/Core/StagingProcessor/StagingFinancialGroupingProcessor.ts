@@ -1,8 +1,8 @@
 import { DateTime } from "luxon";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { IdentifierChangeType, IdentifierRelationship, IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
-import type { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
-import type { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
+import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
+import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping.ts";
 import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents.ts";
 import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
@@ -43,12 +43,12 @@ export class StagingFinancialGroupingProcessor {
 		for (const [key, trades] of tradesByIdKey) {
 			const lots = lotsByIdKey.get(key) ?? [];
 			const processedLots = lots.map((lot) => processDerivativeLot(lot, trades));
-			derivativeGroupings.push({
+			derivativeGroupings.push(new DerivativeGrouping({
 				financialIdentifier: trades[0].financialIdentifier,
 				derivativeTrades: trades,
 				derivativeTaxLots: processedLots,
 				provenance: [],
-			});
+			}));
 		}
 		return derivativeGroupings;
 	}
@@ -63,7 +63,7 @@ export class StagingFinancialGroupingProcessor {
 
 		const processedCashTransactions = input.cashTransactions.map(processCashTransaction);
 
-		return {
+		return new FinancialGrouping({
 			financialIdentifier: FinancialIdentifier.fromStagingIdentifier(input.financialIdentifier),
 			countryOfOrigin: input.countryOfOrigin,
 			underlyingCategory: input.underlyingCategory,
@@ -72,7 +72,7 @@ export class StagingFinancialGroupingProcessor {
 			derivativeGroupings,
 			cashTransactions: processedCashTransactions,
 			provenance: [],
-		};
+		});
 	}
 
 	generateGenericGroupings(groupings: StagingFinancialGrouping[]): FinancialGrouping[] {
@@ -112,9 +112,9 @@ export class StagingFinancialGroupingProcessor {
 			}
 		}
 
-		return {
+		return new FinancialEvents({
 			groupings: processedGroupings,
 			identifierRelationships: coreRels,
-		};
+		});
 	}
 }

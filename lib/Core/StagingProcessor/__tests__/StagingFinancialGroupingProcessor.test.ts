@@ -3,6 +3,7 @@ import {
 	GenericCategory,
 	GenericDerivativeReportItemGainType,
 	GenericDividendType,
+	GenericMonetaryExchangeInformation,
 	GenericShortLong,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats.ts";
@@ -17,13 +18,14 @@ import {
 	StagingTradeEventStockAcquired,
 	StagingTradeEventStockSold,
 } from "@brrr/Core/Schemas/Staging/Events.ts";
-import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping.ts";
+import { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping.ts";
 import {
 	StagingIdentifierChangeType,
 	StagingIdentifierRelationship,
-	type StagingIdentifierRelationships,
+	StagingIdentifierRelationships,
 } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
-import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots.ts";
+import { StagingTaxLot, StagingTaxLotMatchingDetails } from "@brrr/Core/Schemas/Staging/Lots.ts";
+import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents.ts";
 import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier.ts";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor.ts";
 import { assertEquals, assertThrows } from "@std/assert";
@@ -36,7 +38,7 @@ function makeDate(iso: string) {
 const ident = new StagingFinancialIdentifier({ isin: "US123", ticker: "AAPL", name: "AAPL" });
 
 function makeMonetary(qty: number, price: number) {
-	return {
+	return new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
 		underlyingQuantity: qty,
 		underlyingTradePrice: price,
@@ -45,7 +47,7 @@ function makeMonetary(qty: number, price: number) {
 		taxCurrency: "EUR",
 		taxTotal: 0,
 		fxRateToBase: 1,
-	};
+	});
 }
 
 const simpleStagingStockBuy = new StagingTradeEventStockAcquired({
@@ -117,14 +119,14 @@ const simpleStagingPaymentInLieuOfDividendWithholdingTax = new StagingTradeEvent
 	exchangedMoney: makeMonetary(1, -2.5),
 });
 
-const simpleStagingStockLot: StagingTaxLot = {
+const simpleStagingStockLot = new StagingTaxLot({
 	id: "Lot",
 	financialIdentifier: ident,
 	quantity: 1,
-	acquired: { id: "StockBought", dateTime: null },
-	sold: { id: null, dateTime: makeDate("2023-01-02") },
+	acquired: new StagingTaxLotMatchingDetails({ id: "StockBought", dateTime: null }),
+	sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: makeDate("2023-01-02") }),
 	shortLongType: GenericShortLong.LONG,
-};
+});
 
 const simpleStagingDerivativeBuy = new StagingTradeEventDerivativeAcquired({
 	id: "DerivativeBought",
@@ -145,17 +147,17 @@ const simpleStagingDerivativeSold = new StagingTradeEventDerivativeSold({
 	exchangedMoney: makeMonetary(-1, 15),
 });
 
-const simpleStagingDerivativeLot: StagingTaxLot = {
+const simpleStagingDerivativeLot = new StagingTaxLot({
 	id: "Lot",
 	financialIdentifier: ident,
 	quantity: 1,
-	acquired: { id: "DerivativeBought", dateTime: null },
-	sold: { id: null, dateTime: makeDate("2023-01-02") },
+	acquired: new StagingTaxLotMatchingDetails({ id: "DerivativeBought", dateTime: null }),
+	sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: makeDate("2023-01-02") }),
 	shortLongType: GenericShortLong.LONG,
-};
+});
 
-function makeGrouping(overrides: Partial<StagingFinancialGrouping>): StagingFinancialGrouping {
-	return {
+function makeGrouping(overrides: Partial<ConstructorParameters<typeof StagingFinancialGrouping>[0]>): StagingFinancialGrouping {
+	return new StagingFinancialGrouping({
 		financialIdentifier: ident,
 		countryOfOrigin: null,
 		underlyingCategory: GenericCategory.REGULAR,
@@ -165,7 +167,7 @@ function makeGrouping(overrides: Partial<StagingFinancialGrouping>): StagingFina
 		derivativeTaxLots: [],
 		cashTransactions: [],
 		...overrides,
-	};
+	});
 }
 
 Deno.test("simple stock lot matching", () => {
@@ -263,15 +265,15 @@ Deno.test("processStagingFinancialEvents returns FinancialEvents with converted 
 		changeType: StagingIdentifierChangeType.RENAME,
 		effectiveDate: makeDate("2024-06-01"),
 	});
-	const relationships: StagingIdentifierRelationships = {
+	const relationships = new StagingIdentifierRelationships({
 		relationships: [stagingRel],
 		partialRelationships: [],
-	};
+	});
 	const processor = new StagingFinancialGroupingProcessor();
-	const result = processor.processStagingFinancialEvents({
+	const result = processor.processStagingFinancialEvents(new StagingFinancialEvents({
 		groupings: [makeGrouping({ financialIdentifier: stagingIdA })],
 		identifierRelationships: relationships,
-	});
+	}));
 	assertEquals(result.groupings.length, 1);
 	assertEquals(result.groupings[0].financialIdentifier.getIsin(), "US111");
 	assertEquals(result.identifierRelationships.length, 1);

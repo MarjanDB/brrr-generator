@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { GenericAssetClass, GenericShortLong, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats.ts";
 import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
-import type { TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
+import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod.ts";
 
 function makeDate(iso: string) {
@@ -25,7 +25,7 @@ function makeMonetary(qty: number) {
 	};
 }
 
-const simpleLot: TaxLotStock = {
+const simpleLot: TaxLotStock = new TaxLot({
 	id: "ID",
 	financialIdentifier: identifier,
 	quantity: 1,
@@ -50,9 +50,9 @@ const simpleLot: TaxLotStock = {
 	}),
 	shortLongType: GenericShortLong.LONG,
 	provenance: [],
-};
+});
 
-const underUtilizedLot: TaxLotStock = {
+const underUtilizedLot: TaxLotStock = new TaxLot({
 	id: "ID",
 	financialIdentifier: identifier,
 	quantity: 1,
@@ -77,7 +77,7 @@ const underUtilizedLot: TaxLotStock = {
 	}),
 	shortLongType: GenericShortLong.LONG,
 	provenance: [],
-};
+});
 
 Deno.test("simple single lot generation", () => {
 	const method = new ProvidedLotMatchingMethod([simpleLot]);

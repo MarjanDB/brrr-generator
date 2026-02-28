@@ -6,10 +6,11 @@ import {
 	GenericCategory,
 	GenericDerivativeReportItemGainType,
 	GenericDividendType,
+	GenericMonetaryExchangeInformation,
 	GenericShortLong,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats.ts";
-import type { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
+import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import {
 	TradeEventCashTransactionDividend,
 	TradeEventCashTransactionWithholdingTax,
@@ -18,8 +19,8 @@ import {
 	TradeEventStockAcquired,
 	TradeEventStockSold,
 } from "@brrr/Core/Schemas/Events.ts";
-import type { TaxLotDerivative, TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
-import type { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
+import { TaxLot } from "@brrr/Core/Schemas/Lots.ts";
+import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts";
@@ -70,7 +71,7 @@ const stockAcquired = new TradeEventStockAcquired({
 	assetClass: GenericAssetClass.STOCK,
 	date: DateTime.fromISO("2023-06-06"),
 	multiplier: 1.0,
-	exchangedMoney: {
+	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
 		underlyingQuantity: 1.0,
 		underlyingTradePrice: 1.0,
@@ -79,7 +80,7 @@ const stockAcquired = new TradeEventStockAcquired({
 		taxCurrency: "EUR",
 		taxTotal: 0.0,
 		fxRateToBase: 1,
-	},
+	}),
 	acquiredReason: GenericTradeReportItemGainType.BOUGHT,
 	provenance: [],
 });
@@ -90,7 +91,7 @@ const stockSold = new TradeEventStockSold({
 	assetClass: GenericAssetClass.STOCK,
 	date: DateTime.fromISO("2023-06-07"),
 	multiplier: 1.0,
-	exchangedMoney: {
+	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
 		underlyingQuantity: -1.0,
 		underlyingTradePrice: 1.0,
@@ -99,7 +100,7 @@ const stockSold = new TradeEventStockSold({
 		taxCurrency: "EUR",
 		taxTotal: 0.0,
 		fxRateToBase: 1,
-	},
+	}),
 	provenance: [],
 });
 
@@ -110,7 +111,7 @@ const optionBought = new TradeEventDerivativeAcquired({
 	assetClass: GenericAssetClass.OPTION,
 	date: DateTime.fromISO("2023-06-07"),
 	multiplier: 100,
-	exchangedMoney: {
+	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
 		underlyingQuantity: 1.0,
 		underlyingTradePrice: 1.0,
@@ -119,7 +120,7 @@ const optionBought = new TradeEventDerivativeAcquired({
 		taxCurrency: "EUR",
 		taxTotal: 0.0,
 		fxRateToBase: 1,
-	},
+	}),
 	provenance: [],
 });
 
@@ -129,7 +130,7 @@ const optionSold = new TradeEventDerivativeSold({
 	assetClass: GenericAssetClass.OPTION,
 	date: DateTime.fromISO("2023-06-08"),
 	multiplier: 100,
-	exchangedMoney: {
+	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
 		underlyingQuantity: -1.0,
 		underlyingTradePrice: 1.5,
@@ -138,7 +139,7 @@ const optionSold = new TradeEventDerivativeSold({
 		taxCurrency: "EUR",
 		taxTotal: 0.0,
 		fxRateToBase: 1,
-	},
+	}),
 	provenance: [],
 });
 
@@ -148,7 +149,7 @@ const cashTransactionDividend = new TradeEventCashTransactionDividend({
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: DateTime.fromISO("2023-06-07"),
 	multiplier: 1,
-	exchangedMoney: {
+	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
 		underlyingQuantity: 1.0,
 		underlyingTradePrice: 10.0,
@@ -157,7 +158,7 @@ const cashTransactionDividend = new TradeEventCashTransactionDividend({
 		taxCurrency: "EUR",
 		taxTotal: 0.0,
 		fxRateToBase: 0.5,
-	},
+	}),
 	actionId: "DivAction",
 	transactionId: "TranId1",
 	listingExchange: "EXH",
@@ -171,7 +172,7 @@ const cashTransactionWithholdingTax = new TradeEventCashTransactionWithholdingTa
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: DateTime.fromISO("2023-06-07"),
 	multiplier: 1,
-	exchangedMoney: {
+	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
 		underlyingQuantity: 1.0,
 		underlyingTradePrice: -5.0,
@@ -180,14 +181,14 @@ const cashTransactionWithholdingTax = new TradeEventCashTransactionWithholdingTa
 		taxCurrency: "EUR",
 		taxTotal: 0.0,
 		fxRateToBase: 0.5,
-	},
+	}),
 	actionId: "DivAction",
 	transactionId: "TranId1",
 	listingExchange: "EXH",
 	provenance: [],
 });
 
-const stockLot: TaxLotStock = {
+const stockLot = new TaxLot({
 	id: "ID1",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN" }),
 	quantity: 1.0,
@@ -195,9 +196,9 @@ const stockLot: TaxLotStock = {
 	sold: stockSold,
 	shortLongType: GenericShortLong.LONG,
 	provenance: [],
-};
+});
 
-const derivativeLot: TaxLotDerivative = {
+const derivativeLot = new TaxLot({
 	id: "ID1",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN" }),
 	quantity: 1.0,
@@ -205,16 +206,16 @@ const derivativeLot: TaxLotDerivative = {
 	sold: optionSold,
 	shortLongType: GenericShortLong.LONG,
 	provenance: [],
-};
+});
 
-const derivativeGrouping: DerivativeGrouping = {
+const derivativeGrouping = new DerivativeGrouping({
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN" }),
 	derivativeTrades: [optionBought, optionSold],
 	derivativeTaxLots: [derivativeLot],
 	provenance: [],
-};
+});
 
-const testGrouping: FinancialGrouping = {
+const testGrouping = new FinancialGrouping({
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN" }),
 	countryOfOrigin: null,
 	underlyingCategory: GenericCategory.REGULAR,
@@ -223,12 +224,12 @@ const testGrouping: FinancialGrouping = {
 	derivativeGroupings: [derivativeGrouping],
 	cashTransactions: [cashTransactionDividend, cashTransactionWithholdingTax],
 	provenance: [],
-};
+});
 
-const testData: FinancialEvents = {
+const testData = new FinancialEvents({
 	groupings: [testGrouping],
 	identifierRelationships: [],
-};
+});
 
 Deno.test("testKdvpSimpleCsv - 2 rows with correct quantities", () => {
 	const config: TaxAuthorityConfiguration = {

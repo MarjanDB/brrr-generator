@@ -1,14 +1,20 @@
-import { assertEquals } from "@std/assert";
-import { DateTime } from "luxon";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
-import { GenericAssetClass, GenericCategory, GenericShortLong, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats.ts";
-import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
-import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
-import type { TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
-import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration.ts";
+import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod.ts";
-import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
+import {
+	GenericAssetClass,
+	GenericCategory,
+	GenericMonetaryExchangeInformation,
+	GenericShortLong,
+	GenericTradeReportItemGainType,
+} from "@brrr/Core/Schemas/CommonFormats.ts";
+import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
+import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
+import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
+import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration.ts";
+import { TaxLot } from "@brrr/Core/Schemas/Lots.ts";
+import { assertEquals } from "@std/assert";
+import { DateTime } from "luxon";
 
 function makeDate(iso: string) {
 	return DateTime.fromISO(iso)!;
@@ -17,7 +23,7 @@ function makeDate(iso: string) {
 const identifier = new FinancialIdentifier({ isin: "US123", ticker: "AAPL", name: "AAPL" });
 
 function makeMonetary(qty: number, price: number) {
-	return {
+	return new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
 		underlyingQuantity: qty,
 		underlyingTradePrice: price,
@@ -26,7 +32,7 @@ function makeMonetary(qty: number, price: number) {
 		taxCurrency: "EUR",
 		taxTotal: 0,
 		fxRateToBase: 1,
-	};
+	});
 }
 
 const simpleStockBuy = new TradeEventStockAcquired({
@@ -50,7 +56,7 @@ const simpleStockSold = new TradeEventStockSold({
 	provenance: [],
 });
 
-const simpleStockLot: TaxLotStock = {
+const simpleStockLot = new TaxLot({
 	id: "Lot",
 	financialIdentifier: identifier,
 	quantity: 1,
@@ -58,9 +64,9 @@ const simpleStockLot: TaxLotStock = {
 	sold: simpleStockSold,
 	shortLongType: GenericShortLong.LONG,
 	provenance: [],
-};
+});
 
-const grouping: FinancialGrouping = {
+const grouping = new FinancialGrouping({
 	financialIdentifier: identifier,
 	countryOfOrigin: "US",
 	underlyingCategory: GenericCategory.REGULAR,
@@ -69,7 +75,7 @@ const grouping: FinancialGrouping = {
 	derivativeGroupings: [],
 	cashTransactions: [],
 	provenance: [],
-};
+});
 
 function matchingMethodFactory(g: FinancialGrouping) {
 	return new ProvidedLotMatchingMethod(g.stockTaxLots) as unknown as ReturnType<LotMatchingConfiguration["forStocks"]>;
@@ -103,10 +109,7 @@ Deno.test("simple filtering trades of lots closed in period", () => {
 });
 
 Deno.test("no stock trades matching when no lots", () => {
-	const groupingNoLots: FinancialGrouping = {
-		...grouping,
-		stockTaxLots: [],
-	};
+	const groupingNoLots = grouping.copy({ stockTaxLots: [] });
 	const processor = new FinancialEventsProcessor(null, new LotMatcher());
 	const config: LotMatchingConfiguration = {
 		fromDate: makeDate("2023-01-01"),

@@ -1,12 +1,12 @@
 import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
-import { GenericAssetClass, GenericCategory, GenericShortLong, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats.ts";
+import { GenericAssetClass, GenericCategory, GenericMonetaryExchangeInformation, GenericShortLong, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats.ts";
 import { IdentifierChangeType, IdentifierRelationship, IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
-import type { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
-import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
+import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
+import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
-import type { TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
+import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts";
 
 function makeDate(iso: string) {
@@ -14,7 +14,7 @@ function makeDate(iso: string) {
 }
 
 function makeMonetary(qty: number, price = 10.0) {
-	return {
+	return new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "USD",
 		underlyingQuantity: qty,
 		underlyingTradePrice: price,
@@ -23,7 +23,7 @@ function makeMonetary(qty: number, price = 10.0) {
 		taxCurrency: "USD",
 		taxTotal: 0,
 		fxRateToBase: 1,
-	};
+	});
 }
 
 function makeTrade(
@@ -61,7 +61,7 @@ function makeGrouping(
 	stockTrades: (TradeEventStockAcquired | TradeEventStockSold)[],
 	stockTaxLots: TaxLotStock[] = [],
 ): FinancialGrouping {
-	return {
+	return new FinancialGrouping({
 		financialIdentifier: identifier,
 		countryOfOrigin: "US",
 		underlyingCategory: GenericCategory.REGULAR,
@@ -70,7 +70,7 @@ function makeGrouping(
 		derivativeGroupings: [],
 		cashTransactions: [],
 		provenance: [],
-	};
+	});
 }
 
 // === RENAME TESTS ===
@@ -78,7 +78,7 @@ function makeGrouping(
 Deno.test("two groupings with rename produce one merged grouping", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old Co" });
 	const idB = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New Co" });
-	const events: FinancialEvents = {
+	const events = new FinancialEvents({
 		groupings: [
 			makeGrouping(idA, [makeTrade("t1", idA, 1.0, "2024-01-01")]),
 			makeGrouping(idB, [makeTrade("t2", idB, -1.0, "2024-02-01")]),
@@ -91,7 +91,7 @@ Deno.test("two groupings with rename produce one merged grouping", () => {
 				effectiveDate: makeDate("2024-06-01"),
 			}),
 		],
-	};
+	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.RENAME]);
 	assertEquals(result.groupings.length, 1);
@@ -107,10 +107,10 @@ Deno.test("two groupings with rename produce one merged grouping", () => {
 
 Deno.test("empty relationships leaves groupings unchanged", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "A", name: "A" });
-	const events: FinancialEvents = {
+	const events = new FinancialEvents({
 		groupings: [makeGrouping(idA, [])],
 		identifierRelationships: [],
-	};
+	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.RENAME]);
 	assertEquals(result.groupings.length, 1);
@@ -120,7 +120,7 @@ Deno.test("empty relationships leaves groupings unchanged", () => {
 Deno.test("no rename in change types leaves unchanged", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "A", name: "A" });
 	const idB = new FinancialIdentifier({ isin: "US222", ticker: "B", name: "B" });
-	const events: FinancialEvents = {
+	const events = new FinancialEvents({
 		groupings: [makeGrouping(idA, [])],
 		identifierRelationships: [
 			new IdentifierRelationship({
@@ -130,7 +130,7 @@ Deno.test("no rename in change types leaves unchanged", () => {
 				effectiveDate: makeDate("2024-01-01"),
 			}),
 		],
-	};
+	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, []); // no RENAME
 	assertEquals(result.groupings.length, 1);
@@ -141,7 +141,7 @@ Deno.test("chain A to B to C produces one grouping with C", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "A", name: "A" });
 	const idB = new FinancialIdentifier({ isin: "US222", ticker: "B", name: "B" });
 	const idC = new FinancialIdentifier({ isin: "US333", ticker: "C", name: "C" });
-	const events: FinancialEvents = {
+	const events = new FinancialEvents({
 		groupings: [
 			makeGrouping(idA, [makeTrade("t1", idA, 1.0, "2024-01-01")]),
 			makeGrouping(idB, [makeTrade("t2", idB, 1.0, "2024-02-01")]),
@@ -161,7 +161,7 @@ Deno.test("chain A to B to C produces one grouping with C", () => {
 				effectiveDate: makeDate("2024-02-01"),
 			}),
 		],
-	};
+	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.RENAME]);
 	assertEquals(result.groupings.length, 1);
@@ -179,7 +179,7 @@ Deno.test("sink grouping with different instance merges into one", () => {
 	const idOld = new FinancialIdentifier({ isin: "US7731221062", ticker: "RKLB.old", name: "RKLB old" });
 	const idNewInRel = new FinancialIdentifier({ isin: "US7731211089", ticker: "RKLB", name: "ROCKET LAB CORP" });
 	const idNewInGrouping = new FinancialIdentifier({ isin: "US7731211089", ticker: "RKLB", name: "ROCKET LAB CORP" });
-	const events: FinancialEvents = {
+	const events = new FinancialEvents({
 		groupings: [
 			makeGrouping(idOld, [makeTrade("t1", idOld, 10.0, "2024-01-01")]),
 			makeGrouping(idNewInGrouping, [makeTrade("t2", idNewInGrouping, -5.0, "2024-07-01")]),
@@ -192,7 +192,7 @@ Deno.test("sink grouping with different instance merges into one", () => {
 				effectiveDate: makeDate("2024-06-01"),
 			}),
 		],
-	};
+	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.RENAME]);
 	assertEquals(result.groupings.length, 1);
@@ -205,7 +205,7 @@ Deno.test("same ISIN different ticker matches rename chain", () => {
 	const idOldInRel = new FinancialIdentifier({ isin: "US7731221062", ticker: "RKLB.OLD", name: null });
 	const idNew = new FinancialIdentifier({ isin: "US7731211089", ticker: "RKLB", name: "ROCKET LAB CORP" });
 	const idInGrouping = new FinancialIdentifier({ isin: "US7731221062", ticker: "RKLB", name: null });
-	const events: FinancialEvents = {
+	const events = new FinancialEvents({
 		groupings: [makeGrouping(idInGrouping, [makeTrade("t1", idInGrouping, 5.0, "2024-01-01")])],
 		identifierRelationships: [
 			new IdentifierRelationship({
@@ -215,7 +215,7 @@ Deno.test("same ISIN different ticker matches rename chain", () => {
 				effectiveDate: makeDate("2024-06-01"),
 			}),
 		],
-	};
+	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.RENAME]);
 	assertEquals(result.groupings.length, 1);
@@ -236,10 +236,10 @@ Deno.test("apply split scales trades before effective date and merges into to", 
 		quantityBefore: 4.0,
 		quantityAfter: 40.0,
 	});
-	const events: FinancialEvents = {
+	const events = new FinancialEvents({
 		groupings: [makeGrouping(idFrom, [makeTrade("t1", idFrom, 4.0, "2024-09-01")])],
 		identifierRelationships: [rel],
-	};
+	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.SPLIT]);
 	assertEquals(result.groupings.length, 1);
@@ -268,10 +268,10 @@ Deno.test("apply split scales underlying trade price", () => {
 		quantityBefore: 1.0,
 		quantityAfter: 10.0,
 	});
-	const events: FinancialEvents = {
+	const events = new FinancialEvents({
 		groupings: [makeGrouping(idFrom, [makeTrade("t1", idFrom, 1.0, "2024-09-01", 100.0)])],
 		identifierRelationships: [rel],
-	};
+	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.SPLIT]);
 	assertEquals(result.groupings.length, 1);
@@ -291,10 +291,10 @@ Deno.test("apply split does not scale trades on or after effective date", () => 
 		quantityBefore: 1.0,
 		quantityAfter: 10.0,
 	});
-	const events: FinancialEvents = {
+	const events = new FinancialEvents({
 		groupings: [makeGrouping(idFrom, [makeTrade("t1", idFrom, 5.0, "2024-10-15")])],
 		identifierRelationships: [rel],
-	};
+	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.SPLIT]);
 	assertEquals(result.groupings.length, 1);
@@ -331,7 +331,7 @@ Deno.test("apply split scales lots before effective date", () => {
 		exchangedMoney: makeMonetary(-2.0, 10.0),
 		provenance: [],
 	});
-	const lot: TaxLotStock = {
+	const lot = new TaxLot({
 		id: "lot1",
 		financialIdentifier: idFrom,
 		quantity: 2.0,
@@ -339,11 +339,11 @@ Deno.test("apply split scales lots before effective date", () => {
 		sold,
 		shortLongType: GenericShortLong.LONG,
 		provenance: [],
-	};
-	const events: FinancialEvents = {
+	});
+	const events = new FinancialEvents({
 		groupings: [makeGrouping(idFrom, [], [lot])],
 		identifierRelationships: [rel],
-	};
+	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.SPLIT]);
 	assertEquals(result.groupings.length, 1);
@@ -366,10 +366,10 @@ Deno.test("apply reverse split scales by ratio", () => {
 		quantityBefore: 10.0,
 		quantityAfter: 1.0,
 	});
-	const events: FinancialEvents = {
+	const events = new FinancialEvents({
 		groupings: [makeGrouping(idFrom, [makeTrade("t1", idFrom, 10.0, "2024-09-01")])],
 		identifierRelationships: [rel],
-	};
+	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.REVERSE_SPLIT]);
 	assertEquals(result.groupings.length, 1);
@@ -389,13 +389,13 @@ Deno.test("apply split merges from into existing to grouping", () => {
 		quantityBefore: 1.0,
 		quantityAfter: 10.0,
 	});
-	const events: FinancialEvents = {
+	const events = new FinancialEvents({
 		groupings: [
 			makeGrouping(idFrom, [makeTrade("t1", idFrom, 1.0, "2024-09-01")]),
 			makeGrouping(idTo, [makeTrade("t2", idTo, 5.0, "2024-10-15")]),
 		],
 		identifierRelationships: [rel],
-	};
+	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.SPLIT]);
 	assertEquals(result.groupings.length, 1);

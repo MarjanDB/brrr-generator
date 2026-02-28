@@ -3,9 +3,10 @@ import {
 	StagingIdentifierRelationship,
 	StagingIdentifierRelationshipPartial,
 	StagingIdentifierRelationshipPartialWithQuantity,
+	StagingIdentifierRelationships,
 	type StagingIdentifierRelationshipSplit,
 } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
-import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents.ts";
+import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents.ts";
 import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier.ts";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution.ts";
 import { assertEquals } from "@std/assert";
@@ -123,9 +124,9 @@ Deno.test("empty partials returns empty", () => {
 Deno.test("preserves existing full relationships", () => {
 	const fromId = new StagingFinancialIdentifier({ isin: "US111", ticker: "A", name: "A" });
 	const toId = new StagingFinancialIdentifier({ isin: "US222", ticker: "B", name: "B" });
-	const events: StagingFinancialEvents = {
+	const events = new StagingFinancialEvents({
 		groupings: [],
-		identifierRelationships: {
+		identifierRelationships: new StagingIdentifierRelationships({
 			relationships: [
 				new StagingIdentifierRelationship({
 					fromIdentifier: fromId,
@@ -135,8 +136,8 @@ Deno.test("preserves existing full relationships", () => {
 				}),
 			],
 			partialRelationships: [],
-		},
-	};
+		}),
+	});
 	const result = new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(events);
 	assertEquals(result.identifierRelationships.relationships.length, 1);
 	assertEquals(result.identifierRelationships.relationships[0].fromIdentifier.getIsin(), "US111");

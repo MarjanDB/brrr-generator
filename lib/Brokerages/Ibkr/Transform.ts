@@ -13,6 +13,7 @@ import {
 	GenericCategory,
 	GenericDerivativeReportItemGainType,
 	GenericDividendType,
+	GenericMonetaryExchangeInformation,
 	GenericShortLong,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats.ts";
@@ -26,16 +27,16 @@ import {
 	StagingTradeEventStockAcquired,
 	StagingTradeEventStockSold,
 } from "@brrr/Core/Schemas/Staging/Events.ts";
-import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping.ts";
+import { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping.ts";
 import {
 	StagingIdentifierChangeType,
 	StagingIdentifierRelationshipPartial,
 	type StagingIdentifierRelationshipPartialAny,
 	StagingIdentifierRelationshipPartialWithQuantity,
-	type StagingIdentifierRelationships,
+	StagingIdentifierRelationships,
 } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
-import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots.ts";
-import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents.ts";
+import { StagingTaxLot, StagingTaxLotMatchingDetails } from "@brrr/Core/Schemas/Staging/Lots.ts";
+import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents.ts";
 import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier.ts";
 
 type AnyEvent = { financialIdentifier: StagingFinancialIdentifier };
@@ -92,7 +93,7 @@ export class IbkrTransformService {
 					dividendsMap.get(key)
 			)!.identifier;
 
-			groupings.push({
+			groupings.push(new StagingFinancialGrouping({
 				financialIdentifier: identifier,
 				countryOfOrigin: null,
 				underlyingCategory: GenericCategory.REGULAR,
@@ -102,16 +103,16 @@ export class IbkrTransformService {
 					(derivativesMap.get(key)?.items ?? []) as (StagingTradeEventDerivativeAcquired | StagingTradeEventDerivativeSold)[],
 				derivativeTaxLots: derivativeLotsMap.get(key)?.items ?? [],
 				cashTransactions: dividendsMap.get(key)?.items ?? [],
-			});
+			}));
 		}
 
 		const partials = this._convertCorporateActionsToPartialRelationships(segmented.corporateActions);
-		const identifierRelationships: StagingIdentifierRelationships = {
+		const identifierRelationships = new StagingIdentifierRelationships({
 			relationships: [],
 			partialRelationships: partials,
-		};
+		});
 
-		return { groupings, identifierRelationships };
+		return new StagingFinancialEvents({ groupings, identifierRelationships });
 	}
 
 	private _convertToCashTransactions(cashTransactions: TransactionCash[]) {
@@ -126,7 +127,7 @@ export class IbkrTransformService {
 			if (isBonusDividend) dividendType = GenericDividendType.BONUS;
 
 			const financialIdentifier = new StagingFinancialIdentifier({ isin: transaction.isin, ticker: transaction.symbol });
-			const exchangedMoney = {
+			const exchangedMoney = new GenericMonetaryExchangeInformation({
 				underlyingQuantity: 1,
 				underlyingTradePrice: transaction.amount * transaction.fxRateToBase,
 				underlyingCurrency: transaction.currency,
@@ -135,7 +136,7 @@ export class IbkrTransformService {
 				taxCurrency: transaction.currency,
 				taxTotal: 0,
 				fxRateToBase: transaction.fxRateToBase,
-			};
+			});
 			const base = {
 				id: transaction.transactionID,
 				financialIdentifier,
@@ -171,7 +172,7 @@ export class IbkrTransformService {
 	private _convertStockTradesToEvents(trades: TradeStock[]) {
 		return trades.map((trade) => {
 			const financialIdentifier = new StagingFinancialIdentifier({ isin: trade.isin, ticker: trade.symbol });
-			const exchangedMoney = {
+			const exchangedMoney = new GenericMonetaryExchangeInformation({
 				underlyingCurrency: trade.currency,
 				underlyingQuantity: trade.quantity,
 				underlyingTradePrice: trade.tradePrice * trade.fxRateToBase,
@@ -180,7 +181,7 @@ export class IbkrTransformService {
 				taxCurrency: trade.currency,
 				taxTotal: trade.taxes,
 				fxRateToBase: trade.fxRateToBase,
-			};
+			});
 			const base = {
 				id: trade.transactionID,
 				financialIdentifier,
@@ -198,12 +199,12 @@ export class IbkrTransformService {
 	}
 
 	private _convertStockLotsToEvents(lots: LotStock[]): StagingTaxLot[] {
-		return lots.map((lot) => ({
+		return lots.map((lot) => new StagingTaxLot({
 			id: lot.transactionID,
 			financialIdentifier: new StagingFinancialIdentifier({ isin: lot.isin, ticker: lot.symbol }),
 			quantity: lot.quantity,
-			acquired: { id: lot.transactionID, dateTime: null },
-			sold: { id: null, dateTime: lot.dateTime },
+			acquired: new StagingTaxLotMatchingDetails({ id: lot.transactionID, dateTime: null }),
+			sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
 			shortLongType: GenericShortLong.LONG,
 		}));
 	}
@@ -215,7 +216,7 @@ export class IbkrTransformService {
 				ticker: trade.symbol,
 				name: trade.description,
 			});
-			const exchangedMoney = {
+			const exchangedMoney = new GenericMonetaryExchangeInformation({
 				underlyingCurrency: trade.currency,
 				underlyingQuantity: trade.quantity,
 				underlyingTradePrice: trade.tradePrice * trade.fxRateToBase,
@@ -224,7 +225,7 @@ export class IbkrTransformService {
 				taxCurrency: trade.currency,
 				taxTotal: trade.taxes,
 				fxRateToBase: trade.fxRateToBase,
-			};
+			});
 			const base = {
 				id: trade.transactionID,
 				financialIdentifier,
@@ -242,7 +243,7 @@ export class IbkrTransformService {
 	}
 
 	private _convertDerivativeLotsToEvents(lots: LotDerivative[]): StagingTaxLot[] {
-		return lots.map((lot) => ({
+		return lots.map((lot) => new StagingTaxLot({
 			id: lot.transactionID,
 			financialIdentifier: new StagingFinancialIdentifier({
 				isin: lot.underlyingSecurityID,
@@ -250,8 +251,8 @@ export class IbkrTransformService {
 				name: lot.description,
 			}),
 			quantity: lot.quantity,
-			acquired: { id: lot.transactionID, dateTime: null },
-			sold: { id: null, dateTime: lot.dateTime },
+			acquired: new StagingTaxLotMatchingDetails({ id: lot.transactionID, dateTime: null }),
+			sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
 			shortLongType: GenericShortLong.LONG,
 		}));
 	}

@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats.ts";
 import { TradeEventDerivativeAcquired, type TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events.ts";
-import type { TaxLotDerivative } from "@brrr/Core/Schemas/Lots.ts";
+import { TaxLot, type TaxLotDerivative } from "@brrr/Core/Schemas/Lots.ts";
 import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots.ts";
 
 function findById<T extends { id: string }>(id: string, items: T[]): T {
@@ -36,7 +36,7 @@ export function processDerivativeLot(
 		throw new Error(`LookupError: Failed to match derivative lot (ID: ${input.id})`);
 	}
 
-	return {
+	return new TaxLot({
 		id: input.id,
 		financialIdentifier: FinancialIdentifier.fromStagingIdentifier(input.financialIdentifier),
 		quantity: input.quantity,
@@ -44,5 +44,5 @@ export function processDerivativeLot(
 		sold: matchingSell,
 		shortLongType: GenericShortLong.LONG,
 		provenance: [],
-	};
+	});
 }

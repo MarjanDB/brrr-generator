@@ -62,19 +62,36 @@ export enum GenericDerivativeReportItemGainType {
 	OTHER = "OTHER",
 }
 
-export type GenericMonetaryExchangeInformation = {
-	underlyingCurrency: string;
-	underlyingQuantity: number;
-	underlyingTradePrice: number;
+export class GenericMonetaryExchangeInformation {
+	public readonly underlyingCurrency: string;
+	public readonly underlyingQuantity: number;
+	public readonly underlyingTradePrice: number;
+	public readonly comissionCurrency: string;
+	public readonly comissionTotal: number;
+	public readonly taxCurrency: string;
+	public readonly taxTotal: number;
+	public readonly fxRateToBase: number;
 
-	comissionCurrency: string;
-	comissionTotal: number;
-
-	taxCurrency: string;
-	taxTotal: number;
-
-	fxRateToBase: number;
-};
+	constructor(args: {
+		underlyingCurrency: string;
+		underlyingQuantity: number;
+		underlyingTradePrice: number;
+		comissionCurrency: string;
+		comissionTotal: number;
+		taxCurrency: string;
+		taxTotal: number;
+		fxRateToBase: number;
+	}) {
+		this.underlyingCurrency = args.underlyingCurrency;
+		this.underlyingQuantity = args.underlyingQuantity;
+		this.underlyingTradePrice = args.underlyingTradePrice;
+		this.comissionCurrency = args.comissionCurrency;
+		this.comissionTotal = args.comissionTotal;
+		this.taxCurrency = args.taxCurrency;
+		this.taxTotal = args.taxTotal;
+		this.fxRateToBase = args.fxRateToBase;
+	}
+}
 
 // https://www.racunovodstvo.net/zakonodaja/zdoh/90-clen
 export enum GenericDividendType {

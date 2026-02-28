@@ -1,7 +1,7 @@
 import type { DateTime } from "luxon";
 import { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats.ts";
 import type { TradeEvent } from "@brrr/Core/Schemas/Events.ts";
-import type { TaxLot } from "@brrr/Core/Schemas/Lots.ts";
+import { TaxLot } from "@brrr/Core/Schemas/Lots.ts";
 import type { Lot } from "@brrr/Core/LotMatching/Lot.ts";
 import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod.ts";
 import type { Trade } from "@brrr/Core/LotMatching/Trade.ts";
@@ -66,7 +66,7 @@ export class LotMatcher {
 
 		const convertedLots: TaxLot<TradeEvent, TradeEvent>[] = generatedLotsWithTradeEvents.map((lotWithEvents) => {
 			const lotId = lotWithEvents.lot.acquired.relation.id;
-			return {
+			return new TaxLot<TradeEvent, TradeEvent>({
 				id: lotId,
 				financialIdentifier: lotWithEvents.acquiredTrade.financialIdentifier,
 				quantity: lotWithEvents.lot.quantity,
@@ -74,7 +74,7 @@ export class LotMatcher {
 				sold: lotWithEvents.soldTrade,
 				shortLongType: GenericShortLong.LONG,
 				provenance: [],
-			} as TaxLot<TradeEvent, TradeEvent>;
+			});
 		});
 
 		const buys = generatedLotsWithTradeEvents.map((l) => l.acquiredTrade);
