@@ -2,6 +2,7 @@ import type { DateTime } from "luxon";
 import type { CompanyLookupProvider, CountryLookupProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
 import { TreatyType } from "@brrr/InfoProviders/InfoLookupProvider.ts";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
+import { GenericDividendType } from "@brrr/Core/Schemas/CommonFormats.ts";
 import {
 	TradeEventCashTransactionDividend,
 	TradeEventCashTransactionPaymentInLieuOfDividend,
@@ -10,7 +11,17 @@ import {
 	type TransactionCash,
 } from "@brrr/Core/Schemas/Events.ts";
 import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
-import { type EDavkiDividendReportLine, EDavkiDividendType } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
+import { EDavkiDividendReportLine, EDavkiDividendType } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
+
+const DIVIDEND_TYPE_MAPPINGS: Record<GenericDividendType, EDavkiDividendType> = {
+	[GenericDividendType.UNKNOWN]: EDavkiDividendType.UNKNOWN,
+	[GenericDividendType.ORDINARY]: EDavkiDividendType.ORDINARY,
+	[GenericDividendType.CONSTRUCTIVE]: EDavkiDividendType.CONSTRUCTIVE,
+	[GenericDividendType.LIQUIDATING]: EDavkiDividendType.LIQUIDATING,
+	[GenericDividendType.OTHER]: EDavkiDividendType.OTHER,
+	[GenericDividendType.OTHER_2]: EDavkiDividendType.OTHER,
+	[GenericDividendType.BONUS]: EDavkiDividendType.OTHER,
+};
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/XmlDohDiv.ts";
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/CsvDohDiv.ts";
 
@@ -33,14 +44,14 @@ function processEdavkiLineItemsFromCashTransactions(
 	for (const dividend of dividendLines) {
 		const actionId = dividend.actionId;
 
-		const thisDividendLine: EDavkiDividendReportLine = {
+		const thisDividendLine = new EDavkiDividendReportLine({
 			dateReceived: dividend.date,
 			taxNumberForDividendPayer: "",
 			dividendPayerIdentificationNumber: dividend.financialIdentifier.getIsin() ?? "",
 			dividendPayerTitle: "",
 			dividendPayerAddress: "",
 			dividendPayerCountryOfOrigin: "",
-			dividendType: (dividend.dividendType as unknown as EDavkiDividendType) ?? EDavkiDividendType.UNKNOWN,
+			dividendType: DIVIDEND_TYPE_MAPPINGS[dividend.dividendType] ?? EDavkiDividendType.UNKNOWN,
 			countryOfOrigin: "",
 			dividendIdentifierForTracking: actionId,
 			taxReliefParagraphInInternationalTreaty: "",
@@ -50,7 +61,7 @@ function processEdavkiLineItemsFromCashTransactions(
 				(1 / dividend.exchangedMoney.fxRateToBase),
 			foreignTaxPaid: dividend.exchangedMoney.taxTotal,
 			foreignTaxPaidInOriginalCurrency: dividend.exchangedMoney.taxTotal * (1 / dividend.exchangedMoney.fxRateToBase),
-		};
+		});
 
 		const existing = actionToDividendMapping.get(actionId);
 		if (existing === undefined) {
@@ -112,7 +123,7 @@ function mergeDividendsReceivedOnSameDayForSingleIsin(
 
 		const combinedTracking = dividendList.map((d) => d.dividendIdentifierForTracking).join("-");
 
-		const generatedMerged: EDavkiDividendReportLine = {
+		const generatedMerged = new EDavkiDividendReportLine({
 			dateReceived: dividendList[0].dateReceived,
 			taxNumberForDividendPayer: dividendList[0].taxNumberForDividendPayer,
 			dividendPayerIdentificationNumber: dividendList[0].dividendPayerIdentificationNumber,
@@ -127,7 +138,7 @@ function mergeDividendsReceivedOnSameDayForSingleIsin(
 			dividendAmountInOriginalCurrency: combinedTotalInOriginalCurrency,
 			foreignTaxPaid: combinedTotalTax,
 			foreignTaxPaidInOriginalCurrency: combinedTotalTaxInOriginalCurrency,
-		};
+		});
 
 		mergedDividends.push(generatedMerged);
 	}

@@ -14,6 +14,9 @@ export { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship.
 // Info providers
 export { CompanyLookupProvider, CountryLookupProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
 
+// Tax authority — interface
+export type { ITaxAuthorityProvider } from "@brrr/TaxAuthorities/TaxAuthorityProvider.ts";
+
 // Tax authority — configuration
 export { TaxAuthorityLotMatchingMethod, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 export type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";

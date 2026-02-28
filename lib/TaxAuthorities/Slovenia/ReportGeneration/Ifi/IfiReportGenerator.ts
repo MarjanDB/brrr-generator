@@ -10,10 +10,10 @@ import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Configuratio
 import {
 	EDavkiDerivativeReportGainType,
 	EDavkiDerivativeReportItemType,
-	type EDavkiDerivativeReportSecurityLineGenericEventBought,
-	type EDavkiDerivativeReportSecurityLineGenericEventSold,
+	EDavkiDerivativeReportSecurityLineGenericEventBought,
+	EDavkiDerivativeReportSecurityLineGenericEventSold,
 	EDavkiDerivativeSecurityType,
-	type EDavkiGenericDerivativeReportItem,
+	EDavkiGenericDerivativeReportItem,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/XmlDIfi.ts";
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/CsvDIfi.ts";
@@ -30,8 +30,7 @@ const GAIN_MAPPINGS: Record<string, EDavkiDerivativeReportGainType> = {
 };
 
 function convertBuy(line: TradeEventDerivativeAcquired): EDavkiDerivativeReportSecurityLineGenericEventBought {
-	return {
-		kind: "DerivativeBought",
+	return new EDavkiDerivativeReportSecurityLineGenericEventBought({
 		boughtOn: line.date,
 		gainType: GAIN_MAPPINGS[line.acquiredReason] ?? EDavkiDerivativeReportGainType.OTHER,
 		quantity: line.exchangedMoney.underlyingQuantity,
@@ -45,12 +44,11 @@ function convertBuy(line: TradeEventDerivativeAcquired): EDavkiDerivativeReportS
 		commissions: line.exchangedMoney.comissionTotal,
 		commissionsInOriginalCurrency: line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
 		leveraged: false,
-	};
+	});
 }
 
 function convertSell(line: TradeEventDerivativeSold): EDavkiDerivativeReportSecurityLineGenericEventSold {
-	return {
-		kind: "DerivativeSold",
+	return new EDavkiDerivativeReportSecurityLineGenericEventSold({
 		soldOn: line.date,
 		quantity: line.exchangedMoney.underlyingQuantity,
 		pricePerUnit: line.exchangedMoney.underlyingTradePrice * line.multiplier,
@@ -63,7 +61,7 @@ function convertSell(line: TradeEventDerivativeSold): EDavkiDerivativeReportSecu
 		commissions: line.exchangedMoney.comissionTotal,
 		commissionsInOriginalCurrency: line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
 		leveraged: false,
-	};
+	});
 }
 
 export class IfiReportGenerator {
@@ -104,7 +102,7 @@ export class IfiReportGenerator {
 
 				const convertedLines = allLines.map((line) => {
 					if (line instanceof TradeEventDerivativeAcquired) return convertBuy(line);
-					return convertSell(line as TradeEventDerivativeSold);
+					return convertSell(line);
 				});
 
 				const foreignTaxPaidSum = allLines.reduce((sum, e) => sum + (e.exchangedMoney.taxTotal ?? 0), 0);
@@ -115,7 +113,7 @@ export class IfiReportGenerator {
 					hasForeignTax = false;
 				}
 
-				const isinEntry: EDavkiGenericDerivativeReportItem = {
+				const isinEntry = new EDavkiGenericDerivativeReportItem({
 					inventoryListType: EDavkiDerivativeSecurityType.OPTION_OR_CERTIFICATE,
 					itemType: EDavkiDerivativeReportItemType.DERIVATIVE,
 					code: derivativeGrouping.financialIdentifier.getTicker(),
@@ -126,7 +124,7 @@ export class IfiReportGenerator {
 					ftCountryId: null,
 					ftCountryName: null,
 					items: convertedLines,
-				};
+				});
 
 				converted.push(isinEntry);
 			}

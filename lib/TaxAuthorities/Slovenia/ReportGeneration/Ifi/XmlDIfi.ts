@@ -2,6 +2,7 @@ import { XMLBuilder } from "fast-xml-parser";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import {
 	EDavkiDerivativeReportItemType,
+	EDavkiDerivativeReportSecurityLineGenericEventBought,
 	EDavkiDerivativeSecurityType,
 	EDavkiDerivativeSecurityTypeName,
 	type EDavkiGenericDerivativeReportItem,
@@ -54,7 +55,7 @@ export function generateXmlReport(
 
 		if (ifiItem.itemType === EDavkiDerivativeReportItemType.DERIVATIVE) {
 			const tSubItemNodes = ifiItem.items.map((entryLine) => {
-				if (entryLine.kind === "DerivativeBought") {
+				if (entryLine instanceof EDavkiDerivativeReportSecurityLineGenericEventBought) {
 					return {
 						Purchase: {
 							F1: entryLine.boughtOn.toFormat("yyyy-MM-dd"),

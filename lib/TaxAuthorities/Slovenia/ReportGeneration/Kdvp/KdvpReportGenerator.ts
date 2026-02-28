@@ -9,11 +9,11 @@ import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthoriti
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import type { EDavkiDocumentWorkflowType } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes.ts";
 import {
-	type EDavkiGenericTradeReportItem,
+	EDavkiGenericTradeReportItem,
 	EDavkiTradeReportGainType,
-	type EDavkiTradeReportSecurityLineEvent,
-	type EDavkiTradeReportSecurityLineGenericEventBought,
-	type EDavkiTradeReportSecurityLineGenericEventSold,
+	EDavkiTradeReportSecurityLineEvent,
+	EDavkiTradeReportSecurityLineGenericEventBought,
+	EDavkiTradeReportSecurityLineGenericEventSold,
 	EDavkiTradeSecurityType,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/XmlDohKdvp.ts";
@@ -32,8 +32,7 @@ const GAIN_MAPPINGS: Record<string, EDavkiTradeReportGainType> = {
 };
 
 function convertStockBuy(line: TradeEventStockAcquired): EDavkiTradeReportSecurityLineGenericEventBought {
-	return {
-		kind: "Bought",
+	return new EDavkiTradeReportSecurityLineGenericEventBought({
 		boughtOn: line.date,
 		gainType: GAIN_MAPPINGS[line.acquiredReason] ?? EDavkiTradeReportGainType.OTHER,
 		quantity: line.exchangedMoney.underlyingQuantity,
@@ -46,12 +45,11 @@ function convertStockBuy(line: TradeEventStockAcquired): EDavkiTradeReportSecuri
 		commissionsInOriginalCurrency: line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
 		inheritanceAndGiftTaxPaid: null,
 		baseTaxReduction: null,
-	};
+	});
 }
 
 function convertStockSell(line: TradeEventStockSold): EDavkiTradeReportSecurityLineGenericEventSold {
-	return {
-		kind: "Sold",
+	return new EDavkiTradeReportSecurityLineGenericEventSold({
 		soldOn: line.date,
 		quantity: line.exchangedMoney.underlyingQuantity,
 		pricePerUnit: line.exchangedMoney.underlyingTradePrice,
@@ -62,7 +60,7 @@ function convertStockSell(line: TradeEventStockSold): EDavkiTradeReportSecurityL
 		commissions: line.exchangedMoney.comissionTotal,
 		commissionsInOriginalCurrency: line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
 		satisfiesTaxBasisReduction: false,
-	};
+	});
 }
 
 export class KdvpReportGenerator {
@@ -111,7 +109,7 @@ export class KdvpReportGenerator {
 
 			const tickerSymbols = allLines.map((line) => line.financialIdentifier.getTicker()).pop() ?? null;
 
-			const reportItem: EDavkiTradeReportSecurityLineEvent = {
+			const reportItem = new EDavkiTradeReportSecurityLineEvent({
 				isin: isin ?? "",
 				code: tickerSymbols,
 				name: null,
@@ -119,7 +117,7 @@ export class KdvpReportGenerator {
 				resolution: null,
 				resolutionDate: null,
 				events: convertedLines,
-			};
+			});
 
 			const foreignTaxPaidSum = allLines.reduce((sum, e) => sum + (e.exchangedMoney.taxTotal ?? 0), 0);
 			let foreignTaxPaid: number | null = foreignTaxPaidSum;
@@ -129,7 +127,7 @@ export class KdvpReportGenerator {
 				hasForeignTax = false;
 			}
 
-			const isinEntry: EDavkiGenericTradeReportItem = {
+			const isinEntry = new EDavkiGenericTradeReportItem({
 				itemId: null,
 				inventoryListType: EDavkiTradeSecurityType.SECURITY,
 				name: null,
@@ -141,7 +139,7 @@ export class KdvpReportGenerator {
 				foreignTransfer: null,
 				taxDecreaseConformance: false,
 				items: [reportItem],
-			};
+			});
 
 			converted.push(isinEntry);
 		}

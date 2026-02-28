@@ -4,8 +4,7 @@ import type { TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts
 import type { EDavkiDocumentWorkflowType } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes.ts";
 import {
 	type EDavkiGenericTradeReportItem,
-	type EDavkiTradeReportSecurityLineGenericEventBought,
-	type EDavkiTradeReportSecurityLineGenericEventSold,
+	EDavkiTradeReportSecurityLineGenericEventBought,
 	EDavkiTradeSecurityType,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
 
@@ -22,28 +21,26 @@ function buildXmlTree(
 		const securitiesNodes = kdvpItem.inventoryListType === EDavkiTradeSecurityType.SECURITY
 			? kdvpItem.items.map((secEntry) => {
 				const rowNodes = secEntry.events.map((entryLine, id) => {
-					if (entryLine.kind === "Bought") {
-						const bought = entryLine as EDavkiTradeReportSecurityLineGenericEventBought;
+					if (entryLine instanceof EDavkiTradeReportSecurityLineGenericEventBought) {
 						const purchaseFields: Record<string, string> = {
-							F1: bought.boughtOn.toFormat("yyyy-MM-dd"),
-							F2: bought.gainType,
-							F3: String(round(bought.quantity, 5)),
-							F4: String(round(bought.pricePerUnit, 5)),
-							F5: String(round(bought.inheritanceAndGiftTaxPaid ?? 0, 5)),
+							F1: entryLine.boughtOn.toFormat("yyyy-MM-dd"),
+							F2: entryLine.gainType,
+							F3: String(round(entryLine.quantity, 5)),
+							F4: String(round(entryLine.pricePerUnit, 5)),
+							F5: String(round(entryLine.inheritanceAndGiftTaxPaid ?? 0, 5)),
 						};
-						if (bought.baseTaxReduction !== null) {
-							purchaseFields["F11"] = String(round(bought.baseTaxReduction, 5));
+						if (entryLine.baseTaxReduction !== null) {
+							purchaseFields["F11"] = String(round(entryLine.baseTaxReduction, 5));
 						}
 						return { ID: String(id), Purchase: purchaseFields };
 					} else {
-						const sold = entryLine as EDavkiTradeReportSecurityLineGenericEventSold;
 						return {
 							ID: String(id),
 							Sale: {
-								F6: sold.soldOn.toFormat("yyyy-MM-dd"),
-								F7: String(round(-sold.quantity, 5)),
-								F9: String(round(Math.abs(sold.pricePerUnit), 5)),
-								F10: String(sold.satisfiesTaxBasisReduction).toLowerCase(),
+								F6: entryLine.soldOn.toFormat("yyyy-MM-dd"),
+								F7: String(round(-entryLine.quantity, 5)),
+								F9: String(round(Math.abs(entryLine.pricePerUnit), 5)),
+								F10: String(entryLine.satisfiesTaxBasisReduction).toLowerCase(),
 							},
 						};
 					}
