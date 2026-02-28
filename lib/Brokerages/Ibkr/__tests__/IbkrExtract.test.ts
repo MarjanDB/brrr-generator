@@ -1,5 +1,5 @@
 import { BuyOrSell, CashTransactionType } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas.ts";
-import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Transforms/Extract.ts";
+import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract.ts";
 import { assertEquals } from "@std/assert";
 import path from "node:path";
 

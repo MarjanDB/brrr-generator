@@ -1,7 +1,7 @@
-import type { Container } from "inversify";
 import { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider.ts";
-import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Transforms/Extract.ts";
-import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transforms/Transform.ts";
+import type { Container } from "inversify";
+import { IbkrExtractService } from "./Extract.ts";
+import { IbkrTransformService } from "./Transform.ts";
 
 export function loadIbkrModule(container: Container): void {
 	container.bind(IbkrExtractService).toResolvedValue(() => new IbkrExtractService()).inSingletonScope();

@@ -12,6 +12,7 @@
 		"fast-xml-parser": "npm:fast-xml-parser@^5.4.1",
 		"inversify": "npm:inversify@^7.11.0",
 		"luxon": "npm:luxon@^3.7.2",
-		"@types/luxon": "npm:@types/luxon@^3.7.1"
+		"@types/luxon": "npm:@types/luxon@^3.7.1",
+		"zod": "npm:zod@^4.3.6"
 	}
 }

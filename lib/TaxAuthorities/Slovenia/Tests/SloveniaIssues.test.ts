@@ -1,8 +1,8 @@
 import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 import { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider.ts";
-import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Transforms/Extract.ts";
-import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transforms/Transform.ts";
+import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract.ts";
+import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform.ts";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor.ts";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";

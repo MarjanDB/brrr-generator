@@ -1,5 +1,5 @@
-import type { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Transforms/Extract.ts";
-import type { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transforms/Transform.ts";
+import type { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract.ts";
+import type { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform.ts";
 import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents.ts";
 
 export class IbkrBrokerageExportProvider {

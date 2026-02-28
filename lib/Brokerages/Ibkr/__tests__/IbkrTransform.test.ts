@@ -1,4 +1,4 @@
-import type { CorporateAction, LotStock, TradeStock, TransactionCash } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas.ts";
+import { type CorporateAction, type LotStock, type TradeStock, type TransactionCash } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas.ts";
 import {
 	AssetClass,
 	BuyOrSell,
@@ -12,7 +12,7 @@ import {
 	TransactionType,
 } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas.ts";
 import type { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades.ts";
-import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transforms/Transform.ts";
+import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform.ts";
 import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution.ts";
 import {
@@ -23,11 +23,12 @@ import {
 } from "@brrr/Core/Schemas/Staging/Events.ts";
 import { assertEquals, assertInstanceOf } from "@std/assert";
 import { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 
 const service = new IbkrTransformService();
 
-function makeDate(iso: string) {
-	return DateTime.fromISO(iso)!;
+function makeDate(iso: string): ValidDateTime {
+	return DateTime.fromISO(iso) as ValidDateTime;
 }
 
 function makeEmptySegmented(overrides: Partial<SegmentedTrades>): SegmentedTrades {
@@ -86,7 +87,7 @@ const simpleTradeBuy: TradeStock = {
 	changeInPrice: 0,
 	changeInQuantity: 2,
 	orderType: OrderType.LIMIT,
-	accruedInterest: 0,
+	accruedInt: 0,
 };
 
 const simpleTradeSell: TradeStock = {

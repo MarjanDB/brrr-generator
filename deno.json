@@ -4,7 +4,7 @@
 		"test": "deno test --allow-read",
 		"fmt": "deno fmt",
 		"lint": "deno lint",
-		"type-check": "deno check lib/**/*.ts"
+		"typecheck": "deno check lib/**/*.ts"
 	},
 	"fmt": {
 		"indentWidth": 4,

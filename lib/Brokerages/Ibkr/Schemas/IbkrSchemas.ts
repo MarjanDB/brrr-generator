@@ -1,4 +1,6 @@
-import type { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
+import { DateTime } from "luxon";
+import { z } from "zod/v4";
 
 export enum AssetClass {
 	STOCK = "STK",
@@ -133,246 +135,424 @@ export enum CashTransactionType {
 	PAYMENT_IN_LIEU_OF_DIVIDENDS = "Payment In Lieu Of Dividends",
 }
 
-export type TradeStock = {
-	clientAccountID: string;
-	currency: string;
-	fxRateToBase: number;
-	assetClass: AssetClass;
-	subCategory: SubCategory;
-	symbol: string;
-	description: string;
-	conid: string;
-	securityID: string;
-	securityIDType: SecurityIDType;
-	cusip: string | null;
-	isin: string;
-	figi: string | null;
-	listingExchange: string;
-	reportDate: DateTime;
-	dateTime: DateTime;
-	tradeDate: DateTime;
-	transactionType: TransactionType;
-	exchange: string;
-	quantity: number;
-	tradePrice: number;
-	tradeMoney: number;
-	proceeds: number;
-	taxes: number;
-	ibCommission: number;
-	ibCommissionCurrency: string;
-	netCash: number;
-	netCashInBase: number | null;
-	closePrice: number;
-	openCloseIndicator: OpenCloseIndicator;
-	notesAndCodes: Codes[];
-	costBasis: number;
-	fifoProfitAndLossRealized: number;
-	capitalGainsProfitAndLoss: number | null;
-	forexProfitAndLoss: number | null;
-	marketToMarketProfitAndLoss: number | null;
-	buyOrSell: BuyOrSell;
-	transactionID: string;
-	orderTime: DateTime;
-	levelOfDetail: LevelOfDetail;
-	changeInPrice: number;
-	changeInQuantity: number;
-	orderType: OrderType;
-	accruedInterest: number;
+// ---------------------------------------------------------------------------
+// Shared primitives
+// ---------------------------------------------------------------------------
+
+const zStrNullable = z.string().transform((s) => s === "" ? null : s);
+const zNumNullable = z.string().transform((s) => s === "" ? null : parseFloat(s));
+
+const _DATE_FORMATS = [
+	"yyyy-MM-dd HH:mm:ss ZZ",
+	"yyyy-MM-dd;HH:mm:ss ZZ",
+	"yyyy-MM-dd",
+	"yyyyMMdd;HHmmss",
+	"yyyyMMdd",
+];
+
+function parseDateString(s: string, ctx: z.RefinementCtx): ValidDateTime {
+	const normalized = s.replace("EDT", "-04:00").replace("EST", "-05:00");
+	for (const fmt of _DATE_FORMATS) {
+		const parsed = DateTime.fromFormat(normalized, fmt);
+		if (parsed.isValid) return parsed as ValidDateTime;
+	}
+	const iso = DateTime.fromISO(normalized);
+	if (iso.isValid) return iso as ValidDateTime;
+	ctx.addIssue({ code: "custom", message: `Could not parse date: ${s}` });
+	return z.NEVER;
+}
+
+const zDateTime = z.string().transform(parseDateString);
+const zDateTimeNullable = z.string().transform((s, ctx): ValidDateTime | null => {
+	if (s === "") return null;
+	return parseDateString(s, ctx);
+});
+
+const zNotes = z.string().transform((s): Codes[] => {
+	if (s === "") return [];
+	return s.split(";").map((code) => code as Codes);
+});
+
+// ---------------------------------------------------------------------------
+// Schemas
+// Raw XML attribute names are used as keys. Where the XML name differs from
+// the domain name, the field is aliased via z.preprocess on the raw input.
+// ---------------------------------------------------------------------------
+
+function remap(raw: unknown, aliases: Record<string, string>): unknown {
+	if (typeof raw !== "object" || raw === null) return raw;
+
+	const result: Record<string, unknown> = { ...raw as Record<string, unknown> };
+	for (const [xmlKey, domainKey] of Object.entries(aliases)) {
+		if (xmlKey in result) {
+			result[domainKey] = result[xmlKey];
+			delete result[xmlKey];
+		}
+	}
+	return result;
+}
+
+// Fields whose XML attribute name differs from the domain field name.
+// All other fields share the same name in XML and the domain type.
+const STOCK_ALIASES: Record<string, string> = {
+	accountId: "clientAccountID",
+	assetCategory: "assetClass",
+	notes: "notesAndCodes",
+	cost: "costBasis",
+	fifoPnlRealized: "fifoProfitAndLossRealized",
+	capitalGainsPnl: "capitalGainsProfitAndLoss",
+	fxPnl: "forexProfitAndLoss",
+	mtmPnl: "marketToMarketProfitAndLoss",
+	buySell: "buyOrSell",
 };
 
-export type LotStock = {
-	clientAccountID: string;
-	currency: string;
-	fxRateToBase: number;
-	assetClass: AssetClass;
-	subCategory: SubCategory;
-	symbol: string;
-	description: string;
-	conid: string;
-	securityID: string;
-	securityIDType: SecurityIDType;
-	cusip: string | null;
-	isin: string;
-	figi: string | null;
-	listingExchange: string;
-	multiplier: number;
-	reportDate: DateTime;
-	dateTime: DateTime;
-	tradeDate: DateTime;
-	exchange: string;
-	quantity: number;
-	tradePrice: number;
-	openCloseIndicator: OpenCloseIndicator;
-	notesAndCodes: Codes[];
-	costBasis: number;
-	fifoProfitAndLossRealized: number;
-	capitalGainsProfitAndLoss: number;
-	forexProfitAndLoss: number;
-	buyOrSell: BuyOrSell;
-	transactionID: string;
-	openDateTime: DateTime;
-	holdingPeriodDateTime: DateTime;
-	levelOfDetail: LevelOfDetail;
+const LOT_ALIASES: Record<string, string> = {
+	accountId: "clientAccountID",
+	assetCategory: "assetClass",
+	notes: "notesAndCodes",
+	cost: "costBasis",
+	fifoPnlRealized: "fifoProfitAndLossRealized",
+	capitalGainsPnl: "capitalGainsProfitAndLoss",
+	fxPnl: "forexProfitAndLoss",
+	buySell: "buyOrSell",
 };
 
-export type TradeDerivative = {
-	clientAccountID: string;
-	currency: string;
-	fxRateToBase: number;
-	assetClass: AssetClass;
-	subCategory: SubCategory;
-	symbol: string;
-	description: string;
-	conid: string;
-	figi: string | null;
-	listingExchange: string;
-	underlyingConid: string;
-	underlyingSymbol: string;
-	underlyingSecurityID: string;
-	underlyingListingExchange: string;
-	tradeID: string;
-	multiplier: number;
-	strike: number;
-	reportDate: DateTime;
-	expiry: DateTime;
-	dateTime: DateTime;
-	putOrCall: PutOrCall;
-	tradeDate: DateTime;
-	settleDateTarget: DateTime;
-	transactionType: TransactionType;
-	exchange: string;
-	quantity: number;
-	tradePrice: number;
-	tradeMoney: number;
-	proceeds: number;
-	taxes: number;
-	ibCommission: number;
-	ibCommissionCurrency: string;
-	netCash: number;
-	netCashInBase: number;
-	closePrice: number;
-	openCloseIndicator: OpenCloseIndicator;
-	notesAndCodes: Codes[];
-	costBasis: number;
-	fifoProfitAndLossRealized: number;
-	capitalGainsProfitAndLoss: number;
-	forexProfitAndLoss: number;
-	marketToMarketProfitAndLoss: number | null;
-	buyOrSell: BuyOrSell;
-	transactionID: string;
-	orderTime: DateTime;
-	levelOfDetail: LevelOfDetail;
-	orderType: OrderType;
+const DERIVATIVE_ALIASES: Record<string, string> = {
+	accountId: "clientAccountID",
+	assetCategory: "assetClass",
+	notes: "notesAndCodes",
+	cost: "costBasis",
+	fifoPnlRealized: "fifoProfitAndLossRealized",
+	capitalGainsPnl: "capitalGainsProfitAndLoss",
+	fxPnl: "forexProfitAndLoss",
+	mtmPnl: "marketToMarketProfitAndLoss",
+	buySell: "buyOrSell",
+	putCall: "putOrCall",
 };
 
-export type LotDerivative = {
-	clientAccountID: string;
-	currency: string;
-	fxRateToBase: number;
-	assetClass: AssetClass;
-	subCategory: SubCategory;
-	symbol: string;
-	description: string;
-	conid: string;
-	figi: string | null;
-	listingExchange: string;
-	underlyingConid: string;
-	underlyingSymbol: string;
-	underlyingSecurityID: string;
-	underlyingListingExchange: string;
-	multiplier: number;
-	strike: number;
-	reportDate: DateTime;
-	expiry: DateTime;
-	dateTime: DateTime;
-	putOrCall: PutOrCall;
-	tradeDate: DateTime;
-	exchange: string;
-	quantity: number;
-	tradePrice: number;
-	openCloseIndicator: OpenCloseIndicator;
-	notesAndCodes: Codes[];
-	costBasis: number;
-	fifoProfitAndLossRealized: number;
-	capitalGainsProfitAndLoss: number;
-	forexProfitAndLoss: number;
-	buyOrSell: BuyOrSell;
-	transactionID: string;
-	openDateTime: DateTime;
-	holdingPeriodDateTime: DateTime;
-	levelOfDetail: LevelOfDetail;
+const CORPORATE_ACTION_ALIASES: Record<string, string> = {
+	accountId: "clientAccountID",
+	acctAlias: "accountAlias",
+	assetCategory: "assetClass",
+	code: "notesAndCodes",
+	fifoPnlRealized: "fifoProfitAndLossRealized",
+	capitalGainsPnl: "capitalGainsProfitAndLoss",
+	fxPnl: "forexProfitAndLoss",
+	mtmPnl: "marketToMarketProfitAndLoss",
+	putCall: "putOrCall",
 };
 
-export type CorporateAction = {
-	clientAccountID: string;
-	accountAlias: string | null;
-	model: Model | null;
-	currency: string;
-	fxRateToBase: number;
-	assetClass: AssetClass;
-	subCategory: SubCategory;
-	symbol: string;
-	description: string;
-	conid: string;
-	securityID: string;
-	securityIDType: SecurityIDType;
-	cusip: string | null;
-	isin: string;
-	figi: string | null;
-	listingExchange: string;
-	underlyingConid: string | null;
-	underlyingSymbol: string | null;
-	underlyingSecurityID: string | null;
-	underlyingListingExchange: string | null;
-	multiplier: number;
-	strike: number | null;
-	expiry: DateTime | null;
-	putOrCall: PutOrCall | null;
-	principalAdjustFactor: number | null;
-	reportDate: DateTime;
-	dateTime: DateTime;
-	actionDescription: string;
-	amount: number;
-	proceeds: number;
-	value: number;
-	quantity: number;
-	fifoProfitAndLossRealized: number;
-	capitalGainsProfitAndLoss: number;
-	forexProfitAndLoss: number;
-	marketToMarketProfitAndLoss: number | null;
-	notesAndCodes: Codes[];
-	type: string;
-	transactionID: string;
-	actionID: string;
-	levelOfDetail: LevelOfDetail;
-	serialNumber: string | null;
-	deliveryType: string | null;
-	commodityType: string | null;
-	fineness: number;
-	weight: number;
+const CASH_ALIASES: Record<string, string> = {
+	accountId: "clientAccountID",
+	assetCategory: "assetClass",
 };
 
-export type TransactionCash = {
-	clientAccountID: string;
-	currency: string;
-	fxRateToBase: number;
-	assetClass: AssetClass;
-	subCategory: SubCategory;
-	symbol: string;
-	description: string;
-	conid: string;
-	securityID: string;
-	securityIDType: SecurityIDType;
-	cusip: string | null;
-	isin: string;
-	figi: string | null;
-	listingExchange: string;
-	dateTime: DateTime;
-	settleDate: DateTime;
-	amount: number;
-	type: CashTransactionType;
-	code: string | null;
-	transactionID: string;
-	reportDate: DateTime;
-	actionID: string;
+// ---------------------------------------------------------------------------
+// TradeStock
+// ---------------------------------------------------------------------------
+
+export const TradeStock = {
+	Schema: z.preprocess(
+		(v) => remap(v, STOCK_ALIASES),
+		z.object({
+			clientAccountID: z.string(),
+			currency: z.string(),
+			fxRateToBase: z.coerce.number(),
+			assetClass: z.enum(AssetClass),
+			subCategory: z.enum(SubCategory),
+			symbol: z.string(),
+			description: z.string(),
+			conid: z.string(),
+			securityID: z.string(),
+			securityIDType: z.enum(SecurityIDType),
+			cusip: zStrNullable,
+			isin: z.string(),
+			figi: zStrNullable,
+			listingExchange: z.string(),
+			reportDate: zDateTime,
+			dateTime: zDateTime,
+			tradeDate: zDateTime,
+			transactionType: z.enum(TransactionType),
+			exchange: z.string(),
+			quantity: z.coerce.number(),
+			tradePrice: z.coerce.number(),
+			tradeMoney: z.coerce.number(),
+			proceeds: z.coerce.number(),
+			taxes: z.coerce.number(),
+			ibCommission: z.coerce.number(),
+			ibCommissionCurrency: z.string(),
+			netCash: z.coerce.number(),
+			netCashInBase: zNumNullable,
+			closePrice: z.coerce.number(),
+			openCloseIndicator: z.enum(OpenCloseIndicator),
+			notesAndCodes: zNotes,
+			costBasis: z.coerce.number(),
+			fifoProfitAndLossRealized: z.coerce.number(),
+			capitalGainsProfitAndLoss: zNumNullable,
+			forexProfitAndLoss: zNumNullable,
+			marketToMarketProfitAndLoss: zNumNullable,
+			buyOrSell: z.enum(BuyOrSell),
+			transactionID: z.string(),
+			orderTime: zDateTime,
+			levelOfDetail: z.enum(LevelOfDetail),
+			changeInPrice: z.coerce.number(),
+			changeInQuantity: z.coerce.number(),
+			orderType: z.enum(OrderType),
+			accruedInt: z.coerce.number(),
+		}),
+	),
 };
+
+export type TradeStock = z.output<typeof TradeStock.Schema>;
+
+// ---------------------------------------------------------------------------
+// LotStock
+// ---------------------------------------------------------------------------
+
+export const LotStock = {
+	Schema: z.preprocess(
+		(v) => remap(v, LOT_ALIASES),
+		z.object({
+			clientAccountID: z.string(),
+			currency: z.string(),
+			fxRateToBase: z.coerce.number(),
+			assetClass: z.enum(AssetClass),
+			subCategory: z.enum(SubCategory),
+			symbol: z.string(),
+			description: z.string(),
+			conid: z.string(),
+			securityID: z.string(),
+			securityIDType: z.enum(SecurityIDType),
+			cusip: zStrNullable,
+			isin: z.string(),
+			figi: zStrNullable,
+			listingExchange: z.string(),
+			multiplier: z.coerce.number(),
+			reportDate: zDateTime,
+			dateTime: zDateTime,
+			tradeDate: zDateTime,
+			exchange: z.string(),
+			quantity: z.coerce.number(),
+			tradePrice: z.coerce.number(),
+			openCloseIndicator: z.enum(OpenCloseIndicator),
+			notesAndCodes: zNotes,
+			costBasis: z.coerce.number(),
+			fifoProfitAndLossRealized: z.coerce.number(),
+			capitalGainsProfitAndLoss: z.coerce.number(),
+			forexProfitAndLoss: z.coerce.number(),
+			buyOrSell: z.enum(BuyOrSell),
+			transactionID: z.string(),
+			openDateTime: zDateTime,
+			holdingPeriodDateTime: zDateTime,
+			levelOfDetail: z.enum(LevelOfDetail),
+		}),
+	),
+};
+
+export type LotStock = z.output<typeof LotStock.Schema>;
+
+// ---------------------------------------------------------------------------
+// TradeDerivative
+// ---------------------------------------------------------------------------
+
+export const TradeDerivative = {
+	Schema: z.preprocess(
+		(v) => remap(v, DERIVATIVE_ALIASES),
+		z.object({
+			clientAccountID: z.string(),
+			currency: z.string(),
+			fxRateToBase: z.coerce.number(),
+			assetClass: z.enum(AssetClass),
+			subCategory: z.enum(SubCategory),
+			symbol: z.string(),
+			description: z.string(),
+			conid: z.string(),
+			figi: zStrNullable,
+			listingExchange: z.string(),
+			underlyingConid: z.string(),
+			underlyingSymbol: z.string(),
+			underlyingSecurityID: z.string(),
+			underlyingListingExchange: z.string(),
+			tradeID: z.string(),
+			multiplier: z.coerce.number(),
+			strike: z.coerce.number(),
+			reportDate: zDateTime,
+			expiry: zDateTime,
+			dateTime: zDateTime,
+			putOrCall: z.enum(PutOrCall),
+			tradeDate: zDateTime,
+			settleDateTarget: zDateTime,
+			transactionType: z.enum(TransactionType),
+			exchange: z.string(),
+			quantity: z.coerce.number(),
+			tradePrice: z.coerce.number(),
+			tradeMoney: z.coerce.number(),
+			proceeds: z.coerce.number(),
+			taxes: z.coerce.number(),
+			ibCommission: z.coerce.number(),
+			ibCommissionCurrency: z.string(),
+			netCash: z.coerce.number(),
+			netCashInBase: z.coerce.number(),
+			closePrice: z.coerce.number(),
+			openCloseIndicator: z.enum(OpenCloseIndicator),
+			notesAndCodes: zNotes,
+			costBasis: z.coerce.number(),
+			fifoProfitAndLossRealized: z.coerce.number(),
+			capitalGainsProfitAndLoss: z.coerce.number(),
+			forexProfitAndLoss: z.coerce.number(),
+			marketToMarketProfitAndLoss: zNumNullable,
+			buyOrSell: z.enum(BuyOrSell),
+			transactionID: z.string(),
+			orderTime: zDateTime,
+			levelOfDetail: z.enum(LevelOfDetail),
+			orderType: z.enum(OrderType),
+		}),
+	),
+};
+
+export type TradeDerivative = z.output<typeof TradeDerivative.Schema>;
+
+// ---------------------------------------------------------------------------
+// LotDerivative
+// ---------------------------------------------------------------------------
+
+export const LotDerivative = {
+	Schema: z.preprocess(
+		(v) => remap(v, DERIVATIVE_ALIASES),
+		z.object({
+			clientAccountID: z.string(),
+			currency: z.string(),
+			fxRateToBase: z.coerce.number(),
+			assetClass: z.enum(AssetClass),
+			subCategory: z.enum(SubCategory),
+			symbol: z.string(),
+			description: z.string(),
+			conid: z.string(),
+			figi: zStrNullable,
+			listingExchange: z.string(),
+			underlyingConid: z.string(),
+			underlyingSymbol: z.string(),
+			underlyingSecurityID: z.string(),
+			underlyingListingExchange: z.string(),
+			multiplier: z.coerce.number(),
+			strike: z.coerce.number(),
+			reportDate: zDateTime,
+			expiry: zDateTime,
+			dateTime: zDateTime,
+			putOrCall: z.enum(PutOrCall),
+			tradeDate: zDateTime,
+			exchange: z.string(),
+			quantity: z.coerce.number(),
+			tradePrice: z.coerce.number(),
+			openCloseIndicator: z.enum(OpenCloseIndicator),
+			notesAndCodes: zNotes,
+			costBasis: z.coerce.number(),
+			fifoProfitAndLossRealized: z.coerce.number(),
+			capitalGainsProfitAndLoss: z.coerce.number(),
+			forexProfitAndLoss: z.coerce.number(),
+			buyOrSell: z.enum(BuyOrSell),
+			transactionID: z.string(),
+			openDateTime: zDateTime,
+			holdingPeriodDateTime: zDateTime,
+			levelOfDetail: z.enum(LevelOfDetail),
+		}),
+	),
+};
+
+export type LotDerivative = z.output<typeof LotDerivative.Schema>;
+
+// ---------------------------------------------------------------------------
+// CorporateAction
+// ---------------------------------------------------------------------------
+
+export const CorporateAction = {
+	Schema: z.preprocess(
+		(v) => remap(v, CORPORATE_ACTION_ALIASES),
+		z.object({
+			clientAccountID: z.string(),
+			accountAlias: zStrNullable,
+			model: z.string().transform((s) => s === "" ? null : s as Model),
+			currency: z.string(),
+			fxRateToBase: z.coerce.number(),
+			assetClass: z.enum(AssetClass),
+			subCategory: z.enum(SubCategory),
+			symbol: z.string(),
+			description: z.string(),
+			conid: z.string(),
+			securityID: z.string(),
+			securityIDType: z.enum(SecurityIDType),
+			cusip: zStrNullable,
+			isin: z.string(),
+			figi: zStrNullable,
+			listingExchange: z.string(),
+			underlyingConid: zStrNullable,
+			underlyingSymbol: zStrNullable,
+			underlyingSecurityID: zStrNullable,
+			underlyingListingExchange: zStrNullable,
+			multiplier: z.coerce.number(),
+			strike: zNumNullable,
+			expiry: zDateTimeNullable,
+			putOrCall: z.string().transform((s) => s === "" ? null : s as PutOrCall),
+			principalAdjustFactor: zNumNullable,
+			reportDate: zDateTime,
+			dateTime: zDateTime,
+			actionDescription: z.string(),
+			amount: z.coerce.number(),
+			proceeds: z.coerce.number(),
+			value: z.coerce.number(),
+			quantity: z.coerce.number(),
+			fifoProfitAndLossRealized: z.coerce.number(),
+			capitalGainsProfitAndLoss: zNumNullable.optional().transform((s) => s ?? null),
+			forexProfitAndLoss: zNumNullable.optional().transform((s) => s ?? null),
+			marketToMarketProfitAndLoss: zNumNullable,
+			notesAndCodes: zNotes,
+			type: z.string(),
+			transactionID: z.string(),
+			actionID: z.string(),
+			levelOfDetail: z.enum(LevelOfDetail),
+			serialNumber: zStrNullable,
+			deliveryType: zStrNullable,
+			commodityType: zStrNullable,
+			fineness: zNumNullable.optional().transform((s) => s ?? null),
+			weight: zNumNullable.optional().transform((s) => s ?? null),
+		}),
+	),
+};
+
+export type CorporateAction = z.output<typeof CorporateAction.Schema>;
+
+// ---------------------------------------------------------------------------
+// TransactionCash
+// ---------------------------------------------------------------------------
+
+export const TransactionCash = {
+	Schema: z.preprocess(
+		(v) => remap(v, CASH_ALIASES),
+		z.object({
+			clientAccountID: z.string(),
+			currency: z.string(),
+			fxRateToBase: z.coerce.number(),
+			assetClass: z.enum(AssetClass),
+			subCategory: z.enum(SubCategory),
+			symbol: z.string(),
+			description: z.string(),
+			conid: z.string(),
+			securityID: z.string(),
+			securityIDType: z.enum(SecurityIDType),
+			cusip: zStrNullable,
+			isin: z.string(),
+			figi: zStrNullable,
+			listingExchange: z.string(),
+			dateTime: zDateTime,
+			settleDate: zDateTime,
+			amount: z.coerce.number(),
+			type: z.enum(CashTransactionType),
+			code: zStrNullable,
+			transactionID: z.string(),
+			reportDate: zDateTime,
+			actionID: z.string(),
+		}),
+	),
+};
+
+export type TransactionCash = z.output<typeof TransactionCash.Schema>;

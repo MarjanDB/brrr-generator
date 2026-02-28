@@ -121,7 +121,8 @@
           "npm:csv-generate@^4.5.0",
           "npm:fast-xml-parser@^5.4.1",
           "npm:inversify@^7.11.0",
-          "npm:luxon@^3.7.2"
+          "npm:luxon@^3.7.2",
+          "npm:zod@^4.3.6"
         ]
       },
       "notebooks": {
