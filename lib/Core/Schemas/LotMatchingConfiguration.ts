@@ -1,5 +1,5 @@
 import type { DateTime } from "luxon";
-import type { FinancialGrouping } from "./Grouping.ts";
+import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 
 // Forward declaration - LotMatchingMethod is defined in lotMatching
 export interface LotMatchingMethodContract {

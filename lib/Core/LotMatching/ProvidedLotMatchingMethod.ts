@@ -1,7 +1,7 @@
-import type { Lot } from "./Lot.ts";
-import type { LotMatchingMethod } from "./LotMatchingMethod.ts";
-import type { Trade } from "./Trade.ts";
-import { TradeAssociationTracker } from "./TradeAssociationTracker.ts";
+import type { Lot } from "@brrr/Core/LotMatching/Lot.ts";
+import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod.ts";
+import type { Trade } from "@brrr/Core/LotMatching/Trade.ts";
+import { TradeAssociationTracker } from "@brrr/Core/LotMatching/TradeAssociationTracker.ts";
 import type { TaxLot } from "@brrr/Core/Schemas/Lots.ts";
 import type { TradeEvent } from "@brrr/Core/Schemas/Events.ts";
 

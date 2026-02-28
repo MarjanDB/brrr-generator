@@ -1,4 +1,4 @@
-import type { CorporateAction, LotDerivative, LotStock, TradeDerivative, TradeStock, TransactionCash } from "./IbkrSchemas.ts";
+import type { CorporateAction, LotDerivative, LotStock, TradeDerivative, TradeStock, TransactionCash } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas.ts";
 
 export type SegmentedTrades = {
 	cashTransactions: TransactionCash[];

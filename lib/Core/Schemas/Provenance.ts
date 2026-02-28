@@ -1,7 +1,7 @@
 import type { DateTime } from "luxon";
-import type { FinancialIdentifier } from "./FinancialIdentifier.ts";
-import type { IdentifierChangeType } from "./IdentifierRelationship.ts";
-import type { GenericMonetaryExchangeInformation } from "./CommonFormats.ts";
+import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
+import type { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
+import type { GenericMonetaryExchangeInformation } from "@brrr/Core/Schemas/CommonFormats.ts";
 
 export type ProvenanceStep = {
 	kind: "rename" | "split";

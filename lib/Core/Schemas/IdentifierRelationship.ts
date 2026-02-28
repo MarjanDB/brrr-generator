@@ -1,5 +1,5 @@
 import type { DateTime } from "luxon";
-import type { FinancialIdentifier } from "./FinancialIdentifier.ts";
+import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 
 export enum IdentifierChangeType {
 	RENAME = "RENAME",

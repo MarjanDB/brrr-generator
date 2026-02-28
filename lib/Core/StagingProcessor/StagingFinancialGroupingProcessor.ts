@@ -7,12 +7,12 @@ import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Groupi
 import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents.ts";
 import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
 import type { StagingIdentifierRelationshipSplit } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
-import { IdentifierRelationshipResolution } from "./IdentifierRelationshipResolution.ts";
-import { processStockEvent } from "./Transformers/StockEventProcessor.ts";
-import { processDerivativeEvent } from "./Transformers/DerivativeEventProcessor.ts";
-import { processCashTransaction } from "./Transformers/CashTransactionEventProcessor.ts";
-import { processStockLot } from "./Transformers/StockLotProcessor.ts";
-import { processDerivativeLot } from "./Transformers/DerivativeLotProcessor.ts";
+import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution.ts";
+import { processStockEvent } from "@brrr/Core/StagingProcessor/Transformers/StockEventProcessor.ts";
+import { processDerivativeEvent } from "@brrr/Core/StagingProcessor/Transformers/DerivativeEventProcessor.ts";
+import { processCashTransaction } from "@brrr/Core/StagingProcessor/Transformers/CashTransactionEventProcessor.ts";
+import { processStockLot } from "@brrr/Core/StagingProcessor/Transformers/StockLotProcessor.ts";
+import { processDerivativeLot } from "@brrr/Core/StagingProcessor/Transformers/DerivativeLotProcessor.ts";
 import type { TradeEventDerivativeAcquired, TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events.ts";
 
 export class StagingFinancialGroupingProcessor {

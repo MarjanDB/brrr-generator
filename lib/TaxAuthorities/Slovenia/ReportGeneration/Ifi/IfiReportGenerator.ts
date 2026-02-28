@@ -15,8 +15,8 @@ import {
 	EDavkiDerivativeSecurityType,
 	type EDavkiGenericDerivativeReportItem,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
-import { generateXmlReport } from "./XmlDIfi.ts";
-import { generateCsvReport } from "./CsvDIfi.ts";
+import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/XmlDIfi.ts";
+import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/CsvDIfi.ts";
 
 const GAIN_MAPPINGS: Record<string, EDavkiDerivativeReportGainType> = {
 	[GenericDerivativeReportItemGainType.BOUGHT]: EDavkiDerivativeReportGainType.BOUGHT,

@@ -1,7 +1,7 @@
-import internationalTreaties from "./internationalTreaties.json" with { type: "json" };
-import specialCountryMappings from "./specialCountryMappings.json" with { type: "json" };
-import missingISINLookup from "./missingISINLookup.json" with { type: "json" };
-import missingCompaniesLookup from "./missingCompaniesLookup.json" with { type: "json" };
+import internationalTreaties from "@brrr/InfoProviders/internationalTreaties.json" with { type: "json" };
+import specialCountryMappings from "@brrr/InfoProviders/specialCountryMappings.json" with { type: "json" };
+import missingISINLookup from "@brrr/InfoProviders/missingISINLookup.json" with { type: "json" };
+import missingCompaniesLookup from "@brrr/InfoProviders/missingCompaniesLookup.json" with { type: "json" };
 
 export enum TreatyType {
 	TaxRelief = "TAX_RELIEF",

@@ -3,11 +3,11 @@ import type { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
 import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
 import type { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts";
 import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
-import { EDavkiDocumentWorkflowType, SlovenianTaxAuthorityReportTypes } from "./Schemas/ReportTypes.ts";
-import type { EDavkiDividendReportLine, EDavkiGenericDerivativeReportItem, EDavkiGenericTradeReportItem } from "./Schemas/Schemas.ts";
-import type { KdvpReportGenerator } from "./ReportGeneration/Kdvp/KdvpReportGenerator.ts";
-import type { DivReportGenerator } from "./ReportGeneration/Div/DivReportGenerator.ts";
-import type { IfiReportGenerator } from "./ReportGeneration/Ifi/IfiReportGenerator.ts";
+import { EDavkiDocumentWorkflowType, SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes.ts";
+import type { EDavkiDividendReportLine, EDavkiGenericDerivativeReportItem, EDavkiGenericTradeReportItem } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
+import type { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator.ts";
+import type { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator.ts";
+import type { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator.ts";
 
 type SlovenianReportData =
 	| EDavkiGenericTradeReportItem[]

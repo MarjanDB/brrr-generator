@@ -1,5 +1,5 @@
 import type { DateTime } from "luxon";
-import type { Trade } from "./Trade.ts";
+import type { Trade } from "@brrr/Core/LotMatching/Trade.ts";
 
 export type LotAcquired = {
 	date: DateTime;

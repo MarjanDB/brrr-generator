@@ -16,8 +16,8 @@ import {
 	type EDavkiTradeReportSecurityLineGenericEventSold,
 	EDavkiTradeSecurityType,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
-import { generateXmlReport } from "./XmlDohKdvp.ts";
-import { generateCsvReport } from "./CsvDohKdvp.ts";
+import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/XmlDohKdvp.ts";
+import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/CsvDohKdvp.ts";
 
 const GAIN_MAPPINGS: Record<string, EDavkiTradeReportGainType> = {
 	[GenericTradeReportItemGainType.BOUGHT]: EDavkiTradeReportGainType.BOUGHT,

@@ -6,7 +6,7 @@ import type {
 	GenericMonetaryExchangeInformation,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats.ts";
-import type { StagingFinancialIdentifier } from "./StagingFinancialIdentifier.ts";
+import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier.ts";
 
 export type StagingTradeEvent = {
 	id: string;

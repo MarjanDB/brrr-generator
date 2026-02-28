@@ -2,9 +2,9 @@ import type { DateTime } from "luxon";
 import { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats.ts";
 import type { TradeEvent } from "@brrr/Core/Schemas/Events.ts";
 import type { TaxLot } from "@brrr/Core/Schemas/Lots.ts";
-import type { Lot } from "./Lot.ts";
-import type { LotMatchingMethod } from "./LotMatchingMethod.ts";
-import type { Trade } from "./Trade.ts";
+import type { Lot } from "@brrr/Core/LotMatching/Lot.ts";
+import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod.ts";
+import type { Trade } from "@brrr/Core/LotMatching/Trade.ts";
 
 export type LotMatchingDetails = {
 	lots: Lot[];

@@ -1,4 +1,4 @@
-import type { StagingFinancialIdentifier } from "./Staging/StagingFinancialIdentifier.ts";
+import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier.ts";
 
 export class FinancialIdentifier {
 	private _isin: string | null;

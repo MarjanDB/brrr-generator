@@ -1,5 +1,5 @@
-import type { StagingFinancialGrouping } from "./Grouping.ts";
-import type { StagingIdentifierRelationships } from "./IdentifierRelationship.ts";
+import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping.ts";
+import type { StagingIdentifierRelationships } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
 
 export type StagingFinancialEvents = {
 	groupings: StagingFinancialGrouping[];

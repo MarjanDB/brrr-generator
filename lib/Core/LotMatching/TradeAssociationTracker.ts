@@ -1,4 +1,4 @@
-import type { Trade } from "./Trade.ts";
+import type { Trade } from "@brrr/Core/LotMatching/Trade.ts";
 
 export type TradeAssociation = {
 	quantity: number;

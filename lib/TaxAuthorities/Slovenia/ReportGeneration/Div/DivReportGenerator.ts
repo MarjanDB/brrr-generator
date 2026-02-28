@@ -11,8 +11,8 @@ import type {
 } from "@brrr/Core/Schemas/Events.ts";
 import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import { type EDavkiDividendReportLine, EDavkiDividendType } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
-import { generateXmlReport } from "./XmlDohDiv.ts";
-import { generateCsvReport } from "./CsvDohDiv.ts";
+import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/XmlDohDiv.ts";
+import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/CsvDohDiv.ts";
 
 function filterOutCashTransactionsBasedOnDate(
 	data: TransactionCash[],

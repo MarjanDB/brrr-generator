@@ -5,9 +5,9 @@ import type {
 	GenericDividendType,
 	GenericMonetaryExchangeInformation,
 	GenericTradeReportItemGainType,
-} from "./CommonFormats.ts";
-import type { FinancialIdentifier } from "./FinancialIdentifier.ts";
-import type { AnyProvenanceStep } from "./Provenance.ts";
+} from "@brrr/Core/Schemas/CommonFormats.ts";
+import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
+import type { AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance.ts";
 
 export type TradeEvent = {
 	id: string;

@@ -1,14 +1,14 @@
-import type { GenericCategory } from "./CommonFormats.ts";
-import type { FinancialIdentifier } from "./FinancialIdentifier.ts";
-import type { AnyProvenanceStep } from "./Provenance.ts";
+import type { GenericCategory } from "@brrr/Core/Schemas/CommonFormats.ts";
+import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
+import type { AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance.ts";
 import type {
 	TradeEventDerivativeAcquired,
 	TradeEventDerivativeSold,
 	TradeEventStockAcquired,
 	TradeEventStockSold,
 	TransactionCash,
-} from "./Events.ts";
-import type { TaxLotDerivative, TaxLotStock } from "./Lots.ts";
+} from "@brrr/Core/Schemas/Events.ts";
+import type { TaxLotDerivative, TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
 
 export type DerivativeGrouping = {
 	financialIdentifier: FinancialIdentifier;
