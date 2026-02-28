@@ -1,8 +1,8 @@
 import { Container } from "inversify";
-import { loadCoreModule } from "@brrr/core/CoreModule.ts";
-import { loadIbkrModule } from "@brrr/brokerages/ibkr/IbkrModule.ts";
-import { loadInfoProvidersModule } from "@brrr/infoProviders/InfoProvidersModule.ts";
-import { loadSloveniaModule } from "@brrr/taxAuthorities/slovenia/SloveniaModule.ts";
+import { loadCoreModule } from "@brrr/Core/CoreModule.ts";
+import { loadIbkrModule } from "@brrr/Brokerages/Ibkr/IbkrModule.ts";
+import { loadInfoProvidersModule } from "@brrr/InfoProviders/InfoProvidersModule.ts";
+import { loadSloveniaModule } from "@brrr/TaxAuthorities/Slovenia/SloveniaModule.ts";
 
 export function createContainer(): Container {
 	const container = new Container();
