@@ -5,12 +5,15 @@ description: IBKR Flex Query XML structure and how it maps to SegmentedTrades. U
 
 # IBKR Flex Query (broker-specific)
 
-Complement to the generic **pipeline-and-structure** skill. This skill covers only the Interactive Brokers Flex Query format and its handling in this project.
+Complement to the generic **pipeline-and-structure** skill. This skill covers only the Interactive Brokers Flex Query format and its
+handling in this project.
 
 ## Source and layout
 
-- **Input:** XML files produced by IBKR Flex Queries (Activity Statement / Tax-Relevant export). Placed in `imports/`; discovered by **IbkrBrokerageExportProvider** (all `*.xml` in that folder).
-- **Extract:** `src/BrokerageExportProviders/Brokerages/IBKR/Transforms/Extract.py` parses the XML into **SegmentedTrades** (IBKR’s implementation of CommonBrokerageEvents).
+- **Input:** XML files produced by IBKR Flex Queries (Activity Statement / Tax-Relevant export). Placed in `imports/`; discovered by
+  **IbkrBrokerageExportProvider** (all `*.xml` in that folder).
+- **Extract:** `src/BrokerageExportProviders/Brokerages/IBKR/Transforms/Extract.py` parses the XML into **SegmentedTrades** (IBKR’s
+  implementation of CommonBrokerageEvents).
 - **Transform:** `Transform.py` converts SegmentedTrades to a sequence of **StagingFinancialGrouping** (broker-agnostic).
 
 ## XML structure (XPath roots)
@@ -26,12 +29,15 @@ Root path: `/FlexQueryResponse/FlexStatements/FlexStatement/`. Extract uses:
 | Option trades     | `Trades/Trade[@assetCategory='OPT']` | extractOptionTrade      | TradeDerivative |
 | Option lots       | `Trades/Lot[@assetCategory='OPT']`   | extractOptionLot        | LotDerivative   |
 
-Elements are XML nodes with attributes; Extract reads `node.attrib["..."]` and maps to schemas in **Schemas.py** (e.g. TradeStock, LotStock, TransactionCash, CorporateAction). Parsing helpers (dates, optional values) are in **ValueParsingUtils**.
+Elements are XML nodes with attributes; Extract reads `node.attrib["..."]` and maps to schemas in **Schemas.py** (e.g. TradeStock, LotStock,
+TransactionCash, CorporateAction). Parsing helpers (dates, optional values) are in **ValueParsingUtils**.
 
 ## Schemas and types
 
-- **Schemas.py** – Dataclasses and enums for IBKR concepts: AssetClass (STK, CASH, OPT), SubCategory, SecurityIDType, Codes (transaction notes), TradeStock, LotStock, TradeDerivative, LotDerivative, TransactionCash, CorporateAction, etc.
-- **SegmentedTrades.py** – Container type: cashTransactions, corporateActions, stockTrades, stockLots, derivativeTrades, derivativeLots. This is the type returned by `extractFromXML(root)` and passed to merge and Transform.
+- **Schemas.py** – Dataclasses and enums for IBKR concepts: AssetClass (STK, CASH, OPT), SubCategory, SecurityIDType, Codes (transaction
+  notes), TradeStock, LotStock, TradeDerivative, LotDerivative, TransactionCash, CorporateAction, etc.
+- **SegmentedTrades.py** – Container type: cashTransactions, corporateActions, stockTrades, stockLots, derivativeTrades, derivativeLots.
+  This is the type returned by `extractFromXML(root)` and passed to merge and Transform.
 
 ## Adding or changing extraction
 
@@ -42,4 +48,5 @@ Elements are XML nodes with attributes; Extract reads `node.attrib["..."]` and m
 
 ## Test fixtures
 
-Sample XMLs in `src/BrokerageExportProviders/Brokerages/IBKR/Tests/` (e.g. SimpleStockTrade.xml, SimpleCashTransactionOfDividends.xml, SimpleOptionTrade.xml) are used by the IBKR tests. When changing Extract or schema, update or add fixtures and tests accordingly.
+Sample XMLs in `src/BrokerageExportProviders/Brokerages/IBKR/Tests/` (e.g. SimpleStockTrade.xml, SimpleCashTransactionOfDividends.xml,
+SimpleOptionTrade.xml) are used by the IBKR tests. When changing Extract or schema, update or add fixtures and tests accordingly.

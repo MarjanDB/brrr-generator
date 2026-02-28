@@ -1,74 +1,72 @@
 import type { DateTime } from "luxon";
 import type {
-  GenericAssetClass,
-  GenericDerivativeReportItemGainType,
-  GenericDividendType,
-  GenericMonetaryExchangeInformation,
-  GenericTradeReportItemGainType,
+	GenericAssetClass,
+	GenericDerivativeReportItemGainType,
+	GenericDividendType,
+	GenericMonetaryExchangeInformation,
+	GenericTradeReportItemGainType,
 } from "@brrr/core/schemas/CommonFormats.ts";
 import type { StagingFinancialIdentifier } from "./StagingFinancialIdentifier.ts";
 
 export type StagingTradeEvent = {
-  id: string;
-  financialIdentifier: StagingFinancialIdentifier;
-  assetClass: GenericAssetClass;
-  date: DateTime;
-  multiplier: number;
-  exchangedMoney: GenericMonetaryExchangeInformation;
+	id: string;
+	financialIdentifier: StagingFinancialIdentifier;
+	assetClass: GenericAssetClass;
+	date: DateTime;
+	multiplier: number;
+	exchangedMoney: GenericMonetaryExchangeInformation;
 };
 
 export type StagingTradeEventStockAcquired = StagingTradeEvent & {
-  kind: "StagingStockAcquired";
-  acquiredReason: GenericTradeReportItemGainType;
+	kind: "StagingStockAcquired";
+	acquiredReason: GenericTradeReportItemGainType;
 };
 
 export type StagingTradeEventStockSold = StagingTradeEvent & {
-  kind: "StagingStockSold";
+	kind: "StagingStockSold";
 };
 
 export type StagingTradeEventStock = StagingTradeEventStockAcquired | StagingTradeEventStockSold;
 
 export type StagingTradeEventDerivativeAcquired = StagingTradeEvent & {
-  kind: "StagingDerivativeAcquired";
-  acquiredReason: GenericDerivativeReportItemGainType;
+	kind: "StagingDerivativeAcquired";
+	acquiredReason: GenericDerivativeReportItemGainType;
 };
 
 export type StagingTradeEventDerivativeSold = StagingTradeEvent & {
-  kind: "StagingDerivativeSold";
+	kind: "StagingDerivativeSold";
 };
 
 export type StagingTradeEventDerivative =
-  | StagingTradeEventDerivativeAcquired
-  | StagingTradeEventDerivativeSold;
+	| StagingTradeEventDerivativeAcquired
+	| StagingTradeEventDerivativeSold;
 
 export type StagingTradeEventCashTransaction = StagingTradeEvent & {
-  actionId: string;
-  transactionId: string;
-  listingExchange: string;
+	actionId: string;
+	transactionId: string;
+	listingExchange: string;
 };
 
 export type StagingTradeEventCashTransactionDividend = StagingTradeEventCashTransaction & {
-  kind: "StagingCashTransactionDividend";
-  dividendType: GenericDividendType;
+	kind: "StagingCashTransactionDividend";
+	dividendType: GenericDividendType;
 };
 
 export type StagingTradeEventCashTransactionWithholdingTax = StagingTradeEventCashTransaction & {
-  kind: "StagingCashTransactionWithholdingTax";
+	kind: "StagingCashTransactionWithholdingTax";
 };
 
-export type StagingTradeEventCashTransactionPaymentInLieuOfDividends =
-  StagingTradeEventCashTransaction & {
-    kind: "StagingCashTransactionPaymentInLieuOfDividends";
-    dividendType: GenericDividendType;
-  };
+export type StagingTradeEventCashTransactionPaymentInLieuOfDividends = StagingTradeEventCashTransaction & {
+	kind: "StagingCashTransactionPaymentInLieuOfDividends";
+	dividendType: GenericDividendType;
+};
 
-export type StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends =
-  StagingTradeEventCashTransaction & {
-    kind: "StagingCashTransactionWithholdingTaxForPaymentInLieuOfDividends";
-  };
+export type StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends = StagingTradeEventCashTransaction & {
+	kind: "StagingCashTransactionWithholdingTaxForPaymentInLieuOfDividends";
+};
 
 export type StagingTransactionCash =
-  | StagingTradeEventCashTransactionDividend
-  | StagingTradeEventCashTransactionWithholdingTax
-  | StagingTradeEventCashTransactionPaymentInLieuOfDividends
-  | StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends;
+	| StagingTradeEventCashTransactionDividend
+	| StagingTradeEventCashTransactionWithholdingTax
+	| StagingTradeEventCashTransactionPaymentInLieuOfDividends
+	| StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends;

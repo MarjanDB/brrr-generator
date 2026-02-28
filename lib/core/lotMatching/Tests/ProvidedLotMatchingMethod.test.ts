@@ -7,126 +7,126 @@ import type { TaxLotStock } from "@brrr/core/schemas/Lots.ts";
 import { ProvidedLotMatchingMethod } from "@brrr/core/lotMatching/ProvidedLotMatchingMethod.ts";
 
 function makeDate(iso: string) {
-  return DateTime.fromISO(iso)!;
+	return DateTime.fromISO(iso)!;
 }
 
 const identifier = new FinancialIdentifier({ isin: "ISIN", ticker: "TICKER", name: "NAME" });
 
 function makeMonetary(qty: number) {
-  return {
-    underlyingCurrency: "EUR",
-    underlyingQuantity: qty,
-    underlyingTradePrice: 1,
-    comissionCurrency: "EUR",
-    comissionTotal: 0,
-    taxCurrency: "EUR",
-    taxTotal: 0,
-    fxRateToBase: 1,
-  };
+	return {
+		underlyingCurrency: "EUR",
+		underlyingQuantity: qty,
+		underlyingTradePrice: 1,
+		comissionCurrency: "EUR",
+		comissionTotal: 0,
+		taxCurrency: "EUR",
+		taxTotal: 0,
+		fxRateToBase: 1,
+	};
 }
 
 const simpleLot: TaxLotStock = {
-  id: "ID",
-  financialIdentifier: identifier,
-  quantity: 1,
-  acquired: {
-    kind: "StockAcquired",
-    id: "ID",
-    financialIdentifier: identifier,
-    assetClass: GenericAssetClass.STOCK,
-    date: makeDate("2023-01-01"),
-    multiplier: 1,
-    exchangedMoney: makeMonetary(1),
-    provenance: [],
-    acquiredReason: "BOUGHT" as never,
-  } as TradeEventStockAcquired,
-  sold: {
-    kind: "StockSold",
-    id: "ID2",
-    financialIdentifier: identifier,
-    assetClass: GenericAssetClass.STOCK,
-    date: makeDate("2023-01-02"),
-    multiplier: 1,
-    exchangedMoney: makeMonetary(-1),
-    provenance: [],
-  } as TradeEventStockSold,
-  shortLongType: GenericShortLong.LONG,
-  provenance: [],
+	id: "ID",
+	financialIdentifier: identifier,
+	quantity: 1,
+	acquired: {
+		kind: "StockAcquired",
+		id: "ID",
+		financialIdentifier: identifier,
+		assetClass: GenericAssetClass.STOCK,
+		date: makeDate("2023-01-01"),
+		multiplier: 1,
+		exchangedMoney: makeMonetary(1),
+		provenance: [],
+		acquiredReason: "BOUGHT" as never,
+	} as TradeEventStockAcquired,
+	sold: {
+		kind: "StockSold",
+		id: "ID2",
+		financialIdentifier: identifier,
+		assetClass: GenericAssetClass.STOCK,
+		date: makeDate("2023-01-02"),
+		multiplier: 1,
+		exchangedMoney: makeMonetary(-1),
+		provenance: [],
+	} as TradeEventStockSold,
+	shortLongType: GenericShortLong.LONG,
+	provenance: [],
 };
 
 const underUtilizedLot: TaxLotStock = {
-  id: "ID",
-  financialIdentifier: identifier,
-  quantity: 1,
-  acquired: {
-    kind: "StockAcquired",
-    id: "ID",
-    financialIdentifier: identifier,
-    assetClass: GenericAssetClass.STOCK,
-    date: makeDate("2023-01-01"),
-    multiplier: 1,
-    exchangedMoney: makeMonetary(2),
-    provenance: [],
-    acquiredReason: "BOUGHT" as never,
-  } as TradeEventStockAcquired,
-  sold: {
-    kind: "StockSold",
-    id: "ID2",
-    financialIdentifier: identifier,
-    assetClass: GenericAssetClass.STOCK,
-    date: makeDate("2023-01-02"),
-    multiplier: 1,
-    exchangedMoney: makeMonetary(-2),
-    provenance: [],
-  } as TradeEventStockSold,
-  shortLongType: GenericShortLong.LONG,
-  provenance: [],
+	id: "ID",
+	financialIdentifier: identifier,
+	quantity: 1,
+	acquired: {
+		kind: "StockAcquired",
+		id: "ID",
+		financialIdentifier: identifier,
+		assetClass: GenericAssetClass.STOCK,
+		date: makeDate("2023-01-01"),
+		multiplier: 1,
+		exchangedMoney: makeMonetary(2),
+		provenance: [],
+		acquiredReason: "BOUGHT" as never,
+	} as TradeEventStockAcquired,
+	sold: {
+		kind: "StockSold",
+		id: "ID2",
+		financialIdentifier: identifier,
+		assetClass: GenericAssetClass.STOCK,
+		date: makeDate("2023-01-02"),
+		multiplier: 1,
+		exchangedMoney: makeMonetary(-2),
+		provenance: [],
+	} as TradeEventStockSold,
+	shortLongType: GenericShortLong.LONG,
+	provenance: [],
 };
 
 Deno.test("simple single lot generation", () => {
-  const method = new ProvidedLotMatchingMethod([simpleLot]);
-  const lots = method.performMatching([]);
+	const method = new ProvidedLotMatchingMethod([simpleLot]);
+	const lots = method.performMatching([]);
 
-  assertEquals(lots.length, 1);
-  assertEquals(lots[0].quantity, 1);
-  assertEquals(lots[0].acquired.relation.date, simpleLot.acquired.date);
-  assertEquals(lots[0].sold.relation.date, simpleLot.sold.date);
+	assertEquals(lots.length, 1);
+	assertEquals(lots[0].quantity, 1);
+	assertEquals(lots[0].acquired.relation.date, simpleLot.acquired.date);
+	assertEquals(lots[0].sold.relation.date, simpleLot.sold.date);
 });
 
 Deno.test("simple single lot and trade generation", () => {
-  const method = new ProvidedLotMatchingMethod([simpleLot]);
-  const lots = method.performMatching([]);
-  const trades = method.generateTradesFromLotsWithTracking(lots);
+	const method = new ProvidedLotMatchingMethod([simpleLot]);
+	const lots = method.performMatching([]);
+	const trades = method.generateTradesFromLotsWithTracking(lots);
 
-  assertEquals(trades.length, 2);
-  assertEquals(trades[0].id, simpleLot.acquired.id);
-  assertEquals(trades[1].id, simpleLot.sold.id);
-  assertEquals(trades[0].quantity, simpleLot.quantity);
-  assertEquals(trades[1].quantity, -simpleLot.quantity);
+	assertEquals(trades.length, 2);
+	assertEquals(trades[0].id, simpleLot.acquired.id);
+	assertEquals(trades[1].id, simpleLot.sold.id);
+	assertEquals(trades[0].quantity, simpleLot.quantity);
+	assertEquals(trades[1].quantity, -simpleLot.quantity);
 });
 
 Deno.test("under-utilized lot and trade generation", () => {
-  const method = new ProvidedLotMatchingMethod([underUtilizedLot]);
-  const lots = method.performMatching([]);
-  assertEquals(lots.length, 1);
+	const method = new ProvidedLotMatchingMethod([underUtilizedLot]);
+	const lots = method.performMatching([]);
+	assertEquals(lots.length, 1);
 
-  const trades = method.generateTradesFromLotsWithTracking(lots);
-  assertEquals(trades.length, 2);
-  assertEquals(trades[0].id, underUtilizedLot.acquired.id);
-  assertEquals(trades[1].id, underUtilizedLot.sold.id);
-  assertEquals(trades[0].quantity, underUtilizedLot.quantity);
-  assertEquals(trades[1].quantity, -underUtilizedLot.quantity);
+	const trades = method.generateTradesFromLotsWithTracking(lots);
+	assertEquals(trades.length, 2);
+	assertEquals(trades[0].id, underUtilizedLot.acquired.id);
+	assertEquals(trades[1].id, underUtilizedLot.sold.id);
+	assertEquals(trades[0].quantity, underUtilizedLot.quantity);
+	assertEquals(trades[1].quantity, -underUtilizedLot.quantity);
 });
 
 Deno.test("fully utilized trades from under-utilized lots", () => {
-  const method = new ProvidedLotMatchingMethod([underUtilizedLot, underUtilizedLot]);
-  const lots = method.performMatching([]);
-  assertEquals(lots.length, 2);
+	const method = new ProvidedLotMatchingMethod([underUtilizedLot, underUtilizedLot]);
+	const lots = method.performMatching([]);
+	assertEquals(lots.length, 2);
 
-  const trades = method.generateTradesFromLotsWithTracking(lots);
-  assertEquals(trades.length, 2);
-  assertEquals(trades[0].id, underUtilizedLot.acquired.id);
-  assertEquals(trades[1].id, underUtilizedLot.sold.id);
-  assertEquals(trades[0].quantity, underUtilizedLot.acquired.exchangedMoney.underlyingQuantity);
-  assertEquals(trades[1].quantity, underUtilizedLot.sold.exchangedMoney.underlyingQuantity);
+	const trades = method.generateTradesFromLotsWithTracking(lots);
+	assertEquals(trades.length, 2);
+	assertEquals(trades[0].id, underUtilizedLot.acquired.id);
+	assertEquals(trades[1].id, underUtilizedLot.sold.id);
+	assertEquals(trades[0].quantity, underUtilizedLot.acquired.exchangedMoney.underlyingQuantity);
+	assertEquals(trades[1].quantity, underUtilizedLot.sold.exchangedMoney.underlyingQuantity);
 });

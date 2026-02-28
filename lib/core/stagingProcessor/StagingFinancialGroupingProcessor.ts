@@ -3,16 +3,10 @@ import { FinancialIdentifier } from "@brrr/core/schemas/FinancialIdentifier.ts";
 import { IdentifierChangeType } from "@brrr/core/schemas/IdentifierRelationship.ts";
 import type { FinancialEvents } from "@brrr/core/schemas/FinancialEvents.ts";
 import type { DerivativeGrouping, FinancialGrouping } from "@brrr/core/schemas/Grouping.ts";
-import type {
-  StagingFinancialGrouping,
-} from "@brrr/core/schemas/staging/Grouping.ts";
+import type { StagingFinancialGrouping } from "@brrr/core/schemas/staging/Grouping.ts";
 import type { StagingFinancialEvents } from "@brrr/core/schemas/staging/StagingFinancialEvents.ts";
-import {
-  StagingIdentifierChangeType,
-} from "@brrr/core/schemas/staging/IdentifierRelationship.ts";
-import type {
-  StagingIdentifierRelationshipSplit,
-} from "@brrr/core/schemas/staging/IdentifierRelationship.ts";
+import { StagingIdentifierChangeType } from "@brrr/core/schemas/staging/IdentifierRelationship.ts";
+import type { StagingIdentifierRelationshipSplit } from "@brrr/core/schemas/staging/IdentifierRelationship.ts";
 import { IdentifierRelationshipResolution } from "./IdentifierRelationshipResolution.ts";
 import { processStockEvent } from "./transformers/StockEventProcessor.ts";
 import { processDerivativeEvent } from "./transformers/DerivativeEventProcessor.ts";
@@ -22,105 +16,105 @@ import { processDerivativeLot } from "./transformers/DerivativeLotProcessor.ts";
 import type { TradeEventDerivativeAcquired, TradeEventDerivativeSold } from "@brrr/core/schemas/Events.ts";
 
 export class StagingFinancialGroupingProcessor {
-  private identifierRelationshipResolution = new IdentifierRelationshipResolution();
+	private identifierRelationshipResolution = new IdentifierRelationshipResolution();
 
-  private processAndGroupDerivativeTrades(input: StagingFinancialGrouping): DerivativeGrouping[] {
-    const processedDerivatives = input.derivativeTrades.map(processDerivativeEvent);
-    const allDerivativeTrades = processedDerivatives;
+	private processAndGroupDerivativeTrades(input: StagingFinancialGrouping): DerivativeGrouping[] {
+		const processedDerivatives = input.derivativeTrades.map(processDerivativeEvent);
+		const allDerivativeTrades = processedDerivatives;
 
-    // Group by financialIdentifier key
-    const tradesByIdKey = new Map<string, (TradeEventDerivativeAcquired | TradeEventDerivativeSold)[]>();
-    for (const trade of allDerivativeTrades) {
-      const key = trade.financialIdentifier.toKey();
-      const arr = tradesByIdKey.get(key) ?? [];
-      arr.push(trade);
-      tradesByIdKey.set(key, arr);
-    }
+		// Group by financialIdentifier key
+		const tradesByIdKey = new Map<string, (TradeEventDerivativeAcquired | TradeEventDerivativeSold)[]>();
+		for (const trade of allDerivativeTrades) {
+			const key = trade.financialIdentifier.toKey();
+			const arr = tradesByIdKey.get(key) ?? [];
+			arr.push(trade);
+			tradesByIdKey.set(key, arr);
+		}
 
-    const lotsByIdKey = new Map<string, typeof input.derivativeTaxLots>();
-    for (const lot of input.derivativeTaxLots) {
-      const key = FinancialIdentifier.fromStagingIdentifier(lot.financialIdentifier).toKey();
-      const arr = lotsByIdKey.get(key) ?? [];
-      arr.push(lot);
-      lotsByIdKey.set(key, arr);
-    }
+		const lotsByIdKey = new Map<string, typeof input.derivativeTaxLots>();
+		for (const lot of input.derivativeTaxLots) {
+			const key = FinancialIdentifier.fromStagingIdentifier(lot.financialIdentifier).toKey();
+			const arr = lotsByIdKey.get(key) ?? [];
+			arr.push(lot);
+			lotsByIdKey.set(key, arr);
+		}
 
-    const derivativeGroupings: DerivativeGrouping[] = [];
-    for (const [key, trades] of tradesByIdKey) {
-      const lots = lotsByIdKey.get(key) ?? [];
-      const processedLots = lots.map((lot) => processDerivativeLot(lot, trades));
-      derivativeGroupings.push({
-        financialIdentifier: trades[0].financialIdentifier,
-        derivativeTrades: trades,
-        derivativeTaxLots: processedLots,
-        provenance: [],
-      });
-    }
-    return derivativeGroupings;
-  }
+		const derivativeGroupings: DerivativeGrouping[] = [];
+		for (const [key, trades] of tradesByIdKey) {
+			const lots = lotsByIdKey.get(key) ?? [];
+			const processedLots = lots.map((lot) => processDerivativeLot(lot, trades));
+			derivativeGroupings.push({
+				financialIdentifier: trades[0].financialIdentifier,
+				derivativeTrades: trades,
+				derivativeTaxLots: processedLots,
+				provenance: [],
+			});
+		}
+		return derivativeGroupings;
+	}
 
-  process(input: StagingFinancialGrouping): FinancialGrouping {
-    const processedTrades = input.stockTrades.map(processStockEvent);
-    const allTrades = processedTrades;
+	process(input: StagingFinancialGrouping): FinancialGrouping {
+		const processedTrades = input.stockTrades.map(processStockEvent);
+		const allTrades = processedTrades;
 
-    const processedStockLots = input.stockTaxLots.map((lot) => processStockLot(lot, allTrades));
+		const processedStockLots = input.stockTaxLots.map((lot) => processStockLot(lot, allTrades));
 
-    const derivativeGroupings = this.processAndGroupDerivativeTrades(input);
+		const derivativeGroupings = this.processAndGroupDerivativeTrades(input);
 
-    const processedCashTransactions = input.cashTransactions.map(processCashTransaction);
+		const processedCashTransactions = input.cashTransactions.map(processCashTransaction);
 
-    return {
-      financialIdentifier: FinancialIdentifier.fromStagingIdentifier(input.financialIdentifier),
-      countryOfOrigin: input.countryOfOrigin,
-      underlyingCategory: input.underlyingCategory,
-      stockTrades: allTrades,
-      stockTaxLots: processedStockLots,
-      derivativeGroupings,
-      cashTransactions: processedCashTransactions,
-      provenance: [],
-    };
-  }
+		return {
+			financialIdentifier: FinancialIdentifier.fromStagingIdentifier(input.financialIdentifier),
+			countryOfOrigin: input.countryOfOrigin,
+			underlyingCategory: input.underlyingCategory,
+			stockTrades: allTrades,
+			stockTaxLots: processedStockLots,
+			derivativeGroupings,
+			cashTransactions: processedCashTransactions,
+			provenance: [],
+		};
+	}
 
-  generateGenericGroupings(groupings: StagingFinancialGrouping[]): FinancialGrouping[] {
-    return groupings.map((g) => this.process(g));
-  }
+	generateGenericGroupings(groupings: StagingFinancialGrouping[]): FinancialGrouping[] {
+		return groupings.map((g) => this.process(g));
+	}
 
-  processStagingFinancialEvents(events: StagingFinancialEvents): FinancialEvents {
-    const resolved = this.identifierRelationshipResolution.resolveStagingFinancialEventsPartialRelationships(events);
-    const processedGroupings = this.generateGenericGroupings(resolved.groupings);
+	processStagingFinancialEvents(events: StagingFinancialEvents): FinancialEvents {
+		const resolved = this.identifierRelationshipResolution.resolveStagingFinancialEventsPartialRelationships(events);
+		const processedGroupings = this.generateGenericGroupings(resolved.groupings);
 
-    const coreRels: FinancialEvents["identifierRelationships"] = [];
-    for (const r of resolved.identifierRelationships.relationships) {
-      if (r.changeType === StagingIdentifierChangeType.UNKNOWN) continue;
-      const effectiveDate = r.effectiveDate ?? DateTime.fromMillis(0);
-      const fromId = FinancialIdentifier.fromStagingIdentifier(r.fromIdentifier);
-      const toId = FinancialIdentifier.fromStagingIdentifier(r.toIdentifier);
-      const changeType = IdentifierChangeType[r.changeType as keyof typeof IdentifierChangeType];
+		const coreRels: FinancialEvents["identifierRelationships"] = [];
+		for (const r of resolved.identifierRelationships.relationships) {
+			if (r.changeType === StagingIdentifierChangeType.UNKNOWN) continue;
+			const effectiveDate = r.effectiveDate ?? DateTime.fromMillis(0);
+			const fromId = FinancialIdentifier.fromStagingIdentifier(r.fromIdentifier);
+			const toId = FinancialIdentifier.fromStagingIdentifier(r.toIdentifier);
+			const changeType = IdentifierChangeType[r.changeType as keyof typeof IdentifierChangeType];
 
-      // Check if it's a split relationship (has quantityBefore/quantityAfter)
-      const rSplit = r as StagingIdentifierRelationshipSplit;
-      if (rSplit.quantityBefore !== undefined && rSplit.quantityAfter !== undefined) {
-        coreRels.push({
-          fromIdentifier: fromId,
-          toIdentifier: toId,
-          changeType,
-          effectiveDate,
-          quantityBefore: rSplit.quantityBefore,
-          quantityAfter: rSplit.quantityAfter,
-        });
-      } else {
-        coreRels.push({
-          fromIdentifier: fromId,
-          toIdentifier: toId,
-          changeType,
-          effectiveDate,
-        });
-      }
-    }
+			// Check if it's a split relationship (has quantityBefore/quantityAfter)
+			const rSplit = r as StagingIdentifierRelationshipSplit;
+			if (rSplit.quantityBefore !== undefined && rSplit.quantityAfter !== undefined) {
+				coreRels.push({
+					fromIdentifier: fromId,
+					toIdentifier: toId,
+					changeType,
+					effectiveDate,
+					quantityBefore: rSplit.quantityBefore,
+					quantityAfter: rSplit.quantityAfter,
+				});
+			} else {
+				coreRels.push({
+					fromIdentifier: fromId,
+					toIdentifier: toId,
+					changeType,
+					effectiveDate,
+				});
+			}
+		}
 
-    return {
-      groupings: processedGroupings,
-      identifierRelationships: coreRels,
-    };
-  }
+		return {
+			groupings: processedGroupings,
+			identifierRelationships: coreRels,
+		};
+	}
 }

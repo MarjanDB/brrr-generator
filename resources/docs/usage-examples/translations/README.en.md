@@ -6,8 +6,7 @@
 
 ### Generate Broker Export
 
-![Location of Flex Queries](../images/flex-queries-location.png)
-![How to create new Flex Query](../images/flex-query-new.png)
+![Location of Flex Queries](../images/flex-queries-location.png) ![How to create new Flex Query](../images/flex-query-new.png)
 ![Flex Query Sections](../images/flex-queries-selected.png)
 
 #### Section Field Selections

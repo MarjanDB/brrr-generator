@@ -1,12 +1,7 @@
 import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 import { FinancialIdentifier } from "@brrr/core/schemas/FinancialIdentifier.ts";
-import {
-  GenericAssetClass,
-  GenericCategory,
-  GenericShortLong,
-  GenericTradeReportItemGainType,
-} from "@brrr/core/schemas/CommonFormats.ts";
+import { GenericAssetClass, GenericCategory, GenericShortLong, GenericTradeReportItemGainType } from "@brrr/core/schemas/CommonFormats.ts";
 import type { FinancialGrouping } from "@brrr/core/schemas/Grouping.ts";
 import type { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/core/schemas/Events.ts";
 import type { TaxLotStock } from "@brrr/core/schemas/Lots.ts";
@@ -16,113 +11,113 @@ import { ProvidedLotMatchingMethod } from "@brrr/core/lotMatching/ProvidedLotMat
 import { FinancialEventsProcessor } from "@brrr/core/financialEvents/FinancialEventsProcessor.ts";
 
 function makeDate(iso: string) {
-  return DateTime.fromISO(iso)!;
+	return DateTime.fromISO(iso)!;
 }
 
 const identifier = new FinancialIdentifier({ isin: "US123", ticker: "AAPL", name: "AAPL" });
 
 function makeMonetary(qty: number, price: number) {
-  return {
-    underlyingCurrency: "EUR",
-    underlyingQuantity: qty,
-    underlyingTradePrice: price,
-    comissionCurrency: "EUR",
-    comissionTotal: 0,
-    taxCurrency: "EUR",
-    taxTotal: 0,
-    fxRateToBase: 1,
-  };
+	return {
+		underlyingCurrency: "EUR",
+		underlyingQuantity: qty,
+		underlyingTradePrice: price,
+		comissionCurrency: "EUR",
+		comissionTotal: 0,
+		taxCurrency: "EUR",
+		taxTotal: 0,
+		fxRateToBase: 1,
+	};
 }
 
 const simpleStockBuy: TradeEventStockAcquired = {
-  kind: "StockAcquired",
-  id: "StockBought",
-  financialIdentifier: identifier,
-  assetClass: GenericAssetClass.STOCK,
-  date: makeDate("2023-01-01"),
-  multiplier: 1,
-  acquiredReason: GenericTradeReportItemGainType.BOUGHT,
-  exchangedMoney: makeMonetary(1, 10),
-  provenance: [],
+	kind: "StockAcquired",
+	id: "StockBought",
+	financialIdentifier: identifier,
+	assetClass: GenericAssetClass.STOCK,
+	date: makeDate("2023-01-01"),
+	multiplier: 1,
+	acquiredReason: GenericTradeReportItemGainType.BOUGHT,
+	exchangedMoney: makeMonetary(1, 10),
+	provenance: [],
 };
 
 const simpleStockSold: TradeEventStockSold = {
-  kind: "StockSold",
-  id: "StockSold",
-  financialIdentifier: identifier,
-  assetClass: GenericAssetClass.STOCK,
-  date: makeDate("2023-01-02"),
-  multiplier: 1,
-  exchangedMoney: makeMonetary(-1, 15),
-  provenance: [],
+	kind: "StockSold",
+	id: "StockSold",
+	financialIdentifier: identifier,
+	assetClass: GenericAssetClass.STOCK,
+	date: makeDate("2023-01-02"),
+	multiplier: 1,
+	exchangedMoney: makeMonetary(-1, 15),
+	provenance: [],
 };
 
 const simpleStockLot: TaxLotStock = {
-  id: "Lot",
-  financialIdentifier: identifier,
-  quantity: 1,
-  acquired: simpleStockBuy,
-  sold: simpleStockSold,
-  shortLongType: GenericShortLong.LONG,
-  provenance: [],
+	id: "Lot",
+	financialIdentifier: identifier,
+	quantity: 1,
+	acquired: simpleStockBuy,
+	sold: simpleStockSold,
+	shortLongType: GenericShortLong.LONG,
+	provenance: [],
 };
 
 const grouping: FinancialGrouping = {
-  financialIdentifier: identifier,
-  countryOfOrigin: "US",
-  underlyingCategory: GenericCategory.REGULAR,
-  stockTrades: [simpleStockBuy, simpleStockSold],
-  stockTaxLots: [simpleStockLot],
-  derivativeGroupings: [],
-  cashTransactions: [],
-  provenance: [],
+	financialIdentifier: identifier,
+	countryOfOrigin: "US",
+	underlyingCategory: GenericCategory.REGULAR,
+	stockTrades: [simpleStockBuy, simpleStockSold],
+	stockTaxLots: [simpleStockLot],
+	derivativeGroupings: [],
+	cashTransactions: [],
+	provenance: [],
 };
 
 function matchingMethodFactory(g: FinancialGrouping) {
-  return new ProvidedLotMatchingMethod(g.stockTaxLots) as unknown as ReturnType<LotMatchingConfiguration["forStocks"]>;
+	return new ProvidedLotMatchingMethod(g.stockTaxLots) as unknown as ReturnType<LotMatchingConfiguration["forStocks"]>;
 }
 
 Deno.test("single stock lot matching", () => {
-  const processor = new FinancialEventsProcessor(null, new LotMatcher());
-  const config: LotMatchingConfiguration = {
-    fromDate: makeDate("2023-01-01"),
-    toDate: makeDate("2023-01-02"),
-    forStocks: matchingMethodFactory,
-    forDerivatives: matchingMethodFactory,
-  };
-  const interesting = processor.generateInterestingUnderlyingGroupings([grouping], config);
-  assertEquals(interesting.length, 1);
-  assertEquals(interesting[0].stockTrades.length, 2);
-  assertEquals(interesting[0].derivativeGroupings.length, 0);
+	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	const config: LotMatchingConfiguration = {
+		fromDate: makeDate("2023-01-01"),
+		toDate: makeDate("2023-01-02"),
+		forStocks: matchingMethodFactory,
+		forDerivatives: matchingMethodFactory,
+	};
+	const interesting = processor.generateInterestingUnderlyingGroupings([grouping], config);
+	assertEquals(interesting.length, 1);
+	assertEquals(interesting[0].stockTrades.length, 2);
+	assertEquals(interesting[0].derivativeGroupings.length, 0);
 });
 
 Deno.test("simple filtering trades of lots closed in period", () => {
-  const processor = new FinancialEventsProcessor(null, new LotMatcher());
-  const config: LotMatchingConfiguration = {
-    fromDate: makeDate("2022-01-01"),
-    toDate: makeDate("2022-01-02"),
-    forStocks: matchingMethodFactory,
-    forDerivatives: matchingMethodFactory,
-  };
-  const interesting = processor.generateInterestingUnderlyingGroupings([grouping], config);
-  assertEquals(interesting.length, 1);
-  assertEquals(interesting[0].stockTrades.length, 0);
+	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	const config: LotMatchingConfiguration = {
+		fromDate: makeDate("2022-01-01"),
+		toDate: makeDate("2022-01-02"),
+		forStocks: matchingMethodFactory,
+		forDerivatives: matchingMethodFactory,
+	};
+	const interesting = processor.generateInterestingUnderlyingGroupings([grouping], config);
+	assertEquals(interesting.length, 1);
+	assertEquals(interesting[0].stockTrades.length, 0);
 });
 
 Deno.test("no stock trades matching when no lots", () => {
-  const groupingNoLots: FinancialGrouping = {
-    ...grouping,
-    stockTaxLots: [],
-  };
-  const processor = new FinancialEventsProcessor(null, new LotMatcher());
-  const config: LotMatchingConfiguration = {
-    fromDate: makeDate("2023-01-01"),
-    toDate: makeDate("2023-01-02"),
-    forStocks: matchingMethodFactory,
-    forDerivatives: matchingMethodFactory,
-  };
-  const interesting = processor.generateInterestingUnderlyingGroupings([groupingNoLots], config);
-  assertEquals(interesting.length, 1);
-  assertEquals(interesting[0].stockTrades.length, 0);
-  assertEquals(interesting[0].derivativeGroupings.length, 0);
+	const groupingNoLots: FinancialGrouping = {
+		...grouping,
+		stockTaxLots: [],
+	};
+	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	const config: LotMatchingConfiguration = {
+		fromDate: makeDate("2023-01-01"),
+		toDate: makeDate("2023-01-02"),
+		forStocks: matchingMethodFactory,
+		forDerivatives: matchingMethodFactory,
+	};
+	const interesting = processor.generateInterestingUnderlyingGroupings([groupingNoLots], config);
+	assertEquals(interesting.length, 1);
+	assertEquals(interesting[0].stockTrades.length, 0);
+	assertEquals(interesting[0].derivativeGroupings.length, 0);
 });

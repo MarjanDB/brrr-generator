@@ -2,17 +2,17 @@ import type { DateTime } from "luxon";
 import type { Trade } from "./Trade.ts";
 
 export type LotAcquired = {
-  date: DateTime;
-  relation: Trade;
+	date: DateTime;
+	relation: Trade;
 };
 
 export type LotSold = {
-  date: DateTime;
-  relation: Trade;
+	date: DateTime;
+	relation: Trade;
 };
 
 export type Lot = {
-  quantity: number;
-  acquired: LotAcquired;
-  sold: LotSold;
+	quantity: number;
+	acquired: LotAcquired;
+	sold: LotSold;
 };

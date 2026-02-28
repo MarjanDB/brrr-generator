@@ -1,7 +1,7 @@
 import type { DateTime } from "luxon";
 
 export type Trade = {
-  id: string;
-  quantity: number;
-  date: DateTime;
+	id: string;
+	quantity: number;
+	date: DateTime;
 };

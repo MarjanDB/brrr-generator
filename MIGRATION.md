@@ -11,13 +11,13 @@ This document tracks the migration of brrr-generator from Python 3.12 to TypeScr
 1. Create `deno.json` at repo root with workspace members and task definitions:
    ```json
    {
-     "workspace": ["lib", "app"],
-     "tasks": {
-       "test": "deno test --allow-read",
-       "fmt": "deno fmt",
-       "lint": "deno lint",
-       "type-check": "deno check **/*.ts"
-     }
+   	"workspace": ["lib", "app"],
+   	"tasks": {
+   		"test": "deno test --allow-read",
+   		"fmt": "deno fmt",
+   		"lint": "deno lint",
+   		"type-check": "deno check **/*.ts"
+   	}
    }
    ```
 2. Create `lib/deno.json` with `compilerOptions: { strict: true }`.
@@ -33,7 +33,8 @@ This document tracks the migration of brrr-generator from Python 3.12 to TypeScr
    notebooks/
    app/
    ```
-   The `app/` directory is created now as a placeholder. Its internal structure (Nuxt scaffold) is deferred to Phase 9, after parity with the Python codebase is achieved.
+   The `app/` directory is created now as a placeholder. Its internal structure (Nuxt scaffold) is deferred to Phase 9, after parity with
+   the Python codebase is achieved.
 5. Copy `src/InfoProviders/*.json` lookup files to `lib/infoProviders/` — these require no format changes.
 
 **Python removed:** `Pipfile`, `Pipfile.lock`, `pyproject.toml`, `Makefile`.
@@ -46,21 +47,22 @@ This document tracks the migration of brrr-generator from Python 3.12 to TypeScr
 
 **Source files:** `src/Core/FinancialEvents/Schemas/`
 
-| Python | TypeScript |
-|--------|-----------|
-| `@dataclass class Foo` | `type Foo = { ... }` |
-| `class Bar(Enum)` | `enum Bar { ... }` |
-| `Generic[A, S]` | `<A, S>` generic type parameters |
-| `Sequence[X]` | `readonly X[]` |
-| `X \| None` | `X \| null` |
-| `str` | `string` |
-| `float` / `int` | `number` |
-| `Arrow` (datetime) | `luxon.DateTime` |
+| Python                 | TypeScript                       |
+| ---------------------- | -------------------------------- |
+| `@dataclass class Foo` | `type Foo = { ... }`             |
+| `class Bar(Enum)`      | `enum Bar { ... }`               |
+| `Generic[A, S]`        | `<A, S>` generic type parameters |
+| `Sequence[X]`          | `readonly X[]`                   |
+| `X \| None`            | `X \| null`                      |
+| `str`                  | `string`                         |
+| `float` / `int`        | `number`                         |
+| `Arrow` (datetime)     | `luxon.DateTime`                 |
 
 **Files to port:**
 
 - `CommonFormats.py` → `lib/core/schemas/CommonFormats.ts`
-  - `GenericAssetClass`, `GenericCategory`, `GenericShortLong`, `GenericDividendType`, `GenericTradeReportItemGainType`, `GenericDerivativeReportItemGainType`, `GenericMonetaryExchangeInformation`
+  - `GenericAssetClass`, `GenericCategory`, `GenericShortLong`, `GenericDividendType`, `GenericTradeReportItemGainType`,
+    `GenericDerivativeReportItemGainType`, `GenericMonetaryExchangeInformation`
 - `FinancialIdentifier.py` → `lib/core/schemas/FinancialIdentifier.ts`
   - Class with `isin`, `ticker`, `name`; `isTheSameAs()`, `sameInstrumentByIsin()` methods
 - `Events.py` → `lib/core/schemas/Events.ts`
@@ -84,6 +86,7 @@ Also port the staging schemas from `src/Core/StagingFinancialEvents/Schemas/` to
 **Goal:** Port lot matching strategies.
 
 **Source files:**
+
 - `src/Core/LotMatching/Services/LotMatcher.py`
 - `src/Core/LotMatching/Services/FifoLotMatchingMethod.py`
 - `src/Core/LotMatching/Services/ProvidedLotMatchingMethod.py`
@@ -91,6 +94,7 @@ Also port the staging schemas from `src/Core/StagingFinancialEvents/Schemas/` to
 **Target:** `lib/core/lotMatching/`
 
 Key translation notes:
+
 - The `LotMatcher` selects strategy based on `TaxAuthorityLotMatchingMethod` config.
 - FIFO: iterate open buy lots oldest-first; match against sell quantity; create `TaxLotStock` records; handle partial lots.
 - PROVIDED: use broker-assigned lot IDs (IBKR open/close lot pairs) for direct matching.
@@ -105,12 +109,14 @@ Tests live in `lib/core/lotMatching/Tests/`.
 **Goal:** Port `StagingFinancialGroupingProcessor` and its dependencies.
 
 **Source files:**
+
 - `src/Core/StagingFinancialEvents/Services/StagingFinancialGroupingProcessor.py`
 - Event and lot processors in `src/Core/StagingFinancialEvents/Services/`
 
 **Target:** `lib/core/stagingProcessor/`
 
 This is the core translation engine:
+
 - Accepts `StagingFinancialEvents` (from broker layer)
 - Resolves partial identifier relationships (matches staging relationship partials using `sameInstrumentByIsin`)
 - Applies lot matching per grouping
@@ -140,6 +146,7 @@ const doc = parser.parse(xmlString);
 ```
 
 Key Python → TypeScript translation for IBKR:
+
 - `lxml.etree` → `fast-xml-parser` (`XMLParser`)
 - `arrow.get(str)` → `DateTime.fromISO(str)` (luxon)
 - String-to-enum coercion → TypeScript `enum` lookup
@@ -167,7 +174,8 @@ const xml = builder.build(reportObject);
 
 Port each report type (dividends, stock trades, derivative trades) as a separate class/function.
 
-Also port `ConfigurationProvider` to read `userConfig` — in notebooks use `Deno.readTextFile`; in the web app the user provides config via the UI.
+Also port `ConfigurationProvider` to read `userConfig` — in notebooks use `Deno.readTextFile`; in the web app the user provides config via
+the UI.
 
 Tests live in `lib/taxAuthorities/slovenia/Tests/`.
 
@@ -178,6 +186,7 @@ Tests live in `lib/taxAuthorities/slovenia/Tests/`.
 **Goal:** Make lookup JSON files available to `lib/`.
 
 **Source files:**
+
 - `src/InfoProviders/missingISINLookup.json`
 - `src/InfoProviders/missingCompaniesLookup.json`
 - Other lookup JSON files
@@ -203,12 +212,14 @@ This works in both Deno and Nuxt (Vite handles JSON imports natively).
 **Target:** same files, updated to Deno kernel
 
 Steps:
+
 1. Install the Deno Jupyter kernel: `deno jupyter --install`
 2. In each notebook, change the kernel metadata from `python3` to `deno`.
 3. Replace Python cell code with TypeScript equivalents following the notebook pattern in `ARCHITECTURE.md`.
 4. Verify each notebook runs end-to-end.
 
 Notebook pattern (TypeScript):
+
 ```typescript
 import { IbkrBrokerageExportProvider } from "../lib/brokerages/ibkr/IbkrBrokerageExportProvider.ts";
 import { StagingFinancialGroupingProcessor } from "../lib/core/stagingProcessor/StagingFinancialGroupingProcessor.ts";
@@ -233,9 +244,11 @@ authority.generateStockReport(events, { year: 2024, lotMatching: "FIFO" });
 
 **Target:** `app/` (directory created in Phase 1; scaffolded here)
 
-This phase begins only after the core library (`lib/`), notebooks, and tests are at parity with the Python implementation. The Nuxt app is a thin UI layer over `lib/` — `lib/` must be stable before building the app.
+This phase begins only after the core library (`lib/`), notebooks, and tests are at parity with the Python implementation. The Nuxt app is a
+thin UI layer over `lib/` — `lib/` must be stable before building the app.
 
 Steps:
+
 1. Scaffold: `npx nuxi init app` (or `deno run -A npm:nuxi init app`) inside the existing `app/` directory.
 2. Configure `nuxt.config.ts` for static site generation (`ssr: false`).
 3. Create upload page: `app/pages/index.vue`
@@ -244,9 +257,9 @@ Steps:
 4. Wire file reading in `app/utils/processReport.ts`:
    ```typescript
    export async function processReport(file: File): Promise<string> {
-     const xml = await file.text();
-     // call lib/ pipeline
-     return generatedXml;
+   	const xml = await file.text();
+   	// call lib/ pipeline
+   	return generatedXml;
    }
    ```
 5. Trigger browser download of generated report using `URL.createObjectURL(new Blob([xml]))`.
@@ -287,51 +300,51 @@ Deno.test("FIFO lot matching", () => {
 
 ### Dependencies
 
-| Python | TypeScript/Deno equivalent |
-|--------|---------------------------|
-| `arrow` | `luxon` (`npm:luxon`) — `DateTime`, `Duration` |
-| `lxml` / `xml.etree` | `fast-xml-parser` — `XMLParser` for input, `XMLBuilder` for output |
-| `pandas` (CSV output) | `csv-generate` (`npm:csv-generate`) |
-| `pandas` (data manipulation) | Plain `Array` methods + `Intl.NumberFormat` for formatting |
-| `pycountry` | Static JSON lookup or `npm:i18n-iso-countries` |
-| `opyoid` (DI) | Constructor injection / factory functions (no framework) |
-| `pytest` | `deno test` + `jsr:@std/assert` |
-| `black` | `deno fmt` |
-| `mypy` | TypeScript strict mode (`"strict": true` in `deno.json`) |
-| `pipenv` | `deno.json` + `deno cache` |
-| `PyYAML` | `npm:js-yaml` or JSON config |
+| Python                       | TypeScript/Deno equivalent                                         |
+| ---------------------------- | ------------------------------------------------------------------ |
+| `arrow`                      | `luxon` (`npm:luxon`) — `DateTime`, `Duration`                     |
+| `lxml` / `xml.etree`         | `fast-xml-parser` — `XMLParser` for input, `XMLBuilder` for output |
+| `pandas` (CSV output)        | `csv-generate` (`npm:csv-generate`)                                |
+| `pandas` (data manipulation) | Plain `Array` methods + `Intl.NumberFormat` for formatting         |
+| `pycountry`                  | Static JSON lookup or `npm:i18n-iso-countries`                     |
+| `opyoid` (DI)                | Constructor injection / factory functions (no framework)           |
+| `pytest`                     | `deno test` + `jsr:@std/assert`                                    |
+| `black`                      | `deno fmt`                                                         |
+| `mypy`                       | TypeScript strict mode (`"strict": true` in `deno.json`)           |
+| `pipenv`                     | `deno.json` + `deno cache`                                         |
+| `PyYAML`                     | `npm:js-yaml` or JSON config                                       |
 
 ### Language constructs
 
-| Python | TypeScript |
-|--------|-----------|
-| `@dataclass class Foo` | `type Foo = { ... }` (plain type alias) |
-| `class Bar(Enum)` | `enum Bar { A = "A", B = "B" }` |
-| `Generic[A, S]` | `<A, S>` generic parameters |
-| `Sequence[X]` | `readonly X[]` |
-| `X \| None` | `X \| null` |
-| `Optional[X]` | `X \| undefined` or `X \| null` |
-| `Union[A, B]` | `A \| B` |
-| `TypeVar("T", bound=Foo)` | `<T extends Foo>` |
-| `@staticmethod` | `static` method |
-| `@classmethod` | `static` method returning `this` / factory pattern |
-| `__str__` | `toString()` |
-| `__eq__` | Custom `equals()` method (no operator overloading) |
-| `__hash__` | Not needed; use `Map`/`Set` with string keys instead |
-| `dataclasses.field(default_factory=list)` | `= []` in interface, or initialize in constructor |
-| `from __future__ import annotations` | Not needed in TypeScript |
-| `if __name__ == "__main__"` | Not needed; Deno scripts run directly |
+| Python                                    | TypeScript                                           |
+| ----------------------------------------- | ---------------------------------------------------- |
+| `@dataclass class Foo`                    | `type Foo = { ... }` (plain type alias)              |
+| `class Bar(Enum)`                         | `enum Bar { A = "A", B = "B" }`                      |
+| `Generic[A, S]`                           | `<A, S>` generic parameters                          |
+| `Sequence[X]`                             | `readonly X[]`                                       |
+| `X \| None`                               | `X \| null`                                          |
+| `Optional[X]`                             | `X \| undefined` or `X \| null`                      |
+| `Union[A, B]`                             | `A \| B`                                             |
+| `TypeVar("T", bound=Foo)`                 | `<T extends Foo>`                                    |
+| `@staticmethod`                           | `static` method                                      |
+| `@classmethod`                            | `static` method returning `this` / factory pattern   |
+| `__str__`                                 | `toString()`                                         |
+| `__eq__`                                  | Custom `equals()` method (no operator overloading)   |
+| `__hash__`                                | Not needed; use `Map`/`Set` with string keys instead |
+| `dataclasses.field(default_factory=list)` | `= []` in interface, or initialize in constructor    |
+| `from __future__ import annotations`      | Not needed in TypeScript                             |
+| `if __name__ == "__main__"`               | Not needed; Deno scripts run directly                |
 
 ### Patterns
 
-| Python pattern | TypeScript equivalent |
-|----------------|----------------------|
-| `isinstance(x, Foo)` | Type guard: `function isFoo(x): x is Foo` |
-| `match x: case Foo():` | `if` chain with type guards or discriminated union `switch` |
-| Multiple inheritance | Interface composition |
-| `@abstractmethod` | `abstract` class or interface |
-| Context manager (`with`) | `try/finally` or explicit cleanup |
-| Generator (`yield`) | Generator function (`function*`) or async iterator |
-| List comprehension | `array.filter(...).map(...)` |
-| Dict comprehension | `Object.fromEntries(array.map(...))` |
-| `sorted(items, key=lambda x: x.date)` | `[...items].sort((a, b) => ...)` |
+| Python pattern                        | TypeScript equivalent                                       |
+| ------------------------------------- | ----------------------------------------------------------- |
+| `isinstance(x, Foo)`                  | Type guard: `function isFoo(x): x is Foo`                   |
+| `match x: case Foo():`                | `if` chain with type guards or discriminated union `switch` |
+| Multiple inheritance                  | Interface composition                                       |
+| `@abstractmethod`                     | `abstract` class or interface                               |
+| Context manager (`with`)              | `try/finally` or explicit cleanup                           |
+| Generator (`yield`)                   | Generator function (`function*`) or async iterator          |
+| List comprehension                    | `array.filter(...).map(...)`                                |
+| Dict comprehension                    | `Object.fromEntries(array.map(...))`                        |
+| `sorted(items, key=lambda x: x.date)` | `[...items].sort((a, b) => ...)`                            |

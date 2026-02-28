@@ -2,19 +2,23 @@
 
 ## Overview
 
-**brrr-generator** (IB-tax-calculator) generates country-specific tax authority reports from broker activity statements. It is written in TypeScript and runs on Deno.
+**brrr-generator** (IB-tax-calculator) generates country-specific tax authority reports from broker activity statements. It is written in
+TypeScript and runs on Deno.
 
 **Tech stack:**
+
 - **Deno** — runtime, tooling (`deno test`, `deno fmt`, `deno lint`), Jupyter kernel
 - **TypeScript** — strict mode throughout
 - **Nuxt 3** — client-side-only web app (no server; all processing runs in-browser)
 
 **Key dependencies (declared in `lib/deno.json`):**
+
 - **`luxon`** — date/time operations (`DateTime`, `Duration`)
 - **`fast-xml-parser`** — XML parsing (broker input) and XML generation (report output)
 - **`csv-generate`** — CSV report generation
 
-**No-server philosophy:** The Nuxt app does zero server-side processing. Broker XML files are loaded via the browser `File`/`FileReader` API, processed entirely in `lib/` (which has no Deno-specific dependencies), and the generated report is offered as a browser download.
+**No-server philosophy:** The Nuxt app does zero server-side processing. Broker XML files are loaded via the browser `File`/`FileReader`
+API, processed entirely in `lib/` (which has no Deno-specific dependencies), and the generated report is offered as a browser download.
 
 ---
 
@@ -97,28 +101,29 @@ Identifies a traded instrument. At least one of `isin`, `ticker`, or `name` must
 
 ```typescript
 interface FinancialIdentifier {
-  isin: string | null;
-  ticker: string | null;
-  name: string | null;
+	isin: string | null;
+	ticker: string | null;
+	name: string | null;
 }
 ```
 
-Equality uses strict rules: ISIN alone (no ticker/name), ISIN + ticker (no name), or ISIN + ticker + name. The `sameInstrumentByIsin` helper is used for corporate-action resolution where only ISIN matters (e.g. ticker changed: `RKLB.OLD` → `RKLB`).
+Equality uses strict rules: ISIN alone (no ticker/name), ISIN + ticker (no name), or ISIN + ticker + name. The `sameInstrumentByIsin` helper
+is used for corporate-action resolution where only ISIN matters (e.g. ticker changed: `RKLB.OLD` → `RKLB`).
 
 ### `TradeEvent` union
 
 Base event type with ID, identifier, asset class, date, multiplier, exchanged money, and provenance. Concrete subtypes:
 
-| Type | Description |
-|------|-------------|
-| `TradeEventStockAcquired` | Stock buy with `acquiredReason` |
-| `TradeEventStockSold` | Stock sell |
-| `TradeEventDerivativeAcquired` | Derivative buy |
-| `TradeEventDerivativeSold` | Derivative sell |
-| `TradeEventCashTransactionDividend` | Dividend cash event |
-| `TradeEventCashTransactionWithholdingTax` | Withholding tax event |
-| `TradeEventCashTransactionPaymentInLieuOfDividend` | Payment in lieu |
-| `TradeEventCashTransactionWithholdingTaxForPaymentInLieu` | Withholding tax on PIL |
+| Type                                                      | Description                     |
+| --------------------------------------------------------- | ------------------------------- |
+| `TradeEventStockAcquired`                                 | Stock buy with `acquiredReason` |
+| `TradeEventStockSold`                                     | Stock sell                      |
+| `TradeEventDerivativeAcquired`                            | Derivative buy                  |
+| `TradeEventDerivativeSold`                                | Derivative sell                 |
+| `TradeEventCashTransactionDividend`                       | Dividend cash event             |
+| `TradeEventCashTransactionWithholdingTax`                 | Withholding tax event           |
+| `TradeEventCashTransactionPaymentInLieuOfDividend`        | Payment in lieu                 |
+| `TradeEventCashTransactionWithholdingTaxForPaymentInLieu` | Withholding tax on PIL          |
 
 ### `TaxLot<A, S>`
 
@@ -126,13 +131,13 @@ A matched pair of an acquired event and a sold event, with quantity.
 
 ```typescript
 interface TaxLot<A extends TradeEvent, S extends TradeEvent> {
-  id: string;
-  financialIdentifier: FinancialIdentifier;
-  quantity: number;
-  acquired: A;
-  sold: S;
-  shortLongType: "SHORT" | "LONG";
-  provenance: ProvenanceStep[];
+	id: string;
+	financialIdentifier: FinancialIdentifier;
+	quantity: number;
+	acquired: A;
+	sold: S;
+	shortLongType: "SHORT" | "LONG";
+	provenance: ProvenanceStep[];
 }
 
 type TaxLotStock = TaxLot<TradeEventStockAcquired, TradeEventStockSold>;
@@ -145,14 +150,14 @@ All activity for one financial identifier (after staging resolution):
 
 ```typescript
 interface FinancialGrouping {
-  financialIdentifier: FinancialIdentifier;
-  countryOfOrigin: string | null;
-  underlyingCategory: GenericCategory;
-  stockTrades: (TradeEventStockAcquired | TradeEventStockSold)[];
-  stockTaxLots: TaxLotStock[];
-  derivativeGroupings: DerivativeGrouping[];
-  cashTransactions: TransactionCash[];
-  provenance: ProvenanceStep[];
+	financialIdentifier: FinancialIdentifier;
+	countryOfOrigin: string | null;
+	underlyingCategory: GenericCategory;
+	stockTrades: (TradeEventStockAcquired | TradeEventStockSold)[];
+	stockTaxLots: TaxLotStock[];
+	derivativeGroupings: DerivativeGrouping[];
+	cashTransactions: TransactionCash[];
+	provenance: ProvenanceStep[];
 }
 ```
 
@@ -164,15 +169,15 @@ Directed edge: `fromIdentifier` was superseded by `toIdentifier`.
 type IdentifierChangeType = "RENAME" | "SPLIT" | "REVERSE_SPLIT";
 
 interface IdentifierRelationship {
-  fromIdentifier: FinancialIdentifier;
-  toIdentifier: FinancialIdentifier;
-  changeType: IdentifierChangeType;
-  effectiveDate: Temporal.PlainDate;  // or Date
+	fromIdentifier: FinancialIdentifier;
+	toIdentifier: FinancialIdentifier;
+	changeType: IdentifierChangeType;
+	effectiveDate: Temporal.PlainDate; // or Date
 }
 
 interface IdentifierRelationshipSplit extends IdentifierRelationship {
-  quantityBefore: number;
-  quantityAfter: number;
+	quantityBefore: number;
+	quantityAfter: number;
 }
 ```
 
@@ -180,8 +185,10 @@ interface IdentifierRelationshipSplit extends IdentifierRelationship {
 
 ## lib/ Design Principles
 
-1. **No Deno-specific dependencies** — `lib/` must not use `Deno.*` APIs. All dependencies (`luxon`, `fast-xml-parser`, `csv-generate`) are npm packages that work in both Deno and the browser.
-2. **No Deno-specific APIs** — no `Deno.readFile`, `Deno.args`, etc. File I/O is the caller's responsibility (notebook or app passes in strings/buffers).
+1. **No Deno-specific dependencies** — `lib/` must not use `Deno.*` APIs. All dependencies (`luxon`, `fast-xml-parser`, `csv-generate`) are
+   npm packages that work in both Deno and the browser.
+2. **No Deno-specific APIs** — no `Deno.readFile`, `Deno.args`, etc. File I/O is the caller's responsibility (notebook or app passes in
+   strings/buffers).
 3. **Pure TypeScript** — no decorators, no reflect-metadata, no DI framework.
 4. **Readonly arrays** — prefer `readonly T[]` over mutable arrays in interfaces.
 5. **Explicit imports** — no barrel re-exports that obscure the dependency graph.
@@ -230,13 +237,14 @@ No data leaves the browser. The app is deployable as a static site (e.g. GitHub 
 
 Three strategies implemented in `lib/core/lotMatching/`:
 
-| Method | Description |
-|--------|-------------|
-| `NONE` | No lot matching; events reported individually. Used for dividends. |
-| `FIFO` | First-in, first-out. Each sell is matched against the oldest open buy lot(s). Partial lots are supported. |
-| `PROVIDED` | Lot assignments provided explicitly by the broker (IBKR assignment IDs). |
+| Method     | Description                                                                                               |
+| ---------- | --------------------------------------------------------------------------------------------------------- |
+| `NONE`     | No lot matching; events reported individually. Used for dividends.                                        |
+| `FIFO`     | First-in, first-out. Each sell is matched against the oldest open buy lot(s). Partial lots are supported. |
+| `PROVIDED` | Lot assignments provided explicitly by the broker (IBKR assignment IDs).                                  |
 
-The lot matcher is invoked by `StagingFinancialGroupingProcessor` per grouping, producing `TaxLotStock[]` / `TaxLotDerivative[]` stored in the resulting `FinancialGrouping`.
+The lot matcher is invoked by `StagingFinancialGroupingProcessor` per grouping, producing `TaxLotStock[]` / `TaxLotDerivative[]` stored in
+the resulting `FinancialGrouping`.
 
 ---
 
@@ -244,11 +252,11 @@ The lot matcher is invoked by `StagingFinancialGroupingProcessor` per grouping, 
 
 `IdentifierRelationship` records carry corporate action information through the pipeline. Three types:
 
-| Type | Description | Effect |
-|------|-------------|--------|
-| `RENAME` | Ticker/name change; same ISIN, no quantity change | Groupings merged by `ApplyIdentifierRelationshipsService` |
-| `SPLIT` | 1 share → N shares under new identifier | Quantity scaled; basis adjusted |
-| `REVERSE_SPLIT` | N shares → 1 share under new identifier | Quantity scaled; basis adjusted |
+| Type            | Description                                       | Effect                                                    |
+| --------------- | ------------------------------------------------- | --------------------------------------------------------- |
+| `RENAME`        | Ticker/name change; same ISIN, no quantity change | Groupings merged by `ApplyIdentifierRelationshipsService` |
+| `SPLIT`         | 1 share → N shares under new identifier           | Quantity scaled; basis adjusted                           |
+| `REVERSE_SPLIT` | N shares → 1 share under new identifier           | Quantity scaled; basis adjusted                           |
 
 `IdentifierRelationshipSplit` carries `quantityBefore` and `quantityAfter` for scaling calculations.
 
