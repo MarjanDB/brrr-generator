@@ -1,5 +1,5 @@
 import { CashTransactionType, type CorporateAction, type LotDerivative, type LotStock, type TradeDerivative, type TradeStock, type TransactionCash } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas.ts";
-import type { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades.ts";
+import { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades.ts";
 import {
 	GenericAssetClass,
 	GenericCategory,

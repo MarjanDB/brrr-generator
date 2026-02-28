@@ -556,3 +556,43 @@ export const TransactionCash = {
 };
 
 export type TransactionCash = z.output<typeof TransactionCash.Schema>;
+
+// ---------------------------------------------------------------------------
+// FlexQueryResponse — top-level XML document schema
+// ---------------------------------------------------------------------------
+
+function toArray<T extends z.ZodTypeAny>(schema: T) {
+	return z.preprocess(
+		(v) => v === undefined || v === null ? [] : Array.isArray(v) ? v : [v],
+		z.array(schema),
+	);
+}
+
+const RawRecord = z.record(z.string(), z.unknown());
+
+function emptyIfNotObject(v: unknown): unknown {
+	return typeof v === "object" && v !== null ? v : {};
+}
+
+const FlexStatementSchema = z.object({
+	Trades: z.preprocess(emptyIfNotObject, z.object({
+		Trade: toArray(RawRecord),
+		Lot: toArray(RawRecord),
+	})).optional().transform((v) => v ?? { Trade: [], Lot: [] }),
+	CashTransactions: z.preprocess(emptyIfNotObject, z.object({
+		CashTransaction: toArray(RawRecord),
+	})).optional().transform((v) => v ?? { CashTransaction: [] }),
+	CorporateActions: z.preprocess(emptyIfNotObject, z.object({
+		CorporateAction: toArray(RawRecord),
+	})).optional().transform((v) => v ?? { CorporateAction: [] }),
+});
+
+export type FlexStatement = z.output<typeof FlexStatementSchema>;
+
+export const FlexQueryResponseSchema = z.object({
+	FlexQueryResponse: z.object({
+		FlexStatements: z.object({
+			FlexStatement: toArray(FlexStatementSchema),
+		}),
+	}),
+});

@@ -11,7 +11,7 @@ import {
 	SubCategory,
 	TransactionType,
 } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas.ts";
-import type { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades.ts";
+import { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades.ts";
 import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform.ts";
 import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution.ts";
@@ -31,8 +31,8 @@ function makeDate(iso: string): ValidDateTime {
 	return DateTime.fromISO(iso) as ValidDateTime;
 }
 
-function makeEmptySegmented(overrides: Partial<SegmentedTrades>): SegmentedTrades {
-	return {
+function makeEmptySegmented(overrides: Partial<ConstructorParameters<typeof SegmentedTrades>[0]>): SegmentedTrades {
+	return new SegmentedTrades({
 		cashTransactions: [],
 		corporateActions: [],
 		stockTrades: [],
@@ -40,7 +40,7 @@ function makeEmptySegmented(overrides: Partial<SegmentedTrades>): SegmentedTrade
 		derivativeTrades: [],
 		derivativeLots: [],
 		...overrides,
-	};
+	});
 }
 
 const simpleTradeBuy: TradeStock = {
