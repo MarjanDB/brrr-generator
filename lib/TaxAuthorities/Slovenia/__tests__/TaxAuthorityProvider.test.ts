@@ -243,12 +243,14 @@ Deno.test("testKdvpSimpleCsv - 2 rows with correct quantities", () => {
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const provider = makeProvider(simpleTaxPayer, config);
-	const rows = provider.generateSpreadsheetExport(SlovenianTaxAuthorityReportTypes.DOH_KDVP, testData);
+	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	const generator = new KdvpReportGenerator(processor);
+	const items = generator.convert(config, testData.groupings);
+	const events = items.flatMap((item) => item.items.flatMap((line) => line.events));
 
-	assertEquals(rows.length, 2, "Only 2 rows should be present");
-	assertEquals((rows[0] as Record<string, unknown>)["quantity"], 1, "The first line should be the buy line");
-	assertEquals((rows[1] as Record<string, unknown>)["quantity"], -1, "The second line should be the sell line");
+	assertEquals(events.length, 2, "Only 2 rows should be present");
+	assertEquals(events[0].quantity, 1, "The first line should be the buy line");
+	assertEquals(events[1].quantity, -1, "The second line should be the sell line");
 });
 
 Deno.test("testKdvpSimpleXml - 1 purchase and 1 sale in XML", () => {
@@ -275,12 +277,14 @@ Deno.test("testIfiSimpleCsv - 2 rows with correct quantities", () => {
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const provider = makeProvider(simpleTaxPayer, config);
-	const rows = provider.generateSpreadsheetExport(SlovenianTaxAuthorityReportTypes.D_IFI, testData);
+	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	const generator = new IfiReportGenerator(processor);
+	const items = generator.convert(config, testData.groupings);
+	const rows = items.flatMap((item) => item.items);
 
 	assertEquals(rows.length, 2, "Only 2 rows should be present");
-	assertEquals((rows[0] as Record<string, unknown>)["quantity"], 1, "The first line should be the buy line");
-	assertEquals((rows[1] as Record<string, unknown>)["quantity"], -1, "The second line should be the sell line");
+	assertEquals(rows[0].quantity, 1, "The first line should be the buy line");
+	assertEquals(rows[1].quantity, -1, "The second line should be the sell line");
 });
 
 Deno.test("testIfiSimpleXml - 1 purchase and 1 sale in XML", () => {
@@ -307,14 +311,14 @@ Deno.test("testDivSimpleCsv - 1 row with correct amounts", () => {
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
 	};
 
-	const provider = makeProvider(simpleTaxPayer, config);
-	const rows = provider.generateSpreadsheetExport(SlovenianTaxAuthorityReportTypes.DOH_DIV, testData);
+	const generator = new DivReportGenerator(new CompanyLookupProvider(), new CountryLookupProvider());
+	const rows = generator.convert(config, testData.groupings);
 
 	assertEquals(rows.length, 1, "Only 1 row should be present, because dividend and withholding tax are related");
-	assertEquals(rows[0]["Znesek dividend (v EUR)"], 10.0, "The dividend amount should equal 10");
-	assertEquals(rows[0]["Tuji davek (v EUR)"], 5.0, "The dividend withheld tax should be 5");
-	assertEquals(rows[0]["Znesek dividend (v Originalni Valuti)"], 20, "The original dividend amount should equal 20");
-	assertEquals(rows[0]["Tuji davek (v Originalni Valuti)"], 10.0, "The original dividend withheld tax should be 10");
+	assertEquals(rows[0].dividendAmount, 10.0, "The dividend amount should equal 10");
+	assertEquals(rows[0].foreignTaxPaid, 5.0, "The dividend withheld tax should be 5");
+	assertEquals(rows[0].dividendAmountInOriginalCurrency, 20, "The original dividend amount should equal 20");
+	assertEquals(rows[0].foreignTaxPaidInOriginalCurrency, 10.0, "The original dividend withheld tax should be 10");
 });
 
 Deno.test("testDivSimpleXml - 1 dividend line in XML", () => {

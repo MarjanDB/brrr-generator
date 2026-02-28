@@ -234,7 +234,7 @@ export class DivReportGenerator {
 		return generateXmlReport(config, userConfig, selfReport, items);
 	}
 
-	toCsv(items: EDavkiDividendReportLine[]): Record<string, unknown>[] {
+	toCsv(items: EDavkiDividendReportLine[]): string {
 		return generateCsvReport(items);
 	}
 }

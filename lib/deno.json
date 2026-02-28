@@ -9,7 +9,7 @@
 	"imports": {
 		"@brrr/": "./",
 		"@std/assert": "jsr:@std/assert@^1.0.19",
-		"csv-generate": "npm:csv-generate@^4.5.0",
+		"csv-stringify": "npm:csv-stringify@^6.6.0",
 		"fast-xml-parser": "npm:fast-xml-parser@^5.4.1",
 		"inversify": "npm:inversify@^7.11.0",
 		"luxon": "npm:luxon@^3.7.2",

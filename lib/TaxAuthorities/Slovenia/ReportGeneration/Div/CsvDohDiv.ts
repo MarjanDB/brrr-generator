@@ -1,9 +1,8 @@
+import { stringify } from "csv-stringify/sync";
 import type { EDavkiDividendReportLine } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
 
-type CsvRow = Record<string, unknown>;
-
-export function generateCsvReport(divLines: EDavkiDividendReportLine[]): CsvRow[] {
-	return divLines.map((data) => ({
+export function generateCsvReport(divLines: EDavkiDividendReportLine[]): string {
+	const rows = divLines.map((data) => ({
 		"Datum prejema dividend": data.dateReceived.toFormat("yyyy-MM-dd"),
 		"Davčna številka izplačevalca dividend": data.taxNumberForDividendPayer,
 		"Identifikacijska številka izplačevalca dividend": data.dividendPayerIdentificationNumber,
@@ -19,4 +18,6 @@ export function generateCsvReport(divLines: EDavkiDividendReportLine[]): CsvRow[
 		"Uveljavljam oprostitev po mednarodni pogodbi": data.taxReliefParagraphInInternationalTreaty,
 		"Action Tracking": data.dividendIdentifierForTracking,
 	}));
+
+	return stringify(rows, { header: true, cast: { boolean: (v) => String(v) } });
 }

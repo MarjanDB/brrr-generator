@@ -99,7 +99,7 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider<Slov
 	generateSpreadsheetExport(
 		reportType: SlovenianTaxAuthorityReportTypes,
 		events: FinancialEvents,
-	): Record<string, unknown>[] {
+	): string {
 		const data = this._applyRelationships(events);
 
 		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_KDVP) {
@@ -114,6 +114,6 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider<Slov
 			return this.ifiGenerator.toCsv(this.ifiGenerator.convert(this.reportConfig, data));
 		}
 
-		return [];
+		return "";
 	}
 }

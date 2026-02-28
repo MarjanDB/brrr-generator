@@ -140,7 +140,7 @@ export class IfiReportGenerator {
 		return generateXmlReport(config, items);
 	}
 
-	toCsv(items: EDavkiGenericDerivativeReportItem[]): Record<string, unknown>[] {
+	toCsv(items: EDavkiGenericDerivativeReportItem[]): string {
 		return generateCsvReport(items);
 	}
 }

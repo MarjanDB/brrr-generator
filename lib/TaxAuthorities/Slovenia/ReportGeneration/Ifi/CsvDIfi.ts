@@ -1,19 +1,32 @@
-import type { EDavkiGenericDerivativeReportItem } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
+import { stringify } from "csv-stringify/sync";
+import {
+	EDavkiDerivativeReportSecurityLineGenericEventBought,
+	type EDavkiGenericDerivativeReportItem,
+} from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
 
-type CsvRow = Record<string, unknown>;
-
-export function generateCsvReport(convertedTrades: EDavkiGenericDerivativeReportItem[]): CsvRow[] {
+export function generateCsvReport(convertedTrades: EDavkiGenericDerivativeReportItem[]): string {
 	if (convertedTrades.length === 0) {
-		return [];
+		return "";
 	}
 
-	const rows: CsvRow[] = [];
+	const rows = [];
 
 	for (const entry of convertedTrades) {
 		for (const item of entry.items) {
-			const row: CsvRow = {
+			const isBuy = item instanceof EDavkiDerivativeReportSecurityLineGenericEventBought;
+			const row = {
 				Name: entry.name,
-				...item,
+				BoughtOn: isBuy ? item.boughtOn.toISO() : null,
+				GainType: isBuy ? item.gainType : null,
+				SoldOn: isBuy ? null : item.soldOn.toISO(),
+				Quantity: item.quantity,
+				PricePerUnit: item.pricePerUnit,
+				PricePerUnitInOriginalCurrency: item.pricePerUnitInOriginalCurrency,
+				TotalPrice: item.totalPrice,
+				TotalPriceInOriginalCurrency: item.totalPriceInOriginalCurrency,
+				Commissions: item.commissions,
+				CommissionsInOriginalCurrency: item.commissionsInOriginalCurrency,
+				Leveraged: item.leveraged,
 				ISIN: entry.isin,
 				Ticker: entry.code,
 				HasForeignTax: entry.hasForeignTax,
@@ -25,5 +38,5 @@ export function generateCsvReport(convertedTrades: EDavkiGenericDerivativeReport
 		}
 	}
 
-	return rows;
+	return stringify(rows, { header: true, cast: { boolean: (v) => String(v) } });
 }

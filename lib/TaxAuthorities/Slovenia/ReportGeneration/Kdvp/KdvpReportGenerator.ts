@@ -156,7 +156,7 @@ export class KdvpReportGenerator {
 		return generateXmlReport(config, userConfig, documentType, items);
 	}
 
-	toCsv(items: EDavkiGenericTradeReportItem[]): Record<string, unknown>[] {
+	toCsv(items: EDavkiGenericTradeReportItem[]): string {
 		return generateCsvReport(items);
 	}
 }

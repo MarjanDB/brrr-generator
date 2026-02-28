@@ -16,53 +16,14 @@ import {
 	TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
 } from "@brrr/Core/Schemas/Events.ts";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
-import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
-import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
-import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts";
 import { CompanyLookupProvider, CountryLookupProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
-import { TaxAuthorityLotMatchingMethod, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
-import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
-import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes.ts";
-import { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider.ts";
-import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator.ts";
+import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
+import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator.ts";
-import { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator.ts";
 
 function makeDate(iso: string): ValidDateTime {
 	return DateTime.fromISO(iso) as ValidDateTime;
 }
-
-function makeProvider(taxPayerInfo: TaxPayerInfo, config: TaxAuthorityConfiguration): SlovenianTaxAuthorityProvider {
-	const processor = new FinancialEventsProcessor(null, new LotMatcher());
-	return new SlovenianTaxAuthorityProvider(
-		taxPayerInfo,
-		config,
-		new ApplyIdentifierRelationshipsService(),
-		new KdvpReportGenerator(processor),
-		new DivReportGenerator(new CompanyLookupProvider(), new CountryLookupProvider()),
-		new IfiReportGenerator(processor),
-	);
-}
-
-const simpleTaxPayer: TaxPayerInfo = {
-	taxNumber: "taxNumber",
-	taxpayerType: TaxPayerType.PHYSICAL_SUBJECT,
-	name: "name",
-	address1: "address1",
-	address2: "address2",
-	city: "city",
-	postNumber: "postNumber",
-	postName: "postName",
-	municipalityName: "municipality",
-	birthDate: makeDate("2000-01-01"),
-	maticnaStevilka: "maticna",
-	invalidskoPodjetje: false,
-	resident: true,
-	activityCode: "",
-	activityName: "",
-	countryId: "SI",
-	countryName: "Slovenia",
-};
 
 const cashTransactionDividend = new TradeEventCashTransactionDividend({
 	id: "ID",
@@ -182,8 +143,8 @@ Deno.test("PaymentInLieuOfDividend - withholding tax is reported separately from
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
 	};
 
-	const provider = makeProvider(simpleTaxPayer, config);
-	const rows = provider.generateSpreadsheetExport(SlovenianTaxAuthorityReportTypes.DOH_DIV, testData);
+	const generator = new DivReportGenerator(new CompanyLookupProvider(), new CountryLookupProvider());
+	const rows = generator.convert(config, testData.groupings);
 
 	assertEquals(
 		rows.length,
@@ -191,8 +152,8 @@ Deno.test("PaymentInLieuOfDividend - withholding tax is reported separately from
 		"2 rows should be present, as there is one dividend event and one payment in lieu of dividend event",
 	);
 
-	assertEquals(rows[0]["Znesek dividend (v EUR)"], 10.0);
-	assertEquals(rows[0]["Tuji davek (v EUR)"], 5.0);
-	assertEquals(rows[1]["Znesek dividend (v EUR)"], 5.0);
-	assertEquals(rows[1]["Tuji davek (v EUR)"], 2.5);
+	assertEquals(rows[0].dividendAmount, 10.0);
+	assertEquals(rows[0].foreignTaxPaid, 5.0);
+	assertEquals(rows[1].dividendAmount, 5.0);
+	assertEquals(rows[1].foreignTaxPaid, 2.5);
 });

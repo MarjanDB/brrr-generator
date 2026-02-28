@@ -1,7 +1,12 @@
-import internationalTreaties from "@brrr/InfoProviders/internationalTreaties.json" with { type: "json" };
-import specialCountryMappings from "@brrr/InfoProviders/specialCountryMappings.json" with { type: "json" };
-import missingISINLookup from "@brrr/InfoProviders/missingISINLookup.json" with { type: "json" };
-import missingCompaniesLookup from "@brrr/InfoProviders/missingCompaniesLookup.json" with { type: "json" };
+function readJson(relativePath: string): unknown {
+	const url = new URL(relativePath, import.meta.url);
+	return JSON.parse(Deno.readTextFileSync(url));
+}
+
+const internationalTreaties = readJson("./internationalTreaties.json");
+const specialCountryMappings = readJson("./specialCountryMappings.json");
+const missingISINLookup = readJson("./missingISINLookup.json");
+const missingCompaniesLookup = readJson("./missingCompaniesLookup.json");
 
 export enum TreatyType {
 	TaxRelief = "TAX_RELIEF",

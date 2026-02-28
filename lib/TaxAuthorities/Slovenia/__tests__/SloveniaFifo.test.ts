@@ -173,12 +173,14 @@ Deno.test("SloveniaFifo - testKdvpSimpleCsv - 2 rows with correct quantities", (
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const provider = makeProvider(simpleTaxPayer, config);
-	const rows = provider.generateSpreadsheetExport(SlovenianTaxAuthorityReportTypes.DOH_KDVP, testData);
+	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	const generator = new KdvpReportGenerator(processor);
+	const items = generator.convert(config, testData.groupings);
+	const events = items.flatMap((item) => item.items.flatMap((line) => line.events));
 
-	assertEquals(rows.length, 2, "Only 2 rows should be present");
-	assertEquals((rows[0] as Record<string, unknown>)["quantity"], 1, "The first line should be the buy line");
-	assertEquals((rows[1] as Record<string, unknown>)["quantity"], -1, "The second line should be the sell line");
+	assertEquals(events.length, 2, "Only 2 rows should be present");
+	assertEquals(events[0].quantity, 1, "The first line should be the buy line");
+	assertEquals(events[1].quantity, -1, "The second line should be the sell line");
 });
 
 Deno.test("SloveniaFifo - testKdvpSimpleXml - 1 purchase and 1 sale in XML", () => {
@@ -205,12 +207,14 @@ Deno.test("SloveniaFifo - testIfiSimpleCsv - 2 rows with correct quantities", ()
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const provider = makeProvider(simpleTaxPayer, config);
-	const rows = provider.generateSpreadsheetExport(SlovenianTaxAuthorityReportTypes.D_IFI, testData);
+	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	const generator = new IfiReportGenerator(processor);
+	const items = generator.convert(config, testData.groupings);
+	const rows = items.flatMap((item) => item.items);
 
 	assertEquals(rows.length, 2, "Only 2 rows should be present");
-	assertEquals((rows[0] as Record<string, unknown>)["quantity"], 1, "The first line should be the buy line");
-	assertEquals((rows[1] as Record<string, unknown>)["quantity"], -1, "The second line should be the sell line");
+	assertEquals(rows[0].quantity, 1, "The first line should be the buy line");
+	assertEquals(rows[1].quantity, -1, "The second line should be the sell line");
 });
 
 Deno.test("SloveniaFifo - testIfiSimpleXml - 1 purchase and 1 sale in XML", () => {
