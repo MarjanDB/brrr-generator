@@ -1,10 +1,10 @@
-import { TradeEventStockAcquired, TradeEventStockSold, type TransactionCash } from "@brrr/Core/Schemas/Events.ts";
+import type { TradeEventStockAcquired, TradeEventStockSold, TransactionCash } from "@brrr/Core/Schemas/Events.ts";
 import type { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import type { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import { IdentifierChangeType, IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
 import type { TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
-import { RenameProvenanceStep, SplitProvenanceStep, type AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance.ts";
+import { type AnyProvenanceStep, RenameProvenanceStep, SplitProvenanceStep } from "@brrr/Core/Schemas/Provenance.ts";
 
 export class ApplyIdentifierRelationshipsService {
 	apply(events: FinancialEvents, changeTypesToApply: IdentifierChangeType[]): FinancialEvents {

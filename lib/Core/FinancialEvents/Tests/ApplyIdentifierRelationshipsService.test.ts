@@ -312,8 +312,25 @@ Deno.test("apply split scales lots before effective date", () => {
 		quantityBefore: 2.0,
 		quantityAfter: 20.0,
 	});
-	const acquired = makeTrade("acq", idFrom, 2.0, "2024-09-01") as TradeEventStockAcquired;
-	const sold = makeTrade("sold", idFrom, -2.0, "2024-09-15") as TradeEventStockSold;
+	const acquired = new TradeEventStockAcquired({
+		id: "acq",
+		financialIdentifier: idFrom,
+		assetClass: GenericAssetClass.STOCK,
+		date: makeDate("2024-09-01"),
+		multiplier: 1,
+		exchangedMoney: makeMonetary(2.0, 10.0),
+		acquiredReason: GenericTradeReportItemGainType.BOUGHT,
+		provenance: [],
+	});
+	const sold = new TradeEventStockSold({
+		id: "sold",
+		financialIdentifier: idFrom,
+		assetClass: GenericAssetClass.STOCK,
+		date: makeDate("2024-09-15"),
+		multiplier: 1,
+		exchangedMoney: makeMonetary(-2.0, 10.0),
+		provenance: [],
+	});
 	const lot: TaxLotStock = {
 		id: "lot1",
 		financialIdentifier: idFrom,
