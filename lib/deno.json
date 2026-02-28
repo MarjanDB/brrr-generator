@@ -1,4 +1,5 @@
 {
+	"$schema": "https://deno.land/x/lint/schema.json",
 	"name": "@brrr/lib",
 	"version": "0.1.0",
 	"exports": "./mod.ts",
@@ -14,5 +15,10 @@
 		"luxon": "npm:luxon@^3.7.2",
 		"@types/luxon": "npm:@types/luxon@^3.7.1",
 		"zod": "npm:zod@^4.3.6"
+	},
+	"lint": {
+		"rules": {
+			"exclude": ["no-slow-types"]
+		}
 	}
 }

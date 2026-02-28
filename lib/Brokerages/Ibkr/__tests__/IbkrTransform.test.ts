@@ -1,4 +1,4 @@
-import { type CorporateAction, type LotStock, type TradeStock, type TransactionCash } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas.ts";
+import type { CorporateAction, LotStock, TradeStock, TransactionCash } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas.ts";
 import {
 	AssetClass,
 	BuyOrSell,
