@@ -15,7 +15,13 @@ import type { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTra
 import { convertSegmentedTradesToGenericUnderlyingGroups } from "@brrr/Brokerages/Ibkr/Transforms/Transform.ts";
 import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution.ts";
-import { assertEquals } from "@std/assert";
+import {
+	StagingTradeEventCashTransactionDividend,
+	StagingTradeEventCashTransactionPaymentInLieuOfDividends,
+	StagingTradeEventCashTransactionWithholdingTax,
+	StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends,
+} from "@brrr/Core/Schemas/Staging/Events.ts";
+import { assertEquals, assertInstanceOf } from "@std/assert";
 import { DateTime } from "luxon";
 
 function makeDate(iso: string) {
@@ -266,7 +272,7 @@ Deno.test("transform: single dividend", () => {
 	);
 	assertEquals(result.groupings.length, 1);
 	assertEquals(result.groupings[0].financialIdentifier.getIsin(), "FR0000120271");
-	assertEquals(result.groupings[0].cashTransactions[0].kind, "StagingCashTransactionDividend");
+	assertInstanceOf(result.groupings[0].cashTransactions[0], StagingTradeEventCashTransactionDividend);
 	assertEquals(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice, dividend.amount * dividend.fxRateToBase);
 	assertEquals(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingQuantity, 1);
 });
@@ -275,7 +281,7 @@ Deno.test("transform: single payment in lieu of dividend", () => {
 	const result = convertSegmentedTradesToGenericUnderlyingGroups(
 		makeEmptySegmented({ cashTransactions: [paymentInLieuOfDividend] }),
 	);
-	assertEquals(result.groupings[0].cashTransactions[0].kind, "StagingCashTransactionPaymentInLieuOfDividends");
+	assertInstanceOf(result.groupings[0].cashTransactions[0], StagingTradeEventCashTransactionPaymentInLieuOfDividends);
 	assertEquals(
 		result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice,
 		paymentInLieuOfDividend.amount * paymentInLieuOfDividend.fxRateToBase,
@@ -286,7 +292,7 @@ Deno.test("transform: single withholding tax", () => {
 	const result = convertSegmentedTradesToGenericUnderlyingGroups(
 		makeEmptySegmented({ cashTransactions: [withholdingTaxForDividend] }),
 	);
-	assertEquals(result.groupings[0].cashTransactions[0].kind, "StagingCashTransactionWithholdingTax");
+	assertInstanceOf(result.groupings[0].cashTransactions[0], StagingTradeEventCashTransactionWithholdingTax);
 	assertEquals(
 		result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice,
 		withholdingTaxForDividend.amount * withholdingTaxForDividend.fxRateToBase,
@@ -297,7 +303,7 @@ Deno.test("transform: withholding tax for payment in lieu", () => {
 	const result = convertSegmentedTradesToGenericUnderlyingGroups(
 		makeEmptySegmented({ cashTransactions: [withholdingTaxForPaymentInLieu] }),
 	);
-	assertEquals(result.groupings[0].cashTransactions[0].kind, "StagingCashTransactionWithholdingTaxForPaymentInLieuOfDividends");
+	assertInstanceOf(result.groupings[0].cashTransactions[0], StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends);
 });
 
 Deno.test("transform: corporate actions produce partial relationships only", () => {

@@ -1,5 +1,5 @@
 {
-	"workspace": ["lib"],
+	"workspace": ["lib", "notebooks"],
 	"tasks": {
 		"test": "deno test --allow-read",
 		"fmt": "deno fmt",
@@ -10,5 +10,12 @@
 		"indentWidth": 4,
 		"lineWidth": 140,
 		"useTabs": true
+	},
+	"imports": {
+		"@brrr/lib": "./lib/deno.json",
+		"@brrr/": "./lib/",
+		"luxon": "npm:luxon@^3.7.2",
+		"@types/luxon": "npm:@types/luxon@^3.7.1",
+		"zod": "npm:zod@^4.3.6"
 	}
 }

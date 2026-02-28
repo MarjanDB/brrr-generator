@@ -1,11 +1,10 @@
-import type { TradeEventStockAcquired, TradeEventStockSold, TransactionCash } from "@brrr/Core/Schemas/Events.ts";
+import { TradeEventStockAcquired, TradeEventStockSold, type TransactionCash } from "@brrr/Core/Schemas/Events.ts";
 import type { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import type { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
-import type { IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
-import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
+import { IdentifierChangeType, IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
 import type { TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
-import type { AnyProvenanceStep, RenameProvenanceStep, SplitProvenanceStep } from "@brrr/Core/Schemas/Provenance.ts";
+import { RenameProvenanceStep, SplitProvenanceStep, type AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance.ts";
 
 export class ApplyIdentifierRelationshipsService {
 	apply(events: FinancialEvents, changeTypesToApply: IdentifierChangeType[]): FinancialEvents {
@@ -16,7 +15,7 @@ export class ApplyIdentifierRelationshipsService {
 		}
 
 		const relsForSplits = current.identifierRelationships.filter(
-			(r): r is IdentifierRelationshipSplit => "quantityBefore" in r && changeTypesToApply.includes(r.changeType),
+			(r): r is IdentifierRelationshipSplit => r instanceof IdentifierRelationshipSplit && changeTypesToApply.includes(r.changeType),
 		);
 
 		for (const rel of [...relsForSplits].sort((a, b) => a.effectiveDate.toMillis() - b.effectiveDate.toMillis())) {
@@ -77,13 +76,12 @@ export class ApplyIdentifierRelationshipsService {
 		for (const r of rels) {
 			const sink = _sink(r.toIdentifier);
 			const key = sink.toKey();
-			const step: RenameProvenanceStep = {
-				kind: "rename",
+			const step = new RenameProvenanceStep({
 				fromIdentifier: r.fromIdentifier,
 				toIdentifier: r.toIdentifier,
 				changeType: r.changeType,
 				effectiveDate: r.effectiveDate,
-			};
+			});
 			const existing = sinkToProvenance.get(key) ?? [];
 			// Avoid duplicates
 			if (!existing.some((s) => s.fromIdentifier.isTheSameAs(step.fromIdentifier) && s.toIdentifier.isTheSameAs(step.toIdentifier))) {
@@ -117,8 +115,7 @@ export class ApplyIdentifierRelationshipsService {
 			}
 
 			const m = t.exchangedMoney;
-			const step: SplitProvenanceStep = {
-				kind: "split",
+			const step = new SplitProvenanceStep({
 				fromIdentifier: relationship.fromIdentifier,
 				toIdentifier: relationship.toIdentifier,
 				changeType: relationship.changeType,
@@ -128,7 +125,7 @@ export class ApplyIdentifierRelationshipsService {
 				beforeQuantity: m.underlyingQuantity,
 				beforeTradePrice: m.underlyingTradePrice,
 				beforeExchangedMoney: m,
-			};
+			});
 
 			const newMoney = {
 				...m,
@@ -136,26 +133,16 @@ export class ApplyIdentifierRelationshipsService {
 				underlyingTradePrice: m.underlyingTradePrice * (1 / ratio),
 			};
 
-			if (t.kind === "StockAcquired") {
-				scaledTrades.push({
-					...t,
-					exchangedMoney: newMoney,
-					provenance: [...t.provenance, step],
-				});
-			} else {
-				scaledTrades.push({
-					...t,
-					exchangedMoney: newMoney,
-					provenance: [...t.provenance, step],
-				});
-			}
+			scaledTrades.push(t.copy({
+				exchangedMoney: newMoney,
+				provenance: [...t.provenance, step],
+			}));
 		}
 
 		const scaledLots: TaxLotStock[] = [];
 		for (const lot of fromGrouping.stockTaxLots) {
 			if (lot.acquired.date < relationship.effectiveDate) {
-				const step: SplitProvenanceStep = {
-					kind: "split",
+				const step = new SplitProvenanceStep({
 					fromIdentifier: relationship.fromIdentifier,
 					toIdentifier: relationship.toIdentifier,
 					changeType: relationship.changeType,
@@ -163,7 +150,7 @@ export class ApplyIdentifierRelationshipsService {
 					quantityBefore: relationship.quantityBefore,
 					quantityAfter: relationship.quantityAfter,
 					beforeQuantity: lot.quantity,
-				};
+				});
 				scaledLots.push({
 					...lot,
 					quantity: lot.quantity * ratio,
@@ -174,15 +161,14 @@ export class ApplyIdentifierRelationshipsService {
 			}
 		}
 
-		const splitStep: SplitProvenanceStep = {
-			kind: "split",
+		const splitStep = new SplitProvenanceStep({
 			fromIdentifier: relationship.fromIdentifier,
 			toIdentifier: relationship.toIdentifier,
 			changeType: relationship.changeType,
 			effectiveDate: relationship.effectiveDate,
 			quantityBefore: relationship.quantityBefore,
 			quantityAfter: relationship.quantityAfter,
-		};
+		});
 
 		const scaledFrom: FinancialGrouping = {
 			...fromGrouping,
@@ -229,29 +215,29 @@ export class ApplyIdentifierRelationshipsService {
 		const allCashTransactions: TransactionCash[] = [];
 
 		for (const g of groupings) {
-			for (const t of g.stockTrades) allStockTrades.push({ ...t, financialIdentifier: properId });
+			for (const t of g.stockTrades) allStockTrades.push(t.copy({ financialIdentifier: properId }));
 			for (const lot of g.stockTaxLots) {
 				allStockTaxLots.push({
 					...lot,
 					financialIdentifier: properId,
-					acquired: { ...lot.acquired, financialIdentifier: properId },
-					sold: { ...lot.sold, financialIdentifier: properId },
+					acquired: lot.acquired.copy({ financialIdentifier: properId }),
+					sold: lot.sold.copy({ financialIdentifier: properId }),
 				});
 			}
 			for (const dg of g.derivativeGroupings) {
 				allDerivativeGroupings.push({
 					...dg,
 					financialIdentifier: properId,
-					derivativeTrades: dg.derivativeTrades.map((t) => ({ ...t, financialIdentifier: properId })),
+					derivativeTrades: dg.derivativeTrades.map((t) => t.copy({ financialIdentifier: properId })),
 					derivativeTaxLots: dg.derivativeTaxLots.map((lot) => ({
 						...lot,
 						financialIdentifier: properId,
-						acquired: { ...lot.acquired, financialIdentifier: properId },
-						sold: { ...lot.sold, financialIdentifier: properId },
+						acquired: lot.acquired.copy({ financialIdentifier: properId }),
+						sold: lot.sold.copy({ financialIdentifier: properId }),
 					})),
 				});
 			}
-			for (const c of g.cashTransactions) allCashTransactions.push({ ...c, financialIdentifier: properId });
+			for (const c of g.cashTransactions) allCashTransactions.push(c.copy({ financialIdentifier: properId }));
 		}
 
 		return {

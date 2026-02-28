@@ -1,14 +1,13 @@
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
-import type { TradeEventDerivativeAcquired, TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events.ts";
-import type { StagingTradeEventDerivative } from "@brrr/Core/Schemas/Staging/Events.ts";
+import { TradeEventDerivativeAcquired, TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events.ts";
+import { StagingTradeEventDerivativeAcquired, type StagingTradeEventDerivative } from "@brrr/Core/Schemas/Staging/Events.ts";
 
 export function processDerivativeEvent(
 	input: StagingTradeEventDerivative,
 ): TradeEventDerivativeAcquired | TradeEventDerivativeSold {
 	const identifier = FinancialIdentifier.fromStagingIdentifier(input.financialIdentifier);
-	if (input.kind === "StagingDerivativeAcquired") {
-		return {
-			kind: "DerivativeAcquired",
+	if (input instanceof StagingTradeEventDerivativeAcquired) {
+		return new TradeEventDerivativeAcquired({
 			id: input.id,
 			financialIdentifier: identifier,
 			assetClass: input.assetClass,
@@ -17,10 +16,9 @@ export function processDerivativeEvent(
 			exchangedMoney: input.exchangedMoney,
 			acquiredReason: input.acquiredReason,
 			provenance: [],
-		};
+		});
 	}
-	return {
-		kind: "DerivativeSold",
+	return new TradeEventDerivativeSold({
 		id: input.id,
 		financialIdentifier: identifier,
 		assetClass: input.assetClass,
@@ -28,5 +26,5 @@ export function processDerivativeEvent(
 		multiplier: input.multiplier,
 		exchangedMoney: input.exchangedMoney,
 		provenance: [],
-	};
+	});
 }

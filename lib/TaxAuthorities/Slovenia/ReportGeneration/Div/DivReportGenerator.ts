@@ -2,12 +2,12 @@ import type { DateTime } from "luxon";
 import type { CompanyLookupProvider, CountryLookupProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
 import { TreatyType } from "@brrr/InfoProviders/InfoLookupProvider.ts";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
-import type {
+import {
 	TradeEventCashTransactionDividend,
 	TradeEventCashTransactionPaymentInLieuOfDividend,
 	TradeEventCashTransactionWithholdingTax,
 	TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
-	TransactionCash,
+	type TransactionCash,
 } from "@brrr/Core/Schemas/Events.ts";
 import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import { type EDavkiDividendReportLine, EDavkiDividendType } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
@@ -163,12 +163,13 @@ export class DivReportGenerator {
 
 		const dividendLines = relevantCashTransactions.filter(
 			(line): line is TradeEventCashTransactionDividend | TradeEventCashTransactionPaymentInLieuOfDividend =>
-				line.kind === "CashTransactionDividend" || line.kind === "CashTransactionPaymentInLieuOfDividend",
+				line instanceof TradeEventCashTransactionDividend || line instanceof TradeEventCashTransactionPaymentInLieuOfDividend,
 		);
 
 		const withholdingTax = relevantCashTransactions.filter(
 			(line): line is TradeEventCashTransactionWithholdingTax | TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend =>
-				line.kind === "CashTransactionWithholdingTax" || line.kind === "CashTransactionWithholdingTaxForPaymentInLieuOfDividend",
+				line instanceof TradeEventCashTransactionWithholdingTax ||
+				line instanceof TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
 		);
 
 		const processedDividendLines = processEdavkiLineItemsFromCashTransactions(dividendLines, withholdingTax);

@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats.ts";
-import type { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
+import { TradeEventStockAcquired, type TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
 import type { TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
 import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots.ts";
 
@@ -19,8 +19,8 @@ export function processStockLot(
 	input: StagingTaxLot,
 	references: (TradeEventStockAcquired | TradeEventStockSold)[],
 ): TaxLotStock {
-	const allBuys = references.filter((t): t is TradeEventStockAcquired => t.kind === "StockAcquired");
-	const allSells = references.filter((t): t is TradeEventStockSold => t.kind === "StockSold");
+	const allBuys = references.filter((t): t is TradeEventStockAcquired => t instanceof TradeEventStockAcquired);
+	const allSells = references.filter((t): t is TradeEventStockSold => !(t instanceof TradeEventStockAcquired));
 
 	let matchingBuy: TradeEventStockAcquired;
 	let matchingSell: TradeEventStockSold;

@@ -1,8 +1,8 @@
 import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
-import { GenericAssetClass, GenericShortLong } from "@brrr/Core/Schemas/CommonFormats.ts";
-import type { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
+import { GenericAssetClass, GenericShortLong, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats.ts";
+import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
 import type { TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod.ts";
 
@@ -29,8 +29,7 @@ const simpleLot: TaxLotStock = {
 	id: "ID",
 	financialIdentifier: identifier,
 	quantity: 1,
-	acquired: {
-		kind: "StockAcquired",
+	acquired: new TradeEventStockAcquired({
 		id: "ID",
 		financialIdentifier: identifier,
 		assetClass: GenericAssetClass.STOCK,
@@ -38,10 +37,9 @@ const simpleLot: TaxLotStock = {
 		multiplier: 1,
 		exchangedMoney: makeMonetary(1),
 		provenance: [],
-		acquiredReason: "BOUGHT" as never,
-	} as TradeEventStockAcquired,
-	sold: {
-		kind: "StockSold",
+		acquiredReason: GenericTradeReportItemGainType.BOUGHT,
+	}),
+	sold: new TradeEventStockSold({
 		id: "ID2",
 		financialIdentifier: identifier,
 		assetClass: GenericAssetClass.STOCK,
@@ -49,7 +47,7 @@ const simpleLot: TaxLotStock = {
 		multiplier: 1,
 		exchangedMoney: makeMonetary(-1),
 		provenance: [],
-	} as TradeEventStockSold,
+	}),
 	shortLongType: GenericShortLong.LONG,
 	provenance: [],
 };
@@ -58,8 +56,7 @@ const underUtilizedLot: TaxLotStock = {
 	id: "ID",
 	financialIdentifier: identifier,
 	quantity: 1,
-	acquired: {
-		kind: "StockAcquired",
+	acquired: new TradeEventStockAcquired({
 		id: "ID",
 		financialIdentifier: identifier,
 		assetClass: GenericAssetClass.STOCK,
@@ -67,10 +64,9 @@ const underUtilizedLot: TaxLotStock = {
 		multiplier: 1,
 		exchangedMoney: makeMonetary(2),
 		provenance: [],
-		acquiredReason: "BOUGHT" as never,
-	} as TradeEventStockAcquired,
-	sold: {
-		kind: "StockSold",
+		acquiredReason: GenericTradeReportItemGainType.BOUGHT,
+	}),
+	sold: new TradeEventStockSold({
 		id: "ID2",
 		financialIdentifier: identifier,
 		assetClass: GenericAssetClass.STOCK,
@@ -78,7 +74,7 @@ const underUtilizedLot: TaxLotStock = {
 		multiplier: 1,
 		exchangedMoney: makeMonetary(-2),
 		provenance: [],
-	} as TradeEventStockSold,
+	}),
 	shortLongType: GenericShortLong.LONG,
 	provenance: [],
 };

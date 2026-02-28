@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { GenericAssetClass, GenericCategory, GenericDividendType } from "@brrr/Core/Schemas/CommonFormats.ts";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
-import type {
+import {
 	TradeEventCashTransactionDividend,
 	TradeEventCashTransactionPaymentInLieuOfDividend,
 	TradeEventCashTransactionWithholdingTax,
@@ -54,8 +54,7 @@ const simpleTaxPayer: TaxPayerInfo = {
 	countryName: "Slovenia",
 };
 
-const cashTransactionDividend: TradeEventCashTransactionDividend = {
-	kind: "CashTransactionDividend",
+const cashTransactionDividend = new TradeEventCashTransactionDividend({
 	id: "ID",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
@@ -76,10 +75,9 @@ const cashTransactionDividend: TradeEventCashTransactionDividend = {
 	listingExchange: "EXH",
 	dividendType: GenericDividendType.ORDINARY,
 	provenance: [],
-};
+});
 
-const cashTransactionPaymentInLieuOfDividend: TradeEventCashTransactionPaymentInLieuOfDividend = {
-	kind: "CashTransactionPaymentInLieuOfDividend",
+const cashTransactionPaymentInLieuOfDividend = new TradeEventCashTransactionPaymentInLieuOfDividend({
 	id: "ID",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
@@ -100,10 +98,9 @@ const cashTransactionPaymentInLieuOfDividend: TradeEventCashTransactionPaymentIn
 	listingExchange: "EXH",
 	dividendType: GenericDividendType.ORDINARY,
 	provenance: [],
-};
+});
 
-const cashTransactionDividendWithholdingTax: TradeEventCashTransactionWithholdingTax = {
-	kind: "CashTransactionWithholdingTax",
+const cashTransactionDividendWithholdingTax = new TradeEventCashTransactionWithholdingTax({
 	id: "ID",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
@@ -123,10 +120,9 @@ const cashTransactionDividendWithholdingTax: TradeEventCashTransactionWithholdin
 	transactionId: "TranId3",
 	listingExchange: "EXH",
 	provenance: [],
-};
+});
 
-const cashTransactionPaymentInLieuOfDividendWithholdingTax: TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend = {
-	kind: "CashTransactionWithholdingTaxForPaymentInLieuOfDividend",
+const cashTransactionPaymentInLieuOfDividendWithholdingTax = new TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend({
 	id: "ID",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
@@ -146,7 +142,7 @@ const cashTransactionPaymentInLieuOfDividendWithholdingTax: TradeEventCashTransa
 	transactionId: "TranId4",
 	listingExchange: "EXH",
 	provenance: [],
-};
+});
 
 const testGrouping: FinancialGrouping = {
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN" }),

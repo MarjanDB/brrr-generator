@@ -8,7 +8,7 @@ import {
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats.ts";
 import type { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
-import type {
+import {
 	TradeEventDerivativeAcquired,
 	TradeEventDerivativeSold,
 	TradeEventStockAcquired,
@@ -59,8 +59,7 @@ const simpleTaxPayer: TaxPayerInfo = {
 	countryName: "Slovenia",
 };
 
-const stockAcquired: TradeEventStockAcquired = {
-	kind: "StockAcquired",
+const stockAcquired = new TradeEventStockAcquired({
 	id: "ID1",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.STOCK,
@@ -78,10 +77,9 @@ const stockAcquired: TradeEventStockAcquired = {
 	},
 	acquiredReason: GenericTradeReportItemGainType.BOUGHT,
 	provenance: [],
-};
+});
 
-const stockSold: TradeEventStockSold = {
-	kind: "StockSold",
+const stockSold = new TradeEventStockSold({
 	id: "ID2",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.STOCK,
@@ -98,10 +96,9 @@ const stockSold: TradeEventStockSold = {
 		fxRateToBase: 1,
 	},
 	provenance: [],
-};
+});
 
-const optionBought: TradeEventDerivativeAcquired = {
-	kind: "DerivativeAcquired",
+const optionBought = new TradeEventDerivativeAcquired({
 	id: "ID1",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	acquiredReason: GenericDerivativeReportItemGainType.BOUGHT,
@@ -119,10 +116,9 @@ const optionBought: TradeEventDerivativeAcquired = {
 		fxRateToBase: 1,
 	},
 	provenance: [],
-};
+});
 
-const optionSold: TradeEventDerivativeSold = {
-	kind: "DerivativeSold",
+const optionSold = new TradeEventDerivativeSold({
 	id: "ID2",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.OPTION,
@@ -139,7 +135,7 @@ const optionSold: TradeEventDerivativeSold = {
 		fxRateToBase: 1,
 	},
 	provenance: [],
-};
+});
 
 const derivativeGrouping: DerivativeGrouping = {
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN" }),

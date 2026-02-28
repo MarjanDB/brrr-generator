@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { GenericAssetClass, GenericCategory, GenericShortLong, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats.ts";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
-import type { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
+import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
 import type { TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
 import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration.ts";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
@@ -29,8 +29,7 @@ function makeMonetary(qty: number, price: number) {
 	};
 }
 
-const simpleStockBuy: TradeEventStockAcquired = {
-	kind: "StockAcquired",
+const simpleStockBuy = new TradeEventStockAcquired({
 	id: "StockBought",
 	financialIdentifier: identifier,
 	assetClass: GenericAssetClass.STOCK,
@@ -39,10 +38,9 @@ const simpleStockBuy: TradeEventStockAcquired = {
 	acquiredReason: GenericTradeReportItemGainType.BOUGHT,
 	exchangedMoney: makeMonetary(1, 10),
 	provenance: [],
-};
+});
 
-const simpleStockSold: TradeEventStockSold = {
-	kind: "StockSold",
+const simpleStockSold = new TradeEventStockSold({
 	id: "StockSold",
 	financialIdentifier: identifier,
 	assetClass: GenericAssetClass.STOCK,
@@ -50,7 +48,7 @@ const simpleStockSold: TradeEventStockSold = {
 	multiplier: 1,
 	exchangedMoney: makeMonetary(-1, 15),
 	provenance: [],
-};
+});
 
 const simpleStockLot: TaxLotStock = {
 	id: "Lot",

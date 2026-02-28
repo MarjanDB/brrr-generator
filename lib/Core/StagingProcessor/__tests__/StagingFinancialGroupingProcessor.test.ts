@@ -1,6 +1,3 @@
-import { assertEquals, assertThrows } from "@std/assert";
-import { DateTime } from "luxon";
-import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier.ts";
 import {
 	GenericAssetClass,
 	GenericCategory,
@@ -9,7 +6,8 @@ import {
 	GenericShortLong,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats.ts";
-import type {
+import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
+import {
 	StagingTradeEventCashTransactionDividend,
 	StagingTradeEventCashTransactionPaymentInLieuOfDividends,
 	StagingTradeEventCashTransactionWithholdingTax,
@@ -20,14 +18,16 @@ import type {
 	StagingTradeEventStockSold,
 } from "@brrr/Core/Schemas/Staging/Events.ts";
 import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping.ts";
-import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots.ts";
 import {
 	StagingIdentifierChangeType,
-	type StagingIdentifierRelationship,
+	StagingIdentifierRelationship,
 	type StagingIdentifierRelationships,
 } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
-import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
+import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots.ts";
+import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier.ts";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor.ts";
+import { assertEquals, assertThrows } from "@std/assert";
+import { DateTime } from "luxon";
 
 function makeDate(iso: string) {
 	return DateTime.fromISO(iso)!;
@@ -48,8 +48,7 @@ function makeMonetary(qty: number, price: number) {
 	};
 }
 
-const simpleStagingStockBuy: StagingTradeEventStockAcquired = {
-	kind: "StagingStockAcquired",
+const simpleStagingStockBuy = new StagingTradeEventStockAcquired({
 	id: "StockBought",
 	financialIdentifier: ident,
 	assetClass: GenericAssetClass.STOCK,
@@ -57,20 +56,18 @@ const simpleStagingStockBuy: StagingTradeEventStockAcquired = {
 	multiplier: 1,
 	acquiredReason: GenericTradeReportItemGainType.BOUGHT,
 	exchangedMoney: makeMonetary(1, 10),
-};
+});
 
-const simpleStagingStockSold: StagingTradeEventStockSold = {
-	kind: "StagingStockSold",
+const simpleStagingStockSold = new StagingTradeEventStockSold({
 	id: "StockSold",
 	financialIdentifier: ident,
 	assetClass: GenericAssetClass.STOCK,
 	date: makeDate("2023-01-02"),
 	multiplier: 1,
 	exchangedMoney: makeMonetary(-1, 15),
-};
+});
 
-const simpleStagingDividend: StagingTradeEventCashTransactionDividend = {
-	kind: "StagingCashTransactionDividend",
+const simpleStagingDividend = new StagingTradeEventCashTransactionDividend({
 	id: "Dividend",
 	financialIdentifier: ident,
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
@@ -81,10 +78,9 @@ const simpleStagingDividend: StagingTradeEventCashTransactionDividend = {
 	listingExchange: "ListingExchange",
 	dividendType: GenericDividendType.ORDINARY,
 	exchangedMoney: makeMonetary(1, 10),
-};
+});
 
-const simpleStagingDividendWithholdingTax: StagingTradeEventCashTransactionWithholdingTax = {
-	kind: "StagingCashTransactionWithholdingTax",
+const simpleStagingDividendWithholdingTax = new StagingTradeEventCashTransactionWithholdingTax({
 	id: "DividendWithholdingTax",
 	financialIdentifier: ident,
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
@@ -94,10 +90,9 @@ const simpleStagingDividendWithholdingTax: StagingTradeEventCashTransactionWithh
 	transactionId: "TransactionID",
 	listingExchange: "ListingExchange",
 	exchangedMoney: makeMonetary(1, -5),
-};
+});
 
-const simpleStagingPaymentInLieuOfDividend: StagingTradeEventCashTransactionPaymentInLieuOfDividends = {
-	kind: "StagingCashTransactionPaymentInLieuOfDividends",
+const simpleStagingPaymentInLieuOfDividend = new StagingTradeEventCashTransactionPaymentInLieuOfDividends({
 	id: "PaymentInLieuOfDividend",
 	financialIdentifier: ident,
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
@@ -108,10 +103,9 @@ const simpleStagingPaymentInLieuOfDividend: StagingTradeEventCashTransactionPaym
 	listingExchange: "ListingExchange",
 	dividendType: GenericDividendType.ORDINARY,
 	exchangedMoney: makeMonetary(1, 5),
-};
+});
 
-const simpleStagingPaymentInLieuOfDividendWithholdingTax: StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends = {
-	kind: "StagingCashTransactionWithholdingTaxForPaymentInLieuOfDividends",
+const simpleStagingPaymentInLieuOfDividendWithholdingTax = new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends({
 	id: "PaymentInLieuOfDividendWithholdingTax",
 	financialIdentifier: ident,
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
@@ -121,7 +115,7 @@ const simpleStagingPaymentInLieuOfDividendWithholdingTax: StagingTradeEventCashT
 	transactionId: "TransactionID",
 	listingExchange: "ListingExchange",
 	exchangedMoney: makeMonetary(1, -2.5),
-};
+});
 
 const simpleStagingStockLot: StagingTaxLot = {
 	id: "Lot",
@@ -132,8 +126,7 @@ const simpleStagingStockLot: StagingTaxLot = {
 	shortLongType: GenericShortLong.LONG,
 };
 
-const simpleStagingDerivativeBuy: StagingTradeEventDerivativeAcquired = {
-	kind: "StagingDerivativeAcquired",
+const simpleStagingDerivativeBuy = new StagingTradeEventDerivativeAcquired({
 	id: "DerivativeBought",
 	financialIdentifier: ident,
 	assetClass: GenericAssetClass.STOCK,
@@ -141,17 +134,16 @@ const simpleStagingDerivativeBuy: StagingTradeEventDerivativeAcquired = {
 	multiplier: 100,
 	acquiredReason: GenericDerivativeReportItemGainType.BOUGHT,
 	exchangedMoney: makeMonetary(1, 10),
-};
+});
 
-const simpleStagingDerivativeSold: StagingTradeEventDerivativeSold = {
-	kind: "StagingDerivativeSold",
+const simpleStagingDerivativeSold = new StagingTradeEventDerivativeSold({
 	id: "DerivativeSold",
 	financialIdentifier: ident,
 	assetClass: GenericAssetClass.STOCK,
 	date: makeDate("2023-01-02"),
 	multiplier: 1,
 	exchangedMoney: makeMonetary(-1, 15),
-};
+});
 
 const simpleStagingDerivativeLot: StagingTaxLot = {
 	id: "Lot",
@@ -265,12 +257,12 @@ Deno.test("payment in lieu of dividend with withholding tax", () => {
 Deno.test("processStagingFinancialEvents returns FinancialEvents with converted relationships", () => {
 	const stagingIdA = new StagingFinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
 	const stagingIdB = new StagingFinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });
-	const stagingRel: StagingIdentifierRelationship = {
+	const stagingRel = new StagingIdentifierRelationship({
 		fromIdentifier: stagingIdA,
 		toIdentifier: stagingIdB,
 		changeType: StagingIdentifierChangeType.RENAME,
 		effectiveDate: makeDate("2024-06-01"),
-	};
+	});
 	const relationships: StagingIdentifierRelationships = {
 		relationships: [stagingRel],
 		partialRelationships: [],

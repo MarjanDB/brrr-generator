@@ -2,7 +2,7 @@ import type { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/Financ
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration.ts";
 import { GenericDerivativeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats.ts";
-import type { TradeEventDerivativeAcquired, TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events.ts";
+import { TradeEventDerivativeAcquired, type TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events.ts";
 import { FifoLotMatchingMethod } from "@brrr/Core/LotMatching/FifoLotMatchingMethod.ts";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod.ts";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
@@ -103,7 +103,7 @@ export class IfiReportGenerator {
 				}
 
 				const convertedLines = allLines.map((line) => {
-					if (line.kind === "DerivativeAcquired") return convertBuy(line);
+					if (line instanceof TradeEventDerivativeAcquired) return convertBuy(line);
 					return convertSell(line as TradeEventDerivativeSold);
 				});
 

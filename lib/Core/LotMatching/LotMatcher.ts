@@ -104,9 +104,7 @@ export class LotMatcher {
 
 		const lotQuantity = lot.quantity;
 
-		// Spread copy instead of deepcopy
-		const clonedAcquiredTrade: TradeEvent = {
-			...underlyingAcquiredTrade,
+		const clonedAcquiredTrade: TradeEvent = underlyingAcquiredTrade.copy({
 			exchangedMoney: {
 				...underlyingAcquiredTrade.exchangedMoney,
 				underlyingQuantity: lotQuantity,
@@ -114,10 +112,9 @@ export class LotMatcher {
 					lotQuantity *
 					underlyingAcquiredTrade.exchangedMoney.comissionTotal,
 			},
-		};
+		});
 
-		const clonedSoldTrade: TradeEvent = {
-			...underlyingSoldTrade,
+		const clonedSoldTrade: TradeEvent = underlyingSoldTrade.copy({
 			exchangedMoney: {
 				...underlyingSoldTrade.exchangedMoney,
 				underlyingQuantity: -lotQuantity,
@@ -125,7 +122,7 @@ export class LotMatcher {
 					-lotQuantity *
 					underlyingSoldTrade.exchangedMoney.comissionTotal,
 			},
-		};
+		});
 
 		return { lot, acquiredTrade: clonedAcquiredTrade, soldTrade: clonedSoldTrade };
 	}

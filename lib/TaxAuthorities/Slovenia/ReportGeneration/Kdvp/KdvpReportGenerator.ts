@@ -2,7 +2,7 @@ import type { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/Financ
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration.ts";
 import { GenericCategory, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats.ts";
-import type { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
+import { TradeEventStockAcquired, type TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
 import { FifoLotMatchingMethod } from "@brrr/Core/LotMatching/FifoLotMatchingMethod.ts";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod.ts";
 import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
@@ -103,7 +103,7 @@ export class KdvpReportGenerator {
 			}
 
 			const convertedLines = allLines.map((line) => {
-				if (line.kind === "StockAcquired") return convertStockBuy(line);
+				if (line instanceof TradeEventStockAcquired) return convertStockBuy(line);
 				return convertStockSell(line);
 			});
 

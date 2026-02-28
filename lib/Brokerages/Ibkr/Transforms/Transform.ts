@@ -1,5 +1,5 @@
 import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier.ts";
-import type {
+import {
 	StagingTradeEventCashTransactionDividend,
 	StagingTradeEventCashTransactionPaymentInLieuOfDividends,
 	StagingTradeEventCashTransactionWithholdingTax,
@@ -13,6 +13,8 @@ import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Groupi
 import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots.ts";
 import {
 	StagingIdentifierChangeType,
+	StagingIdentifierRelationshipPartial,
+	StagingIdentifierRelationshipPartialWithQuantity,
 	type StagingIdentifierRelationshipPartialAny,
 	type StagingIdentifierRelationships,
 } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
@@ -73,37 +75,25 @@ function convertToCashTransactions(
 		};
 
 		if (transaction.type === CashTransactionType.DIVIDEND) {
-			const result: StagingTradeEventCashTransactionDividend = {
+			return new StagingTradeEventCashTransactionDividend({
 				...base,
-				kind: "StagingCashTransactionDividend",
 				dividendType,
-			};
-			return result;
+			});
 		}
 
 		if (transaction.type === CashTransactionType.WITHHOLDING_TAX && isPaymentInLieuWithholding) {
-			const result: StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends = {
-				...base,
-				kind: "StagingCashTransactionWithholdingTaxForPaymentInLieuOfDividends",
-			};
-			return result;
+			return new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends(base);
 		}
 
 		if (transaction.type === CashTransactionType.WITHHOLDING_TAX) {
-			const result: StagingTradeEventCashTransactionWithholdingTax = {
-				...base,
-				kind: "StagingCashTransactionWithholdingTax",
-			};
-			return result;
+			return new StagingTradeEventCashTransactionWithholdingTax(base);
 		}
 
 		if (transaction.type === CashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS) {
-			const result: StagingTradeEventCashTransactionPaymentInLieuOfDividends = {
+			return new StagingTradeEventCashTransactionPaymentInLieuOfDividends({
 				...base,
-				kind: "StagingCashTransactionPaymentInLieuOfDividends",
 				dividendType,
-			};
-			return result;
+			});
 		}
 
 		throw new Error(`Unknown cash transaction type: ${transaction.type}`);
@@ -132,18 +122,12 @@ function convertStockTradesToEvents(trades: TradeStock[]) {
 			exchangedMoney,
 		};
 		if (trade.quantity > 0) {
-			const result: StagingTradeEventStockAcquired = {
+			return new StagingTradeEventStockAcquired({
 				...base,
-				kind: "StagingStockAcquired",
 				acquiredReason: GenericTradeReportItemGainType.BOUGHT,
-			};
-			return result;
+			});
 		} else {
-			const result: StagingTradeEventStockSold = {
-				...base,
-				kind: "StagingStockSold",
-			};
-			return result;
+			return new StagingTradeEventStockSold(base);
 		}
 	});
 }
@@ -185,18 +169,12 @@ function convertDerivativeTradesToEvents(trades: TradeDerivative[]) {
 			exchangedMoney,
 		};
 		if (trade.quantity > 0) {
-			const result: StagingTradeEventDerivativeAcquired = {
+			return new StagingTradeEventDerivativeAcquired({
 				...base,
-				kind: "StagingDerivativeAcquired",
 				acquiredReason: GenericDerivativeReportItemGainType.BOUGHT,
-			};
-			return result;
+			});
 		} else {
-			const result: StagingTradeEventDerivativeSold = {
-				...base,
-				kind: "StagingDerivativeSold",
-			};
-			return result;
+			return new StagingTradeEventDerivativeSold(base);
 		}
 	});
 }
@@ -239,22 +217,22 @@ function convertCorporateActionsToPartialRelationships(
 		const toIdentifier = isFromSide ? null : identifier;
 
 		if (changeType === StagingIdentifierChangeType.SPLIT) {
-			partials.push({
+			partials.push(new StagingIdentifierRelationshipPartialWithQuantity({
 				fromIdentifier,
 				toIdentifier,
 				correlationKey: row.actionID,
 				changeType,
 				effectiveDate: row.dateTime,
 				quantity: Math.abs(row.quantity),
-			});
+			}));
 		} else {
-			partials.push({
+			partials.push(new StagingIdentifierRelationshipPartial({
 				fromIdentifier,
 				toIdentifier,
 				correlationKey: row.actionID,
 				changeType,
 				effectiveDate: row.dateTime,
-			});
+			}));
 		}
 	}
 

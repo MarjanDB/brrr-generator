@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
-import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
+import { IdentifierChangeType, IdentifierRelationship, IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
 import type { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
 import type { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping.ts";
@@ -94,21 +94,21 @@ export class StagingFinancialGroupingProcessor {
 			// Check if it's a split relationship (has quantityBefore/quantityAfter)
 			const rSplit = r as StagingIdentifierRelationshipSplit;
 			if (rSplit.quantityBefore !== undefined && rSplit.quantityAfter !== undefined) {
-				coreRels.push({
+				coreRels.push(new IdentifierRelationshipSplit({
 					fromIdentifier: fromId,
 					toIdentifier: toId,
 					changeType,
 					effectiveDate,
 					quantityBefore: rSplit.quantityBefore,
 					quantityAfter: rSplit.quantityAfter,
-				});
+				}));
 			} else {
-				coreRels.push({
+				coreRels.push(new IdentifierRelationship({
 					fromIdentifier: fromId,
 					toIdentifier: toId,
 					changeType,
 					effectiveDate,
-				});
+				}));
 			}
 		}
 
