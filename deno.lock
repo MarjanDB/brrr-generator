@@ -104,9 +104,6 @@
     }
   },
   "workspace": {
-    "dependencies": [
-      "npm:inversify@^7.11.0"
-    ],
     "members": {
       "lib": {
         "dependencies": [
