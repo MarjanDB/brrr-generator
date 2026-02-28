@@ -1,4 +1,4 @@
-import type { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import type {
 	GenericAssetClass,
 	GenericDerivativeReportItemGainType,
@@ -12,7 +12,7 @@ type StagingTradeEventArgs = {
 	id: string;
 	financialIdentifier: StagingFinancialIdentifier;
 	assetClass: GenericAssetClass;
-	date: DateTime;
+	date: ValidDateTime;
 	multiplier: number;
 	exchangedMoney: GenericMonetaryExchangeInformation;
 };
@@ -27,7 +27,7 @@ export class StagingTradeEventStockAcquired {
 	public readonly id: string;
 	public readonly financialIdentifier: StagingFinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly acquiredReason: GenericTradeReportItemGainType;
@@ -60,7 +60,7 @@ export class StagingTradeEventStockSold {
 	public readonly id: string;
 	public readonly financialIdentifier: StagingFinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 
@@ -92,7 +92,7 @@ export class StagingTradeEventDerivativeAcquired {
 	public readonly id: string;
 	public readonly financialIdentifier: StagingFinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly acquiredReason: GenericDerivativeReportItemGainType;
@@ -125,7 +125,7 @@ export class StagingTradeEventDerivativeSold {
 	public readonly id: string;
 	public readonly financialIdentifier: StagingFinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 
@@ -157,7 +157,7 @@ export class StagingTradeEventCashTransactionDividend {
 	public readonly id: string;
 	public readonly financialIdentifier: StagingFinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly actionId: string;
@@ -178,7 +178,9 @@ export class StagingTradeEventCashTransactionDividend {
 		this.dividendType = args.dividendType;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof StagingTradeEventCashTransactionDividend>[0]>): StagingTradeEventCashTransactionDividend {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof StagingTradeEventCashTransactionDividend>[0]>,
+	): StagingTradeEventCashTransactionDividend {
 		return new StagingTradeEventCashTransactionDividend({
 			id: this.id,
 			financialIdentifier: this.financialIdentifier,
@@ -199,7 +201,7 @@ export class StagingTradeEventCashTransactionWithholdingTax {
 	public readonly id: string;
 	public readonly financialIdentifier: StagingFinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly actionId: string;
@@ -240,7 +242,7 @@ export class StagingTradeEventCashTransactionPaymentInLieuOfDividends {
 	public readonly id: string;
 	public readonly financialIdentifier: StagingFinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly actionId: string;
@@ -284,7 +286,7 @@ export class StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDiv
 	public readonly id: string;
 	public readonly financialIdentifier: StagingFinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly actionId: string;

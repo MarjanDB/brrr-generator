@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { IdentifierChangeType, IdentifierRelationship, IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
@@ -43,12 +44,14 @@ export class StagingFinancialGroupingProcessor {
 		for (const [key, trades] of tradesByIdKey) {
 			const lots = lotsByIdKey.get(key) ?? [];
 			const processedLots = lots.map((lot) => processDerivativeLot(lot, trades));
-			derivativeGroupings.push(new DerivativeGrouping({
-				financialIdentifier: trades[0].financialIdentifier,
-				derivativeTrades: trades,
-				derivativeTaxLots: processedLots,
-				provenance: [],
-			}));
+			derivativeGroupings.push(
+				new DerivativeGrouping({
+					financialIdentifier: trades[0].financialIdentifier,
+					derivativeTrades: trades,
+					derivativeTaxLots: processedLots,
+					provenance: [],
+				}),
+			);
 		}
 		return derivativeGroupings;
 	}
@@ -86,7 +89,7 @@ export class StagingFinancialGroupingProcessor {
 		const coreRels: FinancialEvents["identifierRelationships"] = [];
 		for (const r of resolved.identifierRelationships.relationships) {
 			if (r.changeType === StagingIdentifierChangeType.UNKNOWN) continue;
-			const effectiveDate = r.effectiveDate ?? DateTime.fromMillis(0);
+			const effectiveDate = r.effectiveDate ?? DateTime.fromMillis(0) as ValidDateTime;
 			const fromId = FinancialIdentifier.fromStagingIdentifier(r.fromIdentifier);
 			const toId = FinancialIdentifier.fromStagingIdentifier(r.toIdentifier);
 			const changeType = IdentifierChangeType[r.changeType as keyof typeof IdentifierChangeType];
@@ -94,21 +97,25 @@ export class StagingFinancialGroupingProcessor {
 			// Check if it's a split relationship (has quantityBefore/quantityAfter)
 			const rSplit = r as StagingIdentifierRelationshipSplit;
 			if (rSplit.quantityBefore !== undefined && rSplit.quantityAfter !== undefined) {
-				coreRels.push(new IdentifierRelationshipSplit({
-					fromIdentifier: fromId,
-					toIdentifier: toId,
-					changeType,
-					effectiveDate,
-					quantityBefore: rSplit.quantityBefore,
-					quantityAfter: rSplit.quantityAfter,
-				}));
+				coreRels.push(
+					new IdentifierRelationshipSplit({
+						fromIdentifier: fromId,
+						toIdentifier: toId,
+						changeType,
+						effectiveDate,
+						quantityBefore: rSplit.quantityBefore,
+						quantityAfter: rSplit.quantityAfter,
+					}),
+				);
 			} else {
-				coreRels.push(new IdentifierRelationship({
-					fromIdentifier: fromId,
-					toIdentifier: toId,
-					changeType,
-					effectiveDate,
-				}));
+				coreRels.push(
+					new IdentifierRelationship({
+						fromIdentifier: fromId,
+						toIdentifier: toId,
+						changeType,
+						effectiveDate,
+					}),
+				);
 			}
 		}
 

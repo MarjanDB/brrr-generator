@@ -1,4 +1,4 @@
-import type { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 
 export enum IdentifierChangeType {
@@ -11,14 +11,14 @@ type IdentifierRelationshipArgs = {
 	fromIdentifier: FinancialIdentifier;
 	toIdentifier: FinancialIdentifier;
 	changeType: IdentifierChangeType;
-	effectiveDate: DateTime;
+	effectiveDate: ValidDateTime;
 };
 
 export class IdentifierRelationship {
 	public readonly fromIdentifier: FinancialIdentifier;
 	public readonly toIdentifier: FinancialIdentifier;
 	public readonly changeType: IdentifierChangeType;
-	public readonly effectiveDate: DateTime;
+	public readonly effectiveDate: ValidDateTime;
 
 	constructor(args: IdentifierRelationshipArgs) {
 		this.fromIdentifier = args.fromIdentifier;
@@ -42,7 +42,7 @@ export class IdentifierRelationshipSplit {
 	public readonly fromIdentifier: FinancialIdentifier;
 	public readonly toIdentifier: FinancialIdentifier;
 	public readonly changeType: IdentifierChangeType;
-	public readonly effectiveDate: DateTime;
+	public readonly effectiveDate: ValidDateTime;
 	public readonly quantityBefore: number;
 	public readonly quantityAfter: number;
 

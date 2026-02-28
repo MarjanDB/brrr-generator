@@ -1,5 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import {
 	GenericAssetClass,
@@ -28,6 +29,10 @@ import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGenerat
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator.ts";
 import { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator.ts";
 
+function makeDate(iso: string): ValidDateTime {
+	return DateTime.fromISO(iso) as ValidDateTime;
+}
+
 function makeProvider(taxPayerInfo: TaxPayerInfo, config: TaxAuthorityConfiguration): SlovenianTaxAuthorityProvider {
 	const processor = new FinancialEventsProcessor(null, new LotMatcher());
 	return new SlovenianTaxAuthorityProvider(
@@ -50,7 +55,7 @@ const simpleTaxPayer: TaxPayerInfo = {
 	postNumber: "postNumber",
 	postName: "postName",
 	municipalityName: "municipality",
-	birthDate: DateTime.fromISO("2000-01-01"),
+	birthDate: makeDate("2000-01-01"),
 	maticnaStevilka: "maticna",
 	invalidskoPodjetje: false,
 	resident: true,
@@ -64,7 +69,7 @@ const stockAcquired = new TradeEventStockAcquired({
 	id: "ID1",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.STOCK,
-	date: DateTime.fromISO("2023-06-06"),
+	date: makeDate("2023-06-06"),
 	multiplier: 1.0,
 	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
@@ -84,7 +89,7 @@ const stockSold = new TradeEventStockSold({
 	id: "ID2",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.STOCK,
-	date: DateTime.fromISO("2023-06-07"),
+	date: makeDate("2023-06-07"),
 	multiplier: 1.0,
 	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
@@ -104,7 +109,7 @@ const optionBought = new TradeEventDerivativeAcquired({
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	acquiredReason: GenericDerivativeReportItemGainType.BOUGHT,
 	assetClass: GenericAssetClass.OPTION,
-	date: DateTime.fromISO("2023-06-07"),
+	date: makeDate("2023-06-07"),
 	multiplier: 100,
 	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
@@ -123,7 +128,7 @@ const optionSold = new TradeEventDerivativeSold({
 	id: "ID2",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.OPTION,
-	date: DateTime.fromISO("2023-06-08"),
+	date: makeDate("2023-06-08"),
 	multiplier: 100,
 	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
@@ -163,8 +168,8 @@ const testData = new FinancialEvents({
 
 Deno.test("SloveniaFifo - testKdvpSimpleCsv - 2 rows with correct quantities", () => {
 	const config: TaxAuthorityConfiguration = {
-		fromDate: DateTime.fromISO("2023-01-01"),
-		toDate: DateTime.fromISO("2024-01-01"),
+		fromDate: makeDate("2023-01-01"),
+		toDate: makeDate("2024-01-01"),
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
@@ -178,8 +183,8 @@ Deno.test("SloveniaFifo - testKdvpSimpleCsv - 2 rows with correct quantities", (
 
 Deno.test("SloveniaFifo - testKdvpSimpleXml - 1 purchase and 1 sale in XML", () => {
 	const config: TaxAuthorityConfiguration = {
-		fromDate: DateTime.fromISO("2023-01-01"),
-		toDate: DateTime.fromISO("2024-01-01"),
+		fromDate: makeDate("2023-01-01"),
+		toDate: makeDate("2024-01-01"),
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
@@ -195,8 +200,8 @@ Deno.test("SloveniaFifo - testKdvpSimpleXml - 1 purchase and 1 sale in XML", () 
 
 Deno.test("SloveniaFifo - testIfiSimpleCsv - 2 rows with correct quantities", () => {
 	const config: TaxAuthorityConfiguration = {
-		fromDate: DateTime.fromISO("2023-01-01"),
-		toDate: DateTime.fromISO("2024-01-01"),
+		fromDate: makeDate("2023-01-01"),
+		toDate: makeDate("2024-01-01"),
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
@@ -210,8 +215,8 @@ Deno.test("SloveniaFifo - testIfiSimpleCsv - 2 rows with correct quantities", ()
 
 Deno.test("SloveniaFifo - testIfiSimpleXml - 1 purchase and 1 sale in XML", () => {
 	const config: TaxAuthorityConfiguration = {
-		fromDate: DateTime.fromISO("2023-01-01"),
-		toDate: DateTime.fromISO("2024-01-01"),
+		fromDate: makeDate("2023-01-01"),
+		toDate: makeDate("2024-01-01"),
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 

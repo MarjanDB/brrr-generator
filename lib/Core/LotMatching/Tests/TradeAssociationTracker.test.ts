@@ -1,10 +1,11 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import { TradeAssociationTracker } from "@brrr/Core/LotMatching/TradeAssociationTracker.ts";
 import type { Trade } from "@brrr/Core/LotMatching/Trade.ts";
 
-const simpleBuyTrade: Trade = { id: "ID", quantity: 1, date: DateTime.fromISO("2023-01-01")! };
-const simpleSoldTrade: Trade = { id: "ID2", quantity: -1, date: DateTime.fromISO("2023-01-01")! };
+const simpleBuyTrade: Trade = { id: "ID", quantity: 1, date: DateTime.fromISO("2023-01-01") as ValidDateTime };
+const simpleSoldTrade: Trade = { id: "ID2", quantity: -1, date: DateTime.fromISO("2023-01-01") as ValidDateTime };
 
 Deno.test("retrieval of tracker for simple acquired trade", () => {
 	const tracker = new TradeAssociationTracker();

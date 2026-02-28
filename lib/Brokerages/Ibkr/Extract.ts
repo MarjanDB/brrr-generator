@@ -19,7 +19,14 @@ export class IbkrExtractService {
 		const statements = doc.FlexQueryResponse.FlexStatements.FlexStatement;
 
 		if (statements.length === 0) {
-			return new SegmentedTrades({ cashTransactions: [], corporateActions: [], stockTrades: [], stockLots: [], derivativeTrades: [], derivativeLots: [] });
+			return new SegmentedTrades({
+				cashTransactions: [],
+				corporateActions: [],
+				stockTrades: [],
+				stockLots: [],
+				derivativeTrades: [],
+				derivativeLots: [],
+			});
 		}
 
 		const extracted = statements.map((s) => {
@@ -28,8 +35,12 @@ export class IbkrExtractService {
 
 			const stockTrades = allTrades.filter((t) => t["assetCategory"] === AssetClass.STOCK).map((a) => TradeStock.Schema.parse(a));
 			const stockLots = allLots.filter((t) => t["assetCategory"] === AssetClass.STOCK).map((a) => LotStock.Schema.parse(a));
-			const derivativeTrades = allTrades.filter((t) => t["assetCategory"] === AssetClass.OPTION).map((a) => TradeDerivative.Schema.parse(a));
-			const derivativeLots = allLots.filter((t) => t["assetCategory"] === AssetClass.OPTION).map((a) => LotDerivative.Schema.parse(a));
+			const derivativeTrades = allTrades.filter((t) => t["assetCategory"] === AssetClass.OPTION).map((a) =>
+				TradeDerivative.Schema.parse(a)
+			);
+			const derivativeLots = allLots.filter((t) => t["assetCategory"] === AssetClass.OPTION).map((a) =>
+				LotDerivative.Schema.parse(a)
+			);
 			const cashTransactions = s.CashTransactions.CashTransaction.map((a) => TransactionCash.Schema.parse(a));
 			const corporateActions = s.CorporateActions.CorporateAction.map((a) => CorporateAction.Schema.parse(a));
 

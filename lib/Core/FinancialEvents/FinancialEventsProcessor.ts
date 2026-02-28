@@ -35,10 +35,12 @@ export class FinancialEventsProcessor {
 				lotMatchingConfiguration.toDate,
 			);
 
-			derivativeGroupingsOfInterest.push(new UnderlyingDerivativeGrouping({
-				financialIdentifier: derivativeGrouping.financialIdentifier,
-				derivativeTrades: derivativeTradesOfInterestFiltered.trades as never,
-			}));
+			derivativeGroupingsOfInterest.push(
+				new UnderlyingDerivativeGrouping({
+					financialIdentifier: derivativeGrouping.financialIdentifier,
+					derivativeTrades: derivativeTradesOfInterestFiltered.trades as never,
+				}),
+			);
 		}
 
 		return new UnderlyingGroupingWithTradesOfInterest({

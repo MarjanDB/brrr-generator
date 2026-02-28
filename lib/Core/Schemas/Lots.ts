@@ -1,7 +1,12 @@
 import type { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats.ts";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import type { AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance.ts";
-import type { TradeEventDerivativeAcquired, TradeEventDerivativeSold, TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
+import type {
+	TradeEventDerivativeAcquired,
+	TradeEventDerivativeSold,
+	TradeEventStockAcquired,
+	TradeEventStockSold,
+} from "@brrr/Core/Schemas/Events.ts";
 
 type TaxLotArgs<A, S> = {
 	id: string;

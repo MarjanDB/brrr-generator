@@ -1,6 +1,6 @@
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
-import { StagingTradeEventStockAcquired, type StagingTradeEventStock } from "@brrr/Core/Schemas/Staging/Events.ts";
+import { type StagingTradeEventStock, StagingTradeEventStockAcquired } from "@brrr/Core/Schemas/Staging/Events.ts";
 
 export function processStockEvent(
 	input: StagingTradeEventStock,

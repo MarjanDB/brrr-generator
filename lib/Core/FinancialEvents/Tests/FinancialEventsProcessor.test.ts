@@ -15,9 +15,10 @@ import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingCon
 import { TaxLot } from "@brrr/Core/Schemas/Lots.ts";
 import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 
-function makeDate(iso: string) {
-	return DateTime.fromISO(iso)!;
+function makeDate(iso: string): ValidDateTime {
+	return DateTime.fromISO(iso) as ValidDateTime;
 }
 
 const identifier = new FinancialIdentifier({ isin: "US123", ticker: "AAPL", name: "AAPL" });

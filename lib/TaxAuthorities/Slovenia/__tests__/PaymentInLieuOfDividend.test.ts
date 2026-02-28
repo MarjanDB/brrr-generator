@@ -1,7 +1,13 @@
 import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
-import { GenericAssetClass, GenericCategory, GenericDividendType, GenericMonetaryExchangeInformation } from "@brrr/Core/Schemas/CommonFormats.ts";
+import {
+	GenericAssetClass,
+	GenericCategory,
+	GenericDividendType,
+	GenericMonetaryExchangeInformation,
+} from "@brrr/Core/Schemas/CommonFormats.ts";
 import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import {
 	TradeEventCashTransactionDividend,
@@ -21,6 +27,10 @@ import { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/Slo
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator.ts";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator.ts";
 import { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator.ts";
+
+function makeDate(iso: string): ValidDateTime {
+	return DateTime.fromISO(iso) as ValidDateTime;
+}
 
 function makeProvider(taxPayerInfo: TaxPayerInfo, config: TaxAuthorityConfiguration): SlovenianTaxAuthorityProvider {
 	const processor = new FinancialEventsProcessor(null, new LotMatcher());
@@ -44,7 +54,7 @@ const simpleTaxPayer: TaxPayerInfo = {
 	postNumber: "postNumber",
 	postName: "postName",
 	municipalityName: "municipality",
-	birthDate: DateTime.fromISO("2000-01-01"),
+	birthDate: makeDate("2000-01-01"),
 	maticnaStevilka: "maticna",
 	invalidskoPodjetje: false,
 	resident: true,
@@ -58,7 +68,7 @@ const cashTransactionDividend = new TradeEventCashTransactionDividend({
 	id: "ID",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-	date: DateTime.fromISO("2023-06-07"),
+	date: makeDate("2023-06-07"),
 	multiplier: 1,
 	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
@@ -81,7 +91,7 @@ const cashTransactionPaymentInLieuOfDividend = new TradeEventCashTransactionPaym
 	id: "ID",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-	date: DateTime.fromISO("2023-06-08"),
+	date: makeDate("2023-06-08"),
 	multiplier: 1,
 	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
@@ -104,7 +114,7 @@ const cashTransactionDividendWithholdingTax = new TradeEventCashTransactionWithh
 	id: "ID",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-	date: DateTime.fromISO("2023-06-07"),
+	date: makeDate("2023-06-07"),
 	multiplier: 1,
 	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
@@ -126,7 +136,7 @@ const cashTransactionPaymentInLieuOfDividendWithholdingTax = new TradeEventCashT
 	id: "ID",
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-	date: DateTime.fromISO("2023-06-08"),
+	date: makeDate("2023-06-08"),
 	multiplier: 1,
 	exchangedMoney: new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
@@ -167,8 +177,8 @@ const testData = new FinancialEvents({
 
 Deno.test("PaymentInLieuOfDividend - withholding tax is reported separately from dividend withholding tax", () => {
 	const config: TaxAuthorityConfiguration = {
-		fromDate: DateTime.fromISO("2023-01-01"),
-		toDate: DateTime.fromISO("2024-01-01"),
+		fromDate: makeDate("2023-01-01"),
+		toDate: makeDate("2024-01-01"),
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
 	};
 

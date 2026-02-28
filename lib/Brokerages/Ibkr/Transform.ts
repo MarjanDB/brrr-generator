@@ -93,17 +93,19 @@ export class IbkrTransformService {
 					dividendsMap.get(key)
 			)!.identifier;
 
-			groupings.push(new StagingFinancialGrouping({
-				financialIdentifier: identifier,
-				countryOfOrigin: null,
-				underlyingCategory: GenericCategory.REGULAR,
-				stockTrades: (stocksMap.get(key)?.items ?? []) as (StagingTradeEventStockAcquired | StagingTradeEventStockSold)[],
-				stockTaxLots: stockLotsMap.get(key)?.items ?? [],
-				derivativeTrades:
-					(derivativesMap.get(key)?.items ?? []) as (StagingTradeEventDerivativeAcquired | StagingTradeEventDerivativeSold)[],
-				derivativeTaxLots: derivativeLotsMap.get(key)?.items ?? [],
-				cashTransactions: dividendsMap.get(key)?.items ?? [],
-			}));
+			groupings.push(
+				new StagingFinancialGrouping({
+					financialIdentifier: identifier,
+					countryOfOrigin: null,
+					underlyingCategory: GenericCategory.REGULAR,
+					stockTrades: (stocksMap.get(key)?.items ?? []) as (StagingTradeEventStockAcquired | StagingTradeEventStockSold)[],
+					stockTaxLots: stockLotsMap.get(key)?.items ?? [],
+					derivativeTrades:
+						(derivativesMap.get(key)?.items ?? []) as (StagingTradeEventDerivativeAcquired | StagingTradeEventDerivativeSold)[],
+					derivativeTaxLots: derivativeLotsMap.get(key)?.items ?? [],
+					cashTransactions: dividendsMap.get(key)?.items ?? [],
+				}),
+			);
 		}
 
 		const partials = this._convertCorporateActionsToPartialRelationships(segmented.corporateActions);
@@ -199,14 +201,16 @@ export class IbkrTransformService {
 	}
 
 	private _convertStockLotsToEvents(lots: LotStock[]): StagingTaxLot[] {
-		return lots.map((lot) => new StagingTaxLot({
-			id: lot.transactionID,
-			financialIdentifier: new StagingFinancialIdentifier({ isin: lot.isin, ticker: lot.symbol }),
-			quantity: lot.quantity,
-			acquired: new StagingTaxLotMatchingDetails({ id: lot.transactionID, dateTime: null }),
-			sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
-			shortLongType: GenericShortLong.LONG,
-		}));
+		return lots.map((lot) =>
+			new StagingTaxLot({
+				id: lot.transactionID,
+				financialIdentifier: new StagingFinancialIdentifier({ isin: lot.isin, ticker: lot.symbol }),
+				quantity: lot.quantity,
+				acquired: new StagingTaxLotMatchingDetails({ id: lot.transactionID, dateTime: null }),
+				sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
+				shortLongType: GenericShortLong.LONG,
+			})
+		);
 	}
 
 	private _convertDerivativeTradesToEvents(trades: TradeDerivative[]) {
@@ -243,18 +247,20 @@ export class IbkrTransformService {
 	}
 
 	private _convertDerivativeLotsToEvents(lots: LotDerivative[]): StagingTaxLot[] {
-		return lots.map((lot) => new StagingTaxLot({
-			id: lot.transactionID,
-			financialIdentifier: new StagingFinancialIdentifier({
-				isin: lot.underlyingSecurityID,
-				ticker: lot.symbol,
-				name: lot.description,
-			}),
-			quantity: lot.quantity,
-			acquired: new StagingTaxLotMatchingDetails({ id: lot.transactionID, dateTime: null }),
-			sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
-			shortLongType: GenericShortLong.LONG,
-		}));
+		return lots.map((lot) =>
+			new StagingTaxLot({
+				id: lot.transactionID,
+				financialIdentifier: new StagingFinancialIdentifier({
+					isin: lot.underlyingSecurityID,
+					ticker: lot.symbol,
+					name: lot.description,
+				}),
+				quantity: lot.quantity,
+				acquired: new StagingTaxLotMatchingDetails({ id: lot.transactionID, dateTime: null }),
+				sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
+				shortLongType: GenericShortLong.LONG,
+			})
+		);
 	}
 
 	private _convertCorporateActionsToPartialRelationships(corporateActions: CorporateAction[]): StagingIdentifierRelationshipPartialAny[] {

@@ -575,16 +575,25 @@ function emptyIfNotObject(v: unknown): unknown {
 }
 
 const FlexStatementSchema = z.object({
-	Trades: z.preprocess(emptyIfNotObject, z.object({
-		Trade: toArray(RawRecord),
-		Lot: toArray(RawRecord),
-	})).optional().transform((v) => v ?? { Trade: [], Lot: [] }),
-	CashTransactions: z.preprocess(emptyIfNotObject, z.object({
-		CashTransaction: toArray(RawRecord),
-	})).optional().transform((v) => v ?? { CashTransaction: [] }),
-	CorporateActions: z.preprocess(emptyIfNotObject, z.object({
-		CorporateAction: toArray(RawRecord),
-	})).optional().transform((v) => v ?? { CorporateAction: [] }),
+	Trades: z.preprocess(
+		emptyIfNotObject,
+		z.object({
+			Trade: toArray(RawRecord),
+			Lot: toArray(RawRecord),
+		}),
+	).optional().transform((v) => v ?? { Trade: [], Lot: [] }),
+	CashTransactions: z.preprocess(
+		emptyIfNotObject,
+		z.object({
+			CashTransaction: toArray(RawRecord),
+		}),
+	).optional().transform((v) => v ?? { CashTransaction: [] }),
+	CorporateActions: z.preprocess(
+		emptyIfNotObject,
+		z.object({
+			CorporateAction: toArray(RawRecord),
+		}),
+	).optional().transform((v) => v ?? { CorporateAction: [] }),
 });
 
 export type FlexStatement = z.output<typeof FlexStatementSchema>;

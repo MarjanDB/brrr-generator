@@ -1,4 +1,4 @@
-import type { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import type {
 	GenericAssetClass,
 	GenericDerivativeReportItemGainType,
@@ -13,7 +13,7 @@ type TradeEventArgs = {
 	id: string;
 	financialIdentifier: FinancialIdentifier;
 	assetClass: GenericAssetClass;
-	date: DateTime;
+	date: ValidDateTime;
 	multiplier: number;
 	exchangedMoney: GenericMonetaryExchangeInformation;
 	provenance: AnyProvenanceStep[];
@@ -28,7 +28,7 @@ export class TradeEventStockAcquired {
 	public readonly id: string;
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly provenance: AnyProvenanceStep[];
@@ -64,7 +64,7 @@ export class TradeEventStockSold {
 	public readonly id: string;
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly provenance: AnyProvenanceStep[];
@@ -99,7 +99,7 @@ export class TradeEventDerivativeAcquired {
 	public readonly id: string;
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly provenance: AnyProvenanceStep[];
@@ -135,7 +135,7 @@ export class TradeEventDerivativeSold {
 	public readonly id: string;
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly provenance: AnyProvenanceStep[];
@@ -170,7 +170,7 @@ export class TradeEventCashTransactionDividend {
 	public readonly id: string;
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly provenance: AnyProvenanceStep[];
@@ -215,7 +215,7 @@ export class TradeEventCashTransactionPaymentInLieuOfDividend {
 	public readonly id: string;
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly provenance: AnyProvenanceStep[];
@@ -262,7 +262,7 @@ export class TradeEventCashTransactionWithholdingTax {
 	public readonly id: string;
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly provenance: AnyProvenanceStep[];
@@ -283,7 +283,9 @@ export class TradeEventCashTransactionWithholdingTax {
 		this.listingExchange = args.listingExchange;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof TradeEventCashTransactionWithholdingTax>[0]>): TradeEventCashTransactionWithholdingTax {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof TradeEventCashTransactionWithholdingTax>[0]>,
+	): TradeEventCashTransactionWithholdingTax {
 		return new TradeEventCashTransactionWithholdingTax({
 			id: this.id,
 			financialIdentifier: this.financialIdentifier,
@@ -304,7 +306,7 @@ export class TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend {
 	public readonly id: string;
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
-	public readonly date: DateTime;
+	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly provenance: AnyProvenanceStep[];

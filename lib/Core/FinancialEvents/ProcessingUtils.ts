@@ -1,5 +1,5 @@
 import type { TradeEvent } from "@brrr/Core/Schemas/Events.ts";
-import type { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 
 export class ProcessingUtils {
 	findEventById<T extends TradeEvent>(id: string, events: T[]): T {
@@ -8,7 +8,7 @@ export class ProcessingUtils {
 		return found;
 	}
 
-	findEventByDate<T extends TradeEvent>(date: DateTime, events: T[]): T[] {
+	findEventByDate<T extends TradeEvent>(date: ValidDateTime, events: T[]): T[] {
 		return events.filter((e) => e.date.toMillis() === date.toMillis());
 	}
 }

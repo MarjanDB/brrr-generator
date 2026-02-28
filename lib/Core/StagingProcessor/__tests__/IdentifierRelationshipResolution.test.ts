@@ -11,9 +11,10 @@ import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFi
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution.ts";
 import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 
-function makeDate(iso: string) {
-	return DateTime.fromISO(iso)!;
+function makeDate(iso: string): ValidDateTime {
+	return DateTime.fromISO(iso) as ValidDateTime;
 }
 
 Deno.test("two partials same key produce one full relationship", () => {

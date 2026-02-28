@@ -1,13 +1,14 @@
 import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { GenericAssetClass, GenericShortLong, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats.ts";
 import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
 import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod.ts";
 
-function makeDate(iso: string) {
-	return DateTime.fromISO(iso)!;
+function makeDate(iso: string): ValidDateTime {
+	return DateTime.fromISO(iso) as ValidDateTime;
 }
 
 const identifier = new FinancialIdentifier({ isin: "ISIN", ticker: "TICKER", name: "NAME" });

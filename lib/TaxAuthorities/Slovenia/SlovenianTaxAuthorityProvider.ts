@@ -6,7 +6,11 @@ import type { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGen
 import type { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator.ts";
 import type { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator.ts";
 import { EDavkiDocumentWorkflowType, SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes.ts";
-import type { EDavkiDividendReportLine, EDavkiGenericDerivativeReportItem, EDavkiGenericTradeReportItem } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
+import type {
+	EDavkiDividendReportLine,
+	EDavkiGenericDerivativeReportItem,
+	EDavkiGenericTradeReportItem,
+} from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
 import type { ITaxAuthorityProvider } from "@brrr/TaxAuthorities/TaxAuthorityProvider.ts";
 import { DateTime } from "luxon";
 

@@ -1,4 +1,4 @@
-import type { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats.ts";
 import type { TradeEvent } from "@brrr/Core/Schemas/Events.ts";
 import { TaxLot } from "@brrr/Core/Schemas/Lots.ts";
@@ -26,7 +26,7 @@ export class GenericLotMatchingDetails {
 		this.trades = trades;
 	}
 
-	getTradesOfLotsClosedInPeriod(periodStart: DateTime, periodEnd: DateTime): GenericLotMatchingDetails {
+	getTradesOfLotsClosedInPeriod(periodStart: ValidDateTime, periodEnd: ValidDateTime): GenericLotMatchingDetails {
 		const lotsClosedInPeriod = this.lots.filter(
 			(lot) => lot.sold.date >= periodStart && lot.sold.date <= periodEnd,
 		);

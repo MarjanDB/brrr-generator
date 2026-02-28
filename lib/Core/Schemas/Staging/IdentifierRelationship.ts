@@ -1,4 +1,4 @@
-import type { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier.ts";
 
 export enum StagingIdentifierChangeType {
@@ -12,14 +12,14 @@ type StagingIdentifierRelationshipArgs = {
 	fromIdentifier: StagingFinancialIdentifier;
 	toIdentifier: StagingFinancialIdentifier;
 	changeType: StagingIdentifierChangeType;
-	effectiveDate: DateTime | null;
+	effectiveDate: ValidDateTime | null;
 };
 
 export class StagingIdentifierRelationship {
 	public readonly fromIdentifier: StagingFinancialIdentifier;
 	public readonly toIdentifier: StagingFinancialIdentifier;
 	public readonly changeType: StagingIdentifierChangeType;
-	public readonly effectiveDate: DateTime | null;
+	public readonly effectiveDate: ValidDateTime | null;
 
 	constructor(args: StagingIdentifierRelationshipArgs) {
 		this.fromIdentifier = args.fromIdentifier;
@@ -43,7 +43,7 @@ export class StagingIdentifierRelationshipSplit {
 	public readonly fromIdentifier: StagingFinancialIdentifier;
 	public readonly toIdentifier: StagingFinancialIdentifier;
 	public readonly changeType: StagingIdentifierChangeType;
-	public readonly effectiveDate: DateTime | null;
+	public readonly effectiveDate: ValidDateTime | null;
 	public readonly quantityBefore: number;
 	public readonly quantityAfter: number;
 
@@ -74,7 +74,7 @@ type StagingIdentifierRelationshipPartialArgs = {
 	toIdentifier: StagingFinancialIdentifier | null;
 	correlationKey: string;
 	changeType: StagingIdentifierChangeType;
-	effectiveDate: DateTime;
+	effectiveDate: ValidDateTime;
 	quantity?: number | null;
 };
 
@@ -83,7 +83,7 @@ export class StagingIdentifierRelationshipPartial {
 	public readonly toIdentifier: StagingFinancialIdentifier | null;
 	public readonly correlationKey: string;
 	public readonly changeType: StagingIdentifierChangeType;
-	public readonly effectiveDate: DateTime;
+	public readonly effectiveDate: ValidDateTime;
 	public readonly quantity?: number | null;
 
 	constructor(args: StagingIdentifierRelationshipPartialArgs) {
@@ -113,7 +113,7 @@ export class StagingIdentifierRelationshipPartialWithQuantity {
 	public readonly toIdentifier: StagingFinancialIdentifier | null;
 	public readonly correlationKey: string;
 	public readonly changeType: StagingIdentifierChangeType;
-	public readonly effectiveDate: DateTime;
+	public readonly effectiveDate: ValidDateTime;
 	public readonly quantity: number;
 
 	constructor(args: Omit<StagingIdentifierRelationshipPartialArgs, "quantity"> & { quantity: number }) {

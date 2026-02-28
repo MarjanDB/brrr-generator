@@ -1,14 +1,14 @@
-import type { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import type { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats.ts";
 import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier.ts";
 
 export class StagingTaxLotMatchingDetails {
 	public readonly id: string | null;
-	public readonly dateTime: DateTime | null;
+	public readonly dateTime: ValidDateTime | null;
 
 	constructor(args: {
 		id: string | null;
-		dateTime: DateTime | null;
+		dateTime: ValidDateTime | null;
 	}) {
 		this.id = args.id;
 		this.dateTime = args.dateTime;

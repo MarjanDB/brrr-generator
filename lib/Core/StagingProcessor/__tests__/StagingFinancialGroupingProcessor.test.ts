@@ -30,9 +30,10 @@ import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFi
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor.ts";
 import { assertEquals, assertThrows } from "@std/assert";
 import { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 
-function makeDate(iso: string) {
-	return DateTime.fromISO(iso)!;
+function makeDate(iso: string): ValidDateTime {
+	return DateTime.fromISO(iso) as ValidDateTime;
 }
 
 const ident = new StagingFinancialIdentifier({ isin: "US123", ticker: "AAPL", name: "AAPL" });
@@ -270,10 +271,12 @@ Deno.test("processStagingFinancialEvents returns FinancialEvents with converted 
 		partialRelationships: [],
 	});
 	const processor = new StagingFinancialGroupingProcessor();
-	const result = processor.processStagingFinancialEvents(new StagingFinancialEvents({
-		groupings: [makeGrouping({ financialIdentifier: stagingIdA })],
-		identifierRelationships: relationships,
-	}));
+	const result = processor.processStagingFinancialEvents(
+		new StagingFinancialEvents({
+			groupings: [makeGrouping({ financialIdentifier: stagingIdA })],
+			identifierRelationships: relationships,
+		}),
+	);
 	assertEquals(result.groupings.length, 1);
 	assertEquals(result.groupings[0].financialIdentifier.getIsin(), "US111");
 	assertEquals(result.identifierRelationships.length, 1);

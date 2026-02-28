@@ -1,9 +1,9 @@
 import {
 	StagingIdentifierChangeType,
 	StagingIdentifierRelationship,
-	StagingIdentifierRelationshipSplit,
 	type StagingIdentifierRelationshipAny,
 	type StagingIdentifierRelationshipPartialAny,
+	StagingIdentifierRelationshipSplit,
 } from "@brrr/Core/Schemas/Staging/IdentifierRelationship.ts";
 import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents.ts";
 
@@ -41,21 +41,25 @@ export class IdentifierRelationshipResolution {
 				if (quantityAfter < quantityBefore) {
 					finalChangeType = StagingIdentifierChangeType.REVERSE_SPLIT;
 				}
-				merged.push(new StagingIdentifierRelationshipSplit({
-					fromIdentifier: fromPartial.fromIdentifier,
-					toIdentifier: toPartial.toIdentifier,
-					changeType: finalChangeType,
-					effectiveDate,
-					quantityBefore,
-					quantityAfter,
-				}));
+				merged.push(
+					new StagingIdentifierRelationshipSplit({
+						fromIdentifier: fromPartial.fromIdentifier,
+						toIdentifier: toPartial.toIdentifier,
+						changeType: finalChangeType,
+						effectiveDate,
+						quantityBefore,
+						quantityAfter,
+					}),
+				);
 			} else {
-				merged.push(new StagingIdentifierRelationship({
-					fromIdentifier: fromPartial.fromIdentifier,
-					toIdentifier: toPartial.toIdentifier,
-					changeType,
-					effectiveDate,
-				}));
+				merged.push(
+					new StagingIdentifierRelationship({
+						fromIdentifier: fromPartial.fromIdentifier,
+						toIdentifier: toPartial.toIdentifier,
+						changeType,
+						effectiveDate,
+					}),
+				);
 			}
 		}
 		return merged;

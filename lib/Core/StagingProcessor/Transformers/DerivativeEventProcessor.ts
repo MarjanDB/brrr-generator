@@ -1,6 +1,6 @@
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { TradeEventDerivativeAcquired, TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events.ts";
-import { StagingTradeEventDerivativeAcquired, type StagingTradeEventDerivative } from "@brrr/Core/Schemas/Staging/Events.ts";
+import { type StagingTradeEventDerivative, StagingTradeEventDerivativeAcquired } from "@brrr/Core/Schemas/Staging/Events.ts";
 
 export function processDerivativeEvent(
 	input: StagingTradeEventDerivative,

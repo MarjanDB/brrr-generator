@@ -225,11 +225,13 @@ export class ApplyIdentifierRelationshipsService {
 				allDerivativeGroupings.push(dg.copy({
 					financialIdentifier: properId,
 					derivativeTrades: dg.derivativeTrades.map((t) => t.copy({ financialIdentifier: properId })),
-					derivativeTaxLots: dg.derivativeTaxLots.map((lot) => lot.copy({
-						financialIdentifier: properId,
-						acquired: lot.acquired.copy({ financialIdentifier: properId }),
-						sold: lot.sold.copy({ financialIdentifier: properId }),
-					})),
+					derivativeTaxLots: dg.derivativeTaxLots.map((lot) =>
+						lot.copy({
+							financialIdentifier: properId,
+							acquired: lot.acquired.copy({ financialIdentifier: properId }),
+							sold: lot.sold.copy({ financialIdentifier: properId }),
+						})
+					),
 				}));
 			}
 			for (const c of g.cashTransactions) allCashTransactions.push(c.copy({ financialIdentifier: properId }));

@@ -1,13 +1,13 @@
-import type { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import type { Trade } from "@brrr/Core/LotMatching/Trade.ts";
 
 export type LotAcquired = {
-	date: DateTime;
+	date: ValidDateTime;
 	relation: Trade;
 };
 
 export type LotSold = {
-	date: DateTime;
+	date: ValidDateTime;
 	relation: Trade;
 };
 

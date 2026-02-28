@@ -1,7 +1,14 @@
 import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
-import { GenericAssetClass, GenericCategory, GenericMonetaryExchangeInformation, GenericShortLong, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats.ts";
+import {
+	GenericAssetClass,
+	GenericCategory,
+	GenericMonetaryExchangeInformation,
+	GenericShortLong,
+	GenericTradeReportItemGainType,
+} from "@brrr/Core/Schemas/CommonFormats.ts";
 import { IdentifierChangeType, IdentifierRelationship, IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
 import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
@@ -9,8 +16,8 @@ import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas
 import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts";
 
-function makeDate(iso: string) {
-	return DateTime.fromISO(iso)!;
+function makeDate(iso: string): ValidDateTime {
+	return DateTime.fromISO(iso) as ValidDateTime;
 }
 
 function makeMonetary(qty: number, price = 10.0) {
