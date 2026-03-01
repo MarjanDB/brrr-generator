@@ -12,8 +12,6 @@
 		"useTabs": true
 	},
 	"imports": {
-		"@brrr/lib": "./lib/mod.ts",
-		"@brrr/": "./lib/",
 		"luxon": "npm:luxon@^3.7.2",
 		"@types/luxon": "npm:@types/luxon@^3.7.1",
 		"zod": "npm:zod@^4.3.6"

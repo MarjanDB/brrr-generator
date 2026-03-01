@@ -136,13 +136,6 @@
           "npm:luxon@^3.7.2",
           "npm:zod@^4.3.6"
         ]
-      },
-      "notebooks": {
-        "dependencies": [
-          "npm:@types/luxon@^3.7.1",
-          "npm:fast-xml-parser@^5.4.1",
-          "npm:luxon@^3.7.2"
-        ]
       }
     }
   }
