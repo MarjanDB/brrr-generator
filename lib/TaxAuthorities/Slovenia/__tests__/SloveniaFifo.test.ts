@@ -20,7 +20,7 @@ import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts";
-import { CompanyLookupProvider, CountryLookupProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
+import { NodeJsonCompanyLookupProvider } from "@brrr/InfoProviders/NodeJsonInfoLookupProvider.ts";
 import { TaxAuthorityLotMatchingMethod, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes.ts";
@@ -40,7 +40,7 @@ function makeProvider(taxPayerInfo: TaxPayerInfo, config: TaxAuthorityConfigurat
 		config,
 		new ApplyIdentifierRelationshipsService(),
 		new KdvpReportGenerator(processor),
-		new DivReportGenerator(new CompanyLookupProvider(), new CountryLookupProvider()),
+		new DivReportGenerator(new NodeJsonCompanyLookupProvider()),
 		new IfiReportGenerator(processor),
 	);
 }
@@ -183,7 +183,7 @@ Deno.test("SloveniaFifo - testKdvpSimpleCsv - 2 rows with correct quantities", (
 	assertEquals(events[1].quantity, -1, "The second line should be the sell line");
 });
 
-Deno.test("SloveniaFifo - testKdvpSimpleXml - 1 purchase and 1 sale in XML", () => {
+Deno.test("SloveniaFifo - testKdvpSimpleXml - 1 purchase and 1 sale in XML", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -191,7 +191,7 @@ Deno.test("SloveniaFifo - testKdvpSimpleXml - 1 purchase and 1 sale in XML", () 
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const xml = provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.DOH_KDVP, testData);
+	const xml = await provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.DOH_KDVP, testData);
 
 	const purchaseCount = (xml.match(/<Purchase>/g) ?? []).length;
 	const saleCount = (xml.match(/<Sale>/g) ?? []).length;
@@ -217,7 +217,7 @@ Deno.test("SloveniaFifo - testIfiSimpleCsv - 2 rows with correct quantities", ()
 	assertEquals(rows[1].quantity, -1, "The second line should be the sell line");
 });
 
-Deno.test("SloveniaFifo - testIfiSimpleXml - 1 purchase and 1 sale in XML", () => {
+Deno.test("SloveniaFifo - testIfiSimpleXml - 1 purchase and 1 sale in XML", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -225,7 +225,7 @@ Deno.test("SloveniaFifo - testIfiSimpleXml - 1 purchase and 1 sale in XML", () =
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const xml = provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.D_IFI, testData);
+	const xml = await provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.D_IFI, testData);
 
 	const purchaseCount = (xml.match(/<Purchase>/g) ?? []).length;
 	const saleCount = (xml.match(/<Sale>/g) ?? []).length;

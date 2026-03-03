@@ -12,7 +12,8 @@ export { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/S
 export { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
 
 // Info providers
-export { CompanyLookupProvider, CountryLookupProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
+export { TreatyType, InfoProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
+export type { Country, CompanyLocationInfo, CompanyInfo } from "@brrr/InfoProviders/InfoLookupProvider.ts";
 
 // Tax authority — interface
 export type { ITaxAuthorityProvider } from "@brrr/TaxAuthorities/TaxAuthorityProvider.ts";

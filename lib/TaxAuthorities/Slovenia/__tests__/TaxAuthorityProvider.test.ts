@@ -25,7 +25,7 @@ import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts";
-import { CompanyLookupProvider, CountryLookupProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
+import { NodeJsonCompanyLookupProvider } from "@brrr/InfoProviders/NodeJsonInfoLookupProvider.ts";
 import { TaxAuthorityLotMatchingMethod, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes.ts";
@@ -45,7 +45,7 @@ function makeProvider(taxPayerInfo: TaxPayerInfo, config: TaxAuthorityConfigurat
 		config,
 		new ApplyIdentifierRelationshipsService(),
 		new KdvpReportGenerator(processor),
-		new DivReportGenerator(new CompanyLookupProvider(), new CountryLookupProvider()),
+		new DivReportGenerator(new NodeJsonCompanyLookupProvider()),
 		new IfiReportGenerator(processor),
 	);
 }
@@ -253,7 +253,7 @@ Deno.test("testKdvpSimpleCsv - 2 rows with correct quantities", () => {
 	assertEquals(events[1].quantity, -1, "The second line should be the sell line");
 });
 
-Deno.test("testKdvpSimpleXml - 1 purchase and 1 sale in XML", () => {
+Deno.test("testKdvpSimpleXml - 1 purchase and 1 sale in XML", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -261,7 +261,7 @@ Deno.test("testKdvpSimpleXml - 1 purchase and 1 sale in XML", () => {
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const xml = provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.DOH_KDVP, testData);
+	const xml = await provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.DOH_KDVP, testData);
 
 	const purchaseCount = (xml.match(/<Purchase>/g) ?? []).length;
 	const saleCount = (xml.match(/<Sale>/g) ?? []).length;
@@ -287,7 +287,7 @@ Deno.test("testIfiSimpleCsv - 2 rows with correct quantities", () => {
 	assertEquals(rows[1].quantity, -1, "The second line should be the sell line");
 });
 
-Deno.test("testIfiSimpleXml - 1 purchase and 1 sale in XML", () => {
+Deno.test("testIfiSimpleXml - 1 purchase and 1 sale in XML", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -295,7 +295,7 @@ Deno.test("testIfiSimpleXml - 1 purchase and 1 sale in XML", () => {
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const xml = provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.D_IFI, testData);
+	const xml = await provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.D_IFI, testData);
 
 	const purchaseCount = (xml.match(/<Purchase>/g) ?? []).length;
 	const saleCount = (xml.match(/<Sale>/g) ?? []).length;
@@ -304,15 +304,15 @@ Deno.test("testIfiSimpleXml - 1 purchase and 1 sale in XML", () => {
 	assertEquals(saleCount, 1, "There should only be one sale");
 });
 
-Deno.test("testDivSimpleCsv - 1 row with correct amounts", () => {
+Deno.test("testDivSimpleCsv - 1 row with correct amounts", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
 	};
 
-	const generator = new DivReportGenerator(new CompanyLookupProvider(), new CountryLookupProvider());
-	const rows = generator.convert(config, testData.groupings);
+	const generator = new DivReportGenerator(new NodeJsonCompanyLookupProvider());
+	const rows = await generator.convert(config, testData.groupings);
 
 	assertEquals(rows.length, 1, "Only 1 row should be present, because dividend and withholding tax are related");
 	assertEquals(rows[0].dividendAmount, 10.0, "The dividend amount should equal 10");
@@ -321,7 +321,7 @@ Deno.test("testDivSimpleCsv - 1 row with correct amounts", () => {
 	assertEquals(rows[0].foreignTaxPaidInOriginalCurrency, 10.0, "The original dividend withheld tax should be 10");
 });
 
-Deno.test("testDivSimpleXml - 1 dividend line in XML", () => {
+Deno.test("testDivSimpleXml - 1 dividend line in XML", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -329,13 +329,13 @@ Deno.test("testDivSimpleXml - 1 dividend line in XML", () => {
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const xml = provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.DOH_DIV, testData);
+	const xml = await provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.DOH_DIV, testData);
 
 	const dividendCount = (xml.match(/<Dividend>/g) ?? []).length;
 	assertEquals(dividendCount, 1, "There should be 1 dividend line");
 });
 
-Deno.test("testGenerateReportDataKdvpReturnsTypedList - report has items with events", () => {
+Deno.test("testGenerateReportDataKdvpReturnsTypedList - report has items with events", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -343,7 +343,7 @@ Deno.test("testGenerateReportDataKdvpReturnsTypedList - report has items with ev
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const reportData = provider.generateReportData(SlovenianTaxAuthorityReportTypes.DOH_KDVP, testData) as {
+	const reportData = await provider.generateReportData(SlovenianTaxAuthorityReportTypes.DOH_KDVP, testData) as {
 		items: { events: unknown[] }[];
 	}[];
 
@@ -353,7 +353,7 @@ Deno.test("testGenerateReportDataKdvpReturnsTypedList - report has items with ev
 	assertEquals(reportData[0].items[0].events.length, 2);
 });
 
-Deno.test("testGenerateReportDataDivReturnsTypedSequence - 1 dividend with correct amounts", () => {
+Deno.test("testGenerateReportDataDivReturnsTypedSequence - 1 dividend with correct amounts", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -361,7 +361,7 @@ Deno.test("testGenerateReportDataDivReturnsTypedSequence - 1 dividend with corre
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const reportData = provider.generateReportData(SlovenianTaxAuthorityReportTypes.DOH_DIV, testData) as {
+	const reportData = await provider.generateReportData(SlovenianTaxAuthorityReportTypes.DOH_DIV, testData) as {
 		dividendAmount: number;
 		foreignTaxPaid: number;
 	}[];
@@ -372,7 +372,7 @@ Deno.test("testGenerateReportDataDivReturnsTypedSequence - 1 dividend with corre
 	assertEquals(reportData[0].foreignTaxPaid, 5.0);
 });
 
-Deno.test("testGenerateReportDataIfiReturnsTypedList - report has items", () => {
+Deno.test("testGenerateReportDataIfiReturnsTypedList - report has items", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -380,7 +380,7 @@ Deno.test("testGenerateReportDataIfiReturnsTypedList - report has items", () => 
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const reportData = provider.generateReportData(SlovenianTaxAuthorityReportTypes.D_IFI, testData) as {
+	const reportData = await provider.generateReportData(SlovenianTaxAuthorityReportTypes.D_IFI, testData) as {
 		items: unknown[];
 	}[];
 

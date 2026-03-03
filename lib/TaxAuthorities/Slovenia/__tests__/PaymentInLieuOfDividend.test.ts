@@ -16,7 +16,7 @@ import {
 	TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
 } from "@brrr/Core/Schemas/Events.ts";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
-import { CompanyLookupProvider, CountryLookupProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
+import { NodeJsonCompanyLookupProvider } from "@brrr/InfoProviders/NodeJsonInfoLookupProvider.ts";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator.ts";
@@ -136,15 +136,15 @@ const testData = new FinancialEvents({
 	identifierRelationships: [],
 });
 
-Deno.test("PaymentInLieuOfDividend - withholding tax is reported separately from dividend withholding tax", () => {
+Deno.test("PaymentInLieuOfDividend - withholding tax is reported separately from dividend withholding tax", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
 	};
 
-	const generator = new DivReportGenerator(new CompanyLookupProvider(), new CountryLookupProvider());
-	const rows = generator.convert(config, testData.groupings);
+	const generator = new DivReportGenerator(new NodeJsonCompanyLookupProvider());
+	const rows = await generator.convert(config, testData.groupings);
 
 	assertEquals(
 		rows.length,

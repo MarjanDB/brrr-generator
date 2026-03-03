@@ -1,6 +1,5 @@
 import type { DateTime } from "luxon";
-import type { CompanyLookupProvider, CountryLookupProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
-import { TreatyType } from "@brrr/InfoProviders/InfoLookupProvider.ts";
+import { TreatyType, type InfoProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import { GenericDividendType } from "@brrr/Core/Schemas/CommonFormats.ts";
 import {
@@ -153,19 +152,21 @@ function round(value: number, decimals: number): number {
 
 export class DivReportGenerator {
 	constructor(
-		private readonly companyLookup: CompanyLookupProvider,
-		private readonly countryLookup: CountryLookupProvider,
+		private readonly infoProvider: InfoProvider,
 	) {}
 
-	convert(config: TaxAuthorityConfiguration, groupings: FinancialGrouping[]): EDavkiDividendReportLine[] {
+	async convert(config: TaxAuthorityConfiguration, groupings: FinancialGrouping[]): Promise<EDavkiDividendReportLine[]> {
 		const allLines: EDavkiDividendReportLine[] = [];
 		for (const grouping of groupings) {
-			allLines.push(...this.processSingleGrouping(config, grouping));
+			allLines.push(...await this.processSingleGrouping(config, grouping));
 		}
 		return allLines;
 	}
 
-	private processSingleGrouping(config: TaxAuthorityConfiguration, data: FinancialGrouping): EDavkiDividendReportLine[] {
+	private async processSingleGrouping(
+		config: TaxAuthorityConfiguration,
+		data: FinancialGrouping,
+	): Promise<EDavkiDividendReportLine[]> {
 		const relevantCashTransactions = filterOutCashTransactionsBasedOnDate(
 			data.cashTransactions,
 			config.fromDate,
@@ -185,10 +186,12 @@ export class DivReportGenerator {
 
 		const processedDividendLines = processEdavkiLineItemsFromCashTransactions(dividendLines, withholdingTax);
 		const combinedLines = mergeDividendsReceivedOnSameDayForSingleIsin(processedDividendLines);
-		return this.fillInMissingCompanyInformation(combinedLines);
+		return await this.fillInMissingCompanyInformation(combinedLines);
 	}
 
-	private fillInMissingCompanyInformation(lines: EDavkiDividendReportLine[]): EDavkiDividendReportLine[] {
+	private async fillInMissingCompanyInformation(
+		lines: EDavkiDividendReportLine[],
+	): Promise<EDavkiDividendReportLine[]> {
 		if (lines.length === 0) {
 			return lines;
 		}
@@ -202,15 +205,19 @@ export class DivReportGenerator {
 		let taxReliefParagraphInInternationalTreaty: string | null = null;
 
 		try {
-			const responsibleCompany = this.companyLookup.getCompanyInfo(firstLine.dividendPayerIdentificationNumber);
+			const responsibleCompany = await this.infoProvider.getCompanyInfo(
+				firstLine.dividendPayerIdentificationNumber,
+			);
 
-			dividendPayerTitle = responsibleCompany.longName;
-			dividendPayerCountryOfOrigin = responsibleCompany.location.shortCodeCountry2;
-			countryOfOrigin = responsibleCompany.location.shortCodeCountry2;
-			dividendPayerAddress = `${responsibleCompany.location.address1}, ${responsibleCompany.location.city}`;
+			if (responsibleCompany !== null) {
+				dividendPayerTitle = responsibleCompany.longName;
+				dividendPayerCountryOfOrigin = responsibleCompany.location.shortCodeCountry2;
+				countryOfOrigin = responsibleCompany.location.shortCodeCountry2;
+				dividendPayerAddress = `${responsibleCompany.location.address1}, ${responsibleCompany.location.city}`;
 
-			const relevantCountry = this.countryLookup.getCountry(responsibleCompany.location.country);
-			taxReliefParagraphInInternationalTreaty = relevantCountry.treaties.get(TreatyType.TaxRelief) ?? null;
+				const relevantCountry = await this.infoProvider.getCountry(responsibleCompany.location.country);
+				taxReliefParagraphInInternationalTreaty = relevantCountry?.treaties.get(TreatyType.TaxRelief) ?? null;
+			}
 		} catch (_e) {
 			// Silently fail — company/country lookup is best-effort
 		}

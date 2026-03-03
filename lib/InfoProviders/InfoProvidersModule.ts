@@ -1,7 +1,14 @@
 import type { Container } from "inversify";
-import { CompanyLookupProvider, CountryLookupProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
+import { InfoProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
+import { NodeJsonCompanyLookupProvider } from "@brrr/InfoProviders/NodeJsonInfoLookupProvider.ts";
 
-export function loadInfoProvidersModule(container: Container): void {
-	container.bind(CountryLookupProvider).toResolvedValue(() => new CountryLookupProvider());
-	container.bind(CompanyLookupProvider).toResolvedValue(() => new CompanyLookupProvider());
+export function loadInfoProvidersModule(
+	container: Container,
+	overrides?: {
+		infoProvider?: InfoProvider;
+	},
+): void {
+	const infoProvider: InfoProvider = overrides?.infoProvider ?? new NodeJsonCompanyLookupProvider();
+
+	container.bind<InfoProvider>(InfoProvider.Token).toResolvedValue(() => infoProvider);
 }

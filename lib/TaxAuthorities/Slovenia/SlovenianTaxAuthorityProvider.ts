@@ -41,10 +41,10 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider<Slov
 		]).groupings;
 	}
 
-	generateReportData(
+	async generateReportData(
 		reportType: SlovenianTaxAuthorityReportTypes,
 		events: FinancialEvents,
-	): SlovenianReportItem[] {
+	): Promise<SlovenianReportItem[]> {
 		const data = this._applyRelationships(events);
 
 		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_KDVP) {
@@ -52,7 +52,7 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider<Slov
 		}
 
 		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_DIV) {
-			return this.divGenerator.convert(this.reportConfig, data);
+			return await this.divGenerator.convert(this.reportConfig, data);
 		}
 
 		if (reportType === SlovenianTaxAuthorityReportTypes.D_IFI) {
@@ -62,10 +62,10 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider<Slov
 		return [];
 	}
 
-	generateExportForTaxAuthority(
+	async generateExportForTaxAuthority(
 		reportType: SlovenianTaxAuthorityReportTypes,
 		events: FinancialEvents,
-	): string {
+	): Promise<string> {
 		const data = this._applyRelationships(events);
 
 		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_KDVP) {
@@ -78,11 +78,12 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider<Slov
 		}
 
 		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_DIV) {
+			const converted = await this.divGenerator.convert(this.reportConfig, data);
 			return this.divGenerator.toXml(
 				this.reportConfig,
 				this.taxPayerInfo,
 				this.isSelfReport(DateTime.now()),
-				this.divGenerator.convert(this.reportConfig, data),
+				converted,
 			);
 		}
 
@@ -96,10 +97,10 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider<Slov
 		return "";
 	}
 
-	generateSpreadsheetExport(
+	async generateSpreadsheetExport(
 		reportType: SlovenianTaxAuthorityReportTypes,
 		events: FinancialEvents,
-	): string {
+	): Promise<string> {
 		const data = this._applyRelationships(events);
 
 		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_KDVP) {
@@ -107,7 +108,8 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider<Slov
 		}
 
 		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_DIV) {
-			return this.divGenerator.toCsv(this.divGenerator.convert(this.reportConfig, data));
+			const converted = await this.divGenerator.convert(this.reportConfig, data);
+			return this.divGenerator.toCsv(converted);
 		}
 
 		if (reportType === SlovenianTaxAuthorityReportTypes.D_IFI) {

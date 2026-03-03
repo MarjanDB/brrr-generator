@@ -1,5 +1,5 @@
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
-import { CompanyLookupProvider, CountryLookupProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
+import { InfoProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator.ts";
 import { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator.ts";
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator.ts";
@@ -12,9 +12,8 @@ export function loadSloveniaModule(container: Container): void {
 	);
 
 	container.bind(DivReportGenerator).toResolvedValue(
-		(companyLookup: CompanyLookupProvider, countryLookup: CountryLookupProvider) =>
-			new DivReportGenerator(companyLookup, countryLookup),
-		[CompanyLookupProvider, CountryLookupProvider],
+		(infoProvider: InfoProvider) => new DivReportGenerator(infoProvider),
+		[InfoProvider.Token],
 	);
 
 	container.bind(IfiReportGenerator).toResolvedValue(
