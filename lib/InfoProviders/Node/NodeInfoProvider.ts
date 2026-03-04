@@ -155,7 +155,7 @@ const isinToCompanyLookup = missingCompaniesLookup as Record<
 
 export class NodeInfoProvider implements InfoProvider {
 	private readonly predefined = new PredefinedInfoProvider();
-	private readonly yf = new YahooFinance();
+	private readonly yf = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
 
 	// Override methods — forward to predefined
 	addCompany(isin: string, info: CompanyInfo): void {
