@@ -4,7 +4,7 @@ import {
 	type Country,
 	type InfoProvider,
 	TreatyType,
-} from "@brrr/InfoProviders/InfoLookupProvider.ts";
+} from "@brrr/InfoProviders/InfoProvider.ts";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

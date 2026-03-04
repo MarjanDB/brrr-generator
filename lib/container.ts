@@ -1,15 +1,16 @@
+import { loadBrokeragesModule } from "@brrr/Brokerages/BrokeragesModule.ts";
 import { loadCoreModule } from "@brrr/Core/CoreModule.ts";
-import { loadInfoProvidersModule } from "@brrr/InfoProviders/InfoProvidersModule.ts";
+import { InfoProvider } from "@brrr/InfoProviders/InfoProvider.ts";
 import { loadSloveniaModule } from "@brrr/TaxAuthorities/Slovenia/SloveniaModule.ts";
 import { Container } from "inversify";
-import { loadBrokeragesModule } from "./Brokerages/BrokeragesModule.ts";
 
-export function createContainer(): Container {
+export function createContainer(infoProvider: InfoProvider): Container {
 	const container = new Container();
+
+	container.bind<InfoProvider>(InfoProvider.Token).toResolvedValue(() => infoProvider).inSingletonScope();
 
 	loadCoreModule(container);
 	loadBrokeragesModule(container);
-	loadInfoProvidersModule(container);
 	loadSloveniaModule(container);
 
 	return container;

@@ -1,6 +1,3 @@
-import type { DateTime } from "luxon";
-import { TreatyType, type InfoProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
-import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import { GenericDividendType } from "@brrr/Core/Schemas/CommonFormats.ts";
 import {
 	TradeEventCashTransactionDividend,
@@ -9,8 +6,13 @@ import {
 	TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
 	type TransactionCash,
 } from "@brrr/Core/Schemas/Events.ts";
+import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
+import { type InfoProvider, TreatyType } from "@brrr/InfoProviders/InfoProvider.ts";
 import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
+import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/CsvDohDiv.ts";
+import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/XmlDohDiv.ts";
 import { EDavkiDividendReportLine, EDavkiDividendType } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas.ts";
+import type { DateTime } from "luxon";
 
 const DIVIDEND_TYPE_MAPPINGS: Record<GenericDividendType, EDavkiDividendType> = {
 	[GenericDividendType.UNKNOWN]: EDavkiDividendType.UNKNOWN,
@@ -21,8 +23,6 @@ const DIVIDEND_TYPE_MAPPINGS: Record<GenericDividendType, EDavkiDividendType> = 
 	[GenericDividendType.OTHER_2]: EDavkiDividendType.OTHER,
 	[GenericDividendType.BONUS]: EDavkiDividendType.OTHER,
 };
-import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/XmlDohDiv.ts";
-import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/CsvDohDiv.ts";
 
 function filterOutCashTransactionsBasedOnDate(
 	data: TransactionCash[],

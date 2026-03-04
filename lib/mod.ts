@@ -5,15 +5,15 @@ export { createContainer } from "@brrr/container.ts";
 export { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider.ts";
 
 // Core
-export { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
-export { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
 export { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts";
-export { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor.ts";
+export { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
+export { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
 export { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
+export { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor.ts";
 
 // Info providers
-export { TreatyType, InfoProvider } from "@brrr/InfoProviders/InfoLookupProvider.ts";
-export type { Country, CompanyLocationInfo, CompanyInfo } from "@brrr/InfoProviders/InfoLookupProvider.ts";
+export { InfoProvider, TreatyType } from "@brrr/InfoProviders/InfoProvider.ts";
+export type { CompanyInfo, CompanyLocationInfo, Country } from "@brrr/InfoProviders/InfoProvider.ts";
 
 // Tax authority — interface
 export type { ITaxAuthorityProvider } from "@brrr/TaxAuthorities/TaxAuthorityProvider.ts";
@@ -23,8 +23,8 @@ export { TaxAuthorityLotMatchingMethod, TaxPayerType } from "@brrr/TaxAuthoritie
 export type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 
 // Tax authority — Slovenia
-export { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider.ts";
-export { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes.ts";
-export { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator.ts";
 export { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator.ts";
 export { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator.ts";
+export { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator.ts";
+export { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes.ts";
+export { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider.ts";

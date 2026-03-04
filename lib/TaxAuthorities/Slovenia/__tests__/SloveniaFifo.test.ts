@@ -1,7 +1,6 @@
-import { assertEquals } from "@std/assert";
-import { DateTime } from "luxon";
-import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
+import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts";
+import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
+import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
 import {
 	GenericAssetClass,
 	GenericCategory,
@@ -9,7 +8,6 @@ import {
 	GenericMonetaryExchangeInformation,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats.ts";
-import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import {
 	TradeEventDerivativeAcquired,
 	TradeEventDerivativeSold,
@@ -17,17 +15,19 @@ import {
 	TradeEventStockSold,
 } from "@brrr/Core/Schemas/Events.ts";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
-import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
-import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
-import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts";
-import { NodeJsonCompanyLookupProvider } from "@brrr/InfoProviders/NodeJsonInfoLookupProvider.ts";
-import { TaxAuthorityLotMatchingMethod, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
+import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
+import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
+import { NodeJsonCompanyLookupProvider } from "@brrr/InfoProviders/Node/NodeJsonInfoLookupProvider.ts";
 import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
-import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes.ts";
-import { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider.ts";
-import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator.ts";
+import { TaxAuthorityLotMatchingMethod, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator.ts";
 import { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator.ts";
+import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator.ts";
+import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes.ts";
+import { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider.ts";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
+import { assertEquals } from "@std/assert";
+import { DateTime } from "luxon";
 
 function makeDate(iso: string): ValidDateTime {
 	return DateTime.fromISO(iso) as ValidDateTime;
