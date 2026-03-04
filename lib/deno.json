@@ -14,6 +14,7 @@
 		"inversify": "npm:inversify@^7.11.0",
 		"luxon": "npm:luxon@^3.7.2",
 		"@types/luxon": "npm:@types/luxon@^3.7.1",
+		"yahoo-finance2": "npm:yahoo-finance2@^3.13.2",
 		"zod": "npm:zod@^4.3.6"
 	},
 	"lint": {

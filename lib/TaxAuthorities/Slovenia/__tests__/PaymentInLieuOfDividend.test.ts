@@ -13,7 +13,7 @@ import {
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
-import { NodeJsonCompanyLookupProvider } from "@brrr/InfoProviders/Node/NodeJsonInfoLookupProvider.ts";
+import { NodeInfoProvider } from "@brrr/InfoProviders/Node/NodeInfoProvider.ts";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator.ts";
@@ -143,7 +143,7 @@ Deno.test("PaymentInLieuOfDividend - withholding tax is reported separately from
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
 	};
 
-	const generator = new DivReportGenerator(new NodeJsonCompanyLookupProvider());
+	const generator = new DivReportGenerator(new NodeInfoProvider());
 	const rows = await generator.convert(config, testData.groupings);
 
 	assertEquals(

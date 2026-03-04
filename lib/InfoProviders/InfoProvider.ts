@@ -27,6 +27,18 @@ export type CompanyInfo = {
 export interface InfoProvider {
 	getCountry(country: string): Promise<Country | null>;
 	getCompanyInfo(isin: string): Promise<CompanyInfo | null>;
+
+	// Country overrides
+	addCountry(name: string, country: Country): void;
+	updateCountry(name: string, country: Country): void;
+	removeCountry(name: string): void;
+	listCountries(): Map<string, Country>;
+
+	// Company overrides
+	addCompany(isin: string, info: CompanyInfo): void;
+	updateCompany(isin: string, info: CompanyInfo): void;
+	removeCompany(isin: string): void;
+	listCompanies(): Map<string, CompanyInfo>;
 }
 
 export const InfoProvider = {

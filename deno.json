@@ -1,7 +1,7 @@
 {
 	"workspace": ["lib", "notebooks"],
 	"tasks": {
-		"test": "deno test --allow-read",
+		"test": "deno test --allow-read --allow-env",
 		"fmt": "deno fmt",
 		"lint": "deno lint",
 		"typecheck": "deno check lib/**/*.ts"

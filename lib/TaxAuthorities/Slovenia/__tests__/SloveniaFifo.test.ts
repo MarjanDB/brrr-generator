@@ -17,7 +17,7 @@ import {
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
-import { NodeJsonCompanyLookupProvider } from "@brrr/InfoProviders/Node/NodeJsonInfoLookupProvider.ts";
+import { NodeInfoProvider } from "@brrr/InfoProviders/Node/NodeInfoProvider.ts";
 import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import { TaxAuthorityLotMatchingMethod, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator.ts";
@@ -40,7 +40,7 @@ function makeProvider(taxPayerInfo: TaxPayerInfo, config: TaxAuthorityConfigurat
 		config,
 		new ApplyIdentifierRelationshipsService(),
 		new KdvpReportGenerator(processor),
-		new DivReportGenerator(new NodeJsonCompanyLookupProvider()),
+		new DivReportGenerator(new NodeInfoProvider()),
 		new IfiReportGenerator(processor),
 	);
 }

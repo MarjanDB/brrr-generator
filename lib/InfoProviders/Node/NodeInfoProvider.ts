@@ -5,9 +5,11 @@ import {
 	type InfoProvider,
 	TreatyType,
 } from "@brrr/InfoProviders/InfoProvider.ts";
+import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider.ts";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import YahooFinance from "yahoo-finance2";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -151,17 +153,60 @@ const isinToCompanyLookup = missingCompaniesLookup as Record<
 	}
 >;
 
-export class NodeJsonCountryLookupProvider {
-	getCountry(country: string): Promise<Country | null> {
+export class NodeInfoProvider implements InfoProvider {
+	private readonly predefined = new PredefinedInfoProvider();
+	private readonly yf = new YahooFinance();
+
+	// Override methods — forward to predefined
+	addCompany(isin: string, info: CompanyInfo): void {
+		this.predefined.addCompany(isin, info);
+	}
+
+	updateCompany(isin: string, info: CompanyInfo): void {
+		this.predefined.updateCompany(isin, info);
+	}
+
+	removeCompany(isin: string): void {
+		this.predefined.removeCompany(isin);
+	}
+
+	listCompanies(): Map<string, CompanyInfo> {
+		return this.predefined.listCompanies();
+	}
+
+	addCountry(name: string, country: Country): void {
+		this.predefined.addCountry(name, country);
+	}
+
+	updateCountry(name: string, country: Country): void {
+		this.predefined.updateCountry(name, country);
+	}
+
+	removeCountry(name: string): void {
+		this.predefined.removeCountry(name);
+	}
+
+	listCountries(): Map<string, Country> {
+		return this.predefined.listCountries();
+	}
+
+	async getCountry(name: string): Promise<Country | null> {
+		// 1. Check predefined
+		const fromPredefined = await this.predefined.getCountry(name);
+		if (fromPredefined !== null) {
+			return fromPredefined;
+		}
+
+		// 2. Check problematicCountryMappings / ISO lookup
 		let shortCode: string | undefined;
-		if (problematicCountryMappings[country] !== undefined) {
-			shortCode = problematicCountryMappings[country];
-		} else if (ISO_COUNTRY_NAME_TO_ALPHA2[country] !== undefined) {
-			shortCode = ISO_COUNTRY_NAME_TO_ALPHA2[country];
+		if (problematicCountryMappings[name] !== undefined) {
+			shortCode = problematicCountryMappings[name];
+		} else if (ISO_COUNTRY_NAME_TO_ALPHA2[name] !== undefined) {
+			shortCode = ISO_COUNTRY_NAME_TO_ALPHA2[name];
 		}
 
 		if (shortCode === undefined) {
-			return Promise.resolve(null);
+			return null;
 		}
 
 		const treaties = new Map<TreatyType, string>();
@@ -169,46 +214,81 @@ export class NodeJsonCountryLookupProvider {
 			treaties.set(TreatyType.TaxRelief, taxReliefTreaties[shortCode]);
 		}
 
-		const result: Country = { name: country, shortCode2: shortCode, treaties };
-		return Promise.resolve(result);
-	}
-}
-
-export class NodeJsonCompanyLookupProvider implements InfoProvider {
-	private readonly countryLookup = new NodeJsonCountryLookupProvider();
-
-	getCountry(country: string): Promise<Country | null> {
-		return this.countryLookup.getCountry(country);
+		return { name, shortCode2: shortCode, treaties };
 	}
 
 	async getCompanyInfo(isin: string): Promise<CompanyInfo | null> {
+		// 1. Check predefined
+		const fromPredefined = await this.predefined.getCompanyInfo(isin);
+		if (fromPredefined !== null) {
+			return fromPredefined;
+		}
+
+		// 2. Check JSON lookups
 		const companyData = isinToCompanyLookup[isin] ?? isinToCompanyLookup[isinToTickerLookup[isin] ?? ""];
 
-		if (companyData === undefined) {
-			return null;
+		if (companyData !== undefined) {
+			const countryDef = await this.getCountry(companyData.country);
+			if (countryDef === null) {
+				return null;
+			}
+
+			const location: CompanyLocationInfo = {
+				country: companyData.country,
+				address1: companyData.address1,
+				address2: companyData.address2 ?? null,
+				zipCode: companyData.zip,
+				city: companyData.city,
+				state: companyData.state ?? null,
+				shortCodeCountry2: countryDef.shortCode2,
+			};
+
+			return {
+				shortName: companyData.shortName,
+				longName: companyData.longName,
+				location,
+			};
 		}
 
-		const countryDef = await this.countryLookup.getCountry(companyData.country);
-		if (countryDef === null) {
+		// 3. Fetch from Yahoo Finance
+		try {
+			const result = await this.yf.quoteSummary(isin, { modules: ["summaryProfile", "price"] });
+
+			const price = result.price;
+			const profile = result.summaryProfile;
+
+			if (!price && !profile) {
+				return null;
+			}
+
+			const shortName = price?.shortName ?? "";
+			const longName = price?.longName ?? shortName;
+			const countryName = profile?.country ?? "";
+
+			const countryDef = countryName ? await this.getCountry(countryName) : null;
+			if (countryDef === null) {
+				return null;
+			}
+
+			const location: CompanyLocationInfo = {
+				country: countryName,
+				address1: profile?.address1 ?? "",
+				address2: profile?.address2 ?? null,
+				zipCode: profile?.zip ?? "",
+				city: profile?.city ?? "",
+				state: profile?.state ?? null,
+				shortCodeCountry2: countryDef.shortCode2,
+			};
+
+			const companyInfo: CompanyInfo = { shortName, longName, location };
+
+			// Cache into predefined
+			this.predefined.addCompany(isin, companyInfo);
+			this.predefined.addCountry(countryName, countryDef);
+
+			return companyInfo;
+		} catch {
 			return null;
 		}
-
-		const location: CompanyLocationInfo = {
-			country: companyData.country,
-			address1: companyData.address1,
-			address2: companyData.address2 ?? null,
-			zipCode: companyData.zip,
-			city: companyData.city,
-			state: companyData.state ?? null,
-			shortCodeCountry2: countryDef.shortCode2,
-		};
-
-		const result: CompanyInfo = {
-			shortName: companyData.shortName,
-			longName: companyData.longName,
-			location,
-		};
-
-		return Promise.resolve(result);
 	}
 }
