@@ -252,18 +252,24 @@ export class NodeInfoProvider implements InfoProvider {
 
 		// 3. Fetch from Yahoo Finance
 		try {
-			const result = await this.yf.quoteSummary(isin, { modules: ["summaryProfile", "price"] });
-
-			const price = result.price;
-			const profile = result.summaryProfile;
-
-			if (!price && !profile) {
+			// Yahoo Finance does not support ISIN lookup directly — resolve to ticker first via search
+			const searchResult = await this.yf.search(isin);
+			const firstQuote = searchResult.quotes.find((q) => q.isYahooFinance);
+			if (!firstQuote?.isYahooFinance) {
 				return null;
 			}
 
-			const shortName = price?.shortName ?? "";
-			const longName = price?.longName ?? shortName;
-			const countryName = profile?.country ?? "";
+			const shortName = firstQuote.shortname ?? "";
+			const longName = firstQuote.longname ?? shortName;
+
+			const result = await this.yf.quoteSummary(firstQuote.symbol, { modules: ["summaryProfile"] });
+			const profile = result.summaryProfile;
+
+			if (!profile) {
+				return null;
+			}
+
+			const countryName = profile.country ?? "";
 
 			const countryDef = countryName ? await this.getCountry(countryName) : null;
 			if (countryDef === null) {
@@ -287,7 +293,8 @@ export class NodeInfoProvider implements InfoProvider {
 			this.predefined.addCountry(countryName, countryDef);
 
 			return companyInfo;
-		} catch {
+		} catch (ex) {
+			console.error(`Failed to fetch company info for ISIN ${isin}: ${ex}`);
 			return null;
 		}
 	}
