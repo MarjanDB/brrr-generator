@@ -1,0 +1,29 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "CLI (debug)",
+			"type": "node",
+			"request": "attach",
+			"port": 9229
+		},
+		{
+			"name": "CLI (launch + debug)",
+			"type": "node",
+			"request": "launch",
+			"runtimeExecutable": "deno",
+			"runtimeArgs": [
+				"run",
+				"--inspect-brk",
+				"--allow-read",
+				"--allow-env",
+				"--allow-write",
+				"--allow-net",
+				"standalone/cli/main.ts"
+			],
+			"args": ["--year", "2024"],
+			"cwd": "${workspaceFolder}",
+			"attachSimplePort": 9229
+		}
+	]
+}

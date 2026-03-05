@@ -11,15 +11,16 @@ import {
 	StagingFinancialGroupingProcessor,
 	TaxAuthorityLotMatchingMethod,
 	TaxPayerConfigSchema,
+	zDateTimeFromISOString,
 } from "@brrr/lib";
 import { fromFileUrl, join } from "@std/path";
+import { parse as parseYaml } from "@std/yaml";
 import { Command } from "commander";
-import { DateTime } from "luxon";
 
-const PROJECT_ROOT = join(fromFileUrl(import.meta.url), "..", "..");
+const PROJECT_ROOT = join(fromFileUrl(import.meta.url), "..", "..", "..");
 const IMPORTS_DIR = join(PROJECT_ROOT, "imports");
 const EXPORTS_DIR = join(PROJECT_ROOT, "exports");
-const CONFIG_FILE = join(PROJECT_ROOT, "config.json");
+const CONFIG_FILE = join(PROJECT_ROOT, "config", "userConfig.yml");
 
 const REPORT_MAP: Record<string, SlovenianTaxAuthorityReportTypes> = {
 	kdvp: SlovenianTaxAuthorityReportTypes.DOH_KDVP,
@@ -65,7 +66,7 @@ async function main() {
 		}
 	}
 
-	const configRaw = JSON.parse(await Deno.readTextFile(CONFIG_FILE));
+	const configRaw = parseYaml(await Deno.readTextFile(CONFIG_FILE));
 	const configParsed = TaxPayerConfigSchema.safeParse(configRaw);
 	if (!configParsed.success) {
 		console.error("Invalid config.json:", configParsed.error.format());
@@ -74,8 +75,8 @@ async function main() {
 	const taxPayerInfo = configParsed.data;
 
 	const reportConfig = {
-		fromDate: DateTime.fromObject({ year }),
-		toDate: DateTime.fromObject({ year: year + 1 }),
+		fromDate: zDateTimeFromISOString.parse(`${year}-01-01`),
+		toDate: zDateTimeFromISOString.parse(`${year + 1}-01-01`),
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 

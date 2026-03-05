@@ -6,6 +6,7 @@
     "jsr:@std/internal@^1.0.12": "1.0.12",
     "jsr:@std/path@^1.1.4": "1.1.4",
     "jsr:@std/streams@^1.0.9": "1.0.17",
+    "jsr:@std/yaml@^1.0.5": "1.0.12",
     "npm:@inquirer/prompts@^8.3.0": "8.3.0",
     "npm:@types/luxon@^3.7.1": "3.7.1",
     "npm:commander@^14.0.3": "14.0.3",
@@ -43,6 +44,9 @@
     },
     "@std/streams@1.0.17": {
       "integrity": "7859f3d9deed83cf4b41f19223d4a67661b3d3819e9fc117698f493bf5992140"
+    },
+    "@std/yaml@1.0.12": {
+      "integrity": "7deabca4545bcedd07c5f69ea53acea71b8b4c67562f224e17b90d75944cb20c"
     }
   },
   "npm": {
@@ -438,6 +442,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@std/path@^1.1.4",
+      "jsr:@std/yaml@^1.0.5",
       "npm:@inquirer/prompts@^8.3.0",
       "npm:@types/luxon@^3.7.1",
       "npm:commander@^14.0.3",
