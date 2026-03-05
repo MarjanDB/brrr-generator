@@ -45,5 +45,6 @@
 	"deno.enable": true,
 	"[json]": {
 		"editor.defaultFormatter": "denoland.vscode-deno"
-	}
+	},
+	"javascript.preferences.importModuleSpecifier": "non-relative"
 }

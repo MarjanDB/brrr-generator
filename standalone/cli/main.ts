@@ -10,13 +10,13 @@ import {
 	SlovenianTaxAuthorityReportTypes,
 	StagingFinancialGroupingProcessor,
 	TaxAuthorityLotMatchingMethod,
+	TaxPayerConfigSchema,
 } from "@brrr/lib";
 import { fromFileUrl, join } from "@std/path";
 import { Command } from "commander";
 import { DateTime } from "luxon";
-import { TaxPayerConfigSchema, toTaxPayerInfo } from "./TaxPayerConfig.ts";
 
-const PROJECT_ROOT = join(fromFileUrl(import.meta.url), "../../");
+const PROJECT_ROOT = join(fromFileUrl(import.meta.url), "..", "..");
 const IMPORTS_DIR = join(PROJECT_ROOT, "imports");
 const EXPORTS_DIR = join(PROJECT_ROOT, "exports");
 const CONFIG_FILE = join(PROJECT_ROOT, "config.json");
@@ -71,7 +71,7 @@ async function main() {
 		console.error("Invalid config.json:", configParsed.error.format());
 		Deno.exit(1);
 	}
-	const taxPayerInfo = toTaxPayerInfo(configParsed.data);
+	const taxPayerInfo = configParsed.data;
 
 	const reportConfig = {
 		fromDate: DateTime.fromObject({ year }),

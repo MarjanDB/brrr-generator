@@ -1,4 +1,5 @@
-import type { DateTime } from "luxon";
+import { type ValidDateTime, zDateTimeFromISOString } from "@brrr/Utils/DateTime.ts";
+import { z } from "zod/v4";
 
 export enum TaxPayerType {
 	PHYSICAL_SUBJECT = "FO",
@@ -6,25 +7,27 @@ export enum TaxPayerType {
 	PHYSICAL_SUBJECT_WITH_ACTIVITY = "SP",
 }
 
-export type TaxPayerInfo = {
-	taxNumber: string;
-	taxpayerType: TaxPayerType;
-	name: string;
-	address1: string;
-	address2: string | null;
-	city: string;
-	postNumber: string;
-	postName: string;
-	municipalityName: string;
-	birthDate: DateTime;
-	maticnaStevilka: string;
-	invalidskoPodjetje: boolean;
-	resident: boolean;
-	activityCode: string;
-	activityName: string;
-	countryId: string;
-	countryName: string;
-};
+export const TaxPayerConfigSchema = z.object({
+	taxNumber: z.string(),
+	taxpayerType: z.enum(TaxPayerType),
+	name: z.string(),
+	address1: z.string(),
+	address2: z.string().nullable(),
+	city: z.string(),
+	postNumber: z.string(),
+	postName: z.string(),
+	municipalityName: z.string(),
+	birthDate: zDateTimeFromISOString,
+	maticnaStevilka: z.string(),
+	invalidskoPodjetje: z.boolean(),
+	resident: z.boolean(),
+	activityCode: z.string(),
+	activityName: z.string(),
+	countryId: z.string(),
+	countryName: z.string(),
+});
+
+export type TaxPayerInfo = z.infer<typeof TaxPayerConfigSchema>;
 
 export enum TaxAuthorityLotMatchingMethod {
 	NONE = "NONE",
@@ -33,7 +36,7 @@ export enum TaxAuthorityLotMatchingMethod {
 }
 
 export type TaxAuthorityConfiguration = {
-	fromDate: DateTime;
-	toDate: DateTime;
+	fromDate: ValidDateTime;
+	toDate: ValidDateTime;
 	lotMatchingMethod: TaxAuthorityLotMatchingMethod;
 };

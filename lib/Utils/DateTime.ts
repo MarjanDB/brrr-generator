@@ -10,3 +10,12 @@ export const zDateTime = z.custom<ValidDateTime>((value) => {
 
 	return value.isValid;
 });
+
+export const zDateTimeFromISOString = z.string().transform((s, ctx) => {
+	const dt = DateTime.fromISO(s);
+	if (!dt.isValid) {
+		ctx.addIssue({ code: "custom", message: `Invalid ISO date string: ${s}` });
+		return z.NEVER;
+	}
+	return dt as ValidDateTime;
+});

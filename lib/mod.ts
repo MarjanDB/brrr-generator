@@ -21,8 +21,11 @@ export { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvid
 export type { ITaxAuthorityProvider } from "@brrr/TaxAuthorities/TaxAuthorityProvider.ts";
 
 // Tax authority — configuration
-export { TaxAuthorityLotMatchingMethod, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
+export { TaxAuthorityLotMatchingMethod, TaxPayerConfigSchema, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 export type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
+
+// Utils
+export { zDateTimeFromISOString } from "@brrr/Utils/DateTime.ts";
 
 // Tax authority — Slovenia
 export { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator.ts";

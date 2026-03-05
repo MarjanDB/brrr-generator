@@ -1,14 +1,15 @@
+import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract.ts";
+import { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider.ts";
+import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform.ts";
+import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
+import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
+import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor.ts";
+import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
+import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
+import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator.ts";
+import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
-import { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider.ts";
-import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract.ts";
-import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform.ts";
-import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor.ts";
-import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
-import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.ts";
-import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
-import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
-import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator.ts";
 
 const xmlPath = new URL("./DuplicatingTrades.xml", import.meta.url).pathname;
 
@@ -22,8 +23,8 @@ Deno.test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantiti
 	const financialEvents = groupingProcessor.processStagingFinancialEvents(stagingEvents);
 
 	const reportConfig: TaxAuthorityConfiguration = {
-		fromDate: DateTime.fromISO("2024-01-01"),
-		toDate: DateTime.fromISO("2025-01-01"),
+		fromDate: DateTime.fromISO("2024-01-01") as ValidDateTime,
+		toDate: DateTime.fromISO("2025-01-01") as ValidDateTime,
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
