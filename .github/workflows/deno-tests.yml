@@ -51,3 +51,6 @@ jobs:
         with:
           commit_message: "ci: update deno coverage badge"
           file_pattern: .github/badges/deno-coverage.json
+          branch: badges/deno
+          create_branch: true
+          push_options: '--force'

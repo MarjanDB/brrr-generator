@@ -55,3 +55,6 @@ jobs:
               with:
                   commit_message: "ci: update python coverage badge"
                   file_pattern: .github/badges/python-coverage.json
+                  branch: badges/python
+                  create_branch: true
+                  push_options: '--force'
