@@ -1,0 +1,266 @@
+import type { TradeEventStockAcquired, TradeEventStockSold, TransactionCash } from "@brrr/Core/Schemas/Events.ts";
+import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.ts";
+import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
+import { type DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
+import { IdentifierChangeType, IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationship.ts";
+import type { TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
+import { type AnyProvenanceStep, RenameProvenanceStep, SplitProvenanceStep } from "@brrr/Core/Schemas/Provenance.ts";
+
+// Applies corporate action identifier relationships to financial events.
+//
+// RENAME: merges groupings along rename chains and normalizes to the sink identifier.
+//
+// SPLIT / REVERSE_SPLIT: a corporate action changes the instrument identifier (e.g. ISIN).
+// We treat the relationship as FromIdentifier (old ISIN) → ToIdentifier (new ISIN).
+// Only the old-ISIN (From) grouping is scaled for that split; the new ISIN (To) is not.
+// We scale pre-effective-date quantities in the From grouping, then merge it into the To
+// grouping so all events end up under the new identifier. Applied in EffectiveDate order.
+// In a chain (e.g. ISIN.OLD.OLD → split → ISIN.OLD → split → ISIN), each split is applied
+// in order: the oldest ISIN is scaled and merged into the next, then that grouping is scaled
+// by the next split and merged again, so the original position is scaled by every ratio along
+// the chain.
+//
+// Application order: RENAME first, then SPLIT/REVERSE_SPLIT by EffectiveDate.
+export class ApplyIdentifierRelationshipsService {
+	apply(events: FinancialEvents, changeTypesToApply: IdentifierChangeType[]): FinancialEvents {
+		let current = events;
+
+		if (changeTypesToApply.includes(IdentifierChangeType.RENAME)) {
+			current = this._applyRename(current);
+		}
+
+		const relsForSplits = current.identifierRelationships.filter(
+			(r): r is IdentifierRelationshipSplit => r instanceof IdentifierRelationshipSplit && changeTypesToApply.includes(r.changeType),
+		);
+
+		for (const rel of [...relsForSplits].sort((a, b) => a.effectiveDate.toMillis() - b.effectiveDate.toMillis())) {
+			current = this._applySplitOrReverseSplit(current, rel);
+		}
+
+		return current;
+	}
+
+	private _applyRename(events: FinancialEvents): FinancialEvents {
+		const rels = events.identifierRelationships.filter((r) => r.changeType === IdentifierChangeType.RENAME);
+		if (rels.length === 0) return events;
+
+		const pairs = rels.map((r) => [r.fromIdentifier, r.toIdentifier] as const);
+
+		const _sink = (identifier: FinancialIdentifier): FinancialIdentifier => {
+			for (const [fromId, toId] of pairs) {
+				if (fromId.isTheSameAs(identifier)) return _sink(toId);
+			}
+			return identifier;
+		};
+
+		const idToSink = new Map<FinancialIdentifier, FinancialIdentifier>();
+		for (const r of rels) {
+			idToSink.set(r.fromIdentifier, _sink(r.fromIdentifier));
+			idToSink.set(r.toIdentifier, _sink(r.toIdentifier));
+		}
+
+		const _getSink = (identifier: FinancialIdentifier): FinancialIdentifier | null => {
+			for (const [node, sink] of idToSink) {
+				if (node.sameInstrumentByIsin(identifier) || sink.sameInstrumentByIsin(identifier)) {
+					return sink;
+				}
+			}
+			return null;
+		};
+
+		const notAffected: FinancialGrouping[] = [];
+		const bySink = new Map<string, { sink: FinancialIdentifier; groupings: FinancialGrouping[] }>();
+
+		for (const g of events.groupings) {
+			const sink = _getSink(g.financialIdentifier);
+			if (sink === null) {
+				notAffected.push(g);
+			} else {
+				const key = sink.toKey();
+				const existing = bySink.get(key);
+				if (existing) {
+					existing.groupings.push(g);
+				} else {
+					bySink.set(key, { sink, groupings: [g] });
+				}
+			}
+		}
+
+		// Build provenance per sink
+		const sinkToProvenance = new Map<string, AnyProvenanceStep[]>();
+		for (const r of rels) {
+			const sink = _sink(r.toIdentifier);
+			const key = sink.toKey();
+			const step = new RenameProvenanceStep({
+				fromIdentifier: r.fromIdentifier,
+				toIdentifier: r.toIdentifier,
+				changeType: r.changeType,
+				effectiveDate: r.effectiveDate,
+			});
+			const existing = sinkToProvenance.get(key) ?? [];
+			// Avoid duplicates
+			if (!existing.some((s) => s.fromIdentifier.isTheSameAs(step.fromIdentifier) && s.toIdentifier.isTheSameAs(step.toIdentifier))) {
+				existing.push(step);
+			}
+			sinkToProvenance.set(key, existing);
+		}
+
+		const merged = [...bySink.values()].map(({ sink, groupings }) =>
+			this._mergeGroupings(sink, groupings, sinkToProvenance.get(sink.toKey()) ?? [])
+		);
+
+		return new FinancialEvents({
+			groupings: [...notAffected, ...merged],
+			identifierRelationships: events.identifierRelationships,
+		});
+	}
+
+	private _applySplitOrReverseSplit(events: FinancialEvents, relationship: IdentifierRelationshipSplit): FinancialEvents {
+		if (relationship.quantityBefore === 0) return events;
+		const ratio = relationship.quantityAfter / relationship.quantityBefore;
+
+		const fromGrouping = events.groupings.find((g) => relationship.fromIdentifier.sameInstrumentByIsin(g.financialIdentifier)) ?? null;
+		if (!fromGrouping) return events;
+
+		const scaledTrades: (TradeEventStockAcquired | TradeEventStockSold)[] = [];
+		for (const t of fromGrouping.stockTrades) {
+			if (!(t.date < relationship.effectiveDate)) {
+				scaledTrades.push(t);
+				continue;
+			}
+
+			const m = t.exchangedMoney;
+			const step = new SplitProvenanceStep({
+				fromIdentifier: relationship.fromIdentifier,
+				toIdentifier: relationship.toIdentifier,
+				changeType: relationship.changeType,
+				effectiveDate: relationship.effectiveDate,
+				quantityBefore: m.underlyingQuantity,
+				quantityAfter: m.underlyingQuantity * ratio,
+				beforeQuantity: m.underlyingQuantity,
+				beforeTradePrice: m.underlyingTradePrice,
+				beforeExchangedMoney: m,
+			});
+
+			const newMoney = {
+				...m,
+				underlyingQuantity: m.underlyingQuantity * ratio,
+				underlyingTradePrice: m.underlyingTradePrice * (1 / ratio),
+			};
+
+			scaledTrades.push(t.copy({
+				exchangedMoney: newMoney,
+				provenance: [...t.provenance, step],
+			}));
+		}
+
+		const scaledLots: TaxLotStock[] = [];
+		for (const lot of fromGrouping.stockTaxLots) {
+			if (lot.acquired.date < relationship.effectiveDate) {
+				const step = new SplitProvenanceStep({
+					fromIdentifier: relationship.fromIdentifier,
+					toIdentifier: relationship.toIdentifier,
+					changeType: relationship.changeType,
+					effectiveDate: relationship.effectiveDate,
+					quantityBefore: relationship.quantityBefore,
+					quantityAfter: relationship.quantityAfter,
+					beforeQuantity: lot.quantity,
+				});
+				scaledLots.push(lot.copy({
+					quantity: lot.quantity * ratio,
+					provenance: [...lot.provenance, step],
+				}));
+			} else {
+				scaledLots.push(lot);
+			}
+		}
+
+		const splitStep = new SplitProvenanceStep({
+			fromIdentifier: relationship.fromIdentifier,
+			toIdentifier: relationship.toIdentifier,
+			changeType: relationship.changeType,
+			effectiveDate: relationship.effectiveDate,
+			quantityBefore: relationship.quantityBefore,
+			quantityAfter: relationship.quantityAfter,
+		});
+
+		const scaledFrom = fromGrouping.copy({
+			stockTrades: scaledTrades,
+			stockTaxLots: scaledLots,
+			provenance: [...fromGrouping.provenance, splitStep],
+		});
+
+		const toGrouping =
+			events.groupings.find((g) => g !== fromGrouping && relationship.toIdentifier.sameInstrumentByIsin(g.financialIdentifier)) ??
+				null;
+
+		let mergedGrouping: FinancialGrouping;
+		if (toGrouping !== null) {
+			mergedGrouping = this._mergeGroupings(
+				relationship.toIdentifier,
+				[scaledFrom, toGrouping],
+				[...scaledFrom.provenance, ...toGrouping.provenance],
+			);
+		} else {
+			mergedGrouping = this._mergeGroupings(
+				relationship.toIdentifier,
+				[scaledFrom],
+				scaledFrom.provenance,
+			);
+		}
+
+		const other = events.groupings.filter((g) => g !== fromGrouping && g !== toGrouping);
+		return new FinancialEvents({
+			groupings: [...other, mergedGrouping],
+			identifierRelationships: events.identifierRelationships,
+		});
+	}
+
+	private _mergeGroupings(
+		properId: FinancialIdentifier,
+		groupings: FinancialGrouping[],
+		groupingProvenance: AnyProvenanceStep[],
+	): FinancialGrouping {
+		const first = groupings[0];
+		const allStockTrades: (TradeEventStockAcquired | TradeEventStockSold)[] = [];
+		const allStockTaxLots: TaxLotStock[] = [];
+		const allDerivativeGroupings: DerivativeGrouping[] = [];
+		const allCashTransactions: TransactionCash[] = [];
+
+		for (const g of groupings) {
+			for (const t of g.stockTrades) allStockTrades.push(t.copy({ financialIdentifier: properId }));
+			for (const lot of g.stockTaxLots) {
+				allStockTaxLots.push(lot.copy({
+					financialIdentifier: properId,
+					acquired: lot.acquired.copy({ financialIdentifier: properId }),
+					sold: lot.sold.copy({ financialIdentifier: properId }),
+				}));
+			}
+			for (const dg of g.derivativeGroupings) {
+				allDerivativeGroupings.push(dg.copy({
+					financialIdentifier: properId,
+					derivativeTrades: dg.derivativeTrades.map((t) => t.copy({ financialIdentifier: properId })),
+					derivativeTaxLots: dg.derivativeTaxLots.map((lot) =>
+						lot.copy({
+							financialIdentifier: properId,
+							acquired: lot.acquired.copy({ financialIdentifier: properId }),
+							sold: lot.sold.copy({ financialIdentifier: properId }),
+						})
+					),
+				}));
+			}
+			for (const c of g.cashTransactions) allCashTransactions.push(c.copy({ financialIdentifier: properId }));
+		}
+
+		return new FinancialGrouping({
+			financialIdentifier: properId,
+			countryOfOrigin: first.countryOfOrigin,
+			underlyingCategory: first.underlyingCategory,
+			stockTrades: allStockTrades,
+			stockTaxLots: allStockTaxLots,
+			derivativeGroupings: allDerivativeGroupings,
+			cashTransactions: allCashTransactions,
+			provenance: groupingProvenance,
+		});
+	}
+}

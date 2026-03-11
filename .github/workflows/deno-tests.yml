@@ -1,0 +1,53 @@
+name: Run Deno tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  deno-test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+
+    steps:
+      - name: Install lcov
+        run: sudo apt-get install -y -qq --no-install-recommends lcov
+
+      - uses: actions/checkout@v6
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Run tests with coverage
+        run: deno test --allow-read --allow-env --coverage=coverage/
+
+      - name: Generate LCOV report
+        run: deno coverage coverage/ --lcov > coverage/lcov.info
+
+      - name: Report coverage
+        id: coverage
+        uses: zgosalvez/github-actions-report-lcov@v4
+        with:
+          coverage-files: coverage/lcov.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          artifact-name: deno-code-coverage-report
+          update-comment: true
+
+      - name: Update coverage badge JSON
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          mkdir -p .github/badges
+          echo "{\"coverage\": \"${{ steps.coverage.outputs.total-coverage }}%\"}" > .github/badges/deno-coverage.json
+
+      - name: Commit coverage badge JSON
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "ci: update deno coverage badge"
+          file_pattern: .github/badges/deno-coverage.json

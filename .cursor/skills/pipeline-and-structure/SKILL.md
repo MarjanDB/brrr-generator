@@ -5,7 +5,8 @@ description: Where to change what in the tax report pipeline (new report type, n
 
 # Pipeline and project structure
 
-Generic guidance for this project. For country- or broker-specific details, use the complementary skills (e.g. slovenian-tax-edavki, ibkr-flex-query).
+Generic guidance for this project. For country- or broker-specific details, use the complementary skills (e.g. slovenian-tax-edavki,
+ibkr-flex-query).
 
 ## Where to change what
 
@@ -27,6 +28,8 @@ Generic guidance for this project. For country- or broker-specific details, use 
 
 ## Pipeline flow
 
-imports → broker (Extract + Transform) → StagingFinancialGrouping[] → StagingFinancialGroupingProcessor → FinancialGrouping[] → TaxAuthorityProvider → exports
+imports → broker (Extract + Transform) → StagingFinancialGrouping[] → StagingFinancialGroupingProcessor → FinancialGrouping[] →
+TaxAuthorityProvider → exports
 
-Broker and tax authority implementations are isolated in their own trees; the core pipeline (StagingFinancialEvents, FinancialEvents, LotMatching) stays broker- and country-agnostic.
+Broker and tax authority implementations are isolated in their own trees; the core pipeline (StagingFinancialEvents, FinancialEvents,
+LotMatching) stays broker- and country-agnostic.

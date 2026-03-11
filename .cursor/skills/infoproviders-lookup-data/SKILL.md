@@ -5,12 +5,15 @@ description: When and how to edit InfoProviders lookup JSONs (company, country, 
 
 # InfoProviders and lookup data
 
-Generic guidance for `src/InfoProviders/` and the JSON lookup files. Country-specific use (e.g. treaty format) may be documented in a tax-authority skill.
+Generic guidance for `src/InfoProviders/` and the JSON lookup files. Country-specific use (e.g. treaty format) may be documented in a
+tax-authority skill.
 
 ## Where lookups are used
 
-- **CompanyLookupProvider** – Resolves ISIN to company info (name, address, country). Tries online lookup first; falls back to **missingCompaniesLookup.json** and **missingISINLookup.json**.
-- **CountryLookupProvider** – Resolves country name to 2-letter code and treaty info. Uses **internationalTreaties.json** and **specialCountryMappings.json**.
+- **CompanyLookupProvider** – Resolves ISIN to company info (name, address, country). Tries online lookup first; falls back to
+  **missingCompaniesLookup.json** and **missingISINLookup.json**.
+- **CountryLookupProvider** – Resolves country name to 2-letter code and treaty info. Uses **internationalTreaties.json** and
+  **specialCountryMappings.json**.
 
 Tax authority report generation and staging processors use these when annotating events (e.g. company domicile, treaty relief).
 
@@ -26,9 +29,12 @@ Tax authority report generation and staging processors use these when annotating
 
 ## File formats (generic)
 
-- **missingISINLookup.json** – Object: identifier (e.g. ISIN) → string (e.g. ticker). Used when resolution by identifier fails so the provider can try again with the mapped value.
-- **missingCompaniesLookup.json** – Object: identifier (e.g. ISIN) → company object. Company object typically has fields such as shortName, longName, address1, address2, city, zip, country (and optionally state). Used when no online company data is available.
+- **missingISINLookup.json** – Object: identifier (e.g. ISIN) → string (e.g. ticker). Used when resolution by identifier fails so the
+  provider can try again with the mapped value.
+- **missingCompaniesLookup.json** – Object: identifier (e.g. ISIN) → company object. Company object typically has fields such as shortName,
+  longName, address1, address2, city, zip, country (and optionally state). Used when no online company data is available.
 - **specialCountryMappings.json** – Object: country name (as in data) → 2-letter country code. Overrides default country resolution.
-- **internationalTreaties.json** – Nested structure (e.g. treaties.taxRelief) keyed by country code; values are treaty references. Structure and semantics depend on the tax authority; see country skill for details.
+- **internationalTreaties.json** – Nested structure (e.g. treaties.taxRelief) keyed by country code; values are treaty references. Structure
+  and semantics depend on the tax authority; see country skill for details.
 
 All paths are under `src/InfoProviders/`. After editing, re-run the pipeline; no separate reload step is required.
