@@ -2,7 +2,7 @@
 
 Generated exports can be wrong, so verify the generated reports before submitting to your tax authority.
 
-![Python Coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FMarjanDB%2Fbrrr-generator%2Fmaster%2F.github%2Fbadges%2Fpython-coverage.json&query=%24.coverage&label=Python%20Coverage)
+![Python Coverage (Deprecated)](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FMarjanDB%2Fbrrr-generator%2Fmaster%2F.github%2Fbadges%2Fpython-coverage.json&query=%24.coverage&label=Python%20Coverage)
 ![Deno Coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FMarjanDB%2Fbrrr-generator%2Fmaster%2F.github%2Fbadges%2Fdeno-coverage.json&query=%24.coverage&label=Deno%20Coverage)
 
 ## Usage Examples Translations
