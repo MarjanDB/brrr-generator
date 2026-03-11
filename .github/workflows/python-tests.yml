@@ -43,35 +43,15 @@ jobs:
                   junitxml-path: ./pytest.xml
                   default-branch: master
 
-            - name: Update README
-              if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/master')
+            - name: Update coverage badge JSON
+              if: github.event_name == 'push' && github.ref == 'refs/heads/master'
               run: |
-                  python3 << 'EOF'
-                  import re
+                  mkdir -p .github/badges
+                  echo "{\"coverage\": \"${{ steps.coverage.outputs.coverage }}%\"}" > .github/badges/python-coverage.json
 
-                  # Read the coverage HTML from the action output
-                  coverage_html = '''${{ steps.coverage.outputs.coverageHtml }}'''
-
-                  # Extract just the badge (everything before the <details> tag)
-                  badge_only = re.split(r'<details>', coverage_html)[0].strip()
-
-                  # Read the README
-                  with open('README.md', 'r') as f:
-                      readme_content = f.read()
-
-                  # Replace the content between the markers
-                  pattern = r'<!-- Pytest Coverage Comment:Begin -->.*?<!-- Pytest Coverage Comment:End -->'
-                  replacement = f'<!-- Pytest Coverage Comment:Begin -->\n{badge_only}\n<!-- Pytest Coverage Comment:End -->'
-                  updated_content = re.sub(pattern, replacement, readme_content, flags=re.DOTALL)
-
-                  # Write back
-                  with open('README.md', 'w') as f:
-                      f.write(updated_content)
-                  EOF
-
-            - name: Commit changes
-              if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/master')
+            - name: Commit coverage badge JSON
+              if: github.event_name == 'push' && github.ref == 'refs/heads/master'
               uses: stefanzweifel/git-auto-commit-action@v7
               with:
-                  commit_message: "docs: update coverage badge"
-                  file_pattern: README.md
+                  commit_message: "ci: update python coverage badge"
+                  file_pattern: .github/badges/python-coverage.json

@@ -2,9 +2,8 @@
 
 Generated exports can be wrong, so verify the generated reports before submitting to your tax authority.
 
-<!-- Pytest Coverage Comment:Begin -->
-<a href="https://github.com/MarjanDB/brrr-generator/blob/master/README.md"><img alt="Coverage" src="https://img.shields.io/badge/Coverage-95%25-brightgreen.svg" /></a>
-<!-- Pytest Coverage Comment:End -->
+![Python Coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FMarjanDB%2Fbrrr-generator%2Fmaster%2F.github%2Fbadges%2Fpython-coverage.json&query=%24.coverage&label=Python%20Coverage)
+![Deno Coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FMarjanDB%2Fbrrr-generator%2Fmaster%2F.github%2Fbadges%2Fdeno-coverage.json&query=%24.coverage&label=Deno%20Coverage)
 
 ## Usage Examples Translations
 
