@@ -47,7 +47,7 @@ jobs:
               if: github.event_name == 'push' && github.ref == 'refs/heads/master'
               run: |
                   mkdir -p .github/badges
-                  echo "{\"coverage\": \"${{ steps.coverage.outputs.coverage }}%\"}" > .github/badges/python-coverage.json
+                  echo "{\"coverage\": \"${{ steps.coverage.outputs.coverage }}\"}" > .github/badges/python-coverage.json
 
             - name: Commit coverage badge JSON
               if: github.event_name == 'push' && github.ref == 'refs/heads/master'
