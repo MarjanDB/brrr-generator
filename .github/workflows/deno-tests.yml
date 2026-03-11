@@ -15,6 +15,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Install lcov
+        run: sudo apt-get install -y lcov
+
       - uses: actions/checkout@v6
 
       - uses: denoland/setup-deno@v2
