@@ -6,6 +6,21 @@ import { IdentifierChangeType, IdentifierRelationshipSplit } from "@brrr/Core/Sc
 import type { TaxLotStock } from "@brrr/Core/Schemas/Lots.ts";
 import { type AnyProvenanceStep, RenameProvenanceStep, SplitProvenanceStep } from "@brrr/Core/Schemas/Provenance.ts";
 
+// Applies corporate action identifier relationships to financial events.
+//
+// RENAME: merges groupings along rename chains and normalizes to the sink identifier.
+//
+// SPLIT / REVERSE_SPLIT: a corporate action changes the instrument identifier (e.g. ISIN).
+// We treat the relationship as FromIdentifier (old ISIN) → ToIdentifier (new ISIN).
+// Only the old-ISIN (From) grouping is scaled for that split; the new ISIN (To) is not.
+// We scale pre-effective-date quantities in the From grouping, then merge it into the To
+// grouping so all events end up under the new identifier. Applied in EffectiveDate order.
+// In a chain (e.g. ISIN.OLD.OLD → split → ISIN.OLD → split → ISIN), each split is applied
+// in order: the oldest ISIN is scaled and merged into the next, then that grouping is scaled
+// by the next split and merged again, so the original position is scaled by every ratio along
+// the chain.
+//
+// Application order: RENAME first, then SPLIT/REVERSE_SPLIT by EffectiveDate.
 export class ApplyIdentifierRelationshipsService {
 	apply(events: FinancialEvents, changeTypesToApply: IdentifierChangeType[]): FinancialEvents {
 		let current = events;

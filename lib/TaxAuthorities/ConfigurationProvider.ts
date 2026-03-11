@@ -2,7 +2,7 @@ import { type ValidDateTime, zDateTimeFromISOString } from "@brrr/Utils/DateTime
 import { z } from "zod/v4";
 
 export enum TaxPayerType {
-	PHYSICAL_SUBJECT = "FO",
+	PHYSICAL_SUBJECT = "FO", // "FO" = Fizična Oseba (natural person); see EDP-Common-1 schema
 	LAW_SUBJECT = "PO",
 	PHYSICAL_SUBJECT_WITH_ACTIVITY = "SP",
 }

@@ -11,6 +11,8 @@ export class FinancialEventsProcessor {
 		this.lotMatcher = lotMatcher;
 	}
 
+	// Note: since the LotMatcher is stateful, a new LotMatchingMethod instance must be created
+	// for each financial grouping (done via lotMatchingConfiguration.forStocks/forDerivatives).
 	process(input: FinancialGrouping, lotMatchingConfiguration: LotMatchingConfiguration): UnderlyingGroupingWithTradesOfInterest {
 		const lotMatcher = this.lotMatcher;
 

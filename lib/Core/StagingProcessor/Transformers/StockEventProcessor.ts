@@ -2,6 +2,7 @@ import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events.ts";
 import { type StagingTradeEventStock, StagingTradeEventStockAcquired } from "@brrr/Core/Schemas/Staging/Events.ts";
 
+// TODO: Create trade events based on corporate events (mergers can lead to "sold" stocks)
 export function processStockEvent(
 	input: StagingTradeEventStock,
 ): TradeEventStockAcquired | TradeEventStockSold {

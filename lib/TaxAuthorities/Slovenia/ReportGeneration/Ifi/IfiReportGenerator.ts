@@ -92,6 +92,7 @@ export class IfiReportGenerator {
 
 			const interestingGrouping = this.processor.process(financialGrouping, lotMatchingConfiguration);
 
+			// TODO: Figure out how to get lots (currently only trade events are used, not predefined lots)
 			for (const derivativeGrouping of interestingGrouping.derivativeGroupings) {
 				const allLines = [...derivativeGrouping.derivativeTrades];
 				allLines.sort((a, b) => a.date.toMillis() - b.date.toMillis());

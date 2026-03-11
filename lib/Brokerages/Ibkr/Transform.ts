@@ -180,7 +180,7 @@ export class IbkrTransformService {
 				underlyingTradePrice: trade.tradePrice * trade.fxRateToBase,
 				comissionCurrency: trade.ibCommissionCurrency,
 				comissionTotal: trade.ibCommission * trade.fxRateToBase,
-				taxCurrency: trade.currency,
+				taxCurrency: trade.currency, // NOTE: Taxes Currency == Trade Currency ??
 				taxTotal: trade.taxes,
 				fxRateToBase: trade.fxRateToBase,
 			});
@@ -226,7 +226,7 @@ export class IbkrTransformService {
 				underlyingTradePrice: trade.tradePrice * trade.fxRateToBase,
 				comissionCurrency: trade.ibCommissionCurrency,
 				comissionTotal: trade.ibCommission * trade.fxRateToBase,
-				taxCurrency: trade.currency,
+				taxCurrency: trade.currency, // NOTE: Taxes Currency == Trade Currency ??
 				taxTotal: trade.taxes,
 				fxRateToBase: trade.fxRateToBase,
 			});
@@ -272,6 +272,7 @@ export class IbkrTransformService {
 			const actionType = (row.type || "").toUpperCase();
 
 			let changeType: StagingIdentifierChangeType;
+			// IBKR corporate action type codes: "IC" = ticker/identifier change (RENAME), "FI" = stock split (SPLIT)
 			if (actionType === "IC") {
 				changeType = StagingIdentifierChangeType.RENAME;
 			} else if (actionType === "FI") {

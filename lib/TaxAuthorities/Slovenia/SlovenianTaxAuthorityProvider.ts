@@ -26,6 +26,8 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider<Slov
 		private readonly ifiGenerator: IfiReportGenerator,
 	) {}
 
+	// A report is a "self-report" if the report period ended more than 1 year before the current date.
+	// This determines the eDavki document workflow type (ORIGINAL vs SELF_REPORT).
 	isSelfReport(currentTime: DateTime): boolean {
 		const currentYear = currentTime.year;
 		const lastYear = currentYear - 1;

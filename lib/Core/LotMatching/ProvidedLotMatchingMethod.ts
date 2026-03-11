@@ -31,7 +31,7 @@ export class ProvidedLotMatchingMethod implements LotMatchingMethod {
 				quantity: lot.sold.exchangedMoney.underlyingQuantity,
 				date: lot.sold.date,
 			};
-			this.tradeAssociationTracker.trackSoldQuantity(soldTrade, -lot.quantity);
+			this.tradeAssociationTracker.trackSoldQuantity(soldTrade, -lot.quantity); // NOTE: Lots subtract, as sells remove from holding
 		}
 
 		const processedLots: Lot[] = [];

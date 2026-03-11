@@ -53,9 +53,9 @@ export class IbkrExtractService {
 	public mergeTrades(trades: SegmentedTrades[]): SegmentedTrades {
 		return new SegmentedTrades({
 			stockTrades: this._deduplicateByTransactionID<TradeStock>(trades.map((t) => t.stockTrades)),
-			stockLots: trades.flatMap((t) => t.stockLots),
+			stockLots: trades.flatMap((t) => t.stockLots), // lots cannot be deduplicated, as there is no unique identifier
 			derivativeTrades: this._deduplicateByTransactionID<TradeDerivative>(trades.map((t) => t.derivativeTrades)),
-			derivativeLots: trades.flatMap((t) => t.derivativeLots),
+			derivativeLots: trades.flatMap((t) => t.derivativeLots), // lots cannot be deduplicated, as there is no unique identifier
 			cashTransactions: this._deduplicateByTransactionID<TransactionCash>(trades.map((t) => t.cashTransactions)),
 			corporateActions: this._deduplicateByTransactionID<CorporateAction>(trades.map((t) => t.corporateActions)),
 		});

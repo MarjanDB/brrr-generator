@@ -38,6 +38,9 @@ export class FinancialIdentifier {
 		return this._name;
 	}
 
+	// While ISIN and the Ticker are enough for identifying a company ticker, it is not enough
+	// to identify a specific traded instrument (options with different strike prices / expiration dates).
+	// Use isTheSameAs for strict matching where ISIN + ticker are both needed.
 	isTheSameAs(other: FinancialIdentifier): boolean {
 		const hasIsin = this._isin !== null && other._isin !== null;
 		const hasTicker = this._ticker !== null && other._ticker !== null;
@@ -54,6 +57,9 @@ export class FinancialIdentifier {
 		return isinEquality || tickerEquality || nameEquality;
 	}
 
+	// True when both have ISIN and it is the same. Use for rename/corporate-action resolution
+	// where only ISIN identifies the instrument (e.g. ticker may differ: RKLB.OLD vs RKLB).
+	// Not for options/distinct instruments where ISIN + ticker are both needed.
 	sameInstrumentByIsin(other: FinancialIdentifier): boolean {
 		return this._isin !== null && other._isin !== null && this._isin === other._isin;
 	}

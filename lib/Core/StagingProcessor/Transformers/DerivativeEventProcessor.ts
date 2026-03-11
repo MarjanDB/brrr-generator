@@ -2,6 +2,7 @@ import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { TradeEventDerivativeAcquired, TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events.ts";
 import { type StagingTradeEventDerivative, StagingTradeEventDerivativeAcquired } from "@brrr/Core/Schemas/Staging/Events.ts";
 
+// TODO: Create trade events based on corporate events
 export function processDerivativeEvent(
 	input: StagingTradeEventDerivative,
 ): TradeEventDerivativeAcquired | TradeEventDerivativeSold {

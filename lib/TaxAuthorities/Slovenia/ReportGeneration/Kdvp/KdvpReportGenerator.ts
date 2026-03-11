@@ -59,7 +59,7 @@ function convertStockSell(line: TradeEventStockSold): EDavkiTradeReportSecurityL
 			(1 / line.exchangedMoney.fxRateToBase),
 		commissions: line.exchangedMoney.comissionTotal,
 		commissionsInOriginalCurrency: line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
-		satisfiesTaxBasisReduction: false,
+		satisfiesTaxBasisReduction: false, // TODO: Wash sale handling
 	});
 }
 
@@ -72,7 +72,7 @@ export class KdvpReportGenerator {
 		const periodEnd = config.toDate;
 
 		for (const isinGrouping of groupings) {
-			const isin = isinGrouping.financialIdentifier.getIsin();
+			const isin = isinGrouping.financialIdentifier.getIsin(); // TODO: Security line has 3 possible identifiers, not just isin
 
 			const lotMatchingConfiguration: LotMatchingConfiguration = {
 				fromDate: periodStart,
@@ -107,7 +107,7 @@ export class KdvpReportGenerator {
 
 			const isTrustFund = isinGrouping.underlyingCategory === GenericCategory.TRUST_FUND;
 
-			const tickerSymbols = allLines.map((line) => line.financialIdentifier.getTicker()).pop() ?? null;
+			const tickerSymbols = allLines.map((line) => line.financialIdentifier.getTicker()).pop() ?? null; // TODO: Maybe something better than just taking the last one?
 
 			const reportItem = new EDavkiTradeReportSecurityLineEvent({
 				isin: isin ?? "",
