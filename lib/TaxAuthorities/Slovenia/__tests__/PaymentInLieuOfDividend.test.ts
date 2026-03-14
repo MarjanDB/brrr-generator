@@ -18,7 +18,6 @@ import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Configurati
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator.ts";
 import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
-import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 
 function makeDate(iso: string): ValidDateTime {
@@ -136,7 +135,7 @@ const testData = new FinancialEvents({
 	identifierRelationships: [],
 });
 
-Deno.test("PaymentInLieuOfDividend - withholding tax is reported separately from dividend withholding tax", async () => {
+test("PaymentInLieuOfDividend - withholding tax is reported separately from dividend withholding tax", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -146,14 +145,12 @@ Deno.test("PaymentInLieuOfDividend - withholding tax is reported separately from
 	const generator = new DivReportGenerator(new NodeInfoProvider());
 	const rows = await generator.convert(config, testData.groupings);
 
-	assertEquals(
+	expect(
 		rows.length,
-		2,
-		"2 rows should be present, as there is one dividend event and one payment in lieu of dividend event",
-	);
+	).toEqual(2);
 
-	assertEquals(rows[0].dividendAmount, 10.0);
-	assertEquals(rows[0].foreignTaxPaid, 5.0);
-	assertEquals(rows[1].dividendAmount, 5.0);
-	assertEquals(rows[1].foreignTaxPaid, 2.5);
+	expect(rows[0].dividendAmount).toEqual(10.0);
+	expect(rows[0].foreignTaxPaid).toEqual(5.0);
+	expect(rows[1].dividendAmount).toEqual(5.0);
+	expect(rows[1].foreignTaxPaid).toEqual(2.5);
 });

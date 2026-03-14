@@ -31,7 +31,6 @@ import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGenerat
 import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes.ts";
 import { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider.ts";
 import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
-import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 
 function makeDate(iso: string): ValidDateTime {
@@ -236,7 +235,7 @@ const testData = new FinancialEvents({
 	identifierRelationships: [],
 });
 
-Deno.test("testKdvpSimpleCsv - 2 rows with correct quantities", () => {
+test("testKdvpSimpleCsv - 2 rows with correct quantities", () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -248,12 +247,12 @@ Deno.test("testKdvpSimpleCsv - 2 rows with correct quantities", () => {
 	const items = generator.convert(config, testData.groupings);
 	const events = items.flatMap((item) => item.items.flatMap((line) => line.events));
 
-	assertEquals(events.length, 2, "Only 2 rows should be present");
-	assertEquals(events[0].quantity, 1, "The first line should be the buy line");
-	assertEquals(events[1].quantity, -1, "The second line should be the sell line");
+	expect(events.length).toEqual(2);
+	expect(events[0].quantity).toEqual(1);
+	expect(events[1].quantity).toEqual(-1);
 });
 
-Deno.test("testKdvpSimpleXml - 1 purchase and 1 sale in XML", async () => {
+test("testKdvpSimpleXml - 1 purchase and 1 sale in XML", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -266,11 +265,11 @@ Deno.test("testKdvpSimpleXml - 1 purchase and 1 sale in XML", async () => {
 	const purchaseCount = (xml.match(/<Purchase>/g) ?? []).length;
 	const saleCount = (xml.match(/<Sale>/g) ?? []).length;
 
-	assertEquals(purchaseCount, 1, "There should only be one purchase");
-	assertEquals(saleCount, 1, "There should only be one sale");
+	expect(purchaseCount).toEqual(1);
+	expect(saleCount).toEqual(1);
 });
 
-Deno.test("testIfiSimpleCsv - 2 rows with correct quantities", () => {
+test("testIfiSimpleCsv - 2 rows with correct quantities", () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -282,12 +281,12 @@ Deno.test("testIfiSimpleCsv - 2 rows with correct quantities", () => {
 	const items = generator.convert(config, testData.groupings);
 	const rows = items.flatMap((item) => item.items);
 
-	assertEquals(rows.length, 2, "Only 2 rows should be present");
-	assertEquals(rows[0].quantity, 1, "The first line should be the buy line");
-	assertEquals(rows[1].quantity, -1, "The second line should be the sell line");
+	expect(rows.length).toEqual(2);
+	expect(rows[0].quantity).toEqual(1);
+	expect(rows[1].quantity).toEqual(-1);
 });
 
-Deno.test("testIfiSimpleXml - 1 purchase and 1 sale in XML", async () => {
+test("testIfiSimpleXml - 1 purchase and 1 sale in XML", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -300,11 +299,11 @@ Deno.test("testIfiSimpleXml - 1 purchase and 1 sale in XML", async () => {
 	const purchaseCount = (xml.match(/<Purchase>/g) ?? []).length;
 	const saleCount = (xml.match(/<Sale>/g) ?? []).length;
 
-	assertEquals(purchaseCount, 1, "There should only be one purchase");
-	assertEquals(saleCount, 1, "There should only be one sale");
+	expect(purchaseCount).toEqual(1);
+	expect(saleCount).toEqual(1);
 });
 
-Deno.test("testDivSimpleCsv - 1 row with correct amounts", async () => {
+test("testDivSimpleCsv - 1 row with correct amounts", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -314,14 +313,14 @@ Deno.test("testDivSimpleCsv - 1 row with correct amounts", async () => {
 	const generator = new DivReportGenerator(new NodeInfoProvider());
 	const rows = await generator.convert(config, testData.groupings);
 
-	assertEquals(rows.length, 1, "Only 1 row should be present, because dividend and withholding tax are related");
-	assertEquals(rows[0].dividendAmount, 10.0, "The dividend amount should equal 10");
-	assertEquals(rows[0].foreignTaxPaid, 5.0, "The dividend withheld tax should be 5");
-	assertEquals(rows[0].dividendAmountInOriginalCurrency, 20, "The original dividend amount should equal 20");
-	assertEquals(rows[0].foreignTaxPaidInOriginalCurrency, 10.0, "The original dividend withheld tax should be 10");
+	expect(rows.length).toEqual(1);
+	expect(rows[0].dividendAmount).toEqual(10.0);
+	expect(rows[0].foreignTaxPaid).toEqual(5.0);
+	expect(rows[0].dividendAmountInOriginalCurrency).toEqual(20);
+	expect(rows[0].foreignTaxPaidInOriginalCurrency).toEqual(10.0);
 });
 
-Deno.test("testDivSimpleXml - 1 dividend line in XML", async () => {
+test("testDivSimpleXml - 1 dividend line in XML", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -332,10 +331,10 @@ Deno.test("testDivSimpleXml - 1 dividend line in XML", async () => {
 	const xml = await provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.DOH_DIV, testData);
 
 	const dividendCount = (xml.match(/<Dividend>/g) ?? []).length;
-	assertEquals(dividendCount, 1, "There should be 1 dividend line");
+	expect(dividendCount).toEqual(1);
 });
 
-Deno.test("testGenerateReportDataKdvpReturnsTypedList - report has items with events", async () => {
+test("testGenerateReportDataKdvpReturnsTypedList - report has items with events", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -347,13 +346,13 @@ Deno.test("testGenerateReportDataKdvpReturnsTypedList - report has items with ev
 		items: { events: unknown[] }[];
 	}[];
 
-	assertEquals(Array.isArray(reportData), true);
-	assertEquals(reportData.length >= 1, true);
-	assertEquals(reportData[0].items !== null, true);
-	assertEquals(reportData[0].items[0].events.length, 2);
+	expect(Array.isArray(reportData)).toEqual(true);
+	expect(reportData.length >= 1).toEqual(true);
+	expect(reportData[0].items !== null).toEqual(true);
+	expect(reportData[0].items[0].events.length).toEqual(2);
 });
 
-Deno.test("testGenerateReportDataDivReturnsTypedSequence - 1 dividend with correct amounts", async () => {
+test("testGenerateReportDataDivReturnsTypedSequence - 1 dividend with correct amounts", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -366,13 +365,13 @@ Deno.test("testGenerateReportDataDivReturnsTypedSequence - 1 dividend with corre
 		foreignTaxPaid: number;
 	}[];
 
-	assertEquals(Array.isArray(reportData), true);
-	assertEquals(reportData.length, 1);
-	assertEquals(reportData[0].dividendAmount, 10.0);
-	assertEquals(reportData[0].foreignTaxPaid, 5.0);
+	expect(Array.isArray(reportData)).toEqual(true);
+	expect(reportData.length).toEqual(1);
+	expect(reportData[0].dividendAmount).toEqual(10.0);
+	expect(reportData[0].foreignTaxPaid).toEqual(5.0);
 });
 
-Deno.test("testGenerateReportDataIfiReturnsTypedList - report has items", async () => {
+test("testGenerateReportDataIfiReturnsTypedList - report has items", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -384,7 +383,7 @@ Deno.test("testGenerateReportDataIfiReturnsTypedList - report has items", async 
 		items: unknown[];
 	}[];
 
-	assertEquals(Array.isArray(reportData), true);
-	assertEquals(reportData.length >= 1, true);
-	assertEquals(reportData[0].items.length, 2);
+	expect(Array.isArray(reportData)).toEqual(true);
+	expect(reportData.length >= 1).toEqual(true);
+	expect(reportData[0].items.length).toEqual(2);
 });

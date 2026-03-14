@@ -5,7 +5,6 @@ import {
 	IbkrBrokerageExportProvider,
 	IfiReportGenerator,
 	KdvpReportGenerator,
-	NodeInfoProvider,
 	SlovenianTaxAuthorityProvider,
 	SlovenianTaxAuthorityReportTypes,
 	StagingFinancialGroupingProcessor,
@@ -13,11 +12,15 @@ import {
 	TaxPayerConfigSchema,
 	zDateTimeFromISOString,
 } from "@brrr/lib";
-import { fromFileUrl, join } from "@std/path";
-import { parse as parseYaml } from "@std/yaml";
+import { NodeInfoProvider } from "@brrr/lib/InfoProviders/Node/NodeInfoProvider.ts";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+import { load as parseYaml } from "js-yaml";
+import fs from "fs/promises";
 import { Command } from "commander";
 
-const PROJECT_ROOT = join(fromFileUrl(import.meta.url), "..", "..", "..");
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const PROJECT_ROOT = join(__dirname, "..", "..");
 const IMPORTS_DIR = join(PROJECT_ROOT, "imports");
 const EXPORTS_DIR = join(PROJECT_ROOT, "exports");
 const CONFIG_FILE = join(PROJECT_ROOT, "config", "userConfig.yml");
@@ -42,14 +45,14 @@ async function main() {
 		.description("Generate Slovenian tax reports from IBKR exports")
 		.requiredOption("--year <year>", "Reporting year, e.g. 2025")
 		.option("--report <type>", "Report type: kdvp, div, ifi, or all", "all")
-		.parse(Deno.args, { from: "user" });
+		.parse(process.argv);
 
 	const opts = program.opts<{ year: string; report: string }>();
 
 	const year = parseInt(opts.year, 10);
 	if (isNaN(year)) {
 		console.error(`Invalid year: ${opts.year}`);
-		Deno.exit(1);
+		process.exit(1);
 	}
 
 	const reportTypes: SlovenianTaxAuthorityReportTypes[] = [];
@@ -60,17 +63,17 @@ async function main() {
 			const t = REPORT_MAP[r.trim().toLowerCase()];
 			if (!t) {
 				console.error(`Unknown report type: ${r}. Valid: kdvp, div, ifi, all`);
-				Deno.exit(1);
+				process.exit(1);
 			}
 			reportTypes.push(t);
 		}
 	}
 
-	const configRaw = parseYaml(await Deno.readTextFile(CONFIG_FILE));
+	const configRaw = parseYaml(await fs.readFile(CONFIG_FILE, "utf-8"));
 	const configParsed = TaxPayerConfigSchema.safeParse(configRaw);
 	if (!configParsed.success) {
 		console.error("Invalid config.json:", configParsed.error.format());
-		Deno.exit(1);
+		process.exit(1);
 	}
 	const taxPayerInfo = configParsed.data;
 
@@ -95,9 +98,9 @@ async function main() {
 	const groupingProcessor = container.get(StagingFinancialGroupingProcessor);
 
 	const xmlContents: string[] = [];
-	for await (const entry of Deno.readDir(IMPORTS_DIR)) {
-		if (entry.isFile && entry.name.endsWith(".xml")) {
-			xmlContents.push(await Deno.readTextFile(`${IMPORTS_DIR}/${entry.name}`));
+	for (const entry of await fs.readdir(IMPORTS_DIR, { withFileTypes: true })) {
+		if (entry.isFile() && entry.name.endsWith(".xml")) {
+			xmlContents.push(await fs.readFile(`${IMPORTS_DIR}/${entry.name}`, "utf-8"));
 		}
 	}
 	console.log(`Found ${xmlContents.length} XML file(s)`);
@@ -106,18 +109,18 @@ async function main() {
 	const financialEvents = groupingProcessor.processStagingFinancialEvents(stagingEvents);
 	console.log(`Processed ${financialEvents.groupings.length} grouping(s)`);
 
-	await Deno.mkdir(EXPORTS_DIR, { recursive: true });
+	await fs.mkdir(EXPORTS_DIR, { recursive: true });
 
 	for (const reportType of reportTypes) {
 		const files = (OUTPUT_FILES as Partial<Record<SlovenianTaxAuthorityReportTypes, { xml: string; csv: string }>>)[reportType];
 		if (!files) {
 			console.error(`No output file mapping for report type: ${reportType}`);
-			Deno.exit(1);
+			process.exit(1);
 		}
 		const xmlOutput = await provider.generateExportForTaxAuthority(reportType, financialEvents);
 		const csvOutput = await provider.generateSpreadsheetExport(reportType, financialEvents);
-		await Deno.writeTextFile(`${EXPORTS_DIR}/${files.xml}`, xmlOutput);
-		await Deno.writeTextFile(`${EXPORTS_DIR}/${files.csv}`, csvOutput);
+		await fs.writeFile(`${EXPORTS_DIR}/${files.xml}`, xmlOutput, "utf-8");
+		await fs.writeFile(`${EXPORTS_DIR}/${files.csv}`, csvOutput, "utf-8");
 		console.log(`Written: ${EXPORTS_DIR}/${files.xml}`);
 		console.log(`Written: ${EXPORTS_DIR}/${files.csv}`);
 	}

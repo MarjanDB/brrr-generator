@@ -1,4 +1,3 @@
-import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
@@ -82,7 +81,7 @@ function makeGrouping(
 
 // === RENAME TESTS ===
 
-Deno.test("two groupings with rename produce one merged grouping", () => {
+test("two groupings with rename produce one merged grouping", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old Co" });
 	const idB = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New Co" });
 	const events = new FinancialEvents({
@@ -101,18 +100,18 @@ Deno.test("two groupings with rename produce one merged grouping", () => {
 	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.RENAME]);
-	assertEquals(result.groupings.length, 1);
+	expect(result.groupings.length).toEqual(1);
 	const merged = result.groupings[0];
-	assertEquals(merged.financialIdentifier.isTheSameAs(idB), true);
-	assertEquals(merged.stockTrades.length, 2);
-	assertEquals(merged.stockTrades.every((t) => t.financialIdentifier.isTheSameAs(idB)), true);
-	assertEquals(merged.provenance.length, 1);
-	assertEquals(merged.provenance[0].fromIdentifier.isTheSameAs(idA), true);
-	assertEquals(merged.provenance[0].toIdentifier.isTheSameAs(idB), true);
-	assertEquals(merged.provenance[0].changeType, IdentifierChangeType.RENAME);
+	expect(merged.financialIdentifier.isTheSameAs(idB)).toEqual(true);
+	expect(merged.stockTrades.length).toEqual(2);
+	expect(merged.stockTrades.every((t) => t.financialIdentifier.isTheSameAs(idB))).toEqual(true);
+	expect(merged.provenance.length).toEqual(1);
+	expect(merged.provenance[0].fromIdentifier.isTheSameAs(idA)).toEqual(true);
+	expect(merged.provenance[0].toIdentifier.isTheSameAs(idB)).toEqual(true);
+	expect(merged.provenance[0].changeType).toEqual(IdentifierChangeType.RENAME);
 });
 
-Deno.test("empty relationships leaves groupings unchanged", () => {
+test("empty relationships leaves groupings unchanged", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "A", name: "A" });
 	const events = new FinancialEvents({
 		groupings: [makeGrouping(idA, [])],
@@ -120,11 +119,11 @@ Deno.test("empty relationships leaves groupings unchanged", () => {
 	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.RENAME]);
-	assertEquals(result.groupings.length, 1);
-	assertEquals(result.groupings[0].financialIdentifier.isTheSameAs(idA), true);
+	expect(result.groupings.length).toEqual(1);
+	expect(result.groupings[0].financialIdentifier.isTheSameAs(idA)).toEqual(true);
 });
 
-Deno.test("no rename in change types leaves unchanged", () => {
+test("no rename in change types leaves unchanged", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "A", name: "A" });
 	const idB = new FinancialIdentifier({ isin: "US222", ticker: "B", name: "B" });
 	const events = new FinancialEvents({
@@ -140,11 +139,11 @@ Deno.test("no rename in change types leaves unchanged", () => {
 	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, []); // no RENAME
-	assertEquals(result.groupings.length, 1);
-	assertEquals(result.groupings[0].financialIdentifier.isTheSameAs(idA), true);
+	expect(result.groupings.length).toEqual(1);
+	expect(result.groupings[0].financialIdentifier.isTheSameAs(idA)).toEqual(true);
 });
 
-Deno.test("chain A to B to C produces one grouping with C", () => {
+test("chain A to B to C produces one grouping with C", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "A", name: "A" });
 	const idB = new FinancialIdentifier({ isin: "US222", ticker: "B", name: "B" });
 	const idC = new FinancialIdentifier({ isin: "US333", ticker: "C", name: "C" });
@@ -171,18 +170,18 @@ Deno.test("chain A to B to C produces one grouping with C", () => {
 	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.RENAME]);
-	assertEquals(result.groupings.length, 1);
+	expect(result.groupings.length).toEqual(1);
 	const merged = result.groupings[0];
-	assertEquals(merged.financialIdentifier.isTheSameAs(idC), true);
-	assertEquals(merged.stockTrades.length, 2);
-	assertEquals(merged.provenance.length, 2);
-	assertEquals(merged.provenance[0].fromIdentifier.isTheSameAs(idA), true);
-	assertEquals(merged.provenance[0].toIdentifier.isTheSameAs(idB), true);
-	assertEquals(merged.provenance[1].fromIdentifier.isTheSameAs(idB), true);
-	assertEquals(merged.provenance[1].toIdentifier.isTheSameAs(idC), true);
+	expect(merged.financialIdentifier.isTheSameAs(idC)).toEqual(true);
+	expect(merged.stockTrades.length).toEqual(2);
+	expect(merged.provenance.length).toEqual(2);
+	expect(merged.provenance[0].fromIdentifier.isTheSameAs(idA)).toEqual(true);
+	expect(merged.provenance[0].toIdentifier.isTheSameAs(idB)).toEqual(true);
+	expect(merged.provenance[1].fromIdentifier.isTheSameAs(idB)).toEqual(true);
+	expect(merged.provenance[1].toIdentifier.isTheSameAs(idC)).toEqual(true);
 });
 
-Deno.test("sink grouping with different instance merges into one", () => {
+test("sink grouping with different instance merges into one", () => {
 	const idOld = new FinancialIdentifier({ isin: "US7731221062", ticker: "RKLB.old", name: "RKLB old" });
 	const idNewInRel = new FinancialIdentifier({ isin: "US7731211089", ticker: "RKLB", name: "ROCKET LAB CORP" });
 	const idNewInGrouping = new FinancialIdentifier({ isin: "US7731211089", ticker: "RKLB", name: "ROCKET LAB CORP" });
@@ -202,13 +201,13 @@ Deno.test("sink grouping with different instance merges into one", () => {
 	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.RENAME]);
-	assertEquals(result.groupings.length, 1);
+	expect(result.groupings.length).toEqual(1);
 	const merged = result.groupings[0];
-	assertEquals(merged.financialIdentifier.isTheSameAs(idNewInRel), true);
-	assertEquals(merged.stockTrades.length, 2);
+	expect(merged.financialIdentifier.isTheSameAs(idNewInRel)).toEqual(true);
+	expect(merged.stockTrades.length).toEqual(2);
 });
 
-Deno.test("same ISIN different ticker matches rename chain", () => {
+test("same ISIN different ticker matches rename chain", () => {
 	const idOldInRel = new FinancialIdentifier({ isin: "US7731221062", ticker: "RKLB.OLD", name: null });
 	const idNew = new FinancialIdentifier({ isin: "US7731211089", ticker: "RKLB", name: "ROCKET LAB CORP" });
 	const idInGrouping = new FinancialIdentifier({ isin: "US7731221062", ticker: "RKLB", name: null });
@@ -225,14 +224,14 @@ Deno.test("same ISIN different ticker matches rename chain", () => {
 	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.RENAME]);
-	assertEquals(result.groupings.length, 1);
-	assertEquals(result.groupings[0].financialIdentifier.isTheSameAs(idNew), true);
-	assertEquals(result.groupings[0].stockTrades.length, 1);
+	expect(result.groupings.length).toEqual(1);
+	expect(result.groupings[0].financialIdentifier.isTheSameAs(idNew)).toEqual(true);
+	expect(result.groupings[0].stockTrades.length).toEqual(1);
 });
 
 // === SPLIT TESTS ===
 
-Deno.test("apply split scales trades before effective date and merges into to", () => {
+test("apply split scales trades before effective date and merges into to", () => {
 	const idFrom = new FinancialIdentifier({ isin: "US86800U1043", ticker: "SMCI.OLD", name: "Old" });
 	const idTo = new FinancialIdentifier({ isin: "US86800U3023", ticker: "SMCI", name: "New" });
 	const rel = new IdentifierRelationshipSplit({
@@ -249,22 +248,22 @@ Deno.test("apply split scales trades before effective date and merges into to", 
 	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.SPLIT]);
-	assertEquals(result.groupings.length, 1);
+	expect(result.groupings.length).toEqual(1);
 	const merged = result.groupings[0];
-	assertEquals(merged.financialIdentifier.isTheSameAs(idTo), true);
-	assertEquals(merged.stockTrades.length, 1);
+	expect(merged.financialIdentifier.isTheSameAs(idTo)).toEqual(true);
+	expect(merged.stockTrades.length).toEqual(1);
 	const trade = merged.stockTrades[0];
-	assertEquals(trade.exchangedMoney.underlyingQuantity, 40.0);
-	assertEquals(trade.exchangedMoney.underlyingTradePrice, 1.0);
-	assertEquals(trade.provenance.length, 1);
+	expect(trade.exchangedMoney.underlyingQuantity).toEqual(40.0);
+	expect(trade.exchangedMoney.underlyingTradePrice).toEqual(1.0);
+	expect(trade.provenance.length).toEqual(1);
 	const step = trade.provenance[0] as { quantityBefore: number; quantityAfter: number; beforeQuantity: number; beforeTradePrice: number };
-	assertEquals(step.quantityBefore, 4.0);
-	assertEquals(step.quantityAfter, 40.0);
-	assertEquals(step.beforeQuantity, 4.0);
-	assertEquals(step.beforeTradePrice, 10.0);
+	expect(step.quantityBefore).toEqual(4.0);
+	expect(step.quantityAfter).toEqual(40.0);
+	expect(step.beforeQuantity).toEqual(4.0);
+	expect(step.beforeTradePrice).toEqual(10.0);
 });
 
-Deno.test("apply split scales underlying trade price", () => {
+test("apply split scales underlying trade price", () => {
 	const idFrom = new FinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
 	const idTo = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });
 	const rel = new IdentifierRelationshipSplit({
@@ -281,13 +280,13 @@ Deno.test("apply split scales underlying trade price", () => {
 	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.SPLIT]);
-	assertEquals(result.groupings.length, 1);
+	expect(result.groupings.length).toEqual(1);
 	const trade = result.groupings[0].stockTrades[0];
-	assertEquals(trade.exchangedMoney.underlyingQuantity, 10.0);
-	assertEquals(trade.exchangedMoney.underlyingTradePrice, 10.0);
+	expect(trade.exchangedMoney.underlyingQuantity).toEqual(10.0);
+	expect(trade.exchangedMoney.underlyingTradePrice).toEqual(10.0);
 });
 
-Deno.test("apply split does not scale trades on or after effective date", () => {
+test("apply split does not scale trades on or after effective date", () => {
 	const idFrom = new FinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
 	const idTo = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });
 	const rel = new IdentifierRelationshipSplit({
@@ -304,11 +303,11 @@ Deno.test("apply split does not scale trades on or after effective date", () => 
 	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.SPLIT]);
-	assertEquals(result.groupings.length, 1);
-	assertEquals(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity, 5.0);
+	expect(result.groupings.length).toEqual(1);
+	expect(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity).toEqual(5.0);
 });
 
-Deno.test("apply split scales lots before effective date", () => {
+test("apply split scales lots before effective date", () => {
 	const idFrom = new FinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
 	const idTo = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });
 	const rel = new IdentifierRelationshipSplit({
@@ -353,16 +352,16 @@ Deno.test("apply split scales lots before effective date", () => {
 	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.SPLIT]);
-	assertEquals(result.groupings.length, 1);
-	assertEquals(result.groupings[0].stockTaxLots.length, 1);
+	expect(result.groupings.length).toEqual(1);
+	expect(result.groupings[0].stockTaxLots.length).toEqual(1);
 	const scaledLot = result.groupings[0].stockTaxLots[0];
-	assertEquals(scaledLot.quantity, 20.0);
-	assertEquals(scaledLot.provenance.length, 1);
+	expect(scaledLot.quantity).toEqual(20.0);
+	expect(scaledLot.provenance.length).toEqual(1);
 	const step = scaledLot.provenance[0] as { beforeQuantity: number };
-	assertEquals(step.beforeQuantity, 2.0);
+	expect(step.beforeQuantity).toEqual(2.0);
 });
 
-Deno.test("apply reverse split scales by ratio", () => {
+test("apply reverse split scales by ratio", () => {
 	const idFrom = new FinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
 	const idTo = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });
 	const rel = new IdentifierRelationshipSplit({
@@ -379,13 +378,13 @@ Deno.test("apply reverse split scales by ratio", () => {
 	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.REVERSE_SPLIT]);
-	assertEquals(result.groupings.length, 1);
-	assertEquals(result.groupings[0].financialIdentifier.isTheSameAs(idTo), true);
-	assertEquals(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity, 1.0);
-	assertEquals(result.groupings[0].stockTrades[0].exchangedMoney.underlyingTradePrice, 100.0);
+	expect(result.groupings.length).toEqual(1);
+	expect(result.groupings[0].financialIdentifier.isTheSameAs(idTo)).toEqual(true);
+	expect(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity).toEqual(1.0);
+	expect(result.groupings[0].stockTrades[0].exchangedMoney.underlyingTradePrice).toEqual(100.0);
 });
 
-Deno.test("apply split merges from into existing to grouping", () => {
+test("apply split merges from into existing to grouping", () => {
 	const idFrom = new FinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
 	const idTo = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });
 	const rel = new IdentifierRelationshipSplit({
@@ -405,11 +404,11 @@ Deno.test("apply split merges from into existing to grouping", () => {
 	});
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.SPLIT]);
-	assertEquals(result.groupings.length, 1);
+	expect(result.groupings.length).toEqual(1);
 	const merged = result.groupings[0];
-	assertEquals(merged.financialIdentifier.isTheSameAs(idTo), true);
-	assertEquals(merged.stockTrades.length, 2);
+	expect(merged.financialIdentifier.isTheSameAs(idTo)).toEqual(true);
+	expect(merged.stockTrades.length).toEqual(2);
 	const qtys = [...merged.stockTrades.map((t) => t.exchangedMoney.underlyingQuantity)].sort((a, b) => a - b);
-	assertEquals(qtys[0], 5.0);
-	assertEquals(qtys[1], 10.0);
+	expect(qtys[0]).toEqual(5.0);
+	expect(qtys[1]).toEqual(10.0);
 });

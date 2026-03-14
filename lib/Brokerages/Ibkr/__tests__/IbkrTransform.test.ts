@@ -21,7 +21,6 @@ import {
 	StagingTradeEventCashTransactionWithholdingTax,
 	StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends,
 } from "@brrr/Core/Schemas/Staging/Events.ts";
-import { assertEquals, assertInstanceOf } from "@std/assert";
 import { DateTime } from "luxon";
 import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 
@@ -242,105 +241,103 @@ const corporateActionNew: CorporateAction = {
 	transactionID: "3131760429",
 };
 
-Deno.test("transform: single stock trade buy", () => {
+test("transform: single stock trade buy", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ stockTrades: [simpleTradeBuy] }),
 	);
-	assertEquals(result.groupings.length, 1);
-	assertEquals(result.groupings[0].financialIdentifier.getIsin(), "US21212112");
-	assertEquals(result.groupings[0].stockTrades[0].financialIdentifier.getIsin(), "US21212112");
-	assertEquals(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity, 2);
+	expect(result.groupings.length).toEqual(1);
+	expect(result.groupings[0].financialIdentifier.getIsin()).toEqual("US21212112");
+	expect(result.groupings[0].stockTrades[0].financialIdentifier.getIsin()).toEqual("US21212112");
+	expect(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity).toEqual(2);
 });
 
-Deno.test("transform: single stock trade sell", () => {
+test("transform: single stock trade sell", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ stockTrades: [simpleTradeSell] }),
 	);
-	assertEquals(result.groupings.length, 1);
-	assertEquals(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity, -2);
+	expect(result.groupings.length).toEqual(1);
+	expect(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity).toEqual(-2);
 });
 
-Deno.test("transform: single stock lot", () => {
+test("transform: single stock lot", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ stockLots: [simpleStockLot] }),
 	);
-	assertEquals(result.groupings.length, 1);
-	assertEquals(result.groupings[0].financialIdentifier.getIsin(), "US21212112");
-	assertEquals(result.groupings[0].stockTaxLots[0].financialIdentifier.getIsin(), "US21212112");
+	expect(result.groupings.length).toEqual(1);
+	expect(result.groupings[0].financialIdentifier.getIsin()).toEqual("US21212112");
+	expect(result.groupings[0].stockTaxLots[0].financialIdentifier.getIsin()).toEqual("US21212112");
 });
 
-Deno.test("transform: single dividend", () => {
+test("transform: single dividend", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ cashTransactions: [dividend] }),
 	);
-	assertEquals(result.groupings.length, 1);
-	assertEquals(result.groupings[0].financialIdentifier.getIsin(), "FR0000120271");
-	assertInstanceOf(result.groupings[0].cashTransactions[0], StagingTradeEventCashTransactionDividend);
-	assertEquals(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice, dividend.amount * dividend.fxRateToBase);
-	assertEquals(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingQuantity, 1);
+	expect(result.groupings.length).toEqual(1);
+	expect(result.groupings[0].financialIdentifier.getIsin()).toEqual("FR0000120271");
+	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(StagingTradeEventCashTransactionDividend);
+	expect(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(dividend.amount * dividend.fxRateToBase);
+	expect(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingQuantity).toEqual(1);
 });
 
-Deno.test("transform: single payment in lieu of dividend", () => {
+test("transform: single payment in lieu of dividend", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ cashTransactions: [paymentInLieuOfDividend] }),
 	);
-	assertInstanceOf(result.groupings[0].cashTransactions[0], StagingTradeEventCashTransactionPaymentInLieuOfDividends);
-	assertEquals(
+	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(StagingTradeEventCashTransactionPaymentInLieuOfDividends);
+	expect(
 		result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice,
-		paymentInLieuOfDividend.amount * paymentInLieuOfDividend.fxRateToBase,
-	);
+	).toEqual(paymentInLieuOfDividend.amount * paymentInLieuOfDividend.fxRateToBase);
 });
 
-Deno.test("transform: single withholding tax", () => {
+test("transform: single withholding tax", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ cashTransactions: [withholdingTaxForDividend] }),
 	);
-	assertInstanceOf(result.groupings[0].cashTransactions[0], StagingTradeEventCashTransactionWithholdingTax);
-	assertEquals(
+	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(StagingTradeEventCashTransactionWithholdingTax);
+	expect(
 		result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice,
-		withholdingTaxForDividend.amount * withholdingTaxForDividend.fxRateToBase,
-	);
+	).toEqual(withholdingTaxForDividend.amount * withholdingTaxForDividend.fxRateToBase);
 });
 
-Deno.test("transform: withholding tax for payment in lieu", () => {
+test("transform: withholding tax for payment in lieu", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ cashTransactions: [withholdingTaxForPaymentInLieu] }),
 	);
-	assertInstanceOf(result.groupings[0].cashTransactions[0], StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends);
+	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends);
 });
 
-Deno.test("transform: corporate actions produce partial relationships only", () => {
+test("transform: corporate actions produce partial relationships only", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ corporateActions: [corporateActionOld, corporateActionNew] }),
 	);
-	assertEquals(result.identifierRelationships.relationships.length, 0);
-	assertEquals(result.identifierRelationships.partialRelationships.length, 2);
+	expect(result.identifierRelationships.relationships.length).toEqual(0);
+	expect(result.identifierRelationships.partialRelationships.length).toEqual(2);
 	const keys = new Set(result.identifierRelationships.partialRelationships.map((p) => p.correlationKey));
-	assertEquals(keys.has("141913764"), true);
+	expect(keys.has("141913764")).toEqual(true);
 	const fromPartial = result.identifierRelationships.partialRelationships.find((p) =>
 		p.fromIdentifier !== null && p.toIdentifier === null
 	)!;
 	const toPartial = result.identifierRelationships.partialRelationships.find((p) =>
 		p.toIdentifier !== null && p.fromIdentifier === null
 	)!;
-	assertEquals(fromPartial.fromIdentifier!.getIsin(), "US86800U1043");
-	assertEquals(toPartial.toIdentifier!.getIsin(), "US86800U3023");
-	assertEquals(fromPartial.changeType, StagingIdentifierChangeType.SPLIT);
+	expect(fromPartial.fromIdentifier!.getIsin()).toEqual("US86800U1043");
+	expect(toPartial.toIdentifier!.getIsin()).toEqual("US86800U3023");
+	expect(fromPartial.changeType).toEqual(StagingIdentifierChangeType.SPLIT);
 });
 
-Deno.test("transform: resolve partials produces full relationship", () => {
+test("transform: resolve partials produces full relationship", () => {
 	const staging = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ corporateActions: [corporateActionOld, corporateActionNew] }),
 	);
 	const resolved = new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(staging);
-	assertEquals(resolved.identifierRelationships.relationships.length, 1);
-	assertEquals(resolved.identifierRelationships.relationships[0].fromIdentifier.getIsin(), "US86800U1043");
-	assertEquals(resolved.identifierRelationships.relationships[0].toIdentifier.getIsin(), "US86800U3023");
-	assertEquals(resolved.identifierRelationships.relationships[0].changeType, StagingIdentifierChangeType.SPLIT);
+	expect(resolved.identifierRelationships.relationships.length).toEqual(1);
+	expect(resolved.identifierRelationships.relationships[0].fromIdentifier.getIsin()).toEqual("US86800U1043");
+	expect(resolved.identifierRelationships.relationships[0].toIdentifier.getIsin()).toEqual("US86800U3023");
+	expect(resolved.identifierRelationships.relationships[0].changeType).toEqual(StagingIdentifierChangeType.SPLIT);
 });
 
-Deno.test("transform: no corporate actions produces no partials", () => {
+test("transform: no corporate actions produces no partials", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(makeEmptySegmented({}));
-	assertEquals(result.identifierRelationships.relationships.length, 0);
-	assertEquals(result.identifierRelationships.partialRelationships.length, 0);
+	expect(result.identifierRelationships.relationships.length).toEqual(0);
+	expect(result.identifierRelationships.partialRelationships.length).toEqual(0);
 });

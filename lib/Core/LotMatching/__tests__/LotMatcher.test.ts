@@ -1,4 +1,3 @@
-import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.ts";
@@ -21,7 +20,7 @@ class FakeLotMatchingMethod implements LotMatchingMethod {
 	}
 }
 
-Deno.test("provided method is called", () => {
+test("provided method is called", () => {
 	const fakeMethod = new FakeLotMatchingMethod();
 	const lotMatcher = new LotMatcher();
 
@@ -29,6 +28,6 @@ Deno.test("provided method is called", () => {
 		{ id: "ID", quantity: 1, date: DateTime.fromISO("2023-01-01") as ValidDateTime },
 	]);
 
-	assertEquals(fakeMethod.performMatchingCalled, true);
-	assertEquals(fakeMethod.generateTradesCalled, true);
+	expect(fakeMethod.performMatchingCalled).toEqual(true);
+	expect(fakeMethod.generateTradesCalled).toEqual(true);
 });

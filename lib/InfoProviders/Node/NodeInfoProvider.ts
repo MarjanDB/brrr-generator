@@ -6,24 +6,11 @@ import {
 	TreatyType,
 } from "@brrr/InfoProviders/InfoProvider.ts";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider.ts";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import YahooFinance from "yahoo-finance2";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-function readJson(relativePath: string): unknown {
-	const fullPath = path.join(__dirname, relativePath);
-	const content = fs.readFileSync(fullPath, "utf-8");
-	return JSON.parse(content);
-}
-
-const internationalTreaties = readJson("internationalTreaties.json");
-const specialCountryMappings = readJson("specialCountryMappings.json");
-const missingISINLookup = readJson("missingISINLookup.json");
-const missingCompaniesLookup = readJson("missingCompaniesLookup.json");
+import internationalTreaties from "./internationalTreaties.json" with { type: "json" };
+import specialCountryMappings from "./specialCountryMappings.json" with { type: "json" };
+import missingISINLookup from "./missingISINLookup.json" with { type: "json" };
+import missingCompaniesLookup from "./missingCompaniesLookup.json" with { type: "json" };
 
 const problematicCountryMappings = specialCountryMappings as Record<string, string>;
 const taxReliefTreaties = (internationalTreaties as { treaties: { taxRelief: Record<string, string> } }).treaties

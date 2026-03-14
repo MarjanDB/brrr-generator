@@ -42,7 +42,7 @@
 		}
 	},
 	"editor.formatOnSave": true,
-	"deno.enable": true,
+	"deno.enable": false,
 	"[json]": {
 		"editor.defaultFormatter": "denoland.vscode-deno"
 	},

@@ -1,0 +1,4 @@
+packages:
+  - lib
+  - standalone/cli
+  - app

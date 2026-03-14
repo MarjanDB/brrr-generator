@@ -14,7 +14,6 @@ export { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/S
 // Info providers
 export { InfoProvider, TreatyType } from "@brrr/InfoProviders/InfoProvider.ts";
 export type { CompanyInfo, CompanyLocationInfo, Country } from "@brrr/InfoProviders/InfoProvider.ts";
-export { NodeInfoProvider } from "@brrr/InfoProviders/Node/NodeInfoProvider.ts";
 export { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider.ts";
 
 // Tax authority — interface

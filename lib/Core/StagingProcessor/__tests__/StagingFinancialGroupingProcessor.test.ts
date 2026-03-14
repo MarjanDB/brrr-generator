@@ -28,7 +28,6 @@ import { StagingTaxLot, StagingTaxLotMatchingDetails } from "@brrr/Core/Schemas/
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents.ts";
 import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier.ts";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor.ts";
-import { assertEquals, assertThrows } from "@std/assert";
 import { DateTime } from "luxon";
 import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 
@@ -171,7 +170,7 @@ function makeGrouping(overrides: Partial<ConstructorParameters<typeof StagingFin
 	});
 }
 
-Deno.test("simple stock lot matching", () => {
+test("simple stock lot matching", () => {
 	const processor = new StagingFinancialGroupingProcessor();
 	const groupings = [
 		makeGrouping({
@@ -180,14 +179,14 @@ Deno.test("simple stock lot matching", () => {
 		}),
 	];
 	const results = processor.generateGenericGroupings(groupings);
-	assertEquals(results.length, 1);
-	assertEquals(results[0].stockTaxLots[0].acquired, results[0].stockTrades[0]);
-	assertEquals(results[0].stockTaxLots[0].acquired.exchangedMoney.underlyingQuantity, 1);
-	assertEquals(results[0].stockTaxLots[0].sold, results[0].stockTrades[1]);
-	assertEquals(results[0].stockTaxLots[0].sold.exchangedMoney.underlyingQuantity, -1);
+	expect(results.length).toEqual(1);
+	expect(results[0].stockTaxLots[0].acquired).toEqual(results[0].stockTrades[0]);
+	expect(results[0].stockTaxLots[0].acquired.exchangedMoney.underlyingQuantity).toEqual(1);
+	expect(results[0].stockTaxLots[0].sold).toEqual(results[0].stockTrades[1]);
+	expect(results[0].stockTaxLots[0].sold.exchangedMoney.underlyingQuantity).toEqual(-1);
 });
 
-Deno.test("partial stock lot matching throws", () => {
+test("partial stock lot matching throws", () => {
 	const processor = new StagingFinancialGroupingProcessor();
 	const groupings = [
 		makeGrouping({
@@ -195,10 +194,10 @@ Deno.test("partial stock lot matching throws", () => {
 			stockTaxLots: [simpleStagingStockLot],
 		}),
 	];
-	assertThrows(() => processor.generateGenericGroupings(groupings), Error);
+	expect(() => processor.generateGenericGroupings(groupings)).toThrow(Error);
 });
 
-Deno.test("simple derivative lot matching", () => {
+test("simple derivative lot matching", () => {
 	const processor = new StagingFinancialGroupingProcessor();
 	const groupings = [
 		makeGrouping({
@@ -207,20 +206,18 @@ Deno.test("simple derivative lot matching", () => {
 		}),
 	];
 	const results = processor.generateGenericGroupings(groupings);
-	assertEquals(results.length, 1);
-	assertEquals(
+	expect(results.length).toEqual(1);
+	expect(
 		results[0].derivativeGroupings[0].derivativeTaxLots[0].acquired,
-		results[0].derivativeGroupings[0].derivativeTrades[0],
-	);
-	assertEquals(results[0].derivativeGroupings[0].derivativeTaxLots[0].acquired.exchangedMoney.underlyingQuantity, 1);
-	assertEquals(
+	).toEqual(results[0].derivativeGroupings[0].derivativeTrades[0]);
+	expect(results[0].derivativeGroupings[0].derivativeTaxLots[0].acquired.exchangedMoney.underlyingQuantity).toEqual(1);
+	expect(
 		results[0].derivativeGroupings[0].derivativeTaxLots[0].sold,
-		results[0].derivativeGroupings[0].derivativeTrades[1],
-	);
-	assertEquals(results[0].derivativeGroupings[0].derivativeTaxLots[0].sold.exchangedMoney.underlyingQuantity, -1);
+	).toEqual(results[0].derivativeGroupings[0].derivativeTrades[1]);
+	expect(results[0].derivativeGroupings[0].derivativeTaxLots[0].sold.exchangedMoney.underlyingQuantity).toEqual(-1);
 });
 
-Deno.test("dividend with withholding tax", () => {
+test("dividend with withholding tax", () => {
 	const processor = new StagingFinancialGroupingProcessor();
 	const groupings = [
 		makeGrouping({
@@ -228,16 +225,16 @@ Deno.test("dividend with withholding tax", () => {
 		}),
 	];
 	const results = processor.generateGenericGroupings(groupings);
-	assertEquals(results.length, 1);
-	assertEquals(results[0].cashTransactions[0].id, simpleStagingDividend.id);
-	assertEquals(results[0].cashTransactions[1].id, simpleStagingDividendWithholdingTax.id);
-	assertEquals(results[0].cashTransactions[0].exchangedMoney.underlyingQuantity, 1);
-	assertEquals(results[0].cashTransactions[1].exchangedMoney.underlyingQuantity, 1);
-	assertEquals(results[0].cashTransactions[0].exchangedMoney.underlyingTradePrice, 10);
-	assertEquals(results[0].cashTransactions[1].exchangedMoney.underlyingTradePrice, -5);
+	expect(results.length).toEqual(1);
+	expect(results[0].cashTransactions[0].id).toEqual(simpleStagingDividend.id);
+	expect(results[0].cashTransactions[1].id).toEqual(simpleStagingDividendWithholdingTax.id);
+	expect(results[0].cashTransactions[0].exchangedMoney.underlyingQuantity).toEqual(1);
+	expect(results[0].cashTransactions[1].exchangedMoney.underlyingQuantity).toEqual(1);
+	expect(results[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(10);
+	expect(results[0].cashTransactions[1].exchangedMoney.underlyingTradePrice).toEqual(-5);
 });
 
-Deno.test("payment in lieu of dividend with withholding tax", () => {
+test("payment in lieu of dividend with withholding tax", () => {
 	const processor = new StagingFinancialGroupingProcessor();
 	const groupings = [
 		makeGrouping({
@@ -248,16 +245,16 @@ Deno.test("payment in lieu of dividend with withholding tax", () => {
 		}),
 	];
 	const results = processor.generateGenericGroupings(groupings);
-	assertEquals(results.length, 1);
-	assertEquals(results[0].cashTransactions[0].id, simpleStagingPaymentInLieuOfDividend.id);
-	assertEquals(results[0].cashTransactions[1].id, simpleStagingPaymentInLieuOfDividendWithholdingTax.id);
-	assertEquals(results[0].cashTransactions[0].exchangedMoney.underlyingQuantity, 1);
-	assertEquals(results[0].cashTransactions[1].exchangedMoney.underlyingQuantity, 1);
-	assertEquals(results[0].cashTransactions[0].exchangedMoney.underlyingTradePrice, 5);
-	assertEquals(results[0].cashTransactions[1].exchangedMoney.underlyingTradePrice, -2.5);
+	expect(results.length).toEqual(1);
+	expect(results[0].cashTransactions[0].id).toEqual(simpleStagingPaymentInLieuOfDividend.id);
+	expect(results[0].cashTransactions[1].id).toEqual(simpleStagingPaymentInLieuOfDividendWithholdingTax.id);
+	expect(results[0].cashTransactions[0].exchangedMoney.underlyingQuantity).toEqual(1);
+	expect(results[0].cashTransactions[1].exchangedMoney.underlyingQuantity).toEqual(1);
+	expect(results[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(5);
+	expect(results[0].cashTransactions[1].exchangedMoney.underlyingTradePrice).toEqual(-2.5);
 });
 
-Deno.test("processStagingFinancialEvents returns FinancialEvents with converted relationships", () => {
+test("processStagingFinancialEvents returns FinancialEvents with converted relationships", () => {
 	const stagingIdA = new StagingFinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
 	const stagingIdB = new StagingFinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });
 	const stagingRel = new StagingIdentifierRelationship({
@@ -277,10 +274,10 @@ Deno.test("processStagingFinancialEvents returns FinancialEvents with converted 
 			identifierRelationships: relationships,
 		}),
 	);
-	assertEquals(result.groupings.length, 1);
-	assertEquals(result.groupings[0].financialIdentifier.getIsin(), "US111");
-	assertEquals(result.identifierRelationships.length, 1);
-	assertEquals(result.identifierRelationships[0].fromIdentifier.getIsin(), "US111");
-	assertEquals(result.identifierRelationships[0].toIdentifier.getIsin(), "US222");
-	assertEquals(result.identifierRelationships[0].changeType, IdentifierChangeType.RENAME);
+	expect(result.groupings.length).toEqual(1);
+	expect(result.groupings[0].financialIdentifier.getIsin()).toEqual("US111");
+	expect(result.identifierRelationships.length).toEqual(1);
+	expect(result.identifierRelationships[0].fromIdentifier.getIsin()).toEqual("US111");
+	expect(result.identifierRelationships[0].toIdentifier.getIsin()).toEqual("US222");
+	expect(result.identifierRelationships[0].changeType).toEqual(IdentifierChangeType.RENAME);
 });

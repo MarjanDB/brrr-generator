@@ -1,4 +1,3 @@
-import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 import { FifoLotMatchingMethod } from "@brrr/Core/LotMatching/FifoLotMatchingMethod.ts";
 import type { Trade } from "@brrr/Core/LotMatching/Trade.ts";
@@ -50,18 +49,18 @@ const complexCasePartialSells = {
 	Sell2: { id: "ID3", quantity: -0.5, date: makeDate("2023-01-03") } as Trade,
 };
 
-Deno.test("simple single lot generation", () => {
+test("simple single lot generation", () => {
 	const method = new FifoLotMatchingMethod();
 	const events = [simpleCaseNoProfit.Buy, simpleCaseNoProfit.Sell];
 	const lots = method.performMatching(events);
 
-	assertEquals(lots.length, 1);
-	assertEquals(lots[0].quantity, 1);
-	assertEquals(lots[0].acquired.relation.date, simpleCaseNoProfit.Buy.date);
-	assertEquals(lots[0].sold.relation.date, simpleCaseNoProfit.Sell.date);
+	expect(lots.length).toEqual(1);
+	expect(lots[0].quantity).toEqual(1);
+	expect(lots[0].acquired.relation.date).toEqual(simpleCaseNoProfit.Buy.date);
+	expect(lots[0].sold.relation.date).toEqual(simpleCaseNoProfit.Sell.date);
 });
 
-Deno.test("simple single lot generation with multiple buy-sell events", () => {
+test("simple single lot generation with multiple buy-sell events", () => {
 	const method = new FifoLotMatchingMethod();
 	const events = [
 		simpleCaseWithBuySellBuySellEvents.Buy1,
@@ -71,17 +70,17 @@ Deno.test("simple single lot generation with multiple buy-sell events", () => {
 	];
 	const lots = method.performMatching(events);
 
-	assertEquals(lots.length, 2);
-	assertEquals(lots[0].quantity, 1);
-	assertEquals(lots[0].acquired.relation, simpleCaseWithBuySellBuySellEvents.Buy1);
-	assertEquals(lots[0].sold.relation, simpleCaseWithBuySellBuySellEvents.Sell1);
+	expect(lots.length).toEqual(2);
+	expect(lots[0].quantity).toEqual(1);
+	expect(lots[0].acquired.relation).toEqual(simpleCaseWithBuySellBuySellEvents.Buy1);
+	expect(lots[0].sold.relation).toEqual(simpleCaseWithBuySellBuySellEvents.Sell1);
 
-	assertEquals(lots[1].quantity, 1);
-	assertEquals(lots[1].acquired.relation, simpleCaseWithBuySellBuySellEvents.Buy2);
-	assertEquals(lots[1].sold.relation, simpleCaseWithBuySellBuySellEvents.Sell2);
+	expect(lots[1].quantity).toEqual(1);
+	expect(lots[1].acquired.relation).toEqual(simpleCaseWithBuySellBuySellEvents.Buy2);
+	expect(lots[1].sold.relation).toEqual(simpleCaseWithBuySellBuySellEvents.Sell2);
 });
 
-Deno.test("multiple buy events", () => {
+test("multiple buy events", () => {
 	const method = new FifoLotMatchingMethod();
 	const events = [
 		simpleCaseWithMultipleBuyEvents.Buy,
@@ -90,17 +89,17 @@ Deno.test("multiple buy events", () => {
 	];
 	const lots = method.performMatching(events);
 
-	assertEquals(lots.length, 2);
-	assertEquals(lots[0].quantity, simpleCaseWithMultipleBuyEvents.Buy.quantity);
-	assertEquals(lots[0].acquired.relation.id, simpleCaseWithMultipleBuyEvents.Buy.id);
-	assertEquals(lots[0].sold.relation.id, simpleCaseWithMultipleBuyEvents.Sell.id);
+	expect(lots.length).toEqual(2);
+	expect(lots[0].quantity).toEqual(simpleCaseWithMultipleBuyEvents.Buy.quantity);
+	expect(lots[0].acquired.relation.id).toEqual(simpleCaseWithMultipleBuyEvents.Buy.id);
+	expect(lots[0].sold.relation.id).toEqual(simpleCaseWithMultipleBuyEvents.Sell.id);
 
-	assertEquals(lots[1].quantity, simpleCaseWithMultipleBuyEvents.Buy2.quantity);
-	assertEquals(lots[1].acquired.relation.id, simpleCaseWithMultipleBuyEvents.Buy2.id);
-	assertEquals(lots[1].sold.relation.id, simpleCaseWithMultipleBuyEvents.Sell.id);
+	expect(lots[1].quantity).toEqual(simpleCaseWithMultipleBuyEvents.Buy2.quantity);
+	expect(lots[1].acquired.relation.id).toEqual(simpleCaseWithMultipleBuyEvents.Buy2.id);
+	expect(lots[1].sold.relation.id).toEqual(simpleCaseWithMultipleBuyEvents.Sell.id);
 });
 
-Deno.test("multiple sell events", () => {
+test("multiple sell events", () => {
 	const method = new FifoLotMatchingMethod();
 	const events = [
 		simpleCaseWithMultipleSellEvents.Buy,
@@ -109,17 +108,17 @@ Deno.test("multiple sell events", () => {
 	];
 	const lots = method.performMatching(events);
 
-	assertEquals(lots.length, 2);
-	assertEquals(lots[0].quantity, Math.abs(simpleCaseWithMultipleSellEvents.Sell.quantity));
-	assertEquals(lots[0].acquired.relation.id, simpleCaseWithMultipleSellEvents.Buy.id);
-	assertEquals(lots[0].sold.relation.id, simpleCaseWithMultipleSellEvents.Sell.id);
+	expect(lots.length).toEqual(2);
+	expect(lots[0].quantity).toEqual(Math.abs(simpleCaseWithMultipleSellEvents.Sell.quantity));
+	expect(lots[0].acquired.relation.id).toEqual(simpleCaseWithMultipleSellEvents.Buy.id);
+	expect(lots[0].sold.relation.id).toEqual(simpleCaseWithMultipleSellEvents.Sell.id);
 
-	assertEquals(lots[1].quantity, Math.abs(simpleCaseWithMultipleSellEvents.Sell2.quantity));
-	assertEquals(lots[1].acquired.relation.id, simpleCaseWithMultipleSellEvents.Buy.id);
-	assertEquals(lots[1].sold.relation.id, simpleCaseWithMultipleSellEvents.Sell2.id);
+	expect(lots[1].quantity).toEqual(Math.abs(simpleCaseWithMultipleSellEvents.Sell2.quantity));
+	expect(lots[1].acquired.relation.id).toEqual(simpleCaseWithMultipleSellEvents.Buy.id);
+	expect(lots[1].sold.relation.id).toEqual(simpleCaseWithMultipleSellEvents.Sell2.id);
 });
 
-Deno.test("complex overlapping events", () => {
+test("complex overlapping events", () => {
 	const method = new FifoLotMatchingMethod();
 	const events = [
 		complexCaseOverlappingEvents.Buy1,
@@ -129,49 +128,49 @@ Deno.test("complex overlapping events", () => {
 	];
 	const lots = method.performMatching(events);
 
-	assertEquals(lots.length, 3);
+	expect(lots.length).toEqual(3);
 
-	assertEquals(lots[0].quantity, 1);
-	assertEquals(lots[0].acquired.relation, complexCaseOverlappingEvents.Buy1);
-	assertEquals(lots[0].sold.relation, complexCaseOverlappingEvents.Sell1);
+	expect(lots[0].quantity).toEqual(1);
+	expect(lots[0].acquired.relation).toEqual(complexCaseOverlappingEvents.Buy1);
+	expect(lots[0].sold.relation).toEqual(complexCaseOverlappingEvents.Sell1);
 
-	assertEquals(lots[1].quantity, 1);
-	assertEquals(lots[1].acquired.relation, complexCaseOverlappingEvents.Buy1);
-	assertEquals(lots[1].sold.relation, complexCaseOverlappingEvents.Sell2);
+	expect(lots[1].quantity).toEqual(1);
+	expect(lots[1].acquired.relation).toEqual(complexCaseOverlappingEvents.Buy1);
+	expect(lots[1].sold.relation).toEqual(complexCaseOverlappingEvents.Sell2);
 
-	assertEquals(lots[2].quantity, 1);
-	assertEquals(lots[2].acquired.relation, complexCaseOverlappingEvents.Buy2);
-	assertEquals(lots[2].sold.relation, complexCaseOverlappingEvents.Sell2);
+	expect(lots[2].quantity).toEqual(1);
+	expect(lots[2].acquired.relation).toEqual(complexCaseOverlappingEvents.Buy2);
+	expect(lots[2].sold.relation).toEqual(complexCaseOverlappingEvents.Sell2);
 });
 
-Deno.test("complex partial buys", () => {
+test("complex partial buys", () => {
 	const method = new FifoLotMatchingMethod();
 	const events = [complexCasePartialBuys.Buy1, complexCasePartialBuys.Buy2, complexCasePartialBuys.Sell];
 	const lots = method.performMatching(events);
 
-	assertEquals(lots.length, 2);
+	expect(lots.length).toEqual(2);
 
-	assertEquals(lots[0].quantity, 0.5);
-	assertEquals(lots[0].acquired.relation, complexCasePartialBuys.Buy1);
-	assertEquals(lots[0].sold.relation, complexCasePartialBuys.Sell);
+	expect(lots[0].quantity).toEqual(0.5);
+	expect(lots[0].acquired.relation).toEqual(complexCasePartialBuys.Buy1);
+	expect(lots[0].sold.relation).toEqual(complexCasePartialBuys.Sell);
 
-	assertEquals(lots[1].quantity, 0.5);
-	assertEquals(lots[1].acquired.relation, complexCasePartialBuys.Buy2);
-	assertEquals(lots[1].sold.relation, complexCasePartialBuys.Sell);
+	expect(lots[1].quantity).toEqual(0.5);
+	expect(lots[1].acquired.relation).toEqual(complexCasePartialBuys.Buy2);
+	expect(lots[1].sold.relation).toEqual(complexCasePartialBuys.Sell);
 });
 
-Deno.test("complex partial sells", () => {
+test("complex partial sells", () => {
 	const method = new FifoLotMatchingMethod();
 	const events = [complexCasePartialSells.Buy, complexCasePartialSells.Sell1, complexCasePartialSells.Sell2];
 	const lots = method.performMatching(events);
 
-	assertEquals(lots.length, 2);
+	expect(lots.length).toEqual(2);
 
-	assertEquals(lots[0].quantity, 0.5);
-	assertEquals(lots[0].acquired.relation, complexCasePartialSells.Buy);
-	assertEquals(lots[0].sold.relation, complexCasePartialSells.Sell1);
+	expect(lots[0].quantity).toEqual(0.5);
+	expect(lots[0].acquired.relation).toEqual(complexCasePartialSells.Buy);
+	expect(lots[0].sold.relation).toEqual(complexCasePartialSells.Sell1);
 
-	assertEquals(lots[1].quantity, 0.5);
-	assertEquals(lots[1].acquired.relation, complexCasePartialSells.Buy);
-	assertEquals(lots[1].sold.relation, complexCasePartialSells.Sell2);
+	expect(lots[1].quantity).toEqual(0.5);
+	expect(lots[1].acquired.relation).toEqual(complexCasePartialSells.Buy);
+	expect(lots[1].sold.relation).toEqual(complexCasePartialSells.Sell2);
 });

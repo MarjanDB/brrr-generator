@@ -13,7 +13,6 @@ import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
 import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.ts";
 import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration.ts";
 import { TaxLot } from "@brrr/Core/Schemas/Lots.ts";
-import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 
@@ -82,7 +81,7 @@ function matchingMethodFactory(g: FinancialGrouping) {
 	return new ProvidedLotMatchingMethod(g.stockTaxLots) as unknown as ReturnType<LotMatchingConfiguration["forStocks"]>;
 }
 
-Deno.test("single stock lot matching", () => {
+test("single stock lot matching", () => {
 	const processor = new FinancialEventsProcessor(null, new LotMatcher());
 	const config: LotMatchingConfiguration = {
 		fromDate: makeDate("2023-01-01"),
@@ -91,12 +90,12 @@ Deno.test("single stock lot matching", () => {
 		forDerivatives: matchingMethodFactory,
 	};
 	const interesting = processor.generateInterestingUnderlyingGroupings([grouping], config);
-	assertEquals(interesting.length, 1);
-	assertEquals(interesting[0].stockTrades.length, 2);
-	assertEquals(interesting[0].derivativeGroupings.length, 0);
+	expect(interesting.length).toEqual(1);
+	expect(interesting[0].stockTrades.length).toEqual(2);
+	expect(interesting[0].derivativeGroupings.length).toEqual(0);
 });
 
-Deno.test("simple filtering trades of lots closed in period", () => {
+test("simple filtering trades of lots closed in period", () => {
 	const processor = new FinancialEventsProcessor(null, new LotMatcher());
 	const config: LotMatchingConfiguration = {
 		fromDate: makeDate("2022-01-01"),
@@ -105,11 +104,11 @@ Deno.test("simple filtering trades of lots closed in period", () => {
 		forDerivatives: matchingMethodFactory,
 	};
 	const interesting = processor.generateInterestingUnderlyingGroupings([grouping], config);
-	assertEquals(interesting.length, 1);
-	assertEquals(interesting[0].stockTrades.length, 0);
+	expect(interesting.length).toEqual(1);
+	expect(interesting[0].stockTrades.length).toEqual(0);
 });
 
-Deno.test("no stock trades matching when no lots", () => {
+test("no stock trades matching when no lots", () => {
 	const groupingNoLots = grouping.copy({ stockTaxLots: [] });
 	const processor = new FinancialEventsProcessor(null, new LotMatcher());
 	const config: LotMatchingConfiguration = {
@@ -119,7 +118,7 @@ Deno.test("no stock trades matching when no lots", () => {
 		forDerivatives: matchingMethodFactory,
 	};
 	const interesting = processor.generateInterestingUnderlyingGroupings([groupingNoLots], config);
-	assertEquals(interesting.length, 1);
-	assertEquals(interesting[0].stockTrades.length, 0);
-	assertEquals(interesting[0].derivativeGroupings.length, 0);
+	expect(interesting.length).toEqual(1);
+	expect(interesting[0].stockTrades.length).toEqual(0);
+	expect(interesting[0].derivativeGroupings.length).toEqual(0);
 });

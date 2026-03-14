@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract.ts";
 import { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider.ts";
 import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform.ts";
@@ -8,13 +9,12 @@ import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Configurati
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider.ts";
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator.ts";
 import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
-import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 
 const xmlPath = new URL("./DuplicatingTrades.xml", import.meta.url).pathname;
 
-Deno.test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantities", () => {
-	const xmlContent = Deno.readTextFileSync(xmlPath);
+test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantities", () => {
+	const xmlContent = fs.readFileSync(xmlPath, "utf-8");
 
 	const ibkrProvider = new IbkrBrokerageExportProvider(new IbkrExtractService(), new IbkrTransformService());
 	const stagingEvents = ibkrProvider.loadAndTransform([xmlContent]);
@@ -33,18 +33,16 @@ Deno.test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantiti
 	const items = generator.convert(reportConfig, financialEvents.groupings);
 	const events = items.flatMap((item) => item.items.flatMap((line) => line.events));
 
-	assertEquals(
+	expect(
 		events.length,
-		8,
-		"Expected 8 rows, as there are 3 buys and 3 sells, but 2 of the buys are smaller than a single sell, so there are 4 matching lots",
-	);
+	).toEqual(8);
 
-	assertEquals(events[0].quantity, 10);
-	assertEquals(events[1].quantity, 40);
-	assertEquals(events[2].quantity, 50);
-	assertEquals(events[3].quantity, 100);
-	assertEquals(events[4].quantity, -10);
-	assertEquals(events[5].quantity, -40);
-	assertEquals(events[6].quantity, -50);
-	assertEquals(events[7].quantity, -100);
+	expect(events[0].quantity).toEqual(10);
+	expect(events[1].quantity).toEqual(40);
+	expect(events[2].quantity).toEqual(50);
+	expect(events[3].quantity).toEqual(100);
+	expect(events[4].quantity).toEqual(-10);
+	expect(events[5].quantity).toEqual(-40);
+	expect(events[6].quantity).toEqual(-50);
+	expect(events[7].quantity).toEqual(-100);
 });

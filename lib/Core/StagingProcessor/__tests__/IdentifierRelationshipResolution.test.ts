@@ -9,7 +9,6 @@ import {
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents.ts";
 import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier.ts";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution.ts";
-import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 
@@ -17,7 +16,7 @@ function makeDate(iso: string): ValidDateTime {
 	return DateTime.fromISO(iso) as ValidDateTime;
 }
 
-Deno.test("two partials same key produce one full relationship", () => {
+test("two partials same key produce one full relationship", () => {
 	const fromId = new StagingFinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old Inc" });
 	const toId = new StagingFinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New Inc" });
 	const partials: StagingIdentifierRelationshipPartial[] = [
@@ -37,14 +36,14 @@ Deno.test("two partials same key produce one full relationship", () => {
 		}),
 	];
 	const result = new IdentifierRelationshipResolution().mergePartialIdentifierRelationships(partials);
-	assertEquals(result.length, 1);
-	assertEquals(result[0].fromIdentifier.getIsin(), "US111");
-	assertEquals(result[0].toIdentifier.getIsin(), "US222");
-	assertEquals(result[0].changeType, StagingIdentifierChangeType.SPLIT);
-	assertEquals(result[0].effectiveDate !== null, true);
+	expect(result.length).toEqual(1);
+	expect(result[0].fromIdentifier.getIsin()).toEqual("US111");
+	expect(result[0].toIdentifier.getIsin()).toEqual("US222");
+	expect(result[0].changeType).toEqual(StagingIdentifierChangeType.SPLIT);
+	expect(result[0].effectiveDate !== null).toEqual(true);
 });
 
-Deno.test("partials with quantity produce full with quantityBefore/quantityAfter", () => {
+test("partials with quantity produce full with quantityBefore/quantityAfter", () => {
 	const fromId = new StagingFinancialIdentifier({ isin: "US86800U1043", ticker: "SMCI.OLD", name: "Old" });
 	const toId = new StagingFinancialIdentifier({ isin: "US86800U3023", ticker: "SMCI", name: "New" });
 	const partials: StagingIdentifierRelationshipPartialWithQuantity[] = [
@@ -66,14 +65,14 @@ Deno.test("partials with quantity produce full with quantityBefore/quantityAfter
 		}),
 	];
 	const result = new IdentifierRelationshipResolution().mergePartialIdentifierRelationships(partials);
-	assertEquals(result.length, 1);
+	expect(result.length).toEqual(1);
 	const r = result[0] as StagingIdentifierRelationshipSplit;
-	assertEquals(r.quantityBefore, 4.0);
-	assertEquals(r.quantityAfter, 40.0);
-	assertEquals(r.changeType, StagingIdentifierChangeType.SPLIT);
+	expect(r.quantityBefore).toEqual(4.0);
+	expect(r.quantityAfter).toEqual(40.0);
+	expect(r.changeType).toEqual(StagingIdentifierChangeType.SPLIT);
 });
 
-Deno.test("reverse split inferred when quantity after less than before", () => {
+test("reverse split inferred when quantity after less than before", () => {
 	const fromId = new StagingFinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
 	const toId = new StagingFinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });
 	const partials: StagingIdentifierRelationshipPartialWithQuantity[] = [
@@ -95,14 +94,14 @@ Deno.test("reverse split inferred when quantity after less than before", () => {
 		}),
 	];
 	const result = new IdentifierRelationshipResolution().mergePartialIdentifierRelationships(partials);
-	assertEquals(result.length, 1);
+	expect(result.length).toEqual(1);
 	const r = result[0] as StagingIdentifierRelationshipSplit;
-	assertEquals(r.changeType, StagingIdentifierChangeType.REVERSE_SPLIT);
-	assertEquals(r.quantityBefore, 10.0);
-	assertEquals(r.quantityAfter, 1.0);
+	expect(r.changeType).toEqual(StagingIdentifierChangeType.REVERSE_SPLIT);
+	expect(r.quantityBefore).toEqual(10.0);
+	expect(r.quantityAfter).toEqual(1.0);
 });
 
-Deno.test("only from partial produces no full relationship", () => {
+test("only from partial produces no full relationship", () => {
 	const fromId = new StagingFinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
 	const partials: StagingIdentifierRelationshipPartial[] = [
 		new StagingIdentifierRelationshipPartial({
@@ -114,15 +113,15 @@ Deno.test("only from partial produces no full relationship", () => {
 		}),
 	];
 	const result = new IdentifierRelationshipResolution().mergePartialIdentifierRelationships(partials);
-	assertEquals(result.length, 0);
+	expect(result.length).toEqual(0);
 });
 
-Deno.test("empty partials returns empty", () => {
+test("empty partials returns empty", () => {
 	const result = new IdentifierRelationshipResolution().mergePartialIdentifierRelationships([]);
-	assertEquals(result.length, 0);
+	expect(result.length).toEqual(0);
 });
 
-Deno.test("preserves existing full relationships", () => {
+test("preserves existing full relationships", () => {
 	const fromId = new StagingFinancialIdentifier({ isin: "US111", ticker: "A", name: "A" });
 	const toId = new StagingFinancialIdentifier({ isin: "US222", ticker: "B", name: "B" });
 	const events = new StagingFinancialEvents({
@@ -140,7 +139,7 @@ Deno.test("preserves existing full relationships", () => {
 		}),
 	});
 	const result = new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(events);
-	assertEquals(result.identifierRelationships.relationships.length, 1);
-	assertEquals(result.identifierRelationships.relationships[0].fromIdentifier.getIsin(), "US111");
-	assertEquals(result.identifierRelationships.partialRelationships.length, 0);
+	expect(result.identifierRelationships.relationships.length).toEqual(1);
+	expect(result.identifierRelationships.relationships[0].fromIdentifier.getIsin()).toEqual("US111");
+	expect(result.identifierRelationships.partialRelationships.length).toEqual(0);
 });

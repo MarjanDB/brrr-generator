@@ -1,4 +1,3 @@
-import { assertEquals } from "@std/assert";
 import { DateTime } from "luxon";
 import type { ValidDateTime } from "@brrr/Utils/DateTime.ts";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier.ts";
@@ -80,50 +79,50 @@ const underUtilizedLot: TaxLotStock = new TaxLot({
 	provenance: [],
 });
 
-Deno.test("simple single lot generation", () => {
+test("simple single lot generation", () => {
 	const method = new ProvidedLotMatchingMethod([simpleLot]);
 	const lots = method.performMatching([]);
 
-	assertEquals(lots.length, 1);
-	assertEquals(lots[0].quantity, 1);
-	assertEquals(lots[0].acquired.relation.date, simpleLot.acquired.date);
-	assertEquals(lots[0].sold.relation.date, simpleLot.sold.date);
+	expect(lots.length).toEqual(1);
+	expect(lots[0].quantity).toEqual(1);
+	expect(lots[0].acquired.relation.date).toEqual(simpleLot.acquired.date);
+	expect(lots[0].sold.relation.date).toEqual(simpleLot.sold.date);
 });
 
-Deno.test("simple single lot and trade generation", () => {
+test("simple single lot and trade generation", () => {
 	const method = new ProvidedLotMatchingMethod([simpleLot]);
 	const lots = method.performMatching([]);
 	const trades = method.generateTradesFromLotsWithTracking(lots);
 
-	assertEquals(trades.length, 2);
-	assertEquals(trades[0].id, simpleLot.acquired.id);
-	assertEquals(trades[1].id, simpleLot.sold.id);
-	assertEquals(trades[0].quantity, simpleLot.quantity);
-	assertEquals(trades[1].quantity, -simpleLot.quantity);
+	expect(trades.length).toEqual(2);
+	expect(trades[0].id).toEqual(simpleLot.acquired.id);
+	expect(trades[1].id).toEqual(simpleLot.sold.id);
+	expect(trades[0].quantity).toEqual(simpleLot.quantity);
+	expect(trades[1].quantity).toEqual(-simpleLot.quantity);
 });
 
-Deno.test("under-utilized lot and trade generation", () => {
+test("under-utilized lot and trade generation", () => {
 	const method = new ProvidedLotMatchingMethod([underUtilizedLot]);
 	const lots = method.performMatching([]);
-	assertEquals(lots.length, 1);
+	expect(lots.length).toEqual(1);
 
 	const trades = method.generateTradesFromLotsWithTracking(lots);
-	assertEquals(trades.length, 2);
-	assertEquals(trades[0].id, underUtilizedLot.acquired.id);
-	assertEquals(trades[1].id, underUtilizedLot.sold.id);
-	assertEquals(trades[0].quantity, underUtilizedLot.quantity);
-	assertEquals(trades[1].quantity, -underUtilizedLot.quantity);
+	expect(trades.length).toEqual(2);
+	expect(trades[0].id).toEqual(underUtilizedLot.acquired.id);
+	expect(trades[1].id).toEqual(underUtilizedLot.sold.id);
+	expect(trades[0].quantity).toEqual(underUtilizedLot.quantity);
+	expect(trades[1].quantity).toEqual(-underUtilizedLot.quantity);
 });
 
-Deno.test("fully utilized trades from under-utilized lots", () => {
+test("fully utilized trades from under-utilized lots", () => {
 	const method = new ProvidedLotMatchingMethod([underUtilizedLot, underUtilizedLot]);
 	const lots = method.performMatching([]);
-	assertEquals(lots.length, 2);
+	expect(lots.length).toEqual(2);
 
 	const trades = method.generateTradesFromLotsWithTracking(lots);
-	assertEquals(trades.length, 2);
-	assertEquals(trades[0].id, underUtilizedLot.acquired.id);
-	assertEquals(trades[1].id, underUtilizedLot.sold.id);
-	assertEquals(trades[0].quantity, underUtilizedLot.acquired.exchangedMoney.underlyingQuantity);
-	assertEquals(trades[1].quantity, underUtilizedLot.sold.exchangedMoney.underlyingQuantity);
+	expect(trades.length).toEqual(2);
+	expect(trades[0].id).toEqual(underUtilizedLot.acquired.id);
+	expect(trades[1].id).toEqual(underUtilizedLot.sold.id);
+	expect(trades[0].quantity).toEqual(underUtilizedLot.acquired.exchangedMoney.underlyingQuantity);
+	expect(trades[1].quantity).toEqual(underUtilizedLot.sold.exchangedMoney.underlyingQuantity);
 });
