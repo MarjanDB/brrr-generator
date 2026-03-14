@@ -4,16 +4,24 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.mjs"
+    },
+    "./info/node": {
+      "types": "./dist/InfoProviders/Node/NodeInfoProvider.d.ts",
+      "default": "./dist/InfoProviders/Node/NodeInfoProvider.mjs"
+    }
   },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "tsdown"
   },
   "dependencies": {
     "csv-stringify": "^6.6.0",
-    "fast-xml-parser": "^5.4.1",
+    "fast-xml-parser": "^5.5.5",
     "inversify": "^7.11.0",
     "luxon": "^3.7.2",
     "yahoo-finance2": "^3.13.2",
@@ -21,8 +29,10 @@
   },
   "devDependencies": {
     "@types/luxon": "^3.7.1",
-    "@types/node": "^22.0.0",
-    "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+    "@types/node": "^25.5.0",
+    "tsdown": "^0.21.2",
+    "typescript": "^5.9.3",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.0"
   }
 }

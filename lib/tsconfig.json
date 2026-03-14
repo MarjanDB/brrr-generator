@@ -5,13 +5,14 @@
     "moduleResolution": "Bundler",
     "strict": true,
     "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
     "types": ["vitest/globals"],
     "baseUrl": ".",
     "paths": {
-      "@brrr/*": ["./*"]
+      "@brrr/*": ["./src/*"]
     }
   },
-  "include": ["./**/*.ts"]
+  "include": ["./src/**/*.ts"]
 }

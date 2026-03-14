@@ -13,10 +13,6 @@
 			"systemId": "src/TaxAuthorityProvider/TaxAuthorities/Slovenia/XmlSchemas/D_IFI_4.xsd"
 		}
 	],
-	"python.analysis.diagnosticSeverityOverrides": {
-		"reportIncompatibleVariableOverride": "information",
-		"reportPrivateUsage": "none"
-	},
 	"python.testing.pytestArgs": [
 		"src"
 	],
@@ -34,17 +30,11 @@
 		"--profile",
 		"black"
 	],
-
 	"[typescript]": {
-		"editor.defaultFormatter": "denoland.vscode-deno",
 		"editor.codeActionsOnSave": {
 			"source.organizeImports": "always"
 		}
 	},
 	"editor.formatOnSave": true,
-	"deno.enable": false,
-	"[json]": {
-		"editor.defaultFormatter": "denoland.vscode-deno"
-	},
 	"javascript.preferences.importModuleSpecifier": "non-relative"
 }

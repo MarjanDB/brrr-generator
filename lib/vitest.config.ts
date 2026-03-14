@@ -1,17 +1,15 @@
-import { defineConfig } from "vitest/config";
 import path from "path";
-import { fileURLToPath } from "url";
+import viteTsconfigPaths from "vite-tsconfig-paths";
+import { defineConfig } from "vitest/config";
 
-const __dirname = fileURLToPath(new URL(".", import.meta.url));
+const tsconfigPath = path.resolve(import.meta.dirname, "tsconfig.json");
 
 export default defineConfig({
-  resolve: {
-    alias: {
-      "@brrr": path.resolve(__dirname, "."),
-    },
-  },
+  plugins: [viteTsconfigPaths({ projects: [tsconfigPath] })],
   test: {
-    environment: "node",
-    globals: true,
-  },
+		environment: "node",
+    include: ["src/**/*.test.ts"],
+		globals: true,
+		watch: false,
+	},
 });

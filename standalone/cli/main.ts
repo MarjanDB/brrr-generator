@@ -12,7 +12,7 @@ import {
 	TaxPayerConfigSchema,
 	zDateTimeFromISOString,
 } from "@brrr/lib";
-import { NodeInfoProvider } from "@brrr/lib/InfoProviders/Node/NodeInfoProvider.ts";
+import { NodeInfoProvider } from "@brrr/lib/info/node";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { load as parseYaml } from "js-yaml";
