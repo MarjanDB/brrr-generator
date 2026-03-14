@@ -2,8 +2,6 @@
   "name": "brrr-tax-generator",
   "private": true,
   "scripts": {
-    "test": "pnpm --filter @brrr/lib test",
-    "typecheck": "pnpm --filter @brrr/lib typecheck",
     "cli": "pnpm --filter @brrr/cli start",
     "dev": "pnpm --filter @brrr/app dev"
   }
