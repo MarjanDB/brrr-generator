@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "cli": "pnpm --filter @brrr/cli start",
-    "dev": "pnpm --filter @brrr/app dev"
+    "dev": "pnpm --filter @brrr/app dev",
+    "docker:build": "docker build -t brrr-tax-generator ."
   }
 }

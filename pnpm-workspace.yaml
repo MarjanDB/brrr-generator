@@ -1,3 +1,5 @@
+hoist: true
+
 packages:
   - lib
   - standalone/cli
