@@ -1,7 +1,7 @@
-import path from "node:path";
+import path from "path";
 import { defineConfig } from "tsdown";
 
-const tsconfigPath = path.resolve(import.meta.dirname, "tsconfig.json");
+const tsconfigPath = path.resolve(import.meta.url, "tsconfig.json");
 
 export default defineConfig({
 	entry: "src/**/*.ts",
