@@ -1,3 +1,8 @@
+import { APP_CONFIG } from "./util/env.config";
+
+const config = APP_CONFIG.resolve();
+
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
 	compatibilityDate: "2025-07-15",
@@ -20,4 +25,13 @@ export default defineNuxtConfig({
 			},
 		],
 	},
+	modules: ["@posthog/nuxt"],
+
+	posthogConfig: {
+		host: "https://eu.i.posthog.com",
+		publicKey: config.POSTHOG__PUBLIC_KEY,
+		clientConfig: {
+			defaults: "2026-01-30"
+		}
+	}
 });
