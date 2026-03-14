@@ -1,0 +1,25 @@
+{
+  "name": "@brrr/app",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "typecheck": "nuxt typecheck",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@brrr/lib": "workspace:*",
+    "@posthog/nuxt": "^1.5.84",
+    "buffer": "^6.0.3",
+    "nuxt": "^4.4.2",
+    "vue": "^3.5.30",
+    "vue-router": "^5.0.3",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "vue-tsc": "^3.2.5"
+  }
+}
