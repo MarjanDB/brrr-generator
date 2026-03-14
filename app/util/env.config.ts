@@ -8,19 +8,14 @@ if(fs.existsSync(envFile)) {
 	loadEnvFile(envFile);
 }
 
-
-
 export const APP_CONFIG = {
 	Schema: z.object({
 		PORT: z.string().transform(Number).default(3000),
 		HOST: z.string().default("0.0.0.0"),
 
-		POSTHOG__ENABLED: z
-			.string()
-			.default("true")
-			.transform((value) => value === "true"),
+		NODE_ENV: z.enum(["development", "production"]).default("production"),
 
-		POSTHOG__PUBLIC_KEY: z.string().optional(),
+		NUXT_PUBLIC_POSTHOG_PUBLIC_KEY: z.string().optional(),
 	}),
 
 	resolve: () => {
