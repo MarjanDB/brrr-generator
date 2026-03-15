@@ -1,0 +1,60 @@
+name: Run Tests (node, lib)
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  vitest:
+    name: Run tests
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: lib/package.json
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: lib
+
+      - name: Run tests with coverage
+        run: pnpm test:coverage
+        working-directory: lib
+
+      - name: Report coverage
+        id: coverage
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          working-directory: lib
+          json-summary-path: coverage/coverage-summary.json
+          json-final-path: coverage/coverage-final.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update coverage badge JSON
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          total=$(node -e "const s = require('./lib/coverage/coverage-summary.json'); const t = s.total; const pct = (t.lines.pct + t.statements.pct + t.functions.pct + t.branches.pct) / 4; console.log(Math.round(pct) + '%')")
+          mkdir -p .github/badges
+          echo "{\"coverage\": \"$total\"}" > .github/badges/vitest-coverage.json
+
+      - name: Commit coverage badge JSON
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "ci: update vitest coverage badge"
+          file_pattern: .github/badges/vitest-coverage.json
+          branch: badges/vitest
+          create_branch: true
+          push_options: "--force"
