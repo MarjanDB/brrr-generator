@@ -1,0 +1,111 @@
+/* --- Raw Color Palette --- */
+/* These are fixed hex values — no theming logic here. */
+/* Light/dark theming is handled entirely in unocss.config.ts. */
+
+:root {
+	/* Primary — Vibrant Coral */
+	--primary-50: #fef2f2;
+	--primary-100: #fde8e8;
+	--primary-200: #fbcfcf;
+	--primary-300: #f7aaaa;
+	--primary-400: #f37f7f;
+	--primary-500: #f05d5e;
+	--primary-600: #e03a3b;
+	--primary-700: #bb2526;
+	--primary-800: #931e1f;
+	--primary-900: #6b1617;
+	--primary-950: #3d0b0b;
+
+	/* Secondary — Stormy Teal */
+	--secondary-50: #f0fafa;
+	--secondary-100: #d4f1f1;
+	--secondary-200: #a9e3e4;
+	--secondary-300: #6dcdce;
+	--secondary-400: #36afb0;
+	--secondary-500: #0f7173;
+	--secondary-600: #0c5c5d;
+	--secondary-700: #094748;
+	--secondary-800: #073334;
+	--secondary-900: #042020;
+	--secondary-950: #021414;
+
+	/* Accent — Platinum blue-gray */
+	--accent-50: #f8f9fa;
+	--accent-100: #f0f3f5;
+	--accent-200: #e7ecef;
+	--accent-300: #cdd5db;
+	--accent-400: #aebac2;
+	--accent-500: #8d9fa9;
+	--accent-600: #6d8290;
+	--accent-700: #516470;
+	--accent-800: #3a4a54;
+	--accent-900: #253239;
+	--accent-950: #131c21;
+
+	/* Neutral — platinum-tinted gray */
+	--neutral-0: #000000;
+	--neutral-50: #1a1e21;
+	--neutral-100: #2c3236;
+	--neutral-200: #44505a;
+	--neutral-300: #5e6e78;
+	--neutral-400: #7a8c96;
+	--neutral-500: #96a8b2;
+	--neutral-600: #b0c0c8;
+	--neutral-700: #c8d4da;
+	--neutral-800: #dde5e9;
+	--neutral-900: #eef1f3;
+	--neutral-950: #f4f6f7;
+	--neutral-1000: #ffffff;
+
+	/* Success */
+	--success-50: #f0fff4;
+	--success-100: #c6f6d5;
+	--success-200: #9ae6b4;
+	--success-300: #68d391;
+	--success-400: #48bb78;
+	--success-500: #28a745;
+	--success-600: #1e8035;
+	--success-700: #155724;
+	--success-800: #0d3b18;
+	--success-900: #072010;
+	--success-950: #031008;
+
+	/* Error */
+	--error-50: #fff5f5;
+	--error-100: #fed7d7;
+	--error-200: #feb2b2;
+	--error-300: #fc8181;
+	--error-400: #f56565;
+	--error-500: #dc3545;
+	--error-600: #b02535;
+	--error-700: #821828;
+	--error-800: #591018;
+	--error-900: #35080e;
+	--error-950: #1a0407;
+
+	/* Warning */
+	--warning-50: #fffff0;
+	--warning-100: #fefcbf;
+	--warning-200: #faf089;
+	--warning-300: #f6e05e;
+	--warning-400: #ecc94b;
+	--warning-500: #ffc107;
+	--warning-600: #d69e2e;
+	--warning-700: #b7791f;
+	--warning-800: #975a16;
+	--warning-900: #744210;
+	--warning-950: #3d2109;
+
+	/* Info */
+	--info-50: #ebf8ff;
+	--info-100: #bee3f8;
+	--info-200: #90cdf4;
+	--info-300: #63b3ed;
+	--info-400: #4299e1;
+	--info-500: #007bff;
+	--info-600: #2b6cb0;
+	--info-700: #2c5282;
+	--info-800: #1a365d;
+	--info-900: #0d2240;
+	--info-950: #061220;
+}

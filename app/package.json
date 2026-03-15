@@ -13,13 +13,19 @@
   "dependencies": {
     "@brrr/lib": "workspace:*",
     "@posthog/nuxt": "^1.5.84",
+    "@vueuse/core": "^14.2.1",
+    "@vueuse/nuxt": "14.2.1",
     "buffer": "^6.0.3",
+    "luxon": "^3.7.2",
     "nuxt": "^4.4.2",
     "vue": "^3.5.30",
     "vue-router": "^5.0.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/luxon": "^3.7.1",
+    "@unocss/nuxt": "^66.6.6",
+    "unocss": "^66.6.6",
     "vue-tsc": "^3.2.5"
   }
 }
