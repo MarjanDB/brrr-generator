@@ -38,8 +38,8 @@ jobs:
         uses: davelosert/vitest-coverage-report-action@v2
         with:
           working-directory: lib
-          json-summary-path: lib/coverage/coverage-summary.json
-          json-final-path: lib/coverage/coverage-final.json
+          json-summary-path: coverage/coverage-summary.json
+          json-final-path: coverage/coverage-final.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update coverage badge JSON
