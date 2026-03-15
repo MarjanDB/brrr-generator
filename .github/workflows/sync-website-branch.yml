@@ -1,0 +1,14 @@
+name: Sync website branch on release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Force push master to website
+        run: git push origin master:website --force
