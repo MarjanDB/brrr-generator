@@ -41,6 +41,7 @@ jobs:
         uses: zgosalvez/github-actions-report-lcov@v4
         with:
           coverage-files: lib/coverage/lcov.info
+          working-directory: lib
           github-token: ${{ secrets.GITHUB_TOKEN }}
           artifact-name: vitest-code-coverage-report
           update-comment: true
