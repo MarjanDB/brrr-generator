@@ -1,4 +1,4 @@
-name: Run Deno tests
+name: Run Library tests
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  deno-test:
+  vitest:
     name: Run tests
     runs-on: ubuntu-latest
     permissions:
@@ -20,37 +20,43 @@ jobs:
 
       - uses: actions/checkout@v6
 
-      - uses: denoland/setup-deno@v2
+      - uses: actions/setup-node@v4
         with:
-          deno-version: v2.x
+          node-version: lts/*
+
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: lib/package.json
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: lib
 
       - name: Run tests with coverage
-        run: deno test --allow-read --allow-env --coverage=coverage/
-
-      - name: Generate LCOV report
-        run: deno coverage coverage/ --lcov > coverage/lcov.info
+        run: pnpm test:coverage
+        working-directory: lib
 
       - name: Report coverage
         id: coverage
         uses: zgosalvez/github-actions-report-lcov@v4
         with:
-          coverage-files: coverage/lcov.info
+          coverage-files: lib/coverage/lcov.info
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          artifact-name: deno-code-coverage-report
+          artifact-name: vitest-code-coverage-report
           update-comment: true
 
       - name: Update coverage badge JSON
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |
           mkdir -p .github/badges
-          echo "{\"coverage\": \"${{ steps.coverage.outputs.total-coverage }}%\"}" > .github/badges/deno-coverage.json
+          echo "{\"coverage\": \"${{ steps.coverage.outputs.total-coverage }}%\"}" > .github/badges/vitest-coverage.json
 
       - name: Commit coverage badge JSON
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: "ci: update deno coverage badge"
-          file_pattern: .github/badges/deno-coverage.json
-          branch: badges/deno
+          commit_message: "ci: update vitest coverage badge"
+          file_pattern: .github/badges/vitest-coverage.json
+          branch: badges/vitest
           create_branch: true
-          push_options: '--force'
+          push_options: "--force"

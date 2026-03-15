@@ -7,9 +7,14 @@ const tsconfigPath = path.resolve(import.meta.dirname, "tsconfig.json");
 export default defineConfig({
   plugins: [viteTsconfigPaths({ projects: [tsconfigPath] })],
   test: {
-		environment: "node",
+    environment: "node",
     include: ["src/**/*.test.ts"],
-		globals: true,
-		watch: false,
-	},
+    globals: true,
+    watch: false,
+    coverage: {
+      provider: "v8",
+      reporter: ["lcovonly"],
+      reportsDirectory: "coverage",
+    },
+  },
 });
