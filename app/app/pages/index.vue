@@ -16,6 +16,8 @@ import {
 } from "@brrr/lib";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
+const { $toggleTheme, $theme } = useNuxtApp();
+
 // Form state
 const xmlFiles = ref<FileList | null>(null);
 const year = ref(new Date().getFullYear() - 1);
@@ -37,13 +39,19 @@ const xmlUrl = ref<string | null>(null);
 const error = ref<string | null>(null);
 const loading = ref(false);
 
-const REPORT_MAP: Record<"kdvp" | "div" | "ifi", SlovenianTaxAuthorityReportTypes> = {
+const REPORT_MAP: Record<
+  "kdvp" | "div" | "ifi",
+  SlovenianTaxAuthorityReportTypes
+> = {
   kdvp: SlovenianTaxAuthorityReportTypes.DOH_KDVP,
   div: SlovenianTaxAuthorityReportTypes.DOH_DIV,
   ifi: SlovenianTaxAuthorityReportTypes.D_IFI,
 };
 
-const OUTPUT_FILENAMES: Record<"kdvp" | "div" | "ifi", { xml: string; csv: string }> = {
+const OUTPUT_FILENAMES: Record<
+  "kdvp" | "div" | "ifi",
+  { xml: string; csv: string }
+> = {
   kdvp: { xml: "Doh_KDVP.xml", csv: "export-trades.csv" },
   div: { xml: "Doh_Div.xml", csv: "export-dividends.csv" },
   ifi: { xml: "D_Ifi.xml", csv: "export-derivatives.csv" },
@@ -149,92 +157,158 @@ onUnmounted(revokeUrls);
 </script>
 
 <template>
-  <div
-    style="
-      max-width: 800px;
-      margin: 2rem auto;
-      font-family: sans-serif;
-      padding: 0 1rem;
-    "
-  >
-    <h1>IB Tax Calculator</h1>
+  <div class="container-md py-8 flex flex-col gap-6">
+    <div class="flex items-center justify-between">
+      <h1 class="text-h1">IB Tax Calculator</h1>
+      <button @click="$toggleTheme()" class="btn-subtle">
+        {{ $theme === "dark" ? "Light mode" : "Dark mode" }}
+      </button>
+    </div>
 
-    <form @submit.prevent="generate">
-      <fieldset style="margin-bottom: 1rem">
-        <legend>IBKR Export</legend>
-        <label
-          >XML file(s):
+    <form @submit.prevent="generate" class="flex flex-col gap-4">
+      <div class="card card-padding-md flex flex-col gap-3">
+        <h2 class="text-h5">IBKR Export</h2>
+        <label class="flex flex-col gap-1">
+          <span class="text-body-sm">XML file(s)</span>
           <input
             type="file"
             accept=".xml"
             multiple
             @change="onFileChange"
             required
-        /></label>
-      </fieldset>
-
-      <fieldset style="margin-bottom: 1rem">
-        <legend>Report Settings</legend>
-        <label
-          >Year:
-          <input
-            type="number"
-            v-model.number="year"
-            min="2010"
-            max="2100"
-            required
-        /></label>
-        &nbsp;
-        <label>
-          Report type:
-          <select v-model="reportType">
-            <option value="kdvp">KDVP (Stocks)</option>
-            <option value="div">DIV (Dividends)</option>
-            <option value="ifi">IFI (Derivatives)</option>
-          </select>
+            class="input-md"
+          />
         </label>
-      </fieldset>
+      </div>
 
-      <fieldset style="margin-bottom: 1rem">
-        <legend>Tax Payer Info</legend>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem">
-          <label>Tax number: <input v-model="taxNumber" required /></label>
-          <label>Full name: <input v-model="fullName" required /></label>
-          <label>Address: <input v-model="address1" required /></label>
-          <label>City: <input v-model="city" required /></label>
-          <label>Post number: <input v-model="postNumber" required /></label>
-          <label>Post name: <input v-model="postName" required /></label>
-          <label>Country ID: <input v-model="countryId" required /></label>
-          <label>Country name: <input v-model="countryName" required /></label>
+      <div class="card card-padding-md flex flex-col gap-3">
+        <h2 class="text-h5">Report Settings</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="flex flex-col gap-1">
+            <span class="text-body-sm">Year</span>
+            <input
+              type="number"
+              v-model.number="year"
+              min="2010"
+              max="2100"
+              required
+              class="input-md"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-body-sm">Report type</span>
+            <select
+              v-model="reportType"
+              class="input-md"
+            >
+              <option value="kdvp">KDVP (Stocks)</option>
+              <option value="div">DIV (Dividends)</option>
+              <option value="ifi">IFI (Derivatives)</option>
+            </select>
+          </label>
         </div>
-      </fieldset>
+      </div>
 
-      <button type="submit" :disabled="loading">
+      <div class="card card-padding-md flex flex-col gap-3">
+        <h2 class="text-h5">Tax Payer Info</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="flex flex-col gap-1">
+            <span class="text-body-sm">Tax number</span>
+            <input
+              v-model="taxNumber"
+              required
+              class="input-md"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-body-sm">Full name</span>
+            <input
+              v-model="fullName"
+              required
+              class="input-md"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-body-sm">Address</span>
+            <input
+              v-model="address1"
+              required
+              class="input-md"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-body-sm">City</span>
+            <input
+              v-model="city"
+              required
+              class="input-md"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-body-sm">Post number</span>
+            <input
+              v-model="postNumber"
+              required
+              class="input-md"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-body-sm">Post name</span>
+            <input
+              v-model="postName"
+              required
+              class="input-md"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-body-sm">Country ID</span>
+            <input
+              v-model="countryId"
+              required
+              class="input-md"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-body-sm">Country name</span>
+            <input
+              v-model="countryName"
+              required
+              class="input-md"
+            />
+          </label>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        :disabled="loading"
+        class="btn-primary self-start"
+        :class="{ 'state-loading': loading }"
+      >
         {{ loading ? "Generating…" : "Generate Report" }}
       </button>
     </form>
 
-    <div v-if="error" style="color: red; margin-top: 1rem">{{ error }}</div>
+    <div v-if="error" class="alert-error">{{ error }}</div>
 
-    <div v-if="csvOutput" style="margin-top: 1.5rem">
-      <h2>Result</h2>
-      <div style="margin-bottom: 0.5rem">
-        <a :href="xmlUrl!" :download="OUTPUT_FILENAMES[reportType].xml"
+    <div v-if="csvOutput" class="flex flex-col gap-3">
+      <h2 class="text-h3">Result</h2>
+      <div class="flex gap-3">
+        <a
+          :href="xmlUrl!"
+          :download="OUTPUT_FILENAMES[reportType].xml"
+          class="btn-outline"
           >Download XML</a
         >
-        &nbsp;|&nbsp;
-        <a :href="csvUrl!" :download="OUTPUT_FILENAMES[reportType].csv"
+        <a
+          :href="csvUrl!"
+          :download="OUTPUT_FILENAMES[reportType].csv"
+          class="btn-outline"
           >Download CSV</a
         >
       </div>
       <pre
-        style="
-          background: #f4f4f4;
-          padding: 1rem;
-          overflow: auto;
-          max-height: 500px;
-          font-size: 0.8rem;
-        "
+        class="card card-padding-md text-body-sm overflow-auto max-h-120"
         >{{ csvOutput }}</pre
       >
     </div>
