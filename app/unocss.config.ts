@@ -15,7 +15,7 @@ export default defineConfig({
 	],
 	shortcuts: [
 		// Layout
-		["container-md", "max-w-screen-md mx-auto px-4"],
+		["app-container", "min-h-screen max-w-screen bg-neutral-900 dark:bg-neutral-100"],
 
 		// Typography
 		["text-h1", "text-4xl font-bold leading-tight text-neutral-50 dark:text-neutral-950"],

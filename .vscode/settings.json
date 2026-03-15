@@ -13,6 +13,7 @@
 			"systemId": "src/TaxAuthorityProvider/TaxAuthorities/Slovenia/XmlSchemas/D_IFI_4.xsd"
 		}
 	],
+	"editor.defaultFormatter": "biomejs.biome",
 	"[typescript]": {
 		"editor.codeActionsOnSave": {
 			"source.organizeImports": "always"
