@@ -16,6 +16,7 @@ export const APP_CONFIG = {
 		NODE_ENV: z.enum(["development", "production"]).default("production"),
 
 		NUXT_PUBLIC_POSTHOG_PUBLIC_KEY: z.string().optional(),
+		NUXT_PUBLIC_POSTHOG_HOST: z.string().optional(),
 	}),
 
 	resolve: () => {

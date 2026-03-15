@@ -29,7 +29,6 @@ export default defineNuxtConfig({
 	modules: ["@posthog/nuxt"],
 
 	posthogConfig: {
-		host: "https://eu.i.posthog.com",
 		clientConfig: {
 			defaults: "2026-01-30"
 		}

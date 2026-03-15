@@ -11,4 +11,4 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Force push master to website
-        run: git push origin master:website --force
+        run: git push origin HEAD:website --force
