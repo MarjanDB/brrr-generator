@@ -78,7 +78,9 @@ const grouping = new FinancialGrouping({
 });
 
 function matchingMethodFactory(g: FinancialGrouping) {
-	return new ProvidedLotMatchingMethod(g.stockTaxLots) as unknown as ReturnType<LotMatchingConfiguration["forStocks"]>;
+	return new ProvidedLotMatchingMethod(g.stockTaxLots) as unknown as ReturnType<
+		LotMatchingConfiguration["forStocks"]
+	>;
 }
 
 test("single stock lot matching", () => {

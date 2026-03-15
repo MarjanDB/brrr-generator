@@ -57,9 +57,11 @@ export class FifoLotMatchingMethod implements LotMatchingMethod {
 		const eventBacklog: Trade[] = [...sortedEvents].reverse();
 		const eventsWaitingForMatch: Trade[] = [];
 
+		// biome-ignore lint/style/noNonNullAssertion: eventBacklog is non-empty (sortedEvents guaranteed non-empty at this point)
 		eventsWaitingForMatch.push(eventBacklog.pop()!);
 
 		while (eventBacklog.length > 0) {
+			// biome-ignore lint/style/noNonNullAssertion: length > 0 guarantees pop() returns a value
 			const newCandidateEvent = eventBacklog.pop()!;
 
 			if (eventsWaitingForMatch.length === 0) {
@@ -70,12 +72,17 @@ export class FifoLotMatchingMethod implements LotMatchingMethod {
 			const earliestEventWaitingForMatch = eventsWaitingForMatch[eventsWaitingForMatch.length - 1];
 
 			// Same sign: queue it
-			if (Math.sign(earliestEventWaitingForMatch.quantity) === Math.sign(newCandidateEvent.quantity)) {
+			if (
+				Math.sign(earliestEventWaitingForMatch.quantity) === Math.sign(newCandidateEvent.quantity)
+			) {
 				eventsWaitingForMatch.unshift(newCandidateEvent);
 				continue;
 			}
 
-			const tracking = new TrackingTradeBuySellSide(newCandidateEvent, earliestEventWaitingForMatch);
+			const tracking = new TrackingTradeBuySellSide(
+				newCandidateEvent,
+				earliestEventWaitingForMatch,
+			);
 
 			this.tradeAssociationTracker.trackTrade(tracking.buySide);
 			this.tradeAssociationTracker.trackTrade(tracking.sellSide);
@@ -84,21 +91,29 @@ export class FifoLotMatchingMethod implements LotMatchingMethod {
 			let earliestEventWaitingForMatchQuantity: number;
 
 			if (tracking.buySide.id === tracking.candidateEvent.id) {
-				newCandidateEventQuantity = tracking.candidateEvent.quantity -
+				newCandidateEventQuantity =
+					tracking.candidateEvent.quantity -
 					this.tradeAssociationTracker.getAcquiredTradeTracker(tracking.candidateEvent).quantity;
-				earliestEventWaitingForMatchQuantity = tracking.earliestEventWaitingForMatch.quantity -
-					this.tradeAssociationTracker.getSoldTradeTracker(tracking.earliestEventWaitingForMatch).quantity;
+				earliestEventWaitingForMatchQuantity =
+					tracking.earliestEventWaitingForMatch.quantity -
+					this.tradeAssociationTracker.getSoldTradeTracker(tracking.earliestEventWaitingForMatch)
+						.quantity;
 			} else {
-				earliestEventWaitingForMatchQuantity = tracking.earliestEventWaitingForMatch.quantity -
-					this.tradeAssociationTracker.getAcquiredTradeTracker(tracking.earliestEventWaitingForMatch).quantity;
-				newCandidateEventQuantity = tracking.candidateEvent.quantity -
+				earliestEventWaitingForMatchQuantity =
+					tracking.earliestEventWaitingForMatch.quantity -
+					this.tradeAssociationTracker.getAcquiredTradeTracker(
+						tracking.earliestEventWaitingForMatch,
+					).quantity;
+				newCandidateEventQuantity =
+					tracking.candidateEvent.quantity -
 					this.tradeAssociationTracker.getSoldTradeTracker(tracking.candidateEvent).quantity;
 			}
 
 			// Consume the earliest event waiting for match
 			eventsWaitingForMatch.pop();
 
-			const doQuantitiesMatch = earliestEventWaitingForMatchQuantity + newCandidateEventQuantity === 0;
+			const doQuantitiesMatch =
+				earliestEventWaitingForMatchQuantity + newCandidateEventQuantity === 0;
 			if (doQuantitiesMatch) {
 				const quantityOfLot = Math.abs(newCandidateEventQuantity);
 				tracking.confirmConsumedQuantity(quantityOfLot, this.tradeAssociationTracker);
@@ -120,7 +135,10 @@ export class FifoLotMatchingMethod implements LotMatchingMethod {
 				this.tradeAssociationTracker,
 			);
 
-			if (Math.abs(quantityAvailableFromCandidate) > 0 && Math.abs(quantityAvailableFromEarliest) > 0) {
+			if (
+				Math.abs(quantityAvailableFromCandidate) > 0 &&
+				Math.abs(quantityAvailableFromEarliest) > 0
+			) {
 				const willConsumeQuantity = Math.min(
 					Math.abs(quantityAvailableFromCandidate),
 					Math.abs(quantityAvailableFromEarliest),
@@ -130,7 +148,10 @@ export class FifoLotMatchingMethod implements LotMatchingMethod {
 
 				createdLots.push({
 					quantity: willConsumeQuantity,
-					acquired: { date: earliestEventWaitingForMatch.date, relation: earliestEventWaitingForMatch },
+					acquired: {
+						date: earliestEventWaitingForMatch.date,
+						relation: earliestEventWaitingForMatch,
+					},
 					sold: { date: newCandidateEvent.date, relation: newCandidateEvent },
 				});
 

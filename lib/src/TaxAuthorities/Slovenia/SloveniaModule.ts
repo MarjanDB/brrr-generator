@@ -6,18 +6,24 @@ import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGenerat
 import type { Container } from "inversify";
 
 export function loadSloveniaModule(container: Container): void {
-	container.bind(KdvpReportGenerator).toResolvedValue(
-		(processor: FinancialEventsProcessor) => new KdvpReportGenerator(processor),
-		[FinancialEventsProcessor],
-	);
+	container
+		.bind(KdvpReportGenerator)
+		.toResolvedValue(
+			(processor: FinancialEventsProcessor) => new KdvpReportGenerator(processor),
+			[FinancialEventsProcessor],
+		);
 
-	container.bind(DivReportGenerator).toResolvedValue(
-		(infoProvider: InfoProvider) => new DivReportGenerator(infoProvider),
-		[InfoProvider.Token],
-	);
+	container
+		.bind(DivReportGenerator)
+		.toResolvedValue(
+			(infoProvider: InfoProvider) => new DivReportGenerator(infoProvider),
+			[InfoProvider.Token],
+		);
 
-	container.bind(IfiReportGenerator).toResolvedValue(
-		(processor: FinancialEventsProcessor) => new IfiReportGenerator(processor),
-		[FinancialEventsProcessor],
-	);
+	container
+		.bind(IfiReportGenerator)
+		.toResolvedValue(
+			(processor: FinancialEventsProcessor) => new IfiReportGenerator(processor),
+			[FinancialEventsProcessor],
+		);
 }

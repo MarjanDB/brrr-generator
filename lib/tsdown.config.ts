@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import { defineConfig } from "tsdown";
 
 const tsconfigPath = path.resolve(import.meta.url, "tsconfig.json");

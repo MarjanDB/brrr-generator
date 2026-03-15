@@ -1,3 +1,6 @@
+import fs from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
 	ApplyIdentifierRelationshipsService,
 	createContainer,
@@ -13,11 +16,8 @@ import {
 	zDateTimeFromISOString,
 } from "@brrr/lib";
 import { NodeInfoProvider } from "@brrr/lib/info/node";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-import { load as parseYaml } from "js-yaml";
-import fs from "fs/promises";
 import { Command } from "commander";
+import { load as parseYaml } from "js-yaml";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, "..", "..");
@@ -50,7 +50,7 @@ async function main() {
 	const opts = program.opts<{ year: string; report: string }>();
 
 	const year = parseInt(opts.year, 10);
-	if (isNaN(year)) {
+	if (Number.isNaN(year)) {
 		console.error(`Invalid year: ${opts.year}`);
 		process.exit(1);
 	}
@@ -112,7 +112,11 @@ async function main() {
 	await fs.mkdir(EXPORTS_DIR, { recursive: true });
 
 	for (const reportType of reportTypes) {
-		const files = (OUTPUT_FILES as Partial<Record<SlovenianTaxAuthorityReportTypes, { xml: string; csv: string }>>)[reportType];
+		const files = (
+			OUTPUT_FILES as Partial<
+				Record<SlovenianTaxAuthorityReportTypes, { xml: string; csv: string }>
+			>
+		)[reportType];
 		if (!files) {
 			console.error(`No output file mapping for report type: ${reportType}`);
 			process.exit(1);

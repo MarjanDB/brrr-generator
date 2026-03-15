@@ -27,7 +27,9 @@ export class IdentifierRelationship {
 		this.effectiveDate = args.effectiveDate;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof IdentifierRelationship>[0]>): IdentifierRelationship {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof IdentifierRelationship>[0]>,
+	): IdentifierRelationship {
 		return new IdentifierRelationship({
 			fromIdentifier: this.fromIdentifier,
 			toIdentifier: this.toIdentifier,
@@ -46,7 +48,9 @@ export class IdentifierRelationshipSplit {
 	public readonly quantityBefore: number;
 	public readonly quantityAfter: number;
 
-	constructor(args: IdentifierRelationshipArgs & { quantityBefore: number; quantityAfter: number }) {
+	constructor(
+		args: IdentifierRelationshipArgs & { quantityBefore: number; quantityAfter: number },
+	) {
 		this.fromIdentifier = args.fromIdentifier;
 		this.toIdentifier = args.toIdentifier;
 		this.changeType = args.changeType;
@@ -55,7 +59,9 @@ export class IdentifierRelationshipSplit {
 		this.quantityAfter = args.quantityAfter;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof IdentifierRelationshipSplit>[0]>): IdentifierRelationshipSplit {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof IdentifierRelationshipSplit>[0]>,
+	): IdentifierRelationshipSplit {
 		return new IdentifierRelationshipSplit({
 			fromIdentifier: this.fromIdentifier,
 			toIdentifier: this.toIdentifier,

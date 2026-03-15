@@ -1,0 +1,31 @@
+{
+	"$schema": "node_modules/@biomejs/biome/configuration_schema.json",
+	"files": {
+		"includes": [
+			"**",
+			"!**/dist/**/*",
+			"!**/node_modules/**/*",
+			"!**/coverage/**/*",
+			"!**/.nuxt",
+			"!**/.output"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"lineWidth": 100
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	}
+}

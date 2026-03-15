@@ -139,8 +139,8 @@ export enum CashTransactionType {
 // Shared primitives
 // ---------------------------------------------------------------------------
 
-const zStrNullable = z.string().transform((s) => s === "" ? null : s);
-const zNumNullable = z.string().transform((s) => s === "" ? null : parseFloat(s));
+const zStrNullable = z.string().transform((s) => (s === "" ? null : s));
+const zNumNullable = z.string().transform((s) => (s === "" ? null : parseFloat(s)));
 
 const _DATE_FORMATS = [
 	"yyyy-MM-dd HH:mm:ss ZZ",
@@ -182,7 +182,7 @@ const zNotes = z.string().transform((s): Codes[] => {
 function remap(raw: unknown, aliases: Record<string, string>): unknown {
 	if (typeof raw !== "object" || raw === null) return raw;
 
-	const result: Record<string, unknown> = { ...raw as Record<string, unknown> };
+	const result: Record<string, unknown> = { ...(raw as Record<string, unknown>) };
 	for (const [xmlKey, domainKey] of Object.entries(aliases)) {
 		if (xmlKey in result) {
 			result[domainKey] = result[xmlKey];
@@ -471,7 +471,7 @@ export const CorporateAction = {
 		z.object({
 			clientAccountID: z.string(),
 			accountAlias: zStrNullable,
-			model: z.string().transform((s) => s === "" ? null : s as Model),
+			model: z.string().transform((s) => (s === "" ? null : (s as Model))),
 			currency: z.string(),
 			fxRateToBase: z.coerce.number(),
 			assetClass: z.enum(AssetClass),
@@ -492,7 +492,7 @@ export const CorporateAction = {
 			multiplier: z.coerce.number(),
 			strike: zNumNullable,
 			expiry: zDateTimeNullable,
-			putOrCall: z.string().transform((s) => s === "" ? null : s as PutOrCall),
+			putOrCall: z.string().transform((s) => (s === "" ? null : (s as PutOrCall))),
 			principalAdjustFactor: zNumNullable,
 			reportDate: zDateTime,
 			dateTime: zDateTime,
@@ -563,7 +563,7 @@ export type TransactionCash = z.output<typeof TransactionCash.Schema>;
 
 function toArray<T extends z.ZodTypeAny>(schema: T) {
 	return z.preprocess(
-		(v) => v === undefined || v === null ? [] : Array.isArray(v) ? v : [v],
+		(v) => (v === undefined || v === null ? [] : Array.isArray(v) ? v : [v]),
 		z.array(schema),
 	);
 }
@@ -575,25 +575,34 @@ function emptyIfNotObject(v: unknown): unknown {
 }
 
 const FlexStatementSchema = z.object({
-	Trades: z.preprocess(
-		emptyIfNotObject,
-		z.object({
-			Trade: toArray(RawRecord),
-			Lot: toArray(RawRecord),
-		}),
-	).optional().transform((v) => v ?? { Trade: [], Lot: [] }),
-	CashTransactions: z.preprocess(
-		emptyIfNotObject,
-		z.object({
-			CashTransaction: toArray(RawRecord),
-		}),
-	).optional().transform((v) => v ?? { CashTransaction: [] }),
-	CorporateActions: z.preprocess(
-		emptyIfNotObject,
-		z.object({
-			CorporateAction: toArray(RawRecord),
-		}),
-	).optional().transform((v) => v ?? { CorporateAction: [] }),
+	Trades: z
+		.preprocess(
+			emptyIfNotObject,
+			z.object({
+				Trade: toArray(RawRecord),
+				Lot: toArray(RawRecord),
+			}),
+		)
+		.optional()
+		.transform((v) => v ?? { Trade: [], Lot: [] }),
+	CashTransactions: z
+		.preprocess(
+			emptyIfNotObject,
+			z.object({
+				CashTransaction: toArray(RawRecord),
+			}),
+		)
+		.optional()
+		.transform((v) => v ?? { CashTransaction: [] }),
+	CorporateActions: z
+		.preprocess(
+			emptyIfNotObject,
+			z.object({
+				CorporateAction: toArray(RawRecord),
+			}),
+		)
+		.optional()
+		.transform((v) => v ?? { CorporateAction: [] }),
 });
 
 export type FlexStatement = z.output<typeof FlexStatementSchema>;

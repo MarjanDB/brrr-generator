@@ -1,11 +1,17 @@
 import type { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
 import type { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship";
-import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import type {
+	TaxAuthorityConfiguration,
+	TaxPayerInfo,
+} from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";
 import type { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator";
 import type { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
-import { EDavkiDocumentWorkflowType, SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
+import {
+	EDavkiDocumentWorkflowType,
+	SlovenianTaxAuthorityReportTypes,
+} from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import type {
 	EDavkiDividendReportLine,
 	EDavkiGenericDerivativeReportItem,
@@ -14,9 +20,14 @@ import type {
 import type { ITaxAuthorityProvider } from "@brrr/TaxAuthorities/TaxAuthorityProvider";
 import { DateTime } from "luxon";
 
-type SlovenianReportItem = EDavkiGenericTradeReportItem | EDavkiDividendReportLine | EDavkiGenericDerivativeReportItem;
+type SlovenianReportItem =
+	| EDavkiGenericTradeReportItem
+	| EDavkiDividendReportLine
+	| EDavkiGenericDerivativeReportItem;
 
-export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider<SlovenianTaxAuthorityReportTypes, SlovenianReportItem> {
+export class SlovenianTaxAuthorityProvider
+	implements ITaxAuthorityProvider<SlovenianTaxAuthorityReportTypes, SlovenianReportItem>
+{
 	constructor(
 		private readonly taxPayerInfo: TaxPayerInfo,
 		private readonly reportConfig: TaxAuthorityConfiguration,

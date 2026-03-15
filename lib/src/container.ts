@@ -7,7 +7,10 @@ import { Container } from "inversify";
 export function createContainer(infoProvider: InfoProvider): Container {
 	const container = new Container();
 
-	container.bind<InfoProvider>(InfoProvider.Token).toResolvedValue(() => infoProvider).inSingletonScope();
+	container
+		.bind<InfoProvider>(InfoProvider.Token)
+		.toResolvedValue(() => infoProvider)
+		.inSingletonScope();
 
 	loadCoreModule(container);
 	loadBrokeragesModule(container);

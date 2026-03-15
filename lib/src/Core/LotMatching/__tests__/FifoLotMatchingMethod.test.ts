@@ -3,7 +3,7 @@ import type { Trade } from "@brrr/Core/LotMatching/Trade";
 import { DateTime } from "luxon";
 
 function makeDate(iso: string) {
-	return DateTime.fromISO(iso)!;
+	return DateTime.fromISO(iso);
 }
 
 const simpleCaseNoProfit = {
@@ -145,7 +145,11 @@ test("complex overlapping events", () => {
 
 test("complex partial buys", () => {
 	const method = new FifoLotMatchingMethod();
-	const events = [complexCasePartialBuys.Buy1, complexCasePartialBuys.Buy2, complexCasePartialBuys.Sell];
+	const events = [
+		complexCasePartialBuys.Buy1,
+		complexCasePartialBuys.Buy2,
+		complexCasePartialBuys.Sell,
+	];
 	const lots = method.performMatching(events);
 
 	expect(lots.length).toEqual(2);
@@ -161,7 +165,11 @@ test("complex partial buys", () => {
 
 test("complex partial sells", () => {
 	const method = new FifoLotMatchingMethod();
-	const events = [complexCasePartialSells.Buy, complexCasePartialSells.Sell1, complexCasePartialSells.Sell2];
+	const events = [
+		complexCasePartialSells.Buy,
+		complexCasePartialSells.Sell1,
+		complexCasePartialSells.Sell2,
+	];
 	const lots = method.performMatching(events);
 
 	expect(lots.length).toEqual(2);

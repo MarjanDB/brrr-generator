@@ -58,9 +58,9 @@ export class TradeAssociationTracker {
 
 		if (tracker.quantity + quantity > Math.abs(event.quantity)) {
 			throw new Error(
-				`Adding tracking quantity (${quantity}) to event (${event.id}) exceeds total quantity (${tracker.quantity + quantity} / ${
-					Math.abs(event.quantity)
-				}) of the event`,
+				`Adding tracking quantity (${quantity}) to event (${event.id}) exceeds total quantity (${tracker.quantity + quantity} / ${Math.abs(
+					event.quantity,
+				)}) of the event`,
 			);
 		}
 

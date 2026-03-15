@@ -1,7 +1,7 @@
-import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract";
-import { BuyOrSell, CashTransactionType } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
 import fs from "node:fs";
 import path from "node:path";
+import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract";
+import { BuyOrSell, CashTransactionType } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
 
 const dir = new URL(".", import.meta.url).pathname;
 const casesDir = path.join(dir, "Cases");
@@ -131,7 +131,9 @@ test("cash transactions dividends: contains dividend and withholding tax", () =>
 });
 
 test("cash transactions payment in lieu: returns 2 transactions", () => {
-	const segmented = service.extractFromXML(readXml("SimpleCashTransactionOfPaymentInLieuOfDividends.xml"));
+	const segmented = service.extractFromXML(
+		readXml("SimpleCashTransactionOfPaymentInLieuOfDividends.xml"),
+	);
 	expect(segmented.cashTransactions.length).toEqual(2);
 });
 
@@ -143,10 +145,14 @@ test("cash transactions payment in lieu: merging deduplicates", () => {
 });
 
 test("cash transactions payment in lieu: contains payment and withholding", () => {
-	const segmented = service.extractFromXML(readXml("SimpleCashTransactionOfPaymentInLieuOfDividends.xml"));
+	const segmented = service.extractFromXML(
+		readXml("SimpleCashTransactionOfPaymentInLieuOfDividends.xml"),
+	);
 	expect(segmented.cashTransactions[0].transactionID).toEqual("814208300");
 	expect(segmented.cashTransactions[0].isin).toEqual("US5801351017");
-	expect(segmented.cashTransactions[0].type).toEqual(CashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS);
+	expect(segmented.cashTransactions[0].type).toEqual(
+		CashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS,
+	);
 
 	expect(segmented.cashTransactions[1].transactionID).toEqual("814208301");
 	expect(segmented.cashTransactions[1].type).toEqual(CashTransactionType.WITHHOLDING_TAX);

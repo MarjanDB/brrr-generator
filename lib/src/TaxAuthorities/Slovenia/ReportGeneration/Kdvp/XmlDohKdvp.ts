@@ -1,4 +1,7 @@
-import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import type {
+	TaxAuthorityConfiguration,
+	TaxPayerInfo,
+} from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type { EDavkiDocumentWorkflowType } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import {
 	type EDavkiGenericTradeReportItem,
@@ -17,49 +20,50 @@ function buildXmlTree(
 	const edp = "http://edavki.durs.si/Documents/Schemas/EDP-Common-1.xsd";
 
 	const kdvpItemNodes = kdvpItems.map((kdvpItem) => {
-		const securitiesNodes = kdvpItem.inventoryListType === EDavkiTradeSecurityType.SECURITY
-			? kdvpItem.items.map((secEntry) => {
-				const rowNodes = secEntry.events.map((entryLine, id) => {
-					if (entryLine instanceof EDavkiTradeReportSecurityLineGenericEventBought) {
-						const purchaseFields: Record<string, string> = {
-							F1: entryLine.boughtOn.toFormat("yyyy-MM-dd"),
-							F2: entryLine.gainType,
-							F3: String(round(entryLine.quantity, 5)),
-							F4: String(round(entryLine.pricePerUnit, 5)),
-							F5: String(round(entryLine.inheritanceAndGiftTaxPaid ?? 0, 5)),
-						};
-						if (entryLine.baseTaxReduction !== null) {
-							purchaseFields["F11"] = String(round(entryLine.baseTaxReduction, 5));
-						}
-						return { ID: String(id), Purchase: purchaseFields };
-					} else {
-						return {
-							ID: String(id),
-							Sale: {
-								F6: entryLine.soldOn.toFormat("yyyy-MM-dd"),
-								F7: String(round(-entryLine.quantity, 5)),
-								F9: String(round(Math.abs(entryLine.pricePerUnit), 5)),
-								F10: String(entryLine.satisfiesTaxBasisReduction).toLowerCase(),
-							},
-						};
-					}
-				});
+		const securitiesNodes =
+			kdvpItem.inventoryListType === EDavkiTradeSecurityType.SECURITY
+				? kdvpItem.items.map((secEntry) => {
+						const rowNodes = secEntry.events.map((entryLine, id) => {
+							if (entryLine instanceof EDavkiTradeReportSecurityLineGenericEventBought) {
+								const purchaseFields: Record<string, string> = {
+									F1: entryLine.boughtOn.toFormat("yyyy-MM-dd"),
+									F2: entryLine.gainType,
+									F3: String(round(entryLine.quantity, 5)),
+									F4: String(round(entryLine.pricePerUnit, 5)),
+									F5: String(round(entryLine.inheritanceAndGiftTaxPaid ?? 0, 5)),
+								};
+								if (entryLine.baseTaxReduction !== null) {
+									purchaseFields.F11 = String(round(entryLine.baseTaxReduction, 5));
+								}
+								return { ID: String(id), Purchase: purchaseFields };
+							} else {
+								return {
+									ID: String(id),
+									Sale: {
+										F6: entryLine.soldOn.toFormat("yyyy-MM-dd"),
+										F7: String(round(-entryLine.quantity, 5)),
+										F9: String(round(Math.abs(entryLine.pricePerUnit), 5)),
+										F10: String(entryLine.satisfiesTaxBasisReduction).toLowerCase(),
+									},
+								};
+							}
+						});
 
-				const securitiesObj: Record<string, unknown> = {
-					ISIN: secEntry.isin,
-					Code: secEntry.code ?? "",
-					IsFond: String(secEntry.isFund).toLowerCase(),
-					Row: rowNodes,
-				};
-				if (secEntry.resolution !== null) {
-					securitiesObj["Resolution"] = secEntry.resolution;
-				}
-				if (secEntry.resolutionDate !== null) {
-					securitiesObj["ResolutionDate"] = secEntry.resolutionDate!.toFormat("yyyy-MM-dd");
-				}
-				return securitiesObj;
-			})
-			: [];
+						const securitiesObj: Record<string, unknown> = {
+							ISIN: secEntry.isin,
+							Code: secEntry.code ?? "",
+							IsFond: String(secEntry.isFund).toLowerCase(),
+							Row: rowNodes,
+						};
+						if (secEntry.resolution !== null) {
+							securitiesObj.Resolution = secEntry.resolution;
+						}
+						if (secEntry.resolutionDate !== null) {
+							securitiesObj.ResolutionDate = secEntry.resolutionDate?.toFormat("yyyy-MM-dd");
+						}
+						return securitiesObj;
+					})
+				: [];
 
 		const kdvpItemObj: Record<string, unknown> = {
 			InventoryListType: kdvpItem.inventoryListType,
@@ -69,16 +73,16 @@ function buildXmlTree(
 			TaxDecreaseConformance: String(kdvpItem.taxDecreaseConformance ?? false).toLowerCase(),
 		};
 		if (kdvpItem.foreignTax !== null) {
-			kdvpItemObj["ForeignTax"] = String(round(kdvpItem.foreignTax, 5));
+			kdvpItemObj.ForeignTax = String(round(kdvpItem.foreignTax, 5));
 		}
 		if (kdvpItem.ftCountryId !== null) {
-			kdvpItemObj["FTCountryID"] = kdvpItem.ftCountryId;
+			kdvpItemObj.FTCountryID = kdvpItem.ftCountryId;
 		}
 		if (kdvpItem.ftCountryName !== null) {
-			kdvpItemObj["FTCountryName"] = kdvpItem.ftCountryName;
+			kdvpItemObj.FTCountryName = kdvpItem.ftCountryName;
 		}
 		if (securitiesNodes.length > 0) {
-			kdvpItemObj["Securities"] = securitiesNodes;
+			kdvpItemObj.Securities = securitiesNodes;
 		}
 		return kdvpItemObj;
 	});
@@ -129,7 +133,7 @@ function buildXmlTree(
 }
 
 function round(value: number, decimals: number): number {
-	const factor = Math.pow(10, decimals);
+	const factor = 10 ** decimals;
 	return Math.round(value * factor) / factor;
 }
 

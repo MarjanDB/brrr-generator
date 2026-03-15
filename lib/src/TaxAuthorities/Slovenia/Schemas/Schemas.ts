@@ -161,7 +161,10 @@ export class EDavkiTradeReportSecurityLineEvent {
 	public readonly isFund: boolean;
 	public readonly resolution: string | null;
 	public readonly resolutionDate: DateTime | null;
-	public readonly events: (EDavkiTradeReportSecurityLineGenericEventBought | EDavkiTradeReportSecurityLineGenericEventSold)[];
+	public readonly events: (
+		| EDavkiTradeReportSecurityLineGenericEventBought
+		| EDavkiTradeReportSecurityLineGenericEventSold
+	)[];
 
 	constructor(args: {
 		isin: string;
@@ -170,7 +173,10 @@ export class EDavkiTradeReportSecurityLineEvent {
 		isFund: boolean;
 		resolution: string | null;
 		resolutionDate: DateTime | null;
-		events: (EDavkiTradeReportSecurityLineGenericEventBought | EDavkiTradeReportSecurityLineGenericEventSold)[];
+		events: (
+			| EDavkiTradeReportSecurityLineGenericEventBought
+			| EDavkiTradeReportSecurityLineGenericEventSold
+		)[];
 	}) {
 		this.isin = args.isin;
 		this.code = args.code;

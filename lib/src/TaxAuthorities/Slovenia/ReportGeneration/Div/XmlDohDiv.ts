@@ -1,4 +1,7 @@
-import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import type {
+	TaxAuthorityConfiguration,
+	TaxPayerInfo,
+} from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type { EDavkiDividendReportLine } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
 import { XMLBuilder } from "fast-xml-parser";
 

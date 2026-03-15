@@ -23,11 +23,15 @@ export class IdentifierRelationshipResolution {
 
 		const merged: StagingIdentifierRelationshipAny[] = [];
 		for (const [, rows] of grouped) {
-			const fromPartial = rows.find((r) => r.fromIdentifier !== null && r.toIdentifier === null) ?? null;
-			const toPartial = rows.find((r) => r.toIdentifier !== null && r.fromIdentifier === null) ?? null;
-			if (!fromPartial || !toPartial || !fromPartial.fromIdentifier || !toPartial.toIdentifier) continue;
+			const fromPartial =
+				rows.find((r) => r.fromIdentifier !== null && r.toIdentifier === null) ?? null;
+			const toPartial =
+				rows.find((r) => r.toIdentifier !== null && r.fromIdentifier === null) ?? null;
+			if (!fromPartial || !toPartial || !fromPartial.fromIdentifier || !toPartial.toIdentifier)
+				continue;
 
-			const changeType = fromPartial.changeType ?? toPartial.changeType ?? StagingIdentifierChangeType.RENAME;
+			const changeType =
+				fromPartial.changeType ?? toPartial.changeType ?? StagingIdentifierChangeType.RENAME;
 			const effectiveDate = fromPartial.effectiveDate ?? toPartial.effectiveDate ?? null;
 
 			// Check if both are PartialWithQuantity (has required quantity field)
@@ -71,10 +75,7 @@ export class IdentifierRelationshipResolution {
 		const merged = this.mergePartialIdentifierRelationships(
 			events.identifierRelationships.partialRelationships,
 		);
-		const allRelationships = [
-			...events.identifierRelationships.relationships,
-			...merged,
-		];
+		const allRelationships = [...events.identifierRelationships.relationships, ...merged];
 		return {
 			groupings: events.groupings,
 			identifierRelationships: {

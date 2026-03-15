@@ -1,7 +1,10 @@
 import type { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
 import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import { UnderlyingDerivativeGrouping, UnderlyingGroupingWithTradesOfInterest } from "@brrr/Core/Schemas/Grouping";
+import {
+	UnderlyingDerivativeGrouping,
+	UnderlyingGroupingWithTradesOfInterest,
+} from "@brrr/Core/Schemas/Grouping";
 import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration";
 
 export class FinancialEventsProcessor {
@@ -13,11 +16,19 @@ export class FinancialEventsProcessor {
 
 	// Note: since the LotMatcher is stateful, a new LotMatchingMethod instance must be created
 	// for each financial grouping (done via lotMatchingConfiguration.forStocks/forDerivatives).
-	process(input: FinancialGrouping, lotMatchingConfiguration: LotMatchingConfiguration): UnderlyingGroupingWithTradesOfInterest {
+	process(
+		input: FinancialGrouping,
+		lotMatchingConfiguration: LotMatchingConfiguration,
+	): UnderlyingGroupingWithTradesOfInterest {
 		const lotMatcher = this.lotMatcher;
 
-		const lotMatchingMethodInstance = lotMatchingConfiguration.forStocks(input) as unknown as LotMatchingMethod;
-		const stockTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(lotMatchingMethodInstance, input.stockTrades);
+		const lotMatchingMethodInstance = lotMatchingConfiguration.forStocks(
+			input,
+		) as unknown as LotMatchingMethod;
+		const stockTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(
+			lotMatchingMethodInstance,
+			input.stockTrades,
+		);
 
 		const stockTradesOfInterestFiltered = stockTradesOfInterest.getTradesOfLotsClosedInPeriod(
 			lotMatchingConfiguration.fromDate,
@@ -26,16 +37,19 @@ export class FinancialEventsProcessor {
 
 		const derivativeGroupingsOfInterest: UnderlyingDerivativeGrouping[] = [];
 		for (const derivativeGrouping of input.derivativeGroupings) {
-			const derivMethodInstance = lotMatchingConfiguration.forDerivatives(input) as unknown as LotMatchingMethod;
+			const derivMethodInstance = lotMatchingConfiguration.forDerivatives(
+				input,
+			) as unknown as LotMatchingMethod;
 			const derivativeTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(
 				derivMethodInstance,
 				derivativeGrouping.derivativeTrades,
 			);
 
-			const derivativeTradesOfInterestFiltered = derivativeTradesOfInterest.getTradesOfLotsClosedInPeriod(
-				lotMatchingConfiguration.fromDate,
-				lotMatchingConfiguration.toDate,
-			);
+			const derivativeTradesOfInterestFiltered =
+				derivativeTradesOfInterest.getTradesOfLotsClosedInPeriod(
+					lotMatchingConfiguration.fromDate,
+					lotMatchingConfiguration.toDate,
+				);
 
 			derivativeGroupingsOfInterest.push(
 				new UnderlyingDerivativeGrouping({

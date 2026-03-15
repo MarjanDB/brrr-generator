@@ -5,7 +5,10 @@ import { GenericCategory, GenericTradeReportItemGainType } from "@brrr/Core/Sche
 import { TradeEventStockAcquired, type TradeEventStockSold } from "@brrr/Core/Schemas/Events";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration";
-import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import type {
+	TaxAuthorityConfiguration,
+	TaxPayerInfo,
+} from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/CsvDohKdvp";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/XmlDohKdvp";
@@ -24,41 +27,54 @@ const GAIN_MAPPINGS: Record<string, EDavkiTradeReportGainType> = {
 	[GenericTradeReportItemGainType.CAPITAL_INVESTMENT]: EDavkiTradeReportGainType.CAPITAL_INVESTMENT,
 	[GenericTradeReportItemGainType.CAPITAL_RAISE]: EDavkiTradeReportGainType.CAPITAL_RAISE,
 	[GenericTradeReportItemGainType.CAPITAL_ASSET]: EDavkiTradeReportGainType.CAPITAL_ASSET_RAISE,
-	[GenericTradeReportItemGainType.CAPITALIZATION_CHANGE]: EDavkiTradeReportGainType.CAPITALIZATION_CHANGE,
+	[GenericTradeReportItemGainType.CAPITALIZATION_CHANGE]:
+		EDavkiTradeReportGainType.CAPITALIZATION_CHANGE,
 	[GenericTradeReportItemGainType.INHERITENCE]: EDavkiTradeReportGainType.INHERITENCE,
 	[GenericTradeReportItemGainType.GIFT]: EDavkiTradeReportGainType.GIFT,
 	[GenericTradeReportItemGainType.OTHER]: EDavkiTradeReportGainType.OTHER,
 	[GenericTradeReportItemGainType.RIGHT_TO_NEWLY_ISSUED_STOCK]: EDavkiTradeReportGainType.OTHER,
 };
 
-function convertStockBuy(line: TradeEventStockAcquired): EDavkiTradeReportSecurityLineGenericEventBought {
+function convertStockBuy(
+	line: TradeEventStockAcquired,
+): EDavkiTradeReportSecurityLineGenericEventBought {
 	return new EDavkiTradeReportSecurityLineGenericEventBought({
 		boughtOn: line.date,
 		gainType: GAIN_MAPPINGS[line.acquiredReason] ?? EDavkiTradeReportGainType.OTHER,
 		quantity: line.exchangedMoney.underlyingQuantity,
 		pricePerUnit: line.exchangedMoney.underlyingTradePrice,
-		pricePerUnitInOriginalCurrency: line.exchangedMoney.underlyingTradePrice * (1 / line.exchangedMoney.fxRateToBase),
+		pricePerUnitInOriginalCurrency:
+			line.exchangedMoney.underlyingTradePrice * (1 / line.exchangedMoney.fxRateToBase),
 		totalPrice: line.exchangedMoney.underlyingQuantity * line.exchangedMoney.underlyingTradePrice,
-		totalPriceInOriginalCurrency: line.exchangedMoney.underlyingQuantity * line.exchangedMoney.underlyingTradePrice *
+		totalPriceInOriginalCurrency:
+			line.exchangedMoney.underlyingQuantity *
+			line.exchangedMoney.underlyingTradePrice *
 			(1 / line.exchangedMoney.fxRateToBase),
 		commissions: line.exchangedMoney.comissionTotal,
-		commissionsInOriginalCurrency: line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+		commissionsInOriginalCurrency:
+			line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
 		inheritanceAndGiftTaxPaid: null,
 		baseTaxReduction: null,
 	});
 }
 
-function convertStockSell(line: TradeEventStockSold): EDavkiTradeReportSecurityLineGenericEventSold {
+function convertStockSell(
+	line: TradeEventStockSold,
+): EDavkiTradeReportSecurityLineGenericEventSold {
 	return new EDavkiTradeReportSecurityLineGenericEventSold({
 		soldOn: line.date,
 		quantity: line.exchangedMoney.underlyingQuantity,
 		pricePerUnit: line.exchangedMoney.underlyingTradePrice,
-		pricePerUnitInOriginalCurrency: line.exchangedMoney.underlyingTradePrice * (1 / line.exchangedMoney.fxRateToBase),
+		pricePerUnitInOriginalCurrency:
+			line.exchangedMoney.underlyingTradePrice * (1 / line.exchangedMoney.fxRateToBase),
 		totalPrice: line.exchangedMoney.underlyingQuantity * line.exchangedMoney.underlyingTradePrice,
-		totalPriceInOriginalCurrency: line.exchangedMoney.underlyingQuantity * line.exchangedMoney.underlyingTradePrice *
+		totalPriceInOriginalCurrency:
+			line.exchangedMoney.underlyingQuantity *
+			line.exchangedMoney.underlyingTradePrice *
 			(1 / line.exchangedMoney.fxRateToBase),
 		commissions: line.exchangedMoney.comissionTotal,
-		commissionsInOriginalCurrency: line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+		commissionsInOriginalCurrency:
+			line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
 		satisfiesTaxBasisReduction: false, // TODO: Wash sale handling
 	});
 }
@@ -66,7 +82,10 @@ function convertStockSell(line: TradeEventStockSold): EDavkiTradeReportSecurityL
 export class KdvpReportGenerator {
 	constructor(private readonly processor: FinancialEventsProcessor) {}
 
-	convert(config: TaxAuthorityConfiguration, groupings: FinancialGrouping[]): EDavkiGenericTradeReportItem[] {
+	convert(
+		config: TaxAuthorityConfiguration,
+		groupings: FinancialGrouping[],
+	): EDavkiGenericTradeReportItem[] {
 		const converted: EDavkiGenericTradeReportItem[] = [];
 		const periodStart = config.fromDate;
 		const periodEnd = config.toDate;
@@ -107,7 +126,8 @@ export class KdvpReportGenerator {
 
 			const isTrustFund = isinGrouping.underlyingCategory === GenericCategory.TRUST_FUND;
 
-			const tickerSymbols = allLines.map((line) => line.financialIdentifier.getTicker()).pop() ?? null; // TODO: Maybe something better than just taking the last one?
+			const tickerSymbols =
+				allLines.map((line) => line.financialIdentifier.getTicker()).pop() ?? null; // TODO: Maybe something better than just taking the last one?
 
 			const reportItem = new EDavkiTradeReportSecurityLineEvent({
 				isin: isin ?? "",
@@ -119,7 +139,10 @@ export class KdvpReportGenerator {
 				events: convertedLines,
 			});
 
-			const foreignTaxPaidSum = allLines.reduce((sum, e) => sum + (e.exchangedMoney.taxTotal ?? 0), 0);
+			const foreignTaxPaidSum = allLines.reduce(
+				(sum, e) => sum + (e.exchangedMoney.taxTotal ?? 0),
+				0,
+			);
 			let foreignTaxPaid: number | null = foreignTaxPaidSum;
 			let hasForeignTax = true;
 			if (foreignTaxPaidSum <= 0) {

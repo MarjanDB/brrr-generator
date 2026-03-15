@@ -10,7 +10,11 @@ import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import { IdentifierChangeType, IdentifierRelationship, IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationship";
+import {
+	IdentifierChangeType,
+	IdentifierRelationship,
+	IdentifierRelationshipSplit,
+} from "@brrr/Core/Schemas/IdentifierRelationship";
 import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import { DateTime } from "luxon";
@@ -182,9 +186,21 @@ test("chain A to B to C produces one grouping with C", () => {
 });
 
 test("sink grouping with different instance merges into one", () => {
-	const idOld = new FinancialIdentifier({ isin: "US7731221062", ticker: "RKLB.old", name: "RKLB old" });
-	const idNewInRel = new FinancialIdentifier({ isin: "US7731211089", ticker: "RKLB", name: "ROCKET LAB CORP" });
-	const idNewInGrouping = new FinancialIdentifier({ isin: "US7731211089", ticker: "RKLB", name: "ROCKET LAB CORP" });
+	const idOld = new FinancialIdentifier({
+		isin: "US7731221062",
+		ticker: "RKLB.old",
+		name: "RKLB old",
+	});
+	const idNewInRel = new FinancialIdentifier({
+		isin: "US7731211089",
+		ticker: "RKLB",
+		name: "ROCKET LAB CORP",
+	});
+	const idNewInGrouping = new FinancialIdentifier({
+		isin: "US7731211089",
+		ticker: "RKLB",
+		name: "ROCKET LAB CORP",
+	});
 	const events = new FinancialEvents({
 		groupings: [
 			makeGrouping(idOld, [makeTrade("t1", idOld, 10.0, "2024-01-01")]),
@@ -208,9 +224,21 @@ test("sink grouping with different instance merges into one", () => {
 });
 
 test("same ISIN different ticker matches rename chain", () => {
-	const idOldInRel = new FinancialIdentifier({ isin: "US7731221062", ticker: "RKLB.OLD", name: null });
-	const idNew = new FinancialIdentifier({ isin: "US7731211089", ticker: "RKLB", name: "ROCKET LAB CORP" });
-	const idInGrouping = new FinancialIdentifier({ isin: "US7731221062", ticker: "RKLB", name: null });
+	const idOldInRel = new FinancialIdentifier({
+		isin: "US7731221062",
+		ticker: "RKLB.OLD",
+		name: null,
+	});
+	const idNew = new FinancialIdentifier({
+		isin: "US7731211089",
+		ticker: "RKLB",
+		name: "ROCKET LAB CORP",
+	});
+	const idInGrouping = new FinancialIdentifier({
+		isin: "US7731221062",
+		ticker: "RKLB",
+		name: null,
+	});
 	const events = new FinancialEvents({
 		groupings: [makeGrouping(idInGrouping, [makeTrade("t1", idInGrouping, 5.0, "2024-01-01")])],
 		identifierRelationships: [
@@ -256,7 +284,12 @@ test("apply split scales trades before effective date and merges into to", () =>
 	expect(trade.exchangedMoney.underlyingQuantity).toEqual(40.0);
 	expect(trade.exchangedMoney.underlyingTradePrice).toEqual(1.0);
 	expect(trade.provenance.length).toEqual(1);
-	const step = trade.provenance[0] as { quantityBefore: number; quantityAfter: number; beforeQuantity: number; beforeTradePrice: number };
+	const step = trade.provenance[0] as {
+		quantityBefore: number;
+		quantityAfter: number;
+		beforeQuantity: number;
+		beforeTradePrice: number;
+	};
 	expect(step.quantityBefore).toEqual(4.0);
 	expect(step.quantityAfter).toEqual(40.0);
 	expect(step.beforeQuantity).toEqual(4.0);
@@ -408,7 +441,9 @@ test("apply split merges from into existing to grouping", () => {
 	const merged = result.groupings[0];
 	expect(merged.financialIdentifier.isTheSameAs(idTo)).toEqual(true);
 	expect(merged.stockTrades.length).toEqual(2);
-	const qtys = [...merged.stockTrades.map((t) => t.exchangedMoney.underlyingQuantity)].sort((a, b) => a - b);
+	const qtys = [...merged.stockTrades.map((t) => t.exchangedMoney.underlyingQuantity)].sort(
+		(a, b) => a - b,
+	);
 	expect(qtys[0]).toEqual(5.0);
 	expect(qtys[1]).toEqual(10.0);
 });

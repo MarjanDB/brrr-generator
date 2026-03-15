@@ -1,5 +1,9 @@
 import type { GenericCategory } from "@brrr/Core/Schemas/CommonFormats";
-import type { StagingTradeEventDerivative, StagingTradeEventStock, StagingTransactionCash } from "@brrr/Core/Schemas/Staging/Events";
+import type {
+	StagingTradeEventDerivative,
+	StagingTradeEventStock,
+	StagingTransactionCash,
+} from "@brrr/Core/Schemas/Staging/Events";
 import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots";
 import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
 

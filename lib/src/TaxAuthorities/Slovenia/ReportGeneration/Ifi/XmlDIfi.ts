@@ -9,7 +9,7 @@ import {
 import { XMLBuilder } from "fast-xml-parser";
 
 function round(value: number, decimals: number): number {
-	const factor = Math.pow(10, decimals);
+	const factor = 10 ** decimals;
 	return Math.round(value * factor) / factor;
 }
 
@@ -38,19 +38,19 @@ export function generateXmlReport(
 		};
 
 		if (ifiItem.name !== null) {
-			tItemObj["Name"] = ifiItem.name;
+			tItemObj.Name = ifiItem.name;
 		}
 
-		tItemObj["HasForeignTax"] = String(ifiItem.hasForeignTax).toLowerCase();
+		tItemObj.HasForeignTax = String(ifiItem.hasForeignTax).toLowerCase();
 
 		if (ifiItem.foreignTax !== null) {
-			tItemObj["ForeignTax"] = String(round(ifiItem.foreignTax, 8));
+			tItemObj.ForeignTax = String(round(ifiItem.foreignTax, 8));
 		}
 		if (ifiItem.ftCountryId !== null) {
-			tItemObj["FTCountryID"] = ifiItem.ftCountryId;
+			tItemObj.FTCountryID = ifiItem.ftCountryId;
 		}
 		if (ifiItem.ftCountryName !== null) {
-			tItemObj["FTCountryName"] = ifiItem.ftCountryName;
+			tItemObj.FTCountryName = ifiItem.ftCountryName;
 		}
 
 		if (ifiItem.itemType === EDavkiDerivativeReportItemType.DERIVATIVE) {
@@ -75,7 +75,7 @@ export function generateXmlReport(
 					};
 				}
 			});
-			tItemObj["TSubItem"] = tSubItemNodes;
+			tItemObj.TSubItem = tSubItemNodes;
 		}
 
 		return tItemObj;

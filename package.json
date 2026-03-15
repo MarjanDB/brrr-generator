@@ -1,9 +1,14 @@
 {
-  "name": "brrr-tax-generator",
-  "private": true,
-  "scripts": {
-    "cli": "pnpm --filter @brrr/cli start",
-    "dev": "pnpm --filter @brrr/app dev",
-    "docker:build": "docker build -t brrr-tax-generator ."
-  }
+	"name": "brrr-tax-generator",
+	"private": true,
+	"scripts": {
+		"cli": "pnpm --filter @brrr/cli start",
+		"dev": "pnpm --filter @brrr/app dev",
+		"docker:build": "docker build -t brrr-tax-generator .",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write ."
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.7"
+	}
 }

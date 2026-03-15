@@ -1,4 +1,9 @@
-import type { CorporateAction, LotStock, TradeStock, TransactionCash } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
+import type {
+	CorporateAction,
+	LotStock,
+	TradeStock,
+	TransactionCash,
+} from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
 import {
 	AssetClass,
 	BuyOrSell,
@@ -30,7 +35,9 @@ function makeDate(iso: string): ValidDateTime {
 	return DateTime.fromISO(iso) as ValidDateTime;
 }
 
-function makeEmptySegmented(overrides: Partial<ConstructorParameters<typeof SegmentedTrades>[0]>): SegmentedTrades {
+function makeEmptySegmented(
+	overrides: Partial<ConstructorParameters<typeof SegmentedTrades>[0]>,
+): SegmentedTrades {
 	return new SegmentedTrades({
 		cashTransactions: [],
 		corporateActions: [],
@@ -274,8 +281,12 @@ test("transform: single dividend", () => {
 	);
 	expect(result.groupings.length).toEqual(1);
 	expect(result.groupings[0].financialIdentifier.getIsin()).toEqual("FR0000120271");
-	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(StagingTradeEventCashTransactionDividend);
-	expect(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(dividend.amount * dividend.fxRateToBase);
+	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(
+		StagingTradeEventCashTransactionDividend,
+	);
+	expect(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(
+		dividend.amount * dividend.fxRateToBase,
+	);
 	expect(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingQuantity).toEqual(1);
 });
 
@@ -283,27 +294,33 @@ test("transform: single payment in lieu of dividend", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ cashTransactions: [paymentInLieuOfDividend] }),
 	);
-	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(StagingTradeEventCashTransactionPaymentInLieuOfDividends);
-	expect(
-		result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice,
-	).toEqual(paymentInLieuOfDividend.amount * paymentInLieuOfDividend.fxRateToBase);
+	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(
+		StagingTradeEventCashTransactionPaymentInLieuOfDividends,
+	);
+	expect(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(
+		paymentInLieuOfDividend.amount * paymentInLieuOfDividend.fxRateToBase,
+	);
 });
 
 test("transform: single withholding tax", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ cashTransactions: [withholdingTaxForDividend] }),
 	);
-	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(StagingTradeEventCashTransactionWithholdingTax);
-	expect(
-		result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice,
-	).toEqual(withholdingTaxForDividend.amount * withholdingTaxForDividend.fxRateToBase);
+	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(
+		StagingTradeEventCashTransactionWithholdingTax,
+	);
+	expect(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(
+		withholdingTaxForDividend.amount * withholdingTaxForDividend.fxRateToBase,
+	);
 });
 
 test("transform: withholding tax for payment in lieu", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ cashTransactions: [withholdingTaxForPaymentInLieu] }),
 	);
-	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends);
+	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(
+		StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends,
+	);
 });
 
 test("transform: corporate actions produce partial relationships only", () => {
@@ -312,15 +329,21 @@ test("transform: corporate actions produce partial relationships only", () => {
 	);
 	expect(result.identifierRelationships.relationships.length).toEqual(0);
 	expect(result.identifierRelationships.partialRelationships.length).toEqual(2);
-	const keys = new Set(result.identifierRelationships.partialRelationships.map((p) => p.correlationKey));
+	const keys = new Set(
+		result.identifierRelationships.partialRelationships.map((p) => p.correlationKey),
+	);
 	expect(keys.has("141913764")).toEqual(true);
-	const fromPartial = result.identifierRelationships.partialRelationships.find((p) =>
-		p.fromIdentifier !== null && p.toIdentifier === null
+	// biome-ignore lint/style/noNonNullAssertion: test data guarantees both partials exist
+	const fromPartial = result.identifierRelationships.partialRelationships.find(
+		(p) => p.fromIdentifier !== null && p.toIdentifier === null,
 	)!;
-	const toPartial = result.identifierRelationships.partialRelationships.find((p) =>
-		p.toIdentifier !== null && p.fromIdentifier === null
+	// biome-ignore lint/style/noNonNullAssertion: test data guarantees both partials exist
+	const toPartial = result.identifierRelationships.partialRelationships.find(
+		(p) => p.toIdentifier !== null && p.fromIdentifier === null,
 	)!;
+	// biome-ignore lint/style/noNonNullAssertion: find predicate guarantees fromIdentifier is non-null
 	expect(fromPartial.fromIdentifier!.getIsin()).toEqual("US86800U1043");
+	// biome-ignore lint/style/noNonNullAssertion: find predicate guarantees toIdentifier is non-null
 	expect(toPartial.toIdentifier!.getIsin()).toEqual("US86800U3023");
 	expect(fromPartial.changeType).toEqual(StagingIdentifierChangeType.SPLIT);
 });
@@ -329,11 +352,20 @@ test("transform: resolve partials produces full relationship", () => {
 	const staging = service.convertSegmentedTradesToStagingEvents(
 		makeEmptySegmented({ corporateActions: [corporateActionOld, corporateActionNew] }),
 	);
-	const resolved = new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(staging);
+	const resolved =
+		new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(
+			staging,
+		);
 	expect(resolved.identifierRelationships.relationships.length).toEqual(1);
-	expect(resolved.identifierRelationships.relationships[0].fromIdentifier.getIsin()).toEqual("US86800U1043");
-	expect(resolved.identifierRelationships.relationships[0].toIdentifier.getIsin()).toEqual("US86800U3023");
-	expect(resolved.identifierRelationships.relationships[0].changeType).toEqual(StagingIdentifierChangeType.SPLIT);
+	expect(resolved.identifierRelationships.relationships[0].fromIdentifier.getIsin()).toEqual(
+		"US86800U1043",
+	);
+	expect(resolved.identifierRelationships.relationships[0].toIdentifier.getIsin()).toEqual(
+		"US86800U3023",
+	);
+	expect(resolved.identifierRelationships.relationships[0].changeType).toEqual(
+		StagingIdentifierChangeType.SPLIT,
+	);
 });
 
 test("transform: no corporate actions produces no partials", () => {
