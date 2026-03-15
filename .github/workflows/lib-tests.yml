@@ -1,4 +1,4 @@
-name: Run Library tests
+name: Run Tests (node, lib)
 
 on:
   push:
