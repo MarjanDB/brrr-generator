@@ -15,9 +15,6 @@ jobs:
       contents: write
 
     steps:
-      - name: Install lcov
-        run: sudo apt-get install -y -qq --no-install-recommends lcov
-
       - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v6
@@ -38,19 +35,19 @@ jobs:
 
       - name: Report coverage
         id: coverage
-        uses: zgosalvez/github-actions-report-lcov@v4
+        uses: davelosert/vitest-coverage-report-action@v2
         with:
-          coverage-files: lib/coverage/lcov.info
           working-directory: lib
+          json-summary-path: lib/coverage/coverage-summary.json
+          json-final-path: lib/coverage/coverage-final.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          artifact-name: vitest-code-coverage-report
-          update-comment: true
 
       - name: Update coverage badge JSON
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |
+          total=$(node -e "const s = require('./lib/coverage/coverage-summary.json'); const t = s.total; const pct = (t.lines.pct + t.statements.pct + t.functions.pct + t.branches.pct) / 4; console.log(Math.round(pct) + '%')")
           mkdir -p .github/badges
-          echo "{\"coverage\": \"${{ steps.coverage.outputs.total-coverage }}%\"}" > .github/badges/vitest-coverage.json
+          echo "{\"coverage\": \"$total\"}" > .github/badges/vitest-coverage.json
 
       - name: Commit coverage badge JSON
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'

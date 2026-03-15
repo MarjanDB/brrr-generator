@@ -13,7 +13,7 @@ export default defineConfig({
     watch: false,
     coverage: {
       provider: "v8",
-      reporter: ["lcovonly"],
+      reporter: ["json-summary", "json"],
       reportsDirectory: "coverage",
     },
   },
