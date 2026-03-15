@@ -8,10 +8,16 @@ import {
 } from "@brrr/Core/Schemas/Events";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import { type InfoProvider, TreatyType } from "@brrr/InfoProviders/InfoProvider";
-import type { TaxAuthorityConfiguration, TaxPayerInfo } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import type {
+	TaxAuthorityConfiguration,
+	TaxPayerInfo,
+} from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/CsvDohDiv";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/XmlDohDiv";
-import { EDavkiDividendReportLine, EDavkiDividendType } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
+import {
+	EDavkiDividendReportLine,
+	EDavkiDividendType,
+} from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
 import type { DateTime } from "luxon";
 
 const DIVIDEND_TYPE_MAPPINGS: Record<GenericDividendType, EDavkiDividendType> = {
@@ -29,14 +35,18 @@ function filterOutCashTransactionsBasedOnDate(
 	fromDateInclusive: DateTime,
 	toDateExclusive: DateTime,
 ): TransactionCash[] {
-	return data.filter(
-		(line) => line.date >= fromDateInclusive && line.date < toDateExclusive,
-	);
+	return data.filter((line) => line.date >= fromDateInclusive && line.date < toDateExclusive);
 }
 
 function processEdavkiLineItemsFromCashTransactions(
-	dividendLines: (TradeEventCashTransactionDividend | TradeEventCashTransactionPaymentInLieuOfDividend)[],
-	withholdingLines: (TradeEventCashTransactionWithholdingTax | TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend)[],
+	dividendLines: (
+		| TradeEventCashTransactionDividend
+		| TradeEventCashTransactionPaymentInLieuOfDividend
+	)[],
+	withholdingLines: (
+		| TradeEventCashTransactionWithholdingTax
+		| TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend
+	)[],
 ): EDavkiDividendReportLine[] {
 	const actionToDividendMapping = new Map<string, EDavkiDividendReportLine>();
 
@@ -54,12 +64,15 @@ function processEdavkiLineItemsFromCashTransactions(
 			countryOfOrigin: "",
 			dividendIdentifierForTracking: actionId,
 			taxReliefParagraphInInternationalTreaty: "",
-			dividendAmount: dividend.exchangedMoney.underlyingQuantity * dividend.exchangedMoney.underlyingTradePrice,
-			dividendAmountInOriginalCurrency: dividend.exchangedMoney.underlyingQuantity *
+			dividendAmount:
+				dividend.exchangedMoney.underlyingQuantity * dividend.exchangedMoney.underlyingTradePrice,
+			dividendAmountInOriginalCurrency:
+				dividend.exchangedMoney.underlyingQuantity *
 				dividend.exchangedMoney.underlyingTradePrice *
 				(1 / dividend.exchangedMoney.fxRateToBase),
 			foreignTaxPaid: dividend.exchangedMoney.taxTotal,
-			foreignTaxPaidInOriginalCurrency: dividend.exchangedMoney.taxTotal * (1 / dividend.exchangedMoney.fxRateToBase),
+			foreignTaxPaidInOriginalCurrency:
+				dividend.exchangedMoney.taxTotal * (1 / dividend.exchangedMoney.fxRateToBase),
 		});
 
 		const existing = actionToDividendMapping.get(actionId);
@@ -68,8 +81,10 @@ function processEdavkiLineItemsFromCashTransactions(
 			continue;
 		}
 
-		existing.dividendAmount += dividend.exchangedMoney.underlyingQuantity * dividend.exchangedMoney.underlyingTradePrice;
-		existing.dividendAmountInOriginalCurrency += dividend.exchangedMoney.underlyingQuantity *
+		existing.dividendAmount +=
+			dividend.exchangedMoney.underlyingQuantity * dividend.exchangedMoney.underlyingTradePrice;
+		existing.dividendAmountInOriginalCurrency +=
+			dividend.exchangedMoney.underlyingQuantity *
 			dividend.exchangedMoney.underlyingTradePrice *
 			(1 / dividend.exchangedMoney.fxRateToBase);
 	}
@@ -81,8 +96,11 @@ function processEdavkiLineItemsFromCashTransactions(
 			throw new Error("Edge case where Withholding Tax has no matching Dividend Cash Transaction");
 		}
 
-		entry.foreignTaxPaid += withheldTax.exchangedMoney.underlyingQuantity * withheldTax.exchangedMoney.underlyingTradePrice;
-		entry.foreignTaxPaidInOriginalCurrency += withheldTax.exchangedMoney.underlyingQuantity *
+		entry.foreignTaxPaid +=
+			withheldTax.exchangedMoney.underlyingQuantity *
+			withheldTax.exchangedMoney.underlyingTradePrice;
+		entry.foreignTaxPaidInOriginalCurrency +=
+			withheldTax.exchangedMoney.underlyingQuantity *
 			withheldTax.exchangedMoney.underlyingTradePrice *
 			(1 / withheldTax.exchangedMoney.fxRateToBase);
 	}
@@ -116,9 +134,15 @@ function mergeDividendsReceivedOnSameDayForSingleIsin(
 
 	for (const dividendList of segmented.values()) {
 		const combinedTotal = dividendList.reduce((sum, d) => sum + d.dividendAmount, 0);
-		const combinedTotalInOriginalCurrency = dividendList.reduce((sum, d) => sum + d.dividendAmountInOriginalCurrency, 0);
+		const combinedTotalInOriginalCurrency = dividendList.reduce(
+			(sum, d) => sum + d.dividendAmountInOriginalCurrency,
+			0,
+		);
 		const combinedTotalTax = dividendList.reduce((sum, d) => sum + d.foreignTaxPaid, 0);
-		const combinedTotalTaxInOriginalCurrency = dividendList.reduce((sum, d) => sum + d.foreignTaxPaidInOriginalCurrency, 0);
+		const combinedTotalTaxInOriginalCurrency = dividendList.reduce(
+			(sum, d) => sum + d.foreignTaxPaidInOriginalCurrency,
+			0,
+		);
 
 		const combinedTracking = dividendList.map((d) => d.dividendIdentifierForTracking).join("-");
 
@@ -132,7 +156,8 @@ function mergeDividendsReceivedOnSameDayForSingleIsin(
 			dividendType: dividendList[0].dividendType,
 			countryOfOrigin: dividendList[0].countryOfOrigin,
 			dividendIdentifierForTracking: combinedTracking,
-			taxReliefParagraphInInternationalTreaty: dividendList[0].taxReliefParagraphInInternationalTreaty,
+			taxReliefParagraphInInternationalTreaty:
+				dividendList[0].taxReliefParagraphInInternationalTreaty,
 			dividendAmount: combinedTotal,
 			dividendAmountInOriginalCurrency: combinedTotalInOriginalCurrency,
 			foreignTaxPaid: combinedTotalTax,
@@ -146,19 +171,20 @@ function mergeDividendsReceivedOnSameDayForSingleIsin(
 }
 
 function round(value: number, decimals: number): number {
-	const factor = Math.pow(10, decimals);
+	const factor = 10 ** decimals;
 	return Math.round(value * factor) / factor;
 }
 
 export class DivReportGenerator {
-	constructor(
-		private readonly infoProvider: InfoProvider,
-	) {}
+	constructor(private readonly infoProvider: InfoProvider) {}
 
-	async convert(config: TaxAuthorityConfiguration, groupings: FinancialGrouping[]): Promise<EDavkiDividendReportLine[]> {
+	async convert(
+		config: TaxAuthorityConfiguration,
+		groupings: FinancialGrouping[],
+	): Promise<EDavkiDividendReportLine[]> {
 		const allLines: EDavkiDividendReportLine[] = [];
 		for (const grouping of groupings) {
-			allLines.push(...await this.processSingleGrouping(config, grouping));
+			allLines.push(...(await this.processSingleGrouping(config, grouping)));
 		}
 		return allLines;
 	}
@@ -174,17 +200,29 @@ export class DivReportGenerator {
 		);
 
 		const dividendLines = relevantCashTransactions.filter(
-			(line): line is TradeEventCashTransactionDividend | TradeEventCashTransactionPaymentInLieuOfDividend =>
-				line instanceof TradeEventCashTransactionDividend || line instanceof TradeEventCashTransactionPaymentInLieuOfDividend,
+			(
+				line,
+			): line is
+				| TradeEventCashTransactionDividend
+				| TradeEventCashTransactionPaymentInLieuOfDividend =>
+				line instanceof TradeEventCashTransactionDividend ||
+				line instanceof TradeEventCashTransactionPaymentInLieuOfDividend,
 		);
 
 		const withholdingTax = relevantCashTransactions.filter(
-			(line): line is TradeEventCashTransactionWithholdingTax | TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend =>
+			(
+				line,
+			): line is
+				| TradeEventCashTransactionWithholdingTax
+				| TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend =>
 				line instanceof TradeEventCashTransactionWithholdingTax ||
 				line instanceof TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
 		);
 
-		const processedDividendLines = processEdavkiLineItemsFromCashTransactions(dividendLines, withholdingTax);
+		const processedDividendLines = processEdavkiLineItemsFromCashTransactions(
+			dividendLines,
+			withholdingTax,
+		);
 		const combinedLines = mergeDividendsReceivedOnSameDayForSingleIsin(processedDividendLines);
 		return await this.fillInMissingCompanyInformation(combinedLines);
 	}
@@ -215,8 +253,11 @@ export class DivReportGenerator {
 				countryOfOrigin = responsibleCompany.location.shortCodeCountry2;
 				dividendPayerAddress = `${responsibleCompany.location.address1}, ${responsibleCompany.location.city}`;
 
-				const relevantCountry = await this.infoProvider.getCountry(responsibleCompany.location.country);
-				taxReliefParagraphInInternationalTreaty = relevantCountry?.treaties.get(TreatyType.TaxRelief) ?? null;
+				const relevantCountry = await this.infoProvider.getCountry(
+					responsibleCompany.location.country,
+				);
+				taxReliefParagraphInInternationalTreaty =
+					relevantCountry?.treaties.get(TreatyType.TaxRelief) ?? null;
 			}
 		} catch (_e) {
 			// Silently fail — company/country lookup is best-effort
@@ -224,20 +265,32 @@ export class DivReportGenerator {
 
 		for (const dividendLine of lines) {
 			dividendLine.dividendAmount = round(dividendLine.dividendAmount, 2);
-			dividendLine.dividendAmountInOriginalCurrency = round(dividendLine.dividendAmountInOriginalCurrency, 2);
+			dividendLine.dividendAmountInOriginalCurrency = round(
+				dividendLine.dividendAmountInOriginalCurrency,
+				2,
+			);
 			dividendLine.foreignTaxPaid = round(Math.abs(dividendLine.foreignTaxPaid), 2);
-			dividendLine.foreignTaxPaidInOriginalCurrency = round(Math.abs(dividendLine.foreignTaxPaidInOriginalCurrency), 2);
+			dividendLine.foreignTaxPaidInOriginalCurrency = round(
+				Math.abs(dividendLine.foreignTaxPaidInOriginalCurrency),
+				2,
+			);
 			dividendLine.dividendPayerTitle = dividendPayerTitle;
 			dividendLine.dividendPayerCountryOfOrigin = dividendPayerCountryOfOrigin;
 			dividendLine.countryOfOrigin = countryOfOrigin;
 			dividendLine.dividendPayerAddress = dividendPayerAddress;
-			dividendLine.taxReliefParagraphInInternationalTreaty = taxReliefParagraphInInternationalTreaty;
+			dividendLine.taxReliefParagraphInInternationalTreaty =
+				taxReliefParagraphInInternationalTreaty;
 		}
 
 		return lines;
 	}
 
-	toXml(config: TaxAuthorityConfiguration, userConfig: TaxPayerInfo, selfReport: boolean, items: EDavkiDividendReportLine[]): string {
+	toXml(
+		config: TaxAuthorityConfiguration,
+		userConfig: TaxPayerInfo,
+		selfReport: boolean,
+		items: EDavkiDividendReportLine[],
+	): string {
 		return generateXmlReport(config, userConfig, selfReport, items);
 	}
 

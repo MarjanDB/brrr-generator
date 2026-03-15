@@ -46,10 +46,14 @@ export class IbkrTransformService {
 		const stockTrades = [...segmented.stockTrades].sort((a, b) => a.isin.localeCompare(b.isin));
 		const stockLots = [...segmented.stockLots].sort((a, b) => a.isin.localeCompare(b.isin));
 		const derivativeTrades = [...segmented.derivativeTrades].sort((a, b) =>
-			a.underlyingSecurityID.localeCompare(b.underlyingSecurityID)
+			a.underlyingSecurityID.localeCompare(b.underlyingSecurityID),
 		);
-		const derivativeLots = [...segmented.derivativeLots].sort((a, b) => a.underlyingSecurityID.localeCompare(b.underlyingSecurityID));
-		const cashTransactions = [...segmented.cashTransactions].sort((a, b) => a.isin.localeCompare(b.isin));
+		const derivativeLots = [...segmented.derivativeLots].sort((a, b) =>
+			a.underlyingSecurityID.localeCompare(b.underlyingSecurityID),
+		);
+		const cashTransactions = [...segmented.cashTransactions].sort((a, b) =>
+			a.isin.localeCompare(b.isin),
+		);
 
 		const stockTradeEvents = this._convertStockTradesToEvents(stockTrades);
 		const stockLotEvents = this._convertStockLotsToEvents(stockLots);
@@ -57,13 +61,16 @@ export class IbkrTransformService {
 		const derivativeTradeEvents = this._convertDerivativeTradesToEvents(derivativeTrades);
 		const derivativeLotEvents = this._convertDerivativeLotsToEvents(derivativeLots);
 
-		const groupByIdentifier = <T extends AnyEvent>(items: T[]): Map<string, { identifier: StagingFinancialIdentifier; items: T[] }> => {
+		const groupByIdentifier = <T extends AnyEvent>(
+			items: T[],
+		): Map<string, { identifier: StagingFinancialIdentifier; items: T[] }> => {
 			const map = new Map<string, { identifier: StagingFinancialIdentifier; items: T[] }>();
 			for (const item of items) {
 				const key = item.financialIdentifier.toKey();
 				if (!map.has(key)) {
 					map.set(key, { identifier: item.financialIdentifier, items: [] });
 				}
+				// biome-ignore lint/style/noNonNullAssertion: key was just set above if absent
 				map.get(key)!.items.push(item);
 			}
 			return map;
@@ -85,30 +92,36 @@ export class IbkrTransformService {
 
 		const groupings: StagingFinancialGrouping[] = [];
 		for (const key of allKeys) {
-			const identifier = (
-				stocksMap.get(key) ??
-					stockLotsMap.get(key) ??
-					derivativesMap.get(key) ??
-					derivativeLotsMap.get(key) ??
-					dividendsMap.get(key)
-			)!.identifier;
+			// biome-ignore lint/style/noNonNullAssertion: key is guaranteed to exist in at least one map since it came from their union
+			const identifier = (stocksMap.get(key) ??
+				stockLotsMap.get(key) ??
+				derivativesMap.get(key) ??
+				derivativeLotsMap.get(key) ??
+				dividendsMap.get(key))!.identifier;
 
 			groupings.push(
 				new StagingFinancialGrouping({
 					financialIdentifier: identifier,
 					countryOfOrigin: null,
 					underlyingCategory: GenericCategory.REGULAR,
-					stockTrades: (stocksMap.get(key)?.items ?? []) as (StagingTradeEventStockAcquired | StagingTradeEventStockSold)[],
+					stockTrades: (stocksMap.get(key)?.items ?? []) as (
+						| StagingTradeEventStockAcquired
+						| StagingTradeEventStockSold
+					)[],
 					stockTaxLots: stockLotsMap.get(key)?.items ?? [],
-					derivativeTrades:
-						(derivativesMap.get(key)?.items ?? []) as (StagingTradeEventDerivativeAcquired | StagingTradeEventDerivativeSold)[],
+					derivativeTrades: (derivativesMap.get(key)?.items ?? []) as (
+						| StagingTradeEventDerivativeAcquired
+						| StagingTradeEventDerivativeSold
+					)[],
 					derivativeTaxLots: derivativeLotsMap.get(key)?.items ?? [],
 					cashTransactions: dividendsMap.get(key)?.items ?? [],
 				}),
 			);
 		}
 
-		const partials = this._convertCorporateActionsToPartialRelationships(segmented.corporateActions);
+		const partials = this._convertCorporateActionsToPartialRelationships(
+			segmented.corporateActions,
+		);
 		const identifierRelationships = new StagingIdentifierRelationships({
 			relationships: [],
 			partialRelationships: partials,
@@ -128,7 +141,10 @@ export class IbkrTransformService {
 			if (isOrdinaryDividend) dividendType = GenericDividendType.ORDINARY;
 			if (isBonusDividend) dividendType = GenericDividendType.BONUS;
 
-			const financialIdentifier = new StagingFinancialIdentifier({ isin: transaction.isin, ticker: transaction.symbol });
+			const financialIdentifier = new StagingFinancialIdentifier({
+				isin: transaction.isin,
+				ticker: transaction.symbol,
+			});
 			const exchangedMoney = new GenericMonetaryExchangeInformation({
 				underlyingQuantity: 1,
 				underlyingTradePrice: transaction.amount * transaction.fxRateToBase,
@@ -164,7 +180,10 @@ export class IbkrTransformService {
 			}
 
 			if (transaction.type === CashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS) {
-				return new StagingTradeEventCashTransactionPaymentInLieuOfDividends({ ...base, dividendType });
+				return new StagingTradeEventCashTransactionPaymentInLieuOfDividends({
+					...base,
+					dividendType,
+				});
 			}
 
 			throw new Error(`Unknown cash transaction type: ${transaction.type}`);
@@ -173,7 +192,10 @@ export class IbkrTransformService {
 
 	private _convertStockTradesToEvents(trades: TradeStock[]) {
 		return trades.map((trade) => {
-			const financialIdentifier = new StagingFinancialIdentifier({ isin: trade.isin, ticker: trade.symbol });
+			const financialIdentifier = new StagingFinancialIdentifier({
+				isin: trade.isin,
+				ticker: trade.symbol,
+			});
 			const exchangedMoney = new GenericMonetaryExchangeInformation({
 				underlyingCurrency: trade.currency,
 				underlyingQuantity: trade.quantity,
@@ -193,7 +215,10 @@ export class IbkrTransformService {
 				exchangedMoney,
 			};
 			if (trade.quantity > 0) {
-				return new StagingTradeEventStockAcquired({ ...base, acquiredReason: GenericTradeReportItemGainType.BOUGHT });
+				return new StagingTradeEventStockAcquired({
+					...base,
+					acquiredReason: GenericTradeReportItemGainType.BOUGHT,
+				});
 			} else {
 				return new StagingTradeEventStockSold(base);
 			}
@@ -201,15 +226,19 @@ export class IbkrTransformService {
 	}
 
 	private _convertStockLotsToEvents(lots: LotStock[]): StagingTaxLot[] {
-		return lots.map((lot) =>
-			new StagingTaxLot({
-				id: lot.transactionID,
-				financialIdentifier: new StagingFinancialIdentifier({ isin: lot.isin, ticker: lot.symbol }),
-				quantity: lot.quantity,
-				acquired: new StagingTaxLotMatchingDetails({ id: lot.transactionID, dateTime: null }),
-				sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
-				shortLongType: GenericShortLong.LONG,
-			})
+		return lots.map(
+			(lot) =>
+				new StagingTaxLot({
+					id: lot.transactionID,
+					financialIdentifier: new StagingFinancialIdentifier({
+						isin: lot.isin,
+						ticker: lot.symbol,
+					}),
+					quantity: lot.quantity,
+					acquired: new StagingTaxLotMatchingDetails({ id: lot.transactionID, dateTime: null }),
+					sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
+					shortLongType: GenericShortLong.LONG,
+				}),
 		);
 	}
 
@@ -239,7 +268,10 @@ export class IbkrTransformService {
 				exchangedMoney,
 			};
 			if (trade.quantity > 0) {
-				return new StagingTradeEventDerivativeAcquired({ ...base, acquiredReason: GenericDerivativeReportItemGainType.BOUGHT });
+				return new StagingTradeEventDerivativeAcquired({
+					...base,
+					acquiredReason: GenericDerivativeReportItemGainType.BOUGHT,
+				});
 			} else {
 				return new StagingTradeEventDerivativeSold(base);
 			}
@@ -247,23 +279,26 @@ export class IbkrTransformService {
 	}
 
 	private _convertDerivativeLotsToEvents(lots: LotDerivative[]): StagingTaxLot[] {
-		return lots.map((lot) =>
-			new StagingTaxLot({
-				id: lot.transactionID,
-				financialIdentifier: new StagingFinancialIdentifier({
-					isin: lot.underlyingSecurityID,
-					ticker: lot.symbol,
-					name: lot.description,
+		return lots.map(
+			(lot) =>
+				new StagingTaxLot({
+					id: lot.transactionID,
+					financialIdentifier: new StagingFinancialIdentifier({
+						isin: lot.underlyingSecurityID,
+						ticker: lot.symbol,
+						name: lot.description,
+					}),
+					quantity: lot.quantity,
+					acquired: new StagingTaxLotMatchingDetails({ id: lot.transactionID, dateTime: null }),
+					sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
+					shortLongType: GenericShortLong.LONG,
 				}),
-				quantity: lot.quantity,
-				acquired: new StagingTaxLotMatchingDetails({ id: lot.transactionID, dateTime: null }),
-				sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
-				shortLongType: GenericShortLong.LONG,
-			})
 		);
 	}
 
-	private _convertCorporateActionsToPartialRelationships(corporateActions: CorporateAction[]): StagingIdentifierRelationshipPartialAny[] {
+	private _convertCorporateActionsToPartialRelationships(
+		corporateActions: CorporateAction[],
+	): StagingIdentifierRelationshipPartialAny[] {
 		const partials: StagingIdentifierRelationshipPartialAny[] = [];
 
 		for (const row of corporateActions) {

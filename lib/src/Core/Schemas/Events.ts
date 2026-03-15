@@ -45,7 +45,9 @@ export class TradeEventStockAcquired {
 		this.acquiredReason = args.acquiredReason;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof TradeEventStockAcquired>[0]>): TradeEventStockAcquired {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof TradeEventStockAcquired>[0]>,
+	): TradeEventStockAcquired {
 		return new TradeEventStockAcquired({
 			id: this.id,
 			financialIdentifier: this.financialIdentifier,
@@ -79,7 +81,9 @@ export class TradeEventStockSold {
 		this.provenance = args.provenance;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof TradeEventStockSold>[0]>): TradeEventStockSold {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof TradeEventStockSold>[0]>,
+	): TradeEventStockSold {
 		return new TradeEventStockSold({
 			id: this.id,
 			financialIdentifier: this.financialIdentifier,
@@ -116,7 +120,9 @@ export class TradeEventDerivativeAcquired {
 		this.acquiredReason = args.acquiredReason;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof TradeEventDerivativeAcquired>[0]>): TradeEventDerivativeAcquired {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof TradeEventDerivativeAcquired>[0]>,
+	): TradeEventDerivativeAcquired {
 		return new TradeEventDerivativeAcquired({
 			id: this.id,
 			financialIdentifier: this.financialIdentifier,
@@ -150,7 +156,9 @@ export class TradeEventDerivativeSold {
 		this.provenance = args.provenance;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof TradeEventDerivativeSold>[0]>): TradeEventDerivativeSold {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof TradeEventDerivativeSold>[0]>,
+	): TradeEventDerivativeSold {
 		return new TradeEventDerivativeSold({
 			id: this.id,
 			financialIdentifier: this.financialIdentifier,
@@ -179,7 +187,9 @@ export class TradeEventCashTransactionDividend {
 	public readonly listingExchange: string;
 	public readonly dividendType: GenericDividendType;
 
-	constructor(args: CashTransactionArgs & { listingExchange: string; dividendType: GenericDividendType }) {
+	constructor(
+		args: CashTransactionArgs & { listingExchange: string; dividendType: GenericDividendType },
+	) {
 		this.id = args.id;
 		this.financialIdentifier = args.financialIdentifier;
 		this.assetClass = args.assetClass;
@@ -193,7 +203,9 @@ export class TradeEventCashTransactionDividend {
 		this.dividendType = args.dividendType;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof TradeEventCashTransactionDividend>[0]>): TradeEventCashTransactionDividend {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof TradeEventCashTransactionDividend>[0]>,
+	): TradeEventCashTransactionDividend {
 		return new TradeEventCashTransactionDividend({
 			id: this.id,
 			financialIdentifier: this.financialIdentifier,
@@ -224,7 +236,9 @@ export class TradeEventCashTransactionPaymentInLieuOfDividend {
 	public readonly listingExchange: string;
 	public readonly dividendType: GenericDividendType;
 
-	constructor(args: CashTransactionArgs & { listingExchange: string; dividendType: GenericDividendType }) {
+	constructor(
+		args: CashTransactionArgs & { listingExchange: string; dividendType: GenericDividendType },
+	) {
 		this.id = args.id;
 		this.financialIdentifier = args.financialIdentifier;
 		this.assetClass = args.assetClass;
@@ -239,7 +253,9 @@ export class TradeEventCashTransactionPaymentInLieuOfDividend {
 	}
 
 	copy(
-		overrides: Partial<ConstructorParameters<typeof TradeEventCashTransactionPaymentInLieuOfDividend>[0]>,
+		overrides: Partial<
+			ConstructorParameters<typeof TradeEventCashTransactionPaymentInLieuOfDividend>[0]
+		>,
 	): TradeEventCashTransactionPaymentInLieuOfDividend {
 		return new TradeEventCashTransactionPaymentInLieuOfDividend({
 			id: this.id,
@@ -328,7 +344,11 @@ export class TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend {
 	}
 
 	copy(
-		overrides: Partial<ConstructorParameters<typeof TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend>[0]>,
+		overrides: Partial<
+			ConstructorParameters<
+				typeof TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend
+			>[0]
+		>,
 	): TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend {
 		return new TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend({
 			id: this.id,

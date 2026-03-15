@@ -47,28 +47,30 @@ const cashTransactionDividend = new TradeEventCashTransactionDividend({
 	provenance: [],
 });
 
-const cashTransactionPaymentInLieuOfDividend = new TradeEventCashTransactionPaymentInLieuOfDividend({
-	id: "ID",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
-	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-	date: makeDate("2023-06-08"),
-	multiplier: 1,
-	exchangedMoney: new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: 1.0,
-		underlyingTradePrice: 5.0,
-		comissionCurrency: "EUR",
-		comissionTotal: 0.0,
-		taxCurrency: "EUR",
-		taxTotal: 0.0,
-		fxRateToBase: 1,
-	}),
-	actionId: "DivAction2",
-	transactionId: "TranId2",
-	listingExchange: "EXH",
-	dividendType: GenericDividendType.ORDINARY,
-	provenance: [],
-});
+const cashTransactionPaymentInLieuOfDividend = new TradeEventCashTransactionPaymentInLieuOfDividend(
+	{
+		id: "ID",
+		financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
+		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+		date: makeDate("2023-06-08"),
+		multiplier: 1,
+		exchangedMoney: new GenericMonetaryExchangeInformation({
+			underlyingCurrency: "EUR",
+			underlyingQuantity: 1.0,
+			underlyingTradePrice: 5.0,
+			comissionCurrency: "EUR",
+			comissionTotal: 0.0,
+			taxCurrency: "EUR",
+			taxTotal: 0.0,
+			fxRateToBase: 1,
+		}),
+		actionId: "DivAction2",
+		transactionId: "TranId2",
+		listingExchange: "EXH",
+		dividendType: GenericDividendType.ORDINARY,
+		provenance: [],
+	},
+);
 
 const cashTransactionDividendWithholdingTax = new TradeEventCashTransactionWithholdingTax({
 	id: "ID",
@@ -92,27 +94,28 @@ const cashTransactionDividendWithholdingTax = new TradeEventCashTransactionWithh
 	provenance: [],
 });
 
-const cashTransactionPaymentInLieuOfDividendWithholdingTax = new TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend({
-	id: "ID",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
-	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-	date: makeDate("2023-06-08"),
-	multiplier: 1,
-	exchangedMoney: new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: 1.0,
-		underlyingTradePrice: -2.5,
-		comissionCurrency: "EUR",
-		comissionTotal: 0.0,
-		taxCurrency: "EUR",
-		taxTotal: 0.0,
-		fxRateToBase: 1,
-	}),
-	actionId: "DivAction2",
-	transactionId: "TranId4",
-	listingExchange: "EXH",
-	provenance: [],
-});
+const cashTransactionPaymentInLieuOfDividendWithholdingTax =
+	new TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend({
+		id: "ID",
+		financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
+		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+		date: makeDate("2023-06-08"),
+		multiplier: 1,
+		exchangedMoney: new GenericMonetaryExchangeInformation({
+			underlyingCurrency: "EUR",
+			underlyingQuantity: 1.0,
+			underlyingTradePrice: -2.5,
+			comissionCurrency: "EUR",
+			comissionTotal: 0.0,
+			taxCurrency: "EUR",
+			taxTotal: 0.0,
+			fxRateToBase: 1,
+		}),
+		actionId: "DivAction2",
+		transactionId: "TranId4",
+		listingExchange: "EXH",
+		provenance: [],
+	});
 
 const testGrouping = new FinancialGrouping({
 	financialIdentifier: new FinancialIdentifier({ isin: "ISIN" }),
@@ -145,9 +148,7 @@ test("PaymentInLieuOfDividend - withholding tax is reported separately from divi
 	const generator = new DivReportGenerator(new NodeInfoProvider());
 	const rows = await generator.convert(config, testData.groupings);
 
-	expect(
-		rows.length,
-	).toEqual(2);
+	expect(rows.length).toEqual(2);
 
 	expect(rows[0].dividendAmount).toEqual(10.0);
 	expect(rows[0].foreignTaxPaid).toEqual(5.0);

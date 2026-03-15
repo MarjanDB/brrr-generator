@@ -1,8 +1,15 @@
-import type { TradeEventDerivativeAcquired, TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events";
+import type {
+	TradeEventDerivativeAcquired,
+	TradeEventDerivativeSold,
+} from "@brrr/Core/Schemas/Events";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import { IdentifierChangeType, IdentifierRelationship, IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationship";
+import {
+	IdentifierChangeType,
+	IdentifierRelationship,
+	IdentifierRelationshipSplit,
+} from "@brrr/Core/Schemas/IdentifierRelationship";
 import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping";
 import type { StagingIdentifierRelationshipSplit } from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
 import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
@@ -24,7 +31,10 @@ export class StagingFinancialGroupingProcessor {
 		const allDerivativeTrades = processedDerivatives;
 
 		// Group by financialIdentifier key
-		const tradesByIdKey = new Map<string, (TradeEventDerivativeAcquired | TradeEventDerivativeSold)[]>();
+		const tradesByIdKey = new Map<
+			string,
+			(TradeEventDerivativeAcquired | TradeEventDerivativeSold)[]
+		>();
 		for (const trade of allDerivativeTrades) {
 			const key = trade.financialIdentifier.toKey();
 			const arr = tradesByIdKey.get(key) ?? [];
@@ -83,13 +93,16 @@ export class StagingFinancialGroupingProcessor {
 	}
 
 	processStagingFinancialEvents(events: StagingFinancialEvents): FinancialEvents {
-		const resolved = this.identifierRelationshipResolution.resolveStagingFinancialEventsPartialRelationships(events);
+		const resolved =
+			this.identifierRelationshipResolution.resolveStagingFinancialEventsPartialRelationships(
+				events,
+			);
 		const processedGroupings = this.generateGenericGroupings(resolved.groupings);
 
 		const coreRels: FinancialEvents["identifierRelationships"] = [];
 		for (const r of resolved.identifierRelationships.relationships) {
 			if (r.changeType === StagingIdentifierChangeType.UNKNOWN) continue;
-			const effectiveDate = r.effectiveDate ?? DateTime.fromMillis(0) as ValidDateTime;
+			const effectiveDate = r.effectiveDate ?? (DateTime.fromMillis(0) as ValidDateTime);
 			const fromId = FinancialIdentifier.fromStagingIdentifier(r.fromIdentifier);
 			const toId = FinancialIdentifier.fromStagingIdentifier(r.toIdentifier);
 			const changeType = IdentifierChangeType[r.changeType as keyof typeof IdentifierChangeType];

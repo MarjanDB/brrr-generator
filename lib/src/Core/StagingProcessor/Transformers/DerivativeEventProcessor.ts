@@ -1,6 +1,9 @@
 import { TradeEventDerivativeAcquired, TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
-import { type StagingTradeEventDerivative, StagingTradeEventDerivativeAcquired } from "@brrr/Core/Schemas/Staging/Events";
+import {
+	type StagingTradeEventDerivative,
+	StagingTradeEventDerivativeAcquired,
+} from "@brrr/Core/Schemas/Staging/Events";
 
 // TODO: Create trade events based on corporate events
 export function processDerivativeEvent(

@@ -94,30 +94,32 @@ const simpleStagingDividendWithholdingTax = new StagingTradeEventCashTransaction
 	exchangedMoney: makeMonetary(1, -5),
 });
 
-const simpleStagingPaymentInLieuOfDividend = new StagingTradeEventCashTransactionPaymentInLieuOfDividends({
-	id: "PaymentInLieuOfDividend",
-	financialIdentifier: ident,
-	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-	date: makeDate("2023-01-01"),
-	multiplier: 1,
-	actionId: "ActionID",
-	transactionId: "TransactionID",
-	listingExchange: "ListingExchange",
-	dividendType: GenericDividendType.ORDINARY,
-	exchangedMoney: makeMonetary(1, 5),
-});
+const simpleStagingPaymentInLieuOfDividend =
+	new StagingTradeEventCashTransactionPaymentInLieuOfDividends({
+		id: "PaymentInLieuOfDividend",
+		financialIdentifier: ident,
+		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+		date: makeDate("2023-01-01"),
+		multiplier: 1,
+		actionId: "ActionID",
+		transactionId: "TransactionID",
+		listingExchange: "ListingExchange",
+		dividendType: GenericDividendType.ORDINARY,
+		exchangedMoney: makeMonetary(1, 5),
+	});
 
-const simpleStagingPaymentInLieuOfDividendWithholdingTax = new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends({
-	id: "PaymentInLieuOfDividendWithholdingTax",
-	financialIdentifier: ident,
-	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-	date: makeDate("2023-01-01"),
-	multiplier: 1,
-	actionId: "ActionID",
-	transactionId: "TransactionID",
-	listingExchange: "ListingExchange",
-	exchangedMoney: makeMonetary(1, -2.5),
-});
+const simpleStagingPaymentInLieuOfDividendWithholdingTax =
+	new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends({
+		id: "PaymentInLieuOfDividendWithholdingTax",
+		financialIdentifier: ident,
+		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+		date: makeDate("2023-01-01"),
+		multiplier: 1,
+		actionId: "ActionID",
+		transactionId: "TransactionID",
+		listingExchange: "ListingExchange",
+		exchangedMoney: makeMonetary(1, -2.5),
+	});
 
 const simpleStagingStockLot = new StagingTaxLot({
 	id: "Lot",
@@ -156,7 +158,9 @@ const simpleStagingDerivativeLot = new StagingTaxLot({
 	shortLongType: GenericShortLong.LONG,
 });
 
-function makeGrouping(overrides: Partial<ConstructorParameters<typeof StagingFinancialGrouping>[0]>): StagingFinancialGrouping {
+function makeGrouping(
+	overrides: Partial<ConstructorParameters<typeof StagingFinancialGrouping>[0]>,
+): StagingFinancialGrouping {
 	return new StagingFinancialGrouping({
 		financialIdentifier: ident,
 		countryOfOrigin: null,
@@ -207,14 +211,19 @@ test("simple derivative lot matching", () => {
 	];
 	const results = processor.generateGenericGroupings(groupings);
 	expect(results.length).toEqual(1);
+	expect(results[0].derivativeGroupings[0].derivativeTaxLots[0].acquired).toEqual(
+		results[0].derivativeGroupings[0].derivativeTrades[0],
+	);
 	expect(
-		results[0].derivativeGroupings[0].derivativeTaxLots[0].acquired,
-	).toEqual(results[0].derivativeGroupings[0].derivativeTrades[0]);
-	expect(results[0].derivativeGroupings[0].derivativeTaxLots[0].acquired.exchangedMoney.underlyingQuantity).toEqual(1);
+		results[0].derivativeGroupings[0].derivativeTaxLots[0].acquired.exchangedMoney
+			.underlyingQuantity,
+	).toEqual(1);
+	expect(results[0].derivativeGroupings[0].derivativeTaxLots[0].sold).toEqual(
+		results[0].derivativeGroupings[0].derivativeTrades[1],
+	);
 	expect(
-		results[0].derivativeGroupings[0].derivativeTaxLots[0].sold,
-	).toEqual(results[0].derivativeGroupings[0].derivativeTrades[1]);
-	expect(results[0].derivativeGroupings[0].derivativeTaxLots[0].sold.exchangedMoney.underlyingQuantity).toEqual(-1);
+		results[0].derivativeGroupings[0].derivativeTaxLots[0].sold.exchangedMoney.underlyingQuantity,
+	).toEqual(-1);
 });
 
 test("dividend with withholding tax", () => {
@@ -247,7 +256,9 @@ test("payment in lieu of dividend with withholding tax", () => {
 	const results = processor.generateGenericGroupings(groupings);
 	expect(results.length).toEqual(1);
 	expect(results[0].cashTransactions[0].id).toEqual(simpleStagingPaymentInLieuOfDividend.id);
-	expect(results[0].cashTransactions[1].id).toEqual(simpleStagingPaymentInLieuOfDividendWithholdingTax.id);
+	expect(results[0].cashTransactions[1].id).toEqual(
+		simpleStagingPaymentInLieuOfDividendWithholdingTax.id,
+	);
 	expect(results[0].cashTransactions[0].exchangedMoney.underlyingQuantity).toEqual(1);
 	expect(results[0].cashTransactions[1].exchangedMoney.underlyingQuantity).toEqual(1);
 	expect(results[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(5);

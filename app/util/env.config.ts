@@ -1,10 +1,10 @@
-import fs from "fs";
-import path from "path";
-import { loadEnvFile } from "process";
+import fs from "node:fs";
+import path from "node:path";
+import { loadEnvFile } from "node:process";
 import { z } from "zod/v4";
 
 const envFile = path.resolve(import.meta.dirname, "..", ".env");
-if(fs.existsSync(envFile)) {
+if (fs.existsSync(envFile)) {
 	loadEnvFile(envFile);
 }
 

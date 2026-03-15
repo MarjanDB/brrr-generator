@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract";
 import { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider";
 import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform";
@@ -9,14 +10,16 @@ import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Configuratio
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import { DateTime } from "luxon";
-import fs from "node:fs";
 
 const xmlPath = new URL("./DuplicatingTrades.xml", import.meta.url).pathname;
 
 test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantities", () => {
 	const xmlContent = fs.readFileSync(xmlPath, "utf-8");
 
-	const ibkrProvider = new IbkrBrokerageExportProvider(new IbkrExtractService(), new IbkrTransformService());
+	const ibkrProvider = new IbkrBrokerageExportProvider(
+		new IbkrExtractService(),
+		new IbkrTransformService(),
+	);
 	const stagingEvents = ibkrProvider.loadAndTransform([xmlContent]);
 
 	const groupingProcessor = new StagingFinancialGroupingProcessor();
@@ -33,9 +36,7 @@ test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantities", 
 	const items = generator.convert(reportConfig, financialEvents.groupings);
 	const events = items.flatMap((item) => item.items.flatMap((line) => line.events));
 
-	expect(
-		events.length,
-	).toEqual(8);
+	expect(events.length).toEqual(8);
 
 	expect(events[0].quantity).toEqual(10);
 	expect(events[1].quantity).toEqual(40);

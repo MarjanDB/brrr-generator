@@ -1,21 +1,23 @@
 <script setup lang="ts">
 definePageMeta({ ssr: false });
+
 import {
-  ApplyIdentifierRelationshipsService,
-  createContainer,
-  DivReportGenerator,
-  IbkrBrokerageExportProvider,
-  IfiReportGenerator,
-  KdvpReportGenerator,
-  SlovenianTaxAuthorityProvider,
-  SlovenianTaxAuthorityReportTypes,
-  StagingFinancialGroupingProcessor,
-  TaxAuthorityLotMatchingMethod,
-  TaxPayerConfigSchema,
-  zDateTimeFromISOString,
+	ApplyIdentifierRelationshipsService,
+	createContainer,
+	DivReportGenerator,
+	IbkrBrokerageExportProvider,
+	IfiReportGenerator,
+	KdvpReportGenerator,
+	SlovenianTaxAuthorityProvider,
+	SlovenianTaxAuthorityReportTypes,
+	StagingFinancialGroupingProcessor,
+	TaxAuthorityLotMatchingMethod,
+	TaxPayerConfigSchema,
+	zDateTimeFromISOString,
 } from "@brrr/lib";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const { $toggleTheme, $theme } = useNuxtApp();
 
 // Form state
@@ -39,118 +41,104 @@ const xmlUrl = ref<string | null>(null);
 const error = ref<string | null>(null);
 const loading = ref(false);
 
-const REPORT_MAP: Record<
-  "kdvp" | "div" | "ifi",
-  SlovenianTaxAuthorityReportTypes
-> = {
-  kdvp: SlovenianTaxAuthorityReportTypes.DOH_KDVP,
-  div: SlovenianTaxAuthorityReportTypes.DOH_DIV,
-  ifi: SlovenianTaxAuthorityReportTypes.D_IFI,
+const REPORT_MAP: Record<"kdvp" | "div" | "ifi", SlovenianTaxAuthorityReportTypes> = {
+	kdvp: SlovenianTaxAuthorityReportTypes.DOH_KDVP,
+	div: SlovenianTaxAuthorityReportTypes.DOH_DIV,
+	ifi: SlovenianTaxAuthorityReportTypes.D_IFI,
 };
 
-const OUTPUT_FILENAMES: Record<
-  "kdvp" | "div" | "ifi",
-  { xml: string; csv: string }
-> = {
-  kdvp: { xml: "Doh_KDVP.xml", csv: "export-trades.csv" },
-  div: { xml: "Doh_Div.xml", csv: "export-dividends.csv" },
-  ifi: { xml: "D_Ifi.xml", csv: "export-derivatives.csv" },
+// biome-ignore lint/correctness/noUnusedVariables: used in template
+const OUTPUT_FILENAMES: Record<"kdvp" | "div" | "ifi", { xml: string; csv: string }> = {
+	kdvp: { xml: "Doh_KDVP.xml", csv: "export-trades.csv" },
+	div: { xml: "Doh_Div.xml", csv: "export-dividends.csv" },
+	ifi: { xml: "D_Ifi.xml", csv: "export-derivatives.csv" },
 };
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 function onFileChange(e: Event) {
-  const input = e.target as HTMLInputElement;
-  xmlFiles.value = input.files ?? null;
+	const input = e.target as HTMLInputElement;
+	xmlFiles.value = input.files ?? null;
 }
 
 function revokeUrls() {
-  if (csvUrl.value) URL.revokeObjectURL(csvUrl.value);
-  if (xmlUrl.value) URL.revokeObjectURL(xmlUrl.value);
-  csvUrl.value = null;
-  xmlUrl.value = null;
+	if (csvUrl.value) URL.revokeObjectURL(csvUrl.value);
+	if (xmlUrl.value) URL.revokeObjectURL(xmlUrl.value);
+	csvUrl.value = null;
+	xmlUrl.value = null;
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 async function generate() {
-  error.value = null;
-  csvOutput.value = null;
-  xmlOutput.value = null;
-  revokeUrls();
+	error.value = null;
+	csvOutput.value = null;
+	xmlOutput.value = null;
+	revokeUrls();
 
-  if (!xmlFiles.value || xmlFiles.value.length === 0) {
-    error.value = "Please select at least one IBKR XML file.";
-    return;
-  }
+	if (!xmlFiles.value || xmlFiles.value.length === 0) {
+		error.value = "Please select at least one IBKR XML file.";
+		return;
+	}
 
-  loading.value = true;
-  try {
-    const xmlContents = await Promise.all(
-      Array.from(xmlFiles.value).map((f) => f.text()),
-    );
+	loading.value = true;
+	try {
+		const xmlContents = await Promise.all(Array.from(xmlFiles.value).map((f) => f.text()));
 
-    const taxPayerInfo = TaxPayerConfigSchema.parse({
-      taxNumber: taxNumber.value,
-      taxpayerType: "FO",
-      name: fullName.value,
-      address1: address1.value,
-      address2: null,
-      city: city.value,
-      postNumber: postNumber.value,
-      postName: postName.value,
-      municipalityName: "",
-      birthDate: "1990-01-01",
-      maticnaStevilka: "",
-      invalidskoPodjetje: false,
-      resident: true,
-      activityCode: "",
-      activityName: "",
-      countryId: countryId.value,
-      countryName: countryName.value,
-    });
+		const taxPayerInfo = TaxPayerConfigSchema.parse({
+			taxNumber: taxNumber.value,
+			taxpayerType: "FO",
+			name: fullName.value,
+			address1: address1.value,
+			address2: null,
+			city: city.value,
+			postNumber: postNumber.value,
+			postName: postName.value,
+			municipalityName: "",
+			birthDate: "1990-01-01",
+			maticnaStevilka: "",
+			invalidskoPodjetje: false,
+			resident: true,
+			activityCode: "",
+			activityName: "",
+			countryId: countryId.value,
+			countryName: countryName.value,
+		});
 
-    const reportConfig = {
-      fromDate: zDateTimeFromISOString.parse(`${year.value}-01-01`),
-      toDate: zDateTimeFromISOString.parse(`${year.value + 1}-01-01`),
-      lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
-    };
+		const reportConfig = {
+			fromDate: zDateTimeFromISOString.parse(`${year.value}-01-01`),
+			toDate: zDateTimeFromISOString.parse(`${year.value + 1}-01-01`),
+			lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
+		};
 
-    const container = createContainer(new ApiInfoProvider());
-    const ibkrProvider = container.get(IbkrBrokerageExportProvider);
-    const groupingProcessor = container.get(StagingFinancialGroupingProcessor);
+		const container = createContainer(new ApiInfoProvider());
+		const ibkrProvider = container.get(IbkrBrokerageExportProvider);
+		const groupingProcessor = container.get(StagingFinancialGroupingProcessor);
 
-    const stagingEvents = ibkrProvider.loadAndTransform(xmlContents);
-    const financialEvents =
-      groupingProcessor.processStagingFinancialEvents(stagingEvents);
+		const stagingEvents = ibkrProvider.loadAndTransform(xmlContents);
+		const financialEvents = groupingProcessor.processStagingFinancialEvents(stagingEvents);
 
-    const provider = new SlovenianTaxAuthorityProvider(
-      taxPayerInfo,
-      reportConfig,
-      container.get(ApplyIdentifierRelationshipsService),
-      container.get(KdvpReportGenerator),
-      container.get(DivReportGenerator),
-      container.get(IfiReportGenerator),
-    );
+		const provider = new SlovenianTaxAuthorityProvider(
+			taxPayerInfo,
+			reportConfig,
+			container.get(ApplyIdentifierRelationshipsService),
+			container.get(KdvpReportGenerator),
+			container.get(DivReportGenerator),
+			container.get(IfiReportGenerator),
+		);
 
-    const selectedType = REPORT_MAP[reportType.value];
-    const xml = await provider.generateExportForTaxAuthority(
-      selectedType,
-      financialEvents,
-    );
-    const csv = await provider.generateSpreadsheetExport(
-      selectedType,
-      financialEvents,
-    );
+		const selectedType = REPORT_MAP[reportType.value];
+		const xml = await provider.generateExportForTaxAuthority(selectedType, financialEvents);
+		const csv = await provider.generateSpreadsheetExport(selectedType, financialEvents);
 
-    xmlOutput.value = xml;
-    csvOutput.value = csv;
+		xmlOutput.value = xml;
+		csvOutput.value = csv;
 
-    xmlUrl.value = URL.createObjectURL(
-      new Blob([xml], { type: "application/xml" }),
-    );
-    csvUrl.value = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : String(e);
-  } finally {
-    loading.value = false;
-  }
+		xmlUrl.value = URL.createObjectURL(new Blob([xml], { type: "application/xml" }));
+		csvUrl.value = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+	} catch (e) {
+		error.value = e instanceof Error ? e.message : String(e);
+	} finally {
+		loading.value = false;
+	}
 }
 
 onUnmounted(revokeUrls);

@@ -24,7 +24,9 @@ export class RenameProvenanceStep {
 		this.effectiveDate = args.effectiveDate;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof RenameProvenanceStep>[0]>): RenameProvenanceStep {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof RenameProvenanceStep>[0]>,
+	): RenameProvenanceStep {
 		return new RenameProvenanceStep({
 			fromIdentifier: this.fromIdentifier,
 			toIdentifier: this.toIdentifier,
@@ -67,7 +69,9 @@ export class SplitProvenanceStep {
 		this.beforeExchangedMoney = args.beforeExchangedMoney;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof SplitProvenanceStep>[0]>): SplitProvenanceStep {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof SplitProvenanceStep>[0]>,
+	): SplitProvenanceStep {
 		return new SplitProvenanceStep({
 			fromIdentifier: this.fromIdentifier,
 			toIdentifier: this.toIdentifier,

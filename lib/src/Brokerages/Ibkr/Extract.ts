@@ -33,18 +33,33 @@ export class IbkrExtractService {
 			const allTrades = s.Trades.Trade;
 			const allLots = s.Trades.Lot;
 
-			const stockTrades = allTrades.filter((t) => t["assetCategory"] === AssetClass.STOCK).map((a) => TradeStock.Schema.parse(a));
-			const stockLots = allLots.filter((t) => t["assetCategory"] === AssetClass.STOCK).map((a) => LotStock.Schema.parse(a));
-			const derivativeTrades = allTrades.filter((t) => t["assetCategory"] === AssetClass.OPTION).map((a) =>
-				TradeDerivative.Schema.parse(a)
+			const stockTrades = allTrades
+				.filter((t) => t.assetCategory === AssetClass.STOCK)
+				.map((a) => TradeStock.Schema.parse(a));
+			const stockLots = allLots
+				.filter((t) => t.assetCategory === AssetClass.STOCK)
+				.map((a) => LotStock.Schema.parse(a));
+			const derivativeTrades = allTrades
+				.filter((t) => t.assetCategory === AssetClass.OPTION)
+				.map((a) => TradeDerivative.Schema.parse(a));
+			const derivativeLots = allLots
+				.filter((t) => t.assetCategory === AssetClass.OPTION)
+				.map((a) => LotDerivative.Schema.parse(a));
+			const cashTransactions = s.CashTransactions.CashTransaction.map((a) =>
+				TransactionCash.Schema.parse(a),
 			);
-			const derivativeLots = allLots.filter((t) => t["assetCategory"] === AssetClass.OPTION).map((a) =>
-				LotDerivative.Schema.parse(a)
+			const corporateActions = s.CorporateActions.CorporateAction.map((a) =>
+				CorporateAction.Schema.parse(a),
 			);
-			const cashTransactions = s.CashTransactions.CashTransaction.map((a) => TransactionCash.Schema.parse(a));
-			const corporateActions = s.CorporateActions.CorporateAction.map((a) => CorporateAction.Schema.parse(a));
 
-			return new SegmentedTrades({ cashTransactions, corporateActions, stockTrades, stockLots, derivativeTrades, derivativeLots });
+			return new SegmentedTrades({
+				cashTransactions,
+				corporateActions,
+				stockTrades,
+				stockLots,
+				derivativeTrades,
+				derivativeLots,
+			});
 		});
 
 		return this.mergeTrades(extracted);
@@ -54,10 +69,16 @@ export class IbkrExtractService {
 		return new SegmentedTrades({
 			stockTrades: this._deduplicateByTransactionID<TradeStock>(trades.map((t) => t.stockTrades)),
 			stockLots: trades.flatMap((t) => t.stockLots), // lots cannot be deduplicated, as there is no unique identifier
-			derivativeTrades: this._deduplicateByTransactionID<TradeDerivative>(trades.map((t) => t.derivativeTrades)),
+			derivativeTrades: this._deduplicateByTransactionID<TradeDerivative>(
+				trades.map((t) => t.derivativeTrades),
+			),
 			derivativeLots: trades.flatMap((t) => t.derivativeLots), // lots cannot be deduplicated, as there is no unique identifier
-			cashTransactions: this._deduplicateByTransactionID<TransactionCash>(trades.map((t) => t.cashTransactions)),
-			corporateActions: this._deduplicateByTransactionID<CorporateAction>(trades.map((t) => t.corporateActions)),
+			cashTransactions: this._deduplicateByTransactionID<TransactionCash>(
+				trades.map((t) => t.cashTransactions),
+			),
+			corporateActions: this._deduplicateByTransactionID<CorporateAction>(
+				trades.map((t) => t.corporateActions),
+			),
 		});
 	}
 

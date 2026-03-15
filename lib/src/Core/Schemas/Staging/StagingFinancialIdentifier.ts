@@ -39,7 +39,10 @@ export class StagingFinancialIdentifier {
 		const hasName = this._name !== null && other._name !== null;
 
 		// Do not match when Name differs (one has name, other has different or missing).
-		if ((this._name === null) !== (other._name === null) || (hasName && this._name !== other._name)) {
+		if (
+			(this._name === null) !== (other._name === null) ||
+			(hasName && this._name !== other._name)
+		) {
 			return false;
 		}
 		// Do not match when both have ISIN but they differ (e.g. ISIN change).

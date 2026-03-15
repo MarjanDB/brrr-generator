@@ -1,6 +1,6 @@
 import {
-	EDavkiTradeReportSecurityLineGenericEventBought,
 	type EDavkiGenericTradeReportItem,
+	EDavkiTradeReportSecurityLineGenericEventBought,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
 import { stringify } from "csv-stringify/sync";
 

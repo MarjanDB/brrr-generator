@@ -42,7 +42,9 @@ export class StagingTradeEventStockAcquired {
 		this.acquiredReason = args.acquiredReason;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof StagingTradeEventStockAcquired>[0]>): StagingTradeEventStockAcquired {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof StagingTradeEventStockAcquired>[0]>,
+	): StagingTradeEventStockAcquired {
 		return new StagingTradeEventStockAcquired({
 			id: this.id,
 			financialIdentifier: this.financialIdentifier,
@@ -73,7 +75,9 @@ export class StagingTradeEventStockSold {
 		this.exchangedMoney = args.exchangedMoney;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof StagingTradeEventStockSold>[0]>): StagingTradeEventStockSold {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof StagingTradeEventStockSold>[0]>,
+	): StagingTradeEventStockSold {
 		return new StagingTradeEventStockSold({
 			id: this.id,
 			financialIdentifier: this.financialIdentifier,
@@ -97,7 +101,9 @@ export class StagingTradeEventDerivativeAcquired {
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
 	public readonly acquiredReason: GenericDerivativeReportItemGainType;
 
-	constructor(args: StagingTradeEventArgs & { acquiredReason: GenericDerivativeReportItemGainType }) {
+	constructor(
+		args: StagingTradeEventArgs & { acquiredReason: GenericDerivativeReportItemGainType },
+	) {
 		this.id = args.id;
 		this.financialIdentifier = args.financialIdentifier;
 		this.assetClass = args.assetClass;
@@ -107,7 +113,9 @@ export class StagingTradeEventDerivativeAcquired {
 		this.acquiredReason = args.acquiredReason;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof StagingTradeEventDerivativeAcquired>[0]>): StagingTradeEventDerivativeAcquired {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof StagingTradeEventDerivativeAcquired>[0]>,
+	): StagingTradeEventDerivativeAcquired {
 		return new StagingTradeEventDerivativeAcquired({
 			id: this.id,
 			financialIdentifier: this.financialIdentifier,
@@ -138,7 +146,9 @@ export class StagingTradeEventDerivativeSold {
 		this.exchangedMoney = args.exchangedMoney;
 	}
 
-	copy(overrides: Partial<ConstructorParameters<typeof StagingTradeEventDerivativeSold>[0]>): StagingTradeEventDerivativeSold {
+	copy(
+		overrides: Partial<ConstructorParameters<typeof StagingTradeEventDerivativeSold>[0]>,
+	): StagingTradeEventDerivativeSold {
 		return new StagingTradeEventDerivativeSold({
 			id: this.id,
 			financialIdentifier: this.financialIdentifier,
@@ -151,7 +161,9 @@ export class StagingTradeEventDerivativeSold {
 	}
 }
 
-export type StagingTradeEventDerivative = StagingTradeEventDerivativeAcquired | StagingTradeEventDerivativeSold;
+export type StagingTradeEventDerivative =
+	| StagingTradeEventDerivativeAcquired
+	| StagingTradeEventDerivativeSold;
 
 export class StagingTradeEventCashTransactionDividend {
 	public readonly id: string;
@@ -221,7 +233,9 @@ export class StagingTradeEventCashTransactionWithholdingTax {
 	}
 
 	copy(
-		overrides: Partial<ConstructorParameters<typeof StagingTradeEventCashTransactionWithholdingTax>[0]>,
+		overrides: Partial<
+			ConstructorParameters<typeof StagingTradeEventCashTransactionWithholdingTax>[0]
+		>,
 	): StagingTradeEventCashTransactionWithholdingTax {
 		return new StagingTradeEventCashTransactionWithholdingTax({
 			id: this.id,
@@ -264,7 +278,9 @@ export class StagingTradeEventCashTransactionPaymentInLieuOfDividends {
 	}
 
 	copy(
-		overrides: Partial<ConstructorParameters<typeof StagingTradeEventCashTransactionPaymentInLieuOfDividends>[0]>,
+		overrides: Partial<
+			ConstructorParameters<typeof StagingTradeEventCashTransactionPaymentInLieuOfDividends>[0]
+		>,
 	): StagingTradeEventCashTransactionPaymentInLieuOfDividends {
 		return new StagingTradeEventCashTransactionPaymentInLieuOfDividends({
 			id: this.id,
@@ -306,7 +322,11 @@ export class StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDiv
 	}
 
 	copy(
-		overrides: Partial<ConstructorParameters<typeof StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends>[0]>,
+		overrides: Partial<
+			ConstructorParameters<
+				typeof StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends
+			>[0]
+		>,
 	): StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends {
 		return new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends({
 			id: this.id,

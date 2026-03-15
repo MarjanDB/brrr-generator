@@ -1,5 +1,9 @@
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod";
-import { GenericAssetClass, GenericShortLong, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats";
+import {
+	GenericAssetClass,
+	GenericShortLong,
+	GenericTradeReportItemGainType,
+} from "@brrr/Core/Schemas/CommonFormats";
 import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots";

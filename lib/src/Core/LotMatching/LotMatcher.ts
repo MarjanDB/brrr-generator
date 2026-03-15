@@ -26,7 +26,10 @@ export class GenericLotMatchingDetails {
 		this.trades = trades;
 	}
 
-	getTradesOfLotsClosedInPeriod(periodStart: ValidDateTime, periodEnd: ValidDateTime): GenericLotMatchingDetails {
+	getTradesOfLotsClosedInPeriod(
+		periodStart: ValidDateTime,
+		periodEnd: ValidDateTime,
+	): GenericLotMatchingDetails {
 		const lotsClosedInPeriod = this.lots.filter(
 			(lot) => lot.sold.date >= periodStart && lot.sold.date <= periodEnd,
 		);
@@ -48,7 +51,10 @@ export class LotMatcher {
 		return { lots, trades };
 	}
 
-	matchLotsWithGenericTradeEvents(method: LotMatchingMethod, events: TradeEvent[]): GenericLotMatchingDetails {
+	matchLotsWithGenericTradeEvents(
+		method: LotMatchingMethod,
+		events: TradeEvent[],
+	): GenericLotMatchingDetails {
 		const tradeEventMappings = new Map<string, TradeEvent>();
 		const tradeMappings = new Map<string, Trade>();
 
@@ -62,20 +68,24 @@ export class LotMatcher {
 		const matchingDetails = this.matchLotsWithTrades(method, convertedEvents);
 		const generatedLots = matchingDetails.lots;
 
-		const generatedLotsWithTradeEvents = generatedLots.map((lot) => this._generateTradeEventBasedOnLot(lot, tradeEventMappings));
+		const generatedLotsWithTradeEvents = generatedLots.map((lot) =>
+			this._generateTradeEventBasedOnLot(lot, tradeEventMappings),
+		);
 
-		const convertedLots: TaxLot<TradeEvent, TradeEvent>[] = generatedLotsWithTradeEvents.map((lotWithEvents) => {
-			const lotId = lotWithEvents.lot.acquired.relation.id;
-			return new TaxLot<TradeEvent, TradeEvent>({
-				id: lotId,
-				financialIdentifier: lotWithEvents.acquiredTrade.financialIdentifier,
-				quantity: lotWithEvents.lot.quantity,
-				acquired: lotWithEvents.acquiredTrade,
-				sold: lotWithEvents.soldTrade,
-				shortLongType: GenericShortLong.LONG,
-				provenance: [],
-			});
-		});
+		const convertedLots: TaxLot<TradeEvent, TradeEvent>[] = generatedLotsWithTradeEvents.map(
+			(lotWithEvents) => {
+				const lotId = lotWithEvents.lot.acquired.relation.id;
+				return new TaxLot<TradeEvent, TradeEvent>({
+					id: lotId,
+					financialIdentifier: lotWithEvents.acquiredTrade.financialIdentifier,
+					quantity: lotWithEvents.lot.quantity,
+					acquired: lotWithEvents.acquiredTrade,
+					sold: lotWithEvents.soldTrade,
+					shortLongType: GenericShortLong.LONG,
+					provenance: [],
+				});
+			},
+		);
 
 		const buys = generatedLotsWithTradeEvents.map((l) => l.acquiredTrade);
 		const sells = generatedLotsWithTradeEvents.map((l) => l.soldTrade);
@@ -108,7 +118,8 @@ export class LotMatcher {
 			exchangedMoney: {
 				...underlyingAcquiredTrade.exchangedMoney,
 				underlyingQuantity: lotQuantity,
-				comissionTotal: (1 / underlyingAcquiredTrade.exchangedMoney.underlyingQuantity) *
+				comissionTotal:
+					(1 / underlyingAcquiredTrade.exchangedMoney.underlyingQuantity) *
 					lotQuantity *
 					underlyingAcquiredTrade.exchangedMoney.comissionTotal,
 			},
@@ -118,7 +129,8 @@ export class LotMatcher {
 			exchangedMoney: {
 				...underlyingSoldTrade.exchangedMoney,
 				underlyingQuantity: -lotQuantity,
-				comissionTotal: (1 / underlyingSoldTrade.exchangedMoney.underlyingQuantity) *
+				comissionTotal:
+					(1 / underlyingSoldTrade.exchangedMoney.underlyingQuantity) *
 					-lotQuantity *
 					underlyingSoldTrade.exchangedMoney.comissionTotal,
 			},

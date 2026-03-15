@@ -1,10 +1,21 @@
-import type { TradeEventStockAcquired, TradeEventStockSold, TransactionCash } from "@brrr/Core/Schemas/Events";
+import type {
+	TradeEventStockAcquired,
+	TradeEventStockSold,
+	TransactionCash,
+} from "@brrr/Core/Schemas/Events";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { type DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import { IdentifierChangeType, IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationship";
+import {
+	IdentifierChangeType,
+	IdentifierRelationshipSplit,
+} from "@brrr/Core/Schemas/IdentifierRelationship";
 import type { TaxLotStock } from "@brrr/Core/Schemas/Lots";
-import { type AnyProvenanceStep, RenameProvenanceStep, SplitProvenanceStep } from "@brrr/Core/Schemas/Provenance";
+import {
+	type AnyProvenanceStep,
+	RenameProvenanceStep,
+	SplitProvenanceStep,
+} from "@brrr/Core/Schemas/Provenance";
 
 // Applies corporate action identifier relationships to financial events.
 //
@@ -30,10 +41,13 @@ export class ApplyIdentifierRelationshipsService {
 		}
 
 		const relsForSplits = current.identifierRelationships.filter(
-			(r): r is IdentifierRelationshipSplit => r instanceof IdentifierRelationshipSplit && changeTypesToApply.includes(r.changeType),
+			(r): r is IdentifierRelationshipSplit =>
+				r instanceof IdentifierRelationshipSplit && changeTypesToApply.includes(r.changeType),
 		);
 
-		for (const rel of [...relsForSplits].sort((a, b) => a.effectiveDate.toMillis() - b.effectiveDate.toMillis())) {
+		for (const rel of [...relsForSplits].sort(
+			(a, b) => a.effectiveDate.toMillis() - b.effectiveDate.toMillis(),
+		)) {
 			current = this._applySplitOrReverseSplit(current, rel);
 		}
 
@@ -41,7 +55,9 @@ export class ApplyIdentifierRelationshipsService {
 	}
 
 	private _applyRename(events: FinancialEvents): FinancialEvents {
-		const rels = events.identifierRelationships.filter((r) => r.changeType === IdentifierChangeType.RENAME);
+		const rels = events.identifierRelationships.filter(
+			(r) => r.changeType === IdentifierChangeType.RENAME,
+		);
 		if (rels.length === 0) return events;
 
 		const pairs = rels.map((r) => [r.fromIdentifier, r.toIdentifier] as const);
@@ -99,14 +115,20 @@ export class ApplyIdentifierRelationshipsService {
 			});
 			const existing = sinkToProvenance.get(key) ?? [];
 			// Avoid duplicates
-			if (!existing.some((s) => s.fromIdentifier.isTheSameAs(step.fromIdentifier) && s.toIdentifier.isTheSameAs(step.toIdentifier))) {
+			if (
+				!existing.some(
+					(s) =>
+						s.fromIdentifier.isTheSameAs(step.fromIdentifier) &&
+						s.toIdentifier.isTheSameAs(step.toIdentifier),
+				)
+			) {
 				existing.push(step);
 			}
 			sinkToProvenance.set(key, existing);
 		}
 
 		const merged = [...bySink.values()].map(({ sink, groupings }) =>
-			this._mergeGroupings(sink, groupings, sinkToProvenance.get(sink.toKey()) ?? [])
+			this._mergeGroupings(sink, groupings, sinkToProvenance.get(sink.toKey()) ?? []),
 		);
 
 		return new FinancialEvents({
@@ -115,11 +137,17 @@ export class ApplyIdentifierRelationshipsService {
 		});
 	}
 
-	private _applySplitOrReverseSplit(events: FinancialEvents, relationship: IdentifierRelationshipSplit): FinancialEvents {
+	private _applySplitOrReverseSplit(
+		events: FinancialEvents,
+		relationship: IdentifierRelationshipSplit,
+	): FinancialEvents {
 		if (relationship.quantityBefore === 0) return events;
 		const ratio = relationship.quantityAfter / relationship.quantityBefore;
 
-		const fromGrouping = events.groupings.find((g) => relationship.fromIdentifier.sameInstrumentByIsin(g.financialIdentifier)) ?? null;
+		const fromGrouping =
+			events.groupings.find((g) =>
+				relationship.fromIdentifier.sameInstrumentByIsin(g.financialIdentifier),
+			) ?? null;
 		if (!fromGrouping) return events;
 
 		const scaledTrades: (TradeEventStockAcquired | TradeEventStockSold)[] = [];
@@ -148,10 +176,12 @@ export class ApplyIdentifierRelationshipsService {
 				underlyingTradePrice: m.underlyingTradePrice * (1 / ratio),
 			};
 
-			scaledTrades.push(t.copy({
-				exchangedMoney: newMoney,
-				provenance: [...t.provenance, step],
-			}));
+			scaledTrades.push(
+				t.copy({
+					exchangedMoney: newMoney,
+					provenance: [...t.provenance, step],
+				}),
+			);
 		}
 
 		const scaledLots: TaxLotStock[] = [];
@@ -166,10 +196,12 @@ export class ApplyIdentifierRelationshipsService {
 					quantityAfter: relationship.quantityAfter,
 					beforeQuantity: lot.quantity,
 				});
-				scaledLots.push(lot.copy({
-					quantity: lot.quantity * ratio,
-					provenance: [...lot.provenance, step],
-				}));
+				scaledLots.push(
+					lot.copy({
+						quantity: lot.quantity * ratio,
+						provenance: [...lot.provenance, step],
+					}),
+				);
 			} else {
 				scaledLots.push(lot);
 			}
@@ -191,8 +223,11 @@ export class ApplyIdentifierRelationshipsService {
 		});
 
 		const toGrouping =
-			events.groupings.find((g) => g !== fromGrouping && relationship.toIdentifier.sameInstrumentByIsin(g.financialIdentifier)) ??
-				null;
+			events.groupings.find(
+				(g) =>
+					g !== fromGrouping &&
+					relationship.toIdentifier.sameInstrumentByIsin(g.financialIdentifier),
+			) ?? null;
 
 		let mergedGrouping: FinancialGrouping;
 		if (toGrouping !== null) {
@@ -230,26 +265,33 @@ export class ApplyIdentifierRelationshipsService {
 		for (const g of groupings) {
 			for (const t of g.stockTrades) allStockTrades.push(t.copy({ financialIdentifier: properId }));
 			for (const lot of g.stockTaxLots) {
-				allStockTaxLots.push(lot.copy({
-					financialIdentifier: properId,
-					acquired: lot.acquired.copy({ financialIdentifier: properId }),
-					sold: lot.sold.copy({ financialIdentifier: properId }),
-				}));
+				allStockTaxLots.push(
+					lot.copy({
+						financialIdentifier: properId,
+						acquired: lot.acquired.copy({ financialIdentifier: properId }),
+						sold: lot.sold.copy({ financialIdentifier: properId }),
+					}),
+				);
 			}
 			for (const dg of g.derivativeGroupings) {
-				allDerivativeGroupings.push(dg.copy({
-					financialIdentifier: properId,
-					derivativeTrades: dg.derivativeTrades.map((t) => t.copy({ financialIdentifier: properId })),
-					derivativeTaxLots: dg.derivativeTaxLots.map((lot) =>
-						lot.copy({
-							financialIdentifier: properId,
-							acquired: lot.acquired.copy({ financialIdentifier: properId }),
-							sold: lot.sold.copy({ financialIdentifier: properId }),
-						})
-					),
-				}));
+				allDerivativeGroupings.push(
+					dg.copy({
+						financialIdentifier: properId,
+						derivativeTrades: dg.derivativeTrades.map((t) =>
+							t.copy({ financialIdentifier: properId }),
+						),
+						derivativeTaxLots: dg.derivativeTaxLots.map((lot) =>
+							lot.copy({
+								financialIdentifier: properId,
+								acquired: lot.acquired.copy({ financialIdentifier: properId }),
+								sold: lot.sold.copy({ financialIdentifier: properId }),
+							}),
+						),
+					}),
+				);
 			}
-			for (const c of g.cashTransactions) allCashTransactions.push(c.copy({ financialIdentifier: properId }));
+			for (const c of g.cashTransactions)
+				allCashTransactions.push(c.copy({ financialIdentifier: properId }));
 		}
 
 		return new FinancialGrouping({
