@@ -20,5 +20,8 @@
 		}
 	},
 	"editor.formatOnSave": true,
-	"javascript.preferences.importModuleSpecifier": "non-relative"
+	"javascript.preferences.importModuleSpecifier": "non-relative",
+	"[vue]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	}
 }

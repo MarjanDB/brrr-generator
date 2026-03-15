@@ -18,10 +18,11 @@ export default defineConfig({
 		["app-container", "min-h-screen max-w-screen bg-neutral-900 dark:bg-neutral-100"],
 
 		// Typography
-		["text-h1", "text-4xl font-bold leading-tight text-neutral-50 dark:text-neutral-950"],
-		["text-h3", "text-2xl font-semibold leading-snug text-neutral-50 dark:text-neutral-950"],
-		["text-h5", "text-lg font-medium leading-normal text-neutral-300 dark:text-neutral-700"],
-		["text-body-sm", "text-sm leading-normal text-neutral-300 dark:text-neutral-700"],
+		["app-text", "text-neutral-50 dark:text-neutral-950"],
+		["app-text-sm", "text-sm app-text"],
+		["app-text-md", "text-base app-text"],
+		["app-text-lg", "text-lg app-text"],
+		["app-text-muted", "text-neutral-400 dark:text-neutral-600"],
 
 		// Card
 		[
@@ -38,23 +39,18 @@ export default defineConfig({
 		["input-md", "input-default px-3 py-2 text-base rounded-md"],
 
 		// Buttons
+		["button", "transition-colors cursor-pointer disabled:cursor-not-allowed"],
+
+		["button-sm", "button px-3 py-1.5 app-text-sm rounded-sm"],
+		["button-md", "button px-4 py-2 app-text-md rounded-md"],
+		["button-lg", "button px-5 py-2 app-text-lg rounded-md"],
+
 		[
-			"btn",
-			"inline-flex items-center justify-center font-medium transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-300 dark:focus:ring-secondary-600 rounded-md",
-		],
-		["btn-sm", "btn px-3 py-1.5 text-sm"],
-		["btn-md", "btn px-4 py-2 text-base"],
-		[
-			"btn-primary",
-			"btn-md bg-secondary-300 text-neutral-50 dark:bg-secondary-600 dark:text-neutral-950 hover:bg-secondary-400 dark:hover:bg-secondary-500 active:bg-secondary-200 dark:active:bg-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed",
-		],
-		[
-			"btn-outline",
-			"btn-sm border border-secondary-300 text-secondary-300 dark:border-secondary-600 dark:text-secondary-600 bg-transparent hover:bg-secondary-300/10 active:bg-secondary-300/20",
-		],
-		[
-			"btn-subtle",
-			"btn-sm bg-neutral-800 dark:bg-neutral-200 text-neutral-50 dark:text-neutral-950 hover:bg-neutral-700 dark:hover:bg-neutral-300 active:bg-neutral-600 dark:active:bg-neutral-400",
+			"button-primary",
+			`button-md bg-secondary-300 dark:bg-secondary-600
+			hover:bg-secondary-400 dark:hover:bg-secondary-500
+			disabled:bg-secondary-200 dark:disabled:bg-secondary-700 disabled:app-text-muted
+			disabled:hover:bg-secondary-300 dark:disabled:hover:bg-secondary-600`,
 		],
 
 		// Misc
