@@ -148,7 +148,7 @@ onUnmounted(revokeUrls);
   <div class="container-md py-8 flex flex-col gap-6">
     <div class="flex items-center justify-between">
       <h1 class="text-h1">IB Tax Calculator</h1>
-      <button @click="$toggleTheme()" class="btn-subtle">
+      <button @click="$toggleTheme()" class="btn-subtle-neutral">
         {{ $theme === "dark" ? "Light mode" : "Dark mode" }}
       </button>
     </div>
@@ -270,7 +270,7 @@ onUnmounted(revokeUrls);
       <button
         type="submit"
         :disabled="loading"
-        class="btn-primary self-start"
+        class="btn-filled-primary self-start"
         :class="{ 'state-loading': loading }"
       >
         {{ loading ? "Generating…" : "Generate Report" }}
@@ -285,13 +285,13 @@ onUnmounted(revokeUrls);
         <a
           :href="xmlUrl!"
           :download="OUTPUT_FILENAMES[reportType].xml"
-          class="btn-outline"
+          class="btn-subtle-secondary"
           >Download XML</a
         >
         <a
           :href="csvUrl!"
           :download="OUTPUT_FILENAMES[reportType].csv"
-          class="btn-outline"
+          class="btn-subtle-secondary"
           >Download CSV</a
         >
       </div>

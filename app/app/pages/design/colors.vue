@@ -1,65 +1,80 @@
 <script setup lang="ts">
-const steps = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
+const steps = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950] as const;
 
 const proposed = {
 	primary: {
-		50: "#fec3bf", 100: "#fea5a0", 200: "#f58985", 300: "#e96e6c",
-		400: "#d95455", 500: "#c63c41", 600: "#b02630", 700: "#971322",
-		800: "#7e0116", 900: "#62000e", 950: "#470007",
+		50: "#eee8d3", 100: "#e8e0c3", 150: "#e2d8b3", 200: "#dcd0a4", 250: "#d6c894",
+		300: "#d1c085", 350: "#cbb875", 400: "#c5b065", 450: "#bfa856", 500: "#b9a046",
+		550: "#a99340", 600: "#9a853a", 650: "#8a7734", 700: "#7a6a2e", 750: "#6b5c29",
+		800: "#5b4f23", 850: "#4c411d", 900: "#3c3417", 950: "#2c2611",
 	},
 	secondary: {
-		50: "#a3e2e3", 100: "#89cfd0", 200: "#6ebcbd", 300: "#53aaab",
-		400: "#379799", 500: "#188487", 600: "#057173", 700: "#035e5f",
-		800: "#004b4c", 900: "#00393a", 950: "#002829",
+		50: "#d7e2ea", 100: "#c8d8e3", 150: "#bacedc", 200: "#acc3d4", 250: "#9eb9cd",
+		300: "#90afc6", 350: "#81a5be", 400: "#739bb7", 450: "#6590b0", 500: "#5786a8",
+		550: "#4f7b9a", 600: "#48708c", 650: "#41647e", 700: "#39596f", 750: "#324e61",
+		800: "#2b4253", 850: "#233745", 900: "#1c2c37", 950: "#152028",
 	},
 	accent: {
-		50: "#c7d7e0", 100: "#b2c3cd", 200: "#9db0ba", 300: "#899da8",
-		400: "#768a96", 500: "#637883", 600: "#526671", 700: "#42545e",
-		800: "#33434c", 900: "#25333b", 950: "#17242a",
-	},
-	success: {
-		50: "#b4e2b8", 100: "#95d29b", 200: "#75c27d", 300: "#53b160",
-		400: "#2da045", 500: "#088d31", 600: "#057829", 700: "#026320",
-		800: "#004f17", 900: "#003d0f", 950: "#002b07",
-	},
-	error: {
-		50: "#fec3c1", 100: "#fea4a2", 200: "#fb8484", 300: "#f0676a",
-		400: "#e14a53", 500: "#ce2e3e", 600: "#b7102d", 700: "#9a0423",
-		800: "#7d011a", 900: "#620011", 950: "#470009",
-	},
-	warning: {
-		50: "#e1d3b5", 100: "#d0be9a", 200: "#c0aa7e", 300: "#af9662",
-		400: "#9e8348", 500: "#8d702f", 600: "#7b5e18", 700: "#684d01",
-		800: "#533d00", 900: "#402d00", 950: "#2e1f00",
-	},
-	info: {
-		50: "#bad6fe", 100: "#99c3fe", 200: "#76aefe", 300: "#5199fd",
-		400: "#2482fc", 500: "#056fe5", 600: "#035ec4", 700: "#014da4",
-		800: "#003d86", 900: "#002e69", 950: "#001f4e",
+		50: "#dddee4", 100: "#d1d2db", 150: "#c5c6d1", 200: "#b9bac8", 250: "#acafbe",
+		300: "#a0a3b5", 350: "#9497ab", 400: "#888ba2", 450: "#7c8098", 500: "#70748f",
+		550: "#676a83", 600: "#5d6077", 650: "#54566b", 700: "#4a4d5f", 750: "#414353",
+		800: "#373946", 850: "#2e2f3a", 900: "#24262e", 950: "#1b1c22",
 	},
 	neutral: {
-		50: "#cdd6db", 100: "#b9c2c7", 200: "#a6aeb3", 300: "#939ba0",
-		400: "#80888d", 500: "#6e767a", 600: "#5c6468", 700: "#4b5357",
-		800: "#3b4246", 900: "#2b3236", 950: "#1c2326",
+		50: "#dfdfe2", 100: "#d4d4d7", 150: "#c9c9cd", 200: "#bebec3", 250: "#b2b3b8",
+		300: "#a7a8ae", 350: "#9c9da4", 400: "#919299", 450: "#86878f", 500: "#7a7c85",
+		550: "#707179", 600: "#66676e", 650: "#5b5c63", 700: "#515258", 750: "#47474d",
+		800: "#3c3d41", 850: "#323336", 900: "#28282b", 950: "#1d1e20",
+	},
+	stale: {
+		50: "#e3e2de", 100: "#d9d7d3", 150: "#cfcdc7", 200: "#c5c3bc", 250: "#bab8b0",
+		300: "#b0aea5", 350: "#a6a499", 400: "#9c998e", 450: "#928f82", 500: "#888577",
+		550: "#7d796d", 600: "#716e63", 650: "#666359", 700: "#5a584f", 750: "#4f4d45",
+		800: "#43413a", 850: "#383630", 900: "#2c2b26", 950: "#21201c",
+	},
+	success: {
+		50: "#d8e9df", 100: "#cae1d4", 150: "#bcd9c8", 200: "#aed2bd", 250: "#a1cab2",
+		300: "#93c2a7", 350: "#85ba9b", 400: "#77b390", 450: "#6aab85", 500: "#5ca37a",
+		550: "#54956f", 600: "#4c8865", 650: "#457a5b", 700: "#3d6c50", 750: "#355e46",
+		800: "#2d513c", 850: "#264332", 900: "#1e3527", 950: "#16271d",
+	},
+	error: {
+		50: "#ecd5d7", 100: "#e5c6c9", 150: "#dfb7ba", 200: "#d8a8ac", 250: "#d1999e",
+		300: "#cb8a90", 350: "#c47c82", 400: "#bd6d73", 450: "#b75e65", 500: "#b04f57",
+		550: "#a14850", 600: "#924248", 650: "#833b41", 700: "#75343a", 750: "#662e32",
+		800: "#57272b", 850: "#482024", 900: "#391a1c", 950: "#2a1315",
+	},
+	warning: {
+		50: "#ece4d5", 100: "#e5dbc6", 150: "#dfd1b7", 200: "#d8c8a8", 250: "#d1bf99",
+		300: "#cbb58a", 350: "#c4ac7c", 400: "#bda26d", 450: "#b7995e", 500: "#b0904f",
+		550: "#a18448", 600: "#927742", 650: "#836b3b", 700: "#755f34", 750: "#66532e",
+		800: "#574727", 850: "#483b20", 900: "#392f1a", 950: "#2a2213",
+	},
+	info: {
+		50: "#d7e0ea", 100: "#c8d6e3", 150: "#bacbdc", 200: "#acc0d4", 250: "#9eb5cd",
+		300: "#90abc6", 350: "#81a0be", 400: "#7395b7", 450: "#658ab0", 500: "#5780a8",
+		550: "#4f759a", 600: "#486a8c", 650: "#415f7e", 700: "#39546f", 750: "#324a61",
+		800: "#2b3f53", 850: "#233445", 900: "#1c2937", 950: "#151f28",
 	},
 } as const;
 
 const colorScales = [
-	{ name: "primary" as const, label: "Primary — Vibrant Coral" },
-	{ name: "secondary" as const, label: "Secondary — Stormy Teal" },
-	{ name: "accent" as const, label: "Accent — Platinum blue-gray" },
+	{ name: "primary" as const, label: "Primary — Pearl Beige" },
+	{ name: "secondary" as const, label: "Secondary — Powder Blue" },
+	{ name: "accent" as const, label: "Accent — Blue Slate" },
+	{ name: "neutral" as const, label: "Neutral — Graphite (UI elements)" },
+	{ name: "stale" as const, label: "Stale — Warm Graphite (backgrounds)" },
 	{ name: "success" as const, label: "Success" },
 	{ name: "error" as const, label: "Error" },
 	{ name: "warning" as const, label: "Warning" },
 	{ name: "info" as const, label: "Info" },
-	{ name: "neutral" as const, label: "Neutral" },
 ];
 </script>
 
 <template>
 	<div class="flex flex-col gap-10 app-text py-8 px-6">
 		<h1 class="text-2xl font-bold">Color Scale Comparison</h1>
-		<p class="text-sm opacity-60">Current (top row) vs Proposed (bottom row). Proposed scales use OKLCH with compressed lightness range (L 0.195–0.925) and saturation-boosted extremes.</p>
+		<p class="text-sm opacity-60">Current (top row) vs Proposed (bottom row). 19 stops, L 88% (50) → 12% (950).</p>
 
 		<div
 			v-for="scale in colorScales"
@@ -78,7 +93,7 @@ const colorScales = [
 						class="flex flex-col items-center gap-1 flex-1"
 					>
 						<div
-							class="w-full h-14 rounded-sm"
+							class="w-full h-10 rounded-sm"
 							:style="{ backgroundColor: `var(--${scale.name}-${step})` }"
 						/>
 						<span class="text-xs opacity-40">{{ step }}</span>
@@ -96,7 +111,7 @@ const colorScales = [
 						class="flex flex-col items-center gap-1 flex-1"
 					>
 						<div
-							class="w-full h-14 rounded-sm"
+							class="w-full h-10 rounded-sm"
 							:style="{ backgroundColor: proposed[scale.name][step] }"
 						/>
 						<span class="text-xs opacity-40">{{ step }}</span>
@@ -105,12 +120,12 @@ const colorScales = [
 			</div>
 
 			<!-- Text legibility test -->
-			<div class="flex flex-row gap-2 flex-wrap">
+			<div class="flex flex-row gap-1 flex-wrap">
 				<div
 					v-for="step in steps"
 					:key="step"
 					class="px-2 py-1 rounded text-xs font-mono"
-					:style="{ backgroundColor: proposed[scale.name][step], color: step <= 400 ? proposed[scale.name][900] : proposed[scale.name][50] }"
+					:style="{ backgroundColor: proposed[scale.name][step], color: step <= 450 ? proposed[scale.name][950] : proposed[scale.name][50] }"
 				>
 					{{ step }}
 				</div>

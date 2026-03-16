@@ -1,111 +1,195 @@
 /* --- Raw Color Palette --- */
 /* These are fixed hex values — no theming logic here. */
 /* Light/dark theming is handled entirely in unocss.config.ts. */
+/* 19 stops: 50–950 in steps of 50. Lightness range: 88% (50) → 12% (950). */
 
 :root {
-	/* Primary — Vibrant Coral */
-	--primary-50: #fec3bf;
-	--primary-100: #fea5a0;
-	--primary-200: #f58985;
-	--primary-300: #e96e6c;
-	--primary-400: #d95455;
-	--primary-500: #c63c41;
-	--primary-600: #b02630;
-	--primary-700: #971322;
-	--primary-800: #7e0116;
-	--primary-900: #62000e;
-	--primary-950: #470007;
+	/* Primary — Pearl Beige (H=47, S=45%) */
+	--primary-50:  #eee8d3;
+	--primary-100: #e8e0c3;
+	--primary-150: #e2d8b3;
+	--primary-200: #dcd0a4;
+	--primary-250: #d6c894;
+	--primary-300: #d1c085;
+	--primary-350: #cbb875;
+	--primary-400: #c5b065;
+	--primary-450: #bfa856;
+	--primary-500: #b9a046;
+	--primary-550: #a99340;
+	--primary-600: #9a853a;
+	--primary-650: #8a7734;
+	--primary-700: #7a6a2e;
+	--primary-750: #6b5c29;
+	--primary-800: #5b4f23;
+	--primary-850: #4c411d;
+	--primary-900: #3c3417;
+	--primary-950: #2c2611;
 
-	/* Secondary — Stormy Teal */
-	--secondary-50: #a3e2e3;
-	--secondary-100: #89cfd0;
-	--secondary-200: #6ebcbd;
-	--secondary-300: #53aaab;
-	--secondary-400: #379799;
-	--secondary-500: #188487;
-	--secondary-600: #057173;
-	--secondary-700: #035e5f;
-	--secondary-800: #004b4c;
-	--secondary-900: #00393a;
-	--secondary-950: #002829;
+	/* Secondary — Powder Blue (H=205, S=32%) */
+	--secondary-50:  #d7e2ea;
+	--secondary-100: #c8d8e3;
+	--secondary-150: #bacedc;
+	--secondary-200: #acc3d4;
+	--secondary-250: #9eb9cd;
+	--secondary-300: #90afc6;
+	--secondary-350: #81a5be;
+	--secondary-400: #739bb7;
+	--secondary-450: #6590b0;
+	--secondary-500: #5786a8;
+	--secondary-550: #4f7b9a;
+	--secondary-600: #48708c;
+	--secondary-650: #41647e;
+	--secondary-700: #39596f;
+	--secondary-750: #324e61;
+	--secondary-800: #2b4253;
+	--secondary-850: #233745;
+	--secondary-900: #1c2c37;
+	--secondary-950: #152028;
 
-	/* Accent — Platinum blue-gray */
-	--accent-50: #c7d7e0;
-	--accent-100: #b2c3cd;
-	--accent-200: #9db0ba;
-	--accent-300: #899da8;
-	--accent-400: #768a96;
-	--accent-500: #637883;
-	--accent-600: #526671;
-	--accent-700: #42545e;
-	--accent-800: #33434c;
-	--accent-900: #25333b;
-	--accent-950: #17242a;
+	/* Accent — Blue Slate (H=233, S=12%) */
+	--accent-50:  #dddee4;
+	--accent-100: #d1d2db;
+	--accent-150: #c5c6d1;
+	--accent-200: #b9bac8;
+	--accent-250: #acafbe;
+	--accent-300: #a0a3b5;
+	--accent-350: #9497ab;
+	--accent-400: #888ba2;
+	--accent-450: #7c8098;
+	--accent-500: #70748f;
+	--accent-550: #676a83;
+	--accent-600: #5d6077;
+	--accent-650: #54566b;
+	--accent-700: #4a4d5f;
+	--accent-750: #414353;
+	--accent-800: #373946;
+	--accent-850: #2e2f3a;
+	--accent-900: #24262e;
+	--accent-950: #1b1c22;
 
-	/* Neutral — platinum-tinted gray */
-	--neutral-0: #000000;
-	--neutral-50: #1c2326;
-	--neutral-100: #2b3236;
-	--neutral-200: #3b4246;
-	--neutral-300: #4b5357;
-	--neutral-400: #5c6468;
-	--neutral-500: #6e767a;
-	--neutral-600: #80888d;
-	--neutral-700: #939ba0;
-	--neutral-800: #a6aeb3;
-	--neutral-900: #b9c2c7;
-	--neutral-950: #cdd6db;
-	--neutral-1000: #ffffff;
+	/* Neutral — Graphite (H=233, S=4%) */
+	--neutral-50:  #dfdfe2;
+	--neutral-100: #d4d4d7;
+	--neutral-150: #c9c9cd;
+	--neutral-200: #bebec3;
+	--neutral-250: #b2b3b8;
+	--neutral-300: #a7a8ae;
+	--neutral-350: #9c9da4;
+	--neutral-400: #919299;
+	--neutral-450: #86878f;
+	--neutral-500: #7a7c85;
+	--neutral-550: #707179;
+	--neutral-600: #66676e;
+	--neutral-650: #5b5c63;
+	--neutral-700: #515258;
+	--neutral-750: #47474d;
+	--neutral-800: #3c3d41;
+	--neutral-850: #323336;
+	--neutral-900: #28282b;
+	--neutral-950: #1d1e20;
 
-	/* Success */
-	--success-50: #b4e2b8;
-	--success-100: #95d29b;
-	--success-200: #75c27d;
-	--success-300: #53b160;
-	--success-400: #2da045;
-	--success-500: #088d31;
-	--success-600: #057829;
-	--success-700: #026320;
-	--success-800: #004f17;
-	--success-900: #003d0f;
-	--success-950: #002b07;
+	/* Stale — Warm Graphite (H=47, S=7%) */
+	--stale-50:  #e3e2de;
+	--stale-100: #d9d7d3;
+	--stale-150: #cfcdc7;
+	--stale-200: #c5c3bc;
+	--stale-250: #bab8b0;
+	--stale-300: #b0aea5;
+	--stale-350: #a6a499;
+	--stale-400: #9c998e;
+	--stale-450: #928f82;
+	--stale-500: #888577;
+	--stale-550: #7d796d;
+	--stale-600: #716e63;
+	--stale-650: #666359;
+	--stale-700: #5a584f;
+	--stale-750: #4f4d45;
+	--stale-800: #43413a;
+	--stale-850: #383630;
+	--stale-900: #2c2b26;
+	--stale-950: #21201c;
 
-	/* Error */
-	--error-50: #fec3c1;
-	--error-100: #fea4a2;
-	--error-200: #fb8484;
-	--error-300: #f0676a;
-	--error-400: #e14a53;
-	--error-500: #ce2e3e;
-	--error-600: #b7102d;
-	--error-700: #9a0423;
-	--error-800: #7d011a;
-	--error-900: #620011;
-	--error-950: #470009;
+	/* Success (H=145, S=28%) */
+	--success-50:  #d8e9df;
+	--success-100: #cae1d4;
+	--success-150: #bcd9c8;
+	--success-200: #aed2bd;
+	--success-250: #a1cab2;
+	--success-300: #93c2a7;
+	--success-350: #85ba9b;
+	--success-400: #77b390;
+	--success-450: #6aab85;
+	--success-500: #5ca37a;
+	--success-550: #54956f;
+	--success-600: #4c8865;
+	--success-650: #457a5b;
+	--success-700: #3d6c50;
+	--success-750: #355e46;
+	--success-800: #2d513c;
+	--success-850: #264332;
+	--success-900: #1e3527;
+	--success-950: #16271d;
 
-	/* Warning */
-	--warning-50: #e1d3b5;
-	--warning-100: #d0be9a;
-	--warning-200: #c0aa7e;
-	--warning-300: #af9662;
-	--warning-400: #9e8348;
-	--warning-500: #8d702f;
-	--warning-600: #7b5e18;
-	--warning-700: #684d01;
-	--warning-800: #533d00;
-	--warning-900: #402d00;
-	--warning-950: #2e1f00;
+	/* Error (H=355, S=38%) */
+	--error-50:  #ecd5d7;
+	--error-100: #e5c6c9;
+	--error-150: #dfb7ba;
+	--error-200: #d8a8ac;
+	--error-250: #d1999e;
+	--error-300: #cb8a90;
+	--error-350: #c47c82;
+	--error-400: #bd6d73;
+	--error-450: #b75e65;
+	--error-500: #b04f57;
+	--error-550: #a14850;
+	--error-600: #924248;
+	--error-650: #833b41;
+	--error-700: #75343a;
+	--error-750: #662e32;
+	--error-800: #57272b;
+	--error-850: #482024;
+	--error-900: #391a1c;
+	--error-950: #2a1315;
 
-	/* Info */
-	--info-50: #bad6fe;
-	--info-100: #99c3fe;
-	--info-200: #76aefe;
-	--info-300: #5199fd;
-	--info-400: #2482fc;
-	--info-500: #056fe5;
-	--info-600: #035ec4;
-	--info-700: #014da4;
-	--info-800: #003d86;
-	--info-900: #002e69;
-	--info-950: #001f4e;
+	/* Warning (H=60, S=38%) */
+	--warning-50:  #ececd5;
+	--warning-100: #e6e6c7;
+	--warning-150: #dfdfb9;
+	--warning-200: #d9d9ab;
+	--warning-250: #d3d39d;
+	--warning-300: #cccc8e;
+	--warning-350: #c6c680;
+	--warning-400: #c0c072;
+	--warning-450: #b9b964;
+	--warning-500: #b3b356;
+	--warning-550: #a9a94c;
+	--warning-600: #9b9b46;
+	--warning-650: #8d8d3f;
+	--warning-700: #7f7f39;
+	--warning-750: #717133;
+	--warning-800: #63632c;
+	--warning-850: #555526;
+	--warning-900: #464620;
+	--warning-950: #383819;
+
+	/* Info (H=210, S=32%) */
+	--info-50:  #d7e0ea;
+	--info-100: #c8d6e3;
+	--info-150: #bacbdc;
+	--info-200: #acc0d4;
+	--info-250: #9eb5cd;
+	--info-300: #90abc6;
+	--info-350: #81a0be;
+	--info-400: #7395b7;
+	--info-450: #658ab0;
+	--info-500: #5780a8;
+	--info-550: #4f759a;
+	--info-600: #486a8c;
+	--info-650: #415f7e;
+	--info-700: #39546f;
+	--info-750: #324a61;
+	--info-800: #2b3f53;
+	--info-850: #233445;
+	--info-900: #1c2937;
+	--info-950: #151f28;
 }
