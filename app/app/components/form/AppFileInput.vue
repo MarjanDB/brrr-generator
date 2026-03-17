@@ -1,41 +1,32 @@
 <script setup lang="ts">
-import { inject, onUnmounted, ref, watch } from "vue";
+import { inject, ref } from "vue";
 
 const props = defineProps<{
 	label?: string;
-	placeholder?: string;
+	accept?: string;
+	multiple?: boolean;
 	disabled?: boolean;
-	validate?: (value: string) => string | null;
+	validate?: (value: FileList | null) => string | null;
 }>();
 
-const model = defineModel<string>({ default: "" });
+const model = defineModel<FileList | null>({ default: null });
 
 const error = ref<string | null>(null);
 const touched = ref(false);
 
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-
-function runValidation(): boolean {
+function runValidation(value = model.value): boolean {
 	if (!props.validate) return true;
-	error.value = props.validate(model.value);
+	error.value = props.validate(value);
 	return error.value === null;
 }
 
-function onInput() {
-	if (!touched.value) return;
-	if (debounceTimer) clearTimeout(debounceTimer);
-	debounceTimer = setTimeout(runValidation, 600);
-}
-
-function onBlur() {
+function onChange(e: Event) {
+	const input = e.target as HTMLInputElement;
+	const files = input.files ?? null;
+	model.value = files;
 	touched.value = true;
-	if (debounceTimer) clearTimeout(debounceTimer);
-	runValidation();
+	runValidation(files);
 }
-
-onUnmounted(() => {
-	if (debounceTimer) clearTimeout(debounceTimer);
-});
 
 const form = inject<{ registerValidator: (fn: () => boolean) => void } | null>("app-form", null);
 if (form) {
@@ -50,13 +41,13 @@ if (form) {
 	<div class="flex flex-col gap-1">
 		<label v-if="label" class="text-sm font-medium app-text">{{ label }}</label>
 		<input
-			v-model="model"
-			:placeholder="placeholder"
+			type="file"
+			:accept="accept"
+			:multiple="multiple"
 			:disabled="disabled"
 			:class="error ? 'input-md-error' : 'input-md'"
-			class="w-full"
-			@input="onInput"
-			@blur="onBlur"
+			class="w-full cursor-pointer"
+			@change="onChange"
 		/>
 		<span v-if="error" class="text-xs text-error-600 dark:text-error-400">{{ error }}</span>
 	</div>
