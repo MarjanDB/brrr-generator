@@ -13,6 +13,33 @@ const colors = [
 	{ name: "warning",   filled: "button-filled-warning",   inverse: "button-inverse-warning"   },
 	{ name: "info",      filled: "button-filled-info",      inverse: "button-inverse-info"      },
 ];
+
+const formText = ref("");
+const formSelect = ref("");
+const formCheckbox = ref(false);
+const formSubmitResult = ref<string | null>(null);
+
+const selectOptions = [
+	{ value: "apple", label: "Apple" },
+	{ value: "banana", label: "Banana" },
+	{ value: "cherry", label: "Cherry" },
+];
+
+function validateRequired(value: string): string | null {
+	return value.trim() ? null : "This field is required";
+}
+
+function validateSelect(value: string): string | null {
+	return value ? null : "Please select an option";
+}
+
+function validateCheckbox(value: boolean): string | null {
+	return value ? null : "You must agree to continue";
+}
+
+function onFormSubmit(valid: boolean) {
+	formSubmitResult.value = valid ? "Form submitted successfully!" : "Please fix the errors above.";
+}
 </script>
 
 <template>
@@ -47,6 +74,34 @@ const colors = [
 				<button type="button" disabled :class="c.inverse">disabled</button>
 				<AppButton :class="c.inverse" :loading="true">inverse</AppButton>
 			</div>
+		</div>
+
+		<div class="flex flex-col gap-4 border b-1 p-5">
+			<h2 class="text-h3">Forms</h2>
+			<AppForm class="flex flex-col gap-4 max-w-sm" @submit="onFormSubmit">
+				<AppInput
+					v-model="formText"
+					label="Name"
+					placeholder="Enter your name"
+					:validate="validateRequired"
+				/>
+				<AppSelect
+					v-model="formSelect"
+					label="Fruit"
+					placeholder="Select a fruit"
+					:options="selectOptions"
+					:validate="validateSelect"
+				/>
+				<AppCheckbox
+					v-model="formCheckbox"
+					label="I agree to the terms"
+					:validate="validateCheckbox"
+				/>
+				<div class="flex items-center gap-3">
+					<AppButton class="button-filled-secondary" type="submit">Submit</AppButton>
+					<span v-if="formSubmitResult" class="text-sm app-text-muted">{{ formSubmitResult }}</span>
+				</div>
+			</AppForm>
 		</div>
 	</div>
 </template>

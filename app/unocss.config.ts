@@ -61,12 +61,27 @@ export default defineConfig({
 		],
 		["card-padding-md", "p-4"],
 
-		// Input
+		// Input base
 		[
-			"input-default",
-			"w-full bg-stale-150 dark:bg-stale-850 text-stale-900 dark:text-stale-100 placeholder:text-stale-500 dark:placeholder:text-stale-500 border border-stale-250 dark:border-stale-750 transition-colors hover:bg-stale-200 dark:hover:bg-stale-800 focus:outline-none focus:ring-2 focus:ring-secondary-600 dark:focus:ring-secondary-400",
+			"input-base",
+			"bg-stale-150 dark:bg-stale-850 text-stale-900 dark:text-stale-100 border border-stale-250 dark:border-stale-750 transition-colors hover:bg-stale-200 dark:hover:bg-stale-800 focus:outline-none focus:ring-2 focus:ring-secondary-600 dark:focus:ring-secondary-400 disabled:opacity-70 disabled:cursor-not-allowed",
 		],
-		["input-md", "input-default px-3 py-2 text-base rounded-md"],
+		[
+			"input-error",
+			"input-base border-error-500 dark:border-error-500 focus:ring-error-500 dark:focus:ring-error-500",
+		],
+		["input-md", "input-base px-3 py-2 text-base rounded-md"],
+		["input-md-error", "input-error px-3 py-2 text-base rounded-md"],
+
+		// Checkbox
+		[
+			"checkbox-base",
+			"size-4.5 rounded-sm border border-stale-400 dark:border-stale-600 bg-stale-150 dark:bg-stale-850 transition-colors cursor-pointer data-[state=checked]:bg-secondary-600 dark:data-[state=checked]:bg-secondary-400 data-[state=checked]:border-secondary-600 dark:data-[state=checked]:border-secondary-400 focus:outline-none focus:ring-2 focus:ring-secondary-600 dark:focus:ring-secondary-400 disabled:opacity-70 disabled:cursor-not-allowed",
+		],
+		[
+			"checkbox-error",
+			"size-4.5 rounded-sm border border-error-500 dark:border-error-500 bg-stale-150 dark:bg-stale-850 transition-colors cursor-pointer data-[state=checked]:bg-error-600 dark:data-[state=checked]:bg-error-400 data-[state=checked]:border-error-600 dark:data-[state=checked]:border-error-400 focus:outline-none focus:ring-2 focus:ring-error-500 dark:focus:ring-error-500 disabled:opacity-70 disabled:cursor-not-allowed",
+		],
 
 		// Buttons
 		["button", "transition-colors cursor-pointer disabled:cursor-not-allowed"],
