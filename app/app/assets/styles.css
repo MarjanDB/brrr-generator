@@ -2,9 +2,14 @@
 /* These are fixed hex values — no theming logic here. */
 /* Light/dark theming is handled entirely in unocss.config.ts. */
 /* 19 stops: 50–950 in steps of 50. Lightness range: 88% (50) → 12% (950). */
+/* Edge stops: 10–40 and 960–990 in steps of 10. Lightness range: 91.2% (10) → 88.8% (40) and 11.2% (960) → 8.8% (990). */
 
 :root {
 	/* Primary — Pearl Beige (H=47, S=45%) */
+	--primary-10:  #f3eede;
+	--primary-20:  #f2eddc;
+	--primary-30:  #f0ebd9;
+	--primary-40:  #efead6;
 	--primary-50:  #eee8d3;
 	--primary-100: #e8e0c3;
 	--primary-150: #e2d8b3;
@@ -24,8 +29,16 @@
 	--primary-850: #4c411d;
 	--primary-900: #3c3417;
 	--primary-950: #2c2611;
+	--primary-960: #292410;
+	--primary-970: #26210f;
+	--primary-980: #231f0d;
+	--primary-990: #211c0c;
 
 	/* Secondary — Powder Blue (H=205, S=32%) */
+	--secondary-10:  #e1eaf0;
+	--secondary-20:  #dfe8ee;
+	--secondary-30:  #dce6ed;
+	--secondary-40:  #d9e4ec;
 	--secondary-50:  #d7e2ea;
 	--secondary-100: #c8d8e3;
 	--secondary-150: #bacedc;
@@ -45,8 +58,16 @@
 	--secondary-850: #233745;
 	--secondary-900: #1c2c37;
 	--secondary-950: #152028;
+	--secondary-960: #131e26;
+	--secondary-970: #121c23;
+	--secondary-980: #111a20;
+	--secondary-990: #0f181e;
 
 	/* Accent — Blue Slate (H=233, S=12%) */
+	--accent-10:  #e6e6eb;
+	--accent-20:  #e4e4e9;
+	--accent-30:  #e1e2e8;
+	--accent-40:  #dfe0e6;
 	--accent-50:  #dddee4;
 	--accent-100: #d1d2db;
 	--accent-150: #c5c6d1;
@@ -66,8 +87,16 @@
 	--accent-850: #2e2f3a;
 	--accent-900: #24262e;
 	--accent-950: #1b1c22;
+	--accent-960: #191a20;
+	--accent-970: #17181e;
+	--accent-980: #16161b;
+	--accent-990: #141419;
 
 	/* Neutral — Graphite (H=233, S=4%) */
+	--neutral-10:  #e8e8e9;
+	--neutral-20:  #e6e6e7;
+	--neutral-30:  #e3e4e6;
+	--neutral-40:  #e1e2e4;
 	--neutral-50:  #dfdfe2;
 	--neutral-100: #d4d4d7;
 	--neutral-150: #c9c9cd;
@@ -87,8 +116,16 @@
 	--neutral-850: #323336;
 	--neutral-900: #28282b;
 	--neutral-950: #1d1e20;
+	--neutral-960: #1b1c1e;
+	--neutral-970: #191a1c;
+	--neutral-980: #181819;
+	--neutral-990: #161617;
 
 	/* Stale — Warm Graphite (H=47, S=7%) */
+	--stale-10:  #eae9e7;
+	--stale-20:  #e8e7e5;
+	--stale-30:  #e6e6e3;
+	--stale-40:  #e4e4e0;
 	--stale-50:  #e3e2de;
 	--stale-100: #d9d7d3;
 	--stale-150: #cfcdc7;
@@ -108,8 +145,16 @@
 	--stale-850: #383630;
 	--stale-900: #2c2b26;
 	--stale-950: #21201c;
+	--stale-960: #1f1e1b;
+	--stale-970: #1c1c19;
+	--stale-980: #1a1917;
+	--stale-990: #181715;
 
 	/* Success (H=145, S=28%) */
+	--success-10:  #e2efe8;
+	--success-20:  #e0ede5;
+	--success-30:  #ddece3;
+	--success-40:  #daeae1;
 	--success-50:  #d8e9df;
 	--success-100: #cae1d4;
 	--success-150: #bcd9c8;
@@ -129,8 +174,16 @@
 	--success-850: #264332;
 	--success-900: #1e3527;
 	--success-950: #16271d;
+	--success-960: #15251b;
+	--success-970: #132219;
+	--success-980: #121f17;
+	--success-990: #101d15;
 
 	/* Error (H=355, S=38%) */
+	--error-10:  #f1e0e1;
+	--error-20:  #f0dddf;
+	--error-30:  #efdadc;
+	--error-40:  #edd8d9;
 	--error-50:  #ecd5d7;
 	--error-100: #e5c6c9;
 	--error-150: #dfb7ba;
@@ -150,8 +203,16 @@
 	--error-850: #482024;
 	--error-900: #391a1c;
 	--error-950: #2a1315;
+	--error-960: #271214;
+	--error-970: #251012;
+	--error-980: #220f11;
+	--error-990: #1f0e0f;
 
 	/* Warning (H=60, S=38%) */
+	--warning-10:  #f1f1e0;
+	--warning-20:  #f0f0dd;
+	--warning-30:  #efefda;
+	--warning-40:  #ededd8;
 	--warning-50:  #ececd5;
 	--warning-100: #e6e6c7;
 	--warning-150: #dfdfb9;
@@ -171,8 +232,16 @@
 	--warning-850: #555526;
 	--warning-900: #464620;
 	--warning-950: #383819;
+	--warning-960: #272712;
+	--warning-970: #252510;
+	--warning-980: #22220f;
+	--warning-990: #1f1f0e;
 
 	/* Info (H=210, S=32%) */
+	--info-10:  #e1e9f0;
+	--info-20:  #dfe7ee;
+	--info-30:  #dce4ed;
+	--info-40:  #d9e2ec;
 	--info-50:  #d7e0ea;
 	--info-100: #c8d6e3;
 	--info-150: #bacbdc;
@@ -192,4 +261,8 @@
 	--info-850: #233445;
 	--info-900: #1c2937;
 	--info-950: #151f28;
+	--info-960: #131d26;
+	--info-970: #121b23;
+	--info-980: #111820;
+	--info-990: #0f161e;
 }
