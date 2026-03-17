@@ -48,7 +48,7 @@ if (form) {
 
 <template>
 	<div class="flex flex-col gap-1">
-		<label v-if="label" class="text-sm font-medium app-text">{{ label }}</label>
+		<label v-if="label" class="text-label">{{ label }}</label>
 		<input
 			v-model="model"
 			type="text"
@@ -59,6 +59,6 @@ if (form) {
 			@input="onInput"
 			@blur="onBlur"
 		/>
-		<span v-if="error" class="text-xs text-error-600 dark:text-error-400">{{ error }}</span>
+		<span v-if="error" class="text-error">{{ error }}</span>
 	</div>
 </template>

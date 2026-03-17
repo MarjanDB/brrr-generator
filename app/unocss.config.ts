@@ -53,6 +53,9 @@ export default defineConfig({
 		["text-h3", "text-xl font-semibold app-text"],
 		["text-h5", "text-base font-semibold app-text"],
 		["text-body-sm", "text-sm app-text-muted"],
+		["text-label", "text-sm font-medium app-text"],
+		["text-caption", "text-xs app-text-muted"],
+		["text-error", "text-xs text-error-600 dark:text-error-400"],
 
 		// Card
 		[

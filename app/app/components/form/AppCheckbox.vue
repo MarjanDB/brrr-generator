@@ -43,6 +43,6 @@ if (form) {
 			</CheckboxRoot>
 			<span v-if="label" class="text-sm app-text select-none">{{ label }}</span>
 		</label>
-		<span v-if="error" class="text-xs text-error-600 dark:text-error-400 ml-6">{{ error }}</span>
+		<span v-if="error" class="text-error ml-6">{{ error }}</span>
 	</div>
 </template>
