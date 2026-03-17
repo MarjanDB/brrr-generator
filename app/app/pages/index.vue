@@ -17,13 +17,12 @@ import {
 } from "@brrr/lib";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const { $toggleTheme, $theme } = useNuxtApp();
 
 // Form state
 const xmlFiles = ref<FileList | null>(null);
-const year = ref(new Date().getFullYear() - 1);
-const reportType = ref<"kdvp" | "div" | "ifi">("kdvp");
+const year = ref<number | null>(new Date().getFullYear() - 1);
+const reportType = ref("");
 const taxNumber = ref("");
 const fullName = ref("");
 const address1 = ref("");
@@ -41,24 +40,33 @@ const xmlUrl = ref<string | null>(null);
 const error = ref<string | null>(null);
 const loading = ref(false);
 
-const REPORT_MAP: Record<"kdvp" | "div" | "ifi", SlovenianTaxAuthorityReportTypes> = {
+const REPORT_MAP: Record<string, SlovenianTaxAuthorityReportTypes> = {
 	kdvp: SlovenianTaxAuthorityReportTypes.DOH_KDVP,
 	div: SlovenianTaxAuthorityReportTypes.DOH_DIV,
 	ifi: SlovenianTaxAuthorityReportTypes.D_IFI,
 };
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
-const OUTPUT_FILENAMES: Record<"kdvp" | "div" | "ifi", { xml: string; csv: string }> = {
+const OUTPUT_FILENAMES: Record<string, { xml: string; csv: string }> = {
 	kdvp: { xml: "Doh_KDVP.xml", csv: "export-trades.csv" },
 	div: { xml: "Doh_Div.xml", csv: "export-dividends.csv" },
 	ifi: { xml: "D_Ifi.xml", csv: "export-derivatives.csv" },
 };
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
-function onFileChange(e: Event) {
-	const input = e.target as HTMLInputElement;
-	xmlFiles.value = input.files ?? null;
-}
+const reportTypeOptions = [
+	{ value: "kdvp", label: "KDVP (Stocks)" },
+	{ value: "div", label: "DIV (Dividends)" },
+	{ value: "ifi", label: "IFI (Derivatives)" },
+];
+
+// Validators
+const validateRequired = (v: string) => v.trim() ? null : "This field is required";
+const validateFiles = (v: FileList | null) => (v && v.length > 0) ? null : "Please select at least one XML file";
+const validateYear = (v: number | null) => {
+	if (v === null) return "This field is required";
+	if (!Number.isInteger(v) || v < 2010 || v > 2100) return "Must be a year between 2010 and 2100";
+	return null;
+};
+const validateReportType = (v: string) => v ? null : "Please select a report type";
 
 function revokeUrls() {
 	if (csvUrl.value) URL.revokeObjectURL(csvUrl.value);
@@ -67,21 +75,17 @@ function revokeUrls() {
 	xmlUrl.value = null;
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
-async function generate() {
+async function onSubmit(valid: boolean) {
+	if (!valid) return;
+
 	error.value = null;
 	csvOutput.value = null;
 	xmlOutput.value = null;
 	revokeUrls();
 
-	if (!xmlFiles.value || xmlFiles.value.length === 0) {
-		error.value = "Please select at least one IBKR XML file.";
-		return;
-	}
-
 	loading.value = true;
 	try {
-		const xmlContents = await Promise.all(Array.from(xmlFiles.value).map((f) => f.text()));
+		const xmlContents = await Promise.all(Array.from(xmlFiles.value!).map((f) => f.text()));
 
 		const taxPayerInfo = TaxPayerConfigSchema.parse({
 			taxNumber: taxNumber.value,
@@ -105,7 +109,7 @@ async function generate() {
 
 		const reportConfig = {
 			fromDate: zDateTimeFromISOString.parse(`${year.value}-01-01`),
-			toDate: zDateTimeFromISOString.parse(`${year.value + 1}-01-01`),
+			toDate: zDateTimeFromISOString.parse(`${year.value! + 1}-01-01`),
 			lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 		};
 
@@ -145,160 +149,78 @@ onUnmounted(revokeUrls);
 </script>
 
 <template>
-  <div class="container-md py-8 flex flex-col gap-6">
-    <div class="flex items-center justify-between">
-      <h1 class="text-h1">IB Tax Calculator</h1>
-      <button @click="$toggleTheme()" class="btn-subtle-neutral">
-        {{ $theme === "dark" ? "Light mode" : "Dark mode" }}
-      </button>
-    </div>
+	<div class="container-md py-8 flex flex-col gap-6">
+		<div class="flex items-center justify-between">
+			<div class="flex items-center gap-3">
+				<h1 class="text-h1">BRRR Generator</h1>
+				<a href="https://github.com/MarjanDB/brrr-generator" target="_blank" rel="noopener" aria-label="GitHub repository" class="i-mdi-github text-2xl app-text-muted hover:app-text transition-colors" />
+			</div>
+			<AppButton class="button-filled-neutral" @click="$toggleTheme()">
+				{{ $theme === "dark" ? "Light mode" : "Dark mode" }}
+			</AppButton>
+		</div>
 
-    <form @submit.prevent="generate" class="flex flex-col gap-4">
-      <div class="card card-padding-md flex flex-col gap-3">
-        <h2 class="text-h5">IBKR Export</h2>
-        <label class="flex flex-col gap-1">
-          <span class="text-body-sm">XML file(s)</span>
-          <input
-            type="file"
-            accept=".xml"
-            multiple
-            @change="onFileChange"
-            required
-            class="input-md"
-          />
-        </label>
-      </div>
+		<AppForm class="flex flex-col gap-4" @submit="onSubmit">
+			<div class="card card-padding-md flex flex-col gap-3">
+				<h2 class="text-h5">IBKR Export</h2>
+				<p class="text-body-sm">select all of your IBKR XML exports for and before the year you are reporting on</p>
+				<AppFileInput
+					v-model="xmlFiles"
+					label="XML file(s)"
+					accept=".xml"
+					multiple
+					:validate="validateFiles"
+				/>
+			</div>
 
-      <div class="card card-padding-md flex flex-col gap-3">
-        <h2 class="text-h5">Report Settings</h2>
-        <div class="grid grid-cols-2 gap-3">
-          <label class="flex flex-col gap-1">
-            <span class="text-body-sm">Year</span>
-            <input
-              type="number"
-              v-model.number="year"
-              min="2010"
-              max="2100"
-              required
-              class="input-md"
-            />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-body-sm">Report type</span>
-            <select
-              v-model="reportType"
-              class="input-md"
-            >
-              <option value="kdvp">KDVP (Stocks)</option>
-              <option value="div">DIV (Dividends)</option>
-              <option value="ifi">IFI (Derivatives)</option>
-            </select>
-          </label>
-        </div>
-      </div>
+			<div class="card card-padding-md flex flex-col gap-3">
+				<h2 class="text-h5">Report Settings</h2>
+				<div class="grid grid-cols-2 gap-3">
+					<AppNumberInput
+						v-model="year"
+						label="Year"
+						:min="2010"
+						:max="2100"
+						:validate="validateYear"
+					/>
+					<AppSelect
+						v-model="reportType"
+						label="Report type"
+						placeholder="Select a report type"
+						:options="reportTypeOptions"
+						:validate="validateReportType"
+					/>
+				</div>
+			</div>
 
-      <div class="card card-padding-md flex flex-col gap-3">
-        <h2 class="text-h5">Tax Payer Info</h2>
-        <div class="grid grid-cols-2 gap-3">
-          <label class="flex flex-col gap-1">
-            <span class="text-body-sm">Tax number</span>
-            <input
-              v-model="taxNumber"
-              required
-              class="input-md"
-            />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-body-sm">Full name</span>
-            <input
-              v-model="fullName"
-              required
-              class="input-md"
-            />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-body-sm">Address</span>
-            <input
-              v-model="address1"
-              required
-              class="input-md"
-            />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-body-sm">City</span>
-            <input
-              v-model="city"
-              required
-              class="input-md"
-            />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-body-sm">Post number</span>
-            <input
-              v-model="postNumber"
-              required
-              class="input-md"
-            />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-body-sm">Post name</span>
-            <input
-              v-model="postName"
-              required
-              class="input-md"
-            />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-body-sm">Country ID</span>
-            <input
-              v-model="countryId"
-              required
-              class="input-md"
-            />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-body-sm">Country name</span>
-            <input
-              v-model="countryName"
-              required
-              class="input-md"
-            />
-          </label>
-        </div>
-      </div>
+			<div class="card card-padding-md flex flex-col gap-3">
+				<h2 class="text-h5">Tax Payer Info</h2>
+				<div class="grid grid-cols-2 gap-3">
+					<AppTextInput v-model="taxNumber" label="Tax number" :validate="validateRequired" />
+					<AppTextInput v-model="fullName" label="Full name" :validate="validateRequired" />
+					<AppTextInput v-model="address1" label="Address" :validate="validateRequired" />
+					<AppTextInput v-model="city" label="City" :validate="validateRequired" />
+					<AppTextInput v-model="postNumber" label="Post number" :validate="validateRequired" />
+					<AppTextInput v-model="postName" label="Post name" :validate="validateRequired" />
+					<AppTextInput v-model="countryId" label="Country ID" :validate="validateRequired" />
+					<AppTextInput v-model="countryName" label="Country name" :validate="validateRequired" />
+				</div>
+			</div>
 
-      <button
-        type="submit"
-        :disabled="loading"
-        class="btn-filled-primary self-start"
-        :class="{ 'state-loading': loading }"
-      >
-        {{ loading ? "Generating…" : "Generate Report" }}
-      </button>
-    </form>
+			<AppButton class="button-filled-primary self-start" type="submit" :loading="loading">
+				Generate Report
+			</AppButton>
+		</AppForm>
 
-    <div v-if="error" class="alert-error">{{ error }}</div>
+		<div v-if="error" class="alert-error">{{ error }}</div>
 
-    <div v-if="csvOutput" class="flex flex-col gap-3">
-      <h2 class="text-h3">Result</h2>
-      <div class="flex gap-3">
-        <a
-          :href="xmlUrl!"
-          :download="OUTPUT_FILENAMES[reportType].xml"
-          class="btn-subtle-secondary"
-          >Download XML</a
-        >
-        <a
-          :href="csvUrl!"
-          :download="OUTPUT_FILENAMES[reportType].csv"
-          class="btn-subtle-secondary"
-          >Download CSV</a
-        >
-      </div>
-      <pre
-        class="card card-padding-md text-body-sm overflow-auto max-h-120"
-        >{{ csvOutput }}</pre
-      >
-    </div>
-  </div>
+		<div v-if="csvOutput" class="flex flex-col gap-3">
+			<h2 class="text-h3">Result</h2>
+			<div class="flex gap-3">
+				<a :href="xmlUrl!" :download="OUTPUT_FILENAMES[reportType].xml" class="button-filled-secondary">Download XML</a>
+				<a :href="csvUrl!" :download="OUTPUT_FILENAMES[reportType].csv" class="button-filled-secondary">Download CSV</a>
+			</div>
+			<pre class="card card-padding-md text-body-sm overflow-auto max-h-120">{{ csvOutput }}</pre>
+		</div>
+	</div>
 </template>

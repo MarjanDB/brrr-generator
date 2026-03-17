@@ -37,15 +37,15 @@ const selectedLabel = computed(
 const error = ref<string | null>(null);
 const touched = ref(false);
 
-function runValidation(): boolean {
+function runValidation(value = model.value): boolean {
 	if (!props.validate) return true;
-	error.value = props.validate(model.value);
+	error.value = props.validate(value);
 	return error.value === null;
 }
 
-function onChange() {
+function onChange(value: string) {
 	touched.value = true;
-	runValidation();
+	runValidation(value);
 }
 
 const form = inject<{ registerValidator: (fn: () => boolean) => void } | null>("app-form", null);
