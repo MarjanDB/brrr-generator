@@ -26,6 +26,8 @@ export default defineNuxtConfig({
       },
     ],
   },
+  components: [{ path: "~/components", pathPrefix: false }],
+
   modules: ["@posthog/nuxt", "@unocss/nuxt", "@vueuse/nuxt", "reka-ui/nuxt"],
 
   css: ["~/assets/styles.css"],
