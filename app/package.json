@@ -12,12 +12,14 @@
 	},
 	"dependencies": {
 		"@brrr/lib": "workspace:*",
+		"@iconify-json/mdi": "^1.2.3",
 		"@posthog/nuxt": "^1.5.84",
 		"@vueuse/core": "^14.2.1",
 		"@vueuse/nuxt": "14.2.1",
 		"buffer": "^6.0.3",
 		"luxon": "^3.7.2",
 		"nuxt": "^4.4.2",
+		"reka-ui": "^2.9.2",
 		"vue": "^3.5.30",
 		"vue-router": "^5.0.3",
 		"zod": "^4.3.6"

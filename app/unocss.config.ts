@@ -1,5 +1,30 @@
 import { defineConfig, presetIcons, presetWind4 } from "unocss";
 
+function buttonShortcuts(colors: string[]) {
+	return colors.flatMap((color): [string, string][] => [
+		[
+			`button-filled-${color}`,
+			[
+				`button-md bg-${color}-300 dark:bg-${color}-700`,
+				`text-${color}-990 dark:text-${color}-10`,
+				`hover:bg-${color}-350 dark:hover:bg-${color}-650`,
+				`disabled:opacity-70`,
+				`disabled:hover:bg-${color}-300 dark:disabled:hover:bg-${color}-700`,
+			].join(" "),
+		],
+		[
+			`button-inverse-${color}`,
+			[
+				`button-md bg-${color}-400 dark:bg-${color}-600`,
+				`text-${color}-10 dark:text-${color}-990`,
+				`hover:bg-${color}-450 dark:hover:bg-${color}-550`,
+				`disabled:opacity-70`,
+				`disabled:hover:bg-${color}-400 dark:disabled:hover:bg-${color}-600`,
+			].join(" "),
+		],
+	]);
+}
+
 export default defineConfig({
 	presets: [
 		presetWind4({
@@ -15,160 +40,98 @@ export default defineConfig({
 	],
 	shortcuts: [
 		// Layout
+		["app-container", "min-h-screen max-w-screen bg-stale-50 dark:bg-stale-950"],
 		["container-md", "max-w-screen-md mx-auto px-4"],
 
 		// Typography
-		["text-h1", "text-4xl font-bold leading-tight text-neutral-50 dark:text-neutral-950"],
-		["text-h3", "text-2xl font-semibold leading-snug text-neutral-50 dark:text-neutral-950"],
-		["text-h5", "text-lg font-medium leading-normal text-neutral-300 dark:text-neutral-700"],
-		["text-body-sm", "text-sm leading-normal text-neutral-300 dark:text-neutral-700"],
+		["app-text", "text-stale-900 dark:text-stale-100"],
+		["app-text-sm", "text-sm app-text"],
+		["app-text-md", "text-base app-text"],
+		["app-text-lg", "text-lg app-text"],
+		["app-text-muted", "text-stale-550 dark:text-stale-450"],
+		["text-h1", "text-3xl font-bold app-text"],
+		["text-h3", "text-xl font-semibold app-text"],
+		["text-h5", "text-base font-semibold app-text"],
+		["text-body-sm", "text-sm app-text-muted"],
+		["text-label", "text-sm font-medium app-text"],
+		["text-caption", "text-xs app-text-muted"],
+		["text-error", "text-xs text-error-600 dark:text-error-400"],
 
 		// Card
 		[
 			"card",
-			"bg-neutral-900 dark:bg-neutral-100 border border-neutral-700 dark:border-neutral-300 rounded-md",
+			"bg-stale-100 dark:bg-stale-900 border border-stale-250 dark:border-stale-750 rounded-md",
 		],
 		["card-padding-md", "p-4"],
 
-		// Input
+		// Input base
 		[
-			"input-default",
-			"w-full bg-neutral-800 dark:bg-neutral-200 text-neutral-50 dark:text-neutral-950 placeholder:text-neutral-400 dark:placeholder:text-neutral-600 border border-neutral-700 dark:border-neutral-300 transition-colors hover:bg-neutral-700 dark:hover:bg-neutral-300 focus:outline-none focus:ring-2 focus:ring-secondary-300 dark:focus:ring-secondary-600",
+			"input-base",
+			"bg-stale-150 dark:bg-stale-850 text-stale-900 dark:text-stale-100 border border-stale-250 dark:border-stale-750 transition-colors hover:bg-stale-200 dark:hover:bg-stale-800 focus:outline-none focus:ring-2 focus:ring-secondary-600 dark:focus:ring-secondary-400 disabled:opacity-70 disabled:cursor-not-allowed",
 		],
-		["input-md", "input-default px-3 py-2 text-base rounded-md"],
+		[
+			"input-error",
+			"input-base border-error-500 dark:border-error-500 focus:ring-error-500 dark:focus:ring-error-500",
+		],
+		["input-md", "input-base px-3 py-2 text-base rounded-md"],
+		["input-md-error", "input-error px-3 py-2 text-base rounded-md"],
+
+		// Checkbox
+		[
+			"checkbox-base",
+			"size-4.5 rounded-sm border border-stale-400 dark:border-stale-600 bg-stale-150 dark:bg-stale-850 transition-colors cursor-pointer data-[state=checked]:bg-secondary-600 dark:data-[state=checked]:bg-secondary-400 data-[state=checked]:border-secondary-600 dark:data-[state=checked]:border-secondary-400 focus:outline-none focus:ring-2 focus:ring-secondary-600 dark:focus:ring-secondary-400 disabled:opacity-70 disabled:cursor-not-allowed",
+		],
+		[
+			"checkbox-error",
+			"size-4.5 rounded-sm border border-error-500 dark:border-error-500 bg-stale-150 dark:bg-stale-850 transition-colors cursor-pointer data-[state=checked]:bg-error-600 dark:data-[state=checked]:bg-error-400 data-[state=checked]:border-error-600 dark:data-[state=checked]:border-error-400 focus:outline-none focus:ring-2 focus:ring-error-500 dark:focus:ring-error-500 disabled:opacity-70 disabled:cursor-not-allowed",
+		],
 
 		// Buttons
-		[
-			"btn",
-			"inline-flex items-center justify-center font-medium transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-300 dark:focus:ring-secondary-600 rounded-md",
-		],
-		["btn-sm", "btn px-3 py-1.5 text-sm"],
-		["btn-md", "btn px-4 py-2 text-base"],
-		[
-			"btn-primary",
-			"btn-md bg-secondary-300 text-neutral-50 dark:bg-secondary-600 dark:text-neutral-950 hover:bg-secondary-400 dark:hover:bg-secondary-500 active:bg-secondary-200 dark:active:bg-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed",
-		],
-		[
-			"btn-outline",
-			"btn-sm border border-secondary-300 text-secondary-300 dark:border-secondary-600 dark:text-secondary-600 bg-transparent hover:bg-secondary-300/10 active:bg-secondary-300/20",
-		],
-		[
-			"btn-subtle",
-			"btn-sm bg-neutral-800 dark:bg-neutral-200 text-neutral-50 dark:text-neutral-950 hover:bg-neutral-700 dark:hover:bg-neutral-300 active:bg-neutral-600 dark:active:bg-neutral-400",
-		],
+		["button", "transition-colors cursor-pointer disabled:cursor-not-allowed"],
+		["button-sm", "button px-3 py-1.5 text-sm rounded-sm"],
+		["button-md", "button px-4 py-2 text-base rounded-md"],
+		["button-lg", "button px-5 py-2 text-lg rounded-md"],
+
+		// Generated button variants
+		...buttonShortcuts([
+			"primary",
+			"secondary",
+			"accent",
+			"neutral",
+			"success",
+			"error",
+			"warning",
+			"info",
+		]),
 
 		// Misc
 		["state-loading", "opacity-70 cursor-wait"],
-		["alert-error", "p-4 rounded-md border bg-error-700 text-error-50 border-error-50"],
+		[
+			"alert-error",
+			"p-4 rounded-md border bg-error-150 dark:bg-error-850 text-error-900 dark:text-error-100 border-error-300 dark:border-error-700",
+		],
 	],
 	theme: {
-		colors: {
-			primary: {
-				50: "var(--primary-50)",
-				100: "var(--primary-100)",
-				200: "var(--primary-200)",
-				300: "var(--primary-300)",
-				400: "var(--primary-400)",
-				500: "var(--primary-500)",
-				600: "var(--primary-600)",
-				700: "var(--primary-700)",
-				800: "var(--primary-800)",
-				900: "var(--primary-900)",
-				950: "var(--primary-950)",
-			},
-			secondary: {
-				50: "var(--secondary-50)",
-				100: "var(--secondary-100)",
-				200: "var(--secondary-200)",
-				300: "var(--secondary-300)",
-				400: "var(--secondary-400)",
-				500: "var(--secondary-500)",
-				600: "var(--secondary-600)",
-				700: "var(--secondary-700)",
-				800: "var(--secondary-800)",
-				900: "var(--secondary-900)",
-				950: "var(--secondary-950)",
-			},
-			accent: {
-				50: "var(--accent-50)",
-				100: "var(--accent-100)",
-				200: "var(--accent-200)",
-				300: "var(--accent-300)",
-				400: "var(--accent-400)",
-				500: "var(--accent-500)",
-				600: "var(--accent-600)",
-				700: "var(--accent-700)",
-				800: "var(--accent-800)",
-				900: "var(--accent-900)",
-				950: "var(--accent-950)",
-			},
-			neutral: {
-				0: "var(--neutral-0)",
-				50: "var(--neutral-50)",
-				100: "var(--neutral-100)",
-				200: "var(--neutral-200)",
-				300: "var(--neutral-300)",
-				400: "var(--neutral-400)",
-				500: "var(--neutral-500)",
-				600: "var(--neutral-600)",
-				700: "var(--neutral-700)",
-				800: "var(--neutral-800)",
-				900: "var(--neutral-900)",
-				950: "var(--neutral-950)",
-				1000: "var(--neutral-1000)",
-			},
-			success: {
-				50: "var(--success-50)",
-				100: "var(--success-100)",
-				200: "var(--success-200)",
-				300: "var(--success-300)",
-				400: "var(--success-400)",
-				500: "var(--success-500)",
-				600: "var(--success-600)",
-				700: "var(--success-700)",
-				800: "var(--success-800)",
-				900: "var(--success-900)",
-				950: "var(--success-950)",
-			},
-			warning: {
-				50: "var(--warning-50)",
-				100: "var(--warning-100)",
-				200: "var(--warning-200)",
-				300: "var(--warning-300)",
-				400: "var(--warning-400)",
-				500: "var(--warning-500)",
-				600: "var(--warning-600)",
-				700: "var(--warning-700)",
-				800: "var(--warning-800)",
-				900: "var(--warning-900)",
-				950: "var(--warning-950)",
-			},
-			error: {
-				50: "var(--error-50)",
-				100: "var(--error-100)",
-				200: "var(--error-200)",
-				300: "var(--error-300)",
-				400: "var(--error-400)",
-				500: "var(--error-500)",
-				600: "var(--error-600)",
-				700: "var(--error-700)",
-				800: "var(--error-800)",
-				900: "var(--error-900)",
-				950: "var(--error-950)",
-			},
-			info: {
-				50: "var(--info-50)",
-				100: "var(--info-100)",
-				200: "var(--info-200)",
-				300: "var(--info-300)",
-				400: "var(--info-400)",
-				500: "var(--info-500)",
-				600: "var(--info-600)",
-				700: "var(--info-700)",
-				800: "var(--info-800)",
-				900: "var(--info-900)",
-				950: "var(--info-950)",
-			},
-		},
+		colors: Object.fromEntries(
+			[
+				"primary",
+				"secondary",
+				"accent",
+				"neutral",
+				"stale",
+				"success",
+				"warning",
+				"error",
+				"info",
+			].map((name) => [
+				name,
+				Object.fromEntries(
+					[
+						10, 20, 30, 40, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700,
+						750, 800, 850, 900, 950, 960, 970, 980, 990,
+					].map((stop) => [stop, `var(--${name}-${stop})`]),
+				),
+			]),
+		),
 	},
 });
