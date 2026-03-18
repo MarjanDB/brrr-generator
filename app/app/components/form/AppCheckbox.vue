@@ -18,8 +18,8 @@ function runValidation(value = model.value): boolean {
 	return error.value === null;
 }
 
-function onChange(value: boolean) {
-	runValidation(value);
+function onChange(value: boolean | "indeterminate") {
+	if (value !== "indeterminate") runValidation(value);
 }
 
 const form = inject<{ registerValidator: (fn: () => boolean) => void } | null>("app-form", null);

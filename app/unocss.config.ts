@@ -43,6 +43,17 @@ export default defineConfig({
 		["app-container", "min-h-screen max-w-screen bg-stale-50 dark:bg-stale-950"],
 		["container-md", "max-w-screen-md mx-auto px-4"],
 
+		// Surfaces & overlays
+		["app-overlay", "bg-black/40 dark:bg-black/60"],
+		["app-surface-overlay", "bg-stale-50 dark:bg-stale-950"],
+		["app-border", "border-stale-200 dark:border-stale-800"],
+		["app-border-strong", "border-stale-250 dark:border-stale-750"],
+		["app-border-subtle", "border-stale-100 dark:border-stale-900"],
+		[
+			"app-row-interactive",
+			"cursor-pointer hover:bg-stale-100 dark:hover:bg-stale-800 transition-colors",
+		],
+
 		// Typography
 		["app-text", "text-stale-900 dark:text-stale-100"],
 		["app-text-sm", "text-sm app-text"],
@@ -56,12 +67,10 @@ export default defineConfig({
 		["text-label", "text-sm font-medium app-text"],
 		["text-caption", "text-xs app-text-muted"],
 		["text-error", "text-xs text-error-600 dark:text-error-400"],
+		["text-icon-confirm", "text-secondary-600 dark:text-secondary-400"],
 
 		// Card
-		[
-			"card",
-			"bg-stale-100 dark:bg-stale-900 border border-stale-250 dark:border-stale-750 rounded-md",
-		],
+		["card", "bg-stale-100 dark:bg-stale-900 border app-border-strong rounded-md"],
 		["card-padding-md", "p-4"],
 
 		// Input base
@@ -91,6 +100,11 @@ export default defineConfig({
 		["button-sm", "button px-3 py-1.5 text-sm rounded-sm"],
 		["button-md", "button px-4 py-2 text-base rounded-md"],
 		["button-lg", "button px-5 py-2 text-lg rounded-md"],
+
+		[
+			"button-ghost",
+			"button rounded app-text-muted hover:app-text hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50",
+		],
 
 		// Generated button variants
 		...buttonShortcuts([

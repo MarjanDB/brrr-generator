@@ -76,7 +76,7 @@ if (form) {
 				<SelectContent
 					position="popper"
 					:side-offset="4"
-					class="z-50 min-w-[var(--reka-select-trigger-width)] bg-stale-100 dark:bg-stale-900 border border-stale-250 dark:border-stale-750 rounded-md shadow-md overflow-hidden"
+					class="z-50 min-w-[var(--reka-select-trigger-width)] bg-stale-100 dark:bg-stale-900 border app-border-strong rounded-md shadow-md overflow-hidden"
 				>
 					<SelectViewport class="p-1">
 						<SelectItem
@@ -86,7 +86,7 @@ if (form) {
 							class="flex items-center gap-2 px-3 py-2 text-base app-text rounded-sm cursor-pointer select-none outline-none hover:bg-stale-200 dark:hover:bg-stale-800 data-[highlighted]:bg-stale-200 dark:data-[highlighted]:bg-stale-800 data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed"
 						>
 							<SelectItemIndicator>
-								<span class="i-mdi-check text-secondary-600 dark:text-secondary-400" />
+								<span class="i-mdi-check text-icon-confirm" />
 							</SelectItemIndicator>
 							<SelectItemText>{{ opt.label }}</SelectItemText>
 						</SelectItem>
