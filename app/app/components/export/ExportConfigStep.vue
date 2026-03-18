@@ -64,7 +64,10 @@ const validateYear = (v: number | null) => {
 const validateReportType = (v: string) => (v ? null : t("validation_select_report_type"));
 
 async function onSubmit(valid: boolean) {
-  if (!valid) return;
+  if (!valid || year.value === null) return;
+  const selectedYear = year.value;
+  const selectedType = REPORT_MAP[reportType.value];
+  if (!selectedType) return;
   error.value = null;
   loading.value = true;
   try {
@@ -89,8 +92,8 @@ async function onSubmit(valid: boolean) {
     });
 
     const reportConfig = {
-      fromDate: zDateTimeFromISOString.parse(`${year.value}-01-01`),
-      toDate: zDateTimeFromISOString.parse(`${year.value! + 1}-01-01`),
+      fromDate: zDateTimeFromISOString.parse(`${selectedYear}-01-01`),
+      toDate: zDateTimeFromISOString.parse(`${selectedYear + 1}-01-01`),
       lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
     };
 
@@ -104,7 +107,6 @@ async function onSubmit(valid: boolean) {
       container.get(IfiReportGenerator),
     );
 
-    const selectedType = REPORT_MAP[reportType.value]!;
     const [xml, csv] = await Promise.all([
       provider.generateExportForTaxAuthority(selectedType, props.financialEvents),
       provider.generateSpreadsheetExport(selectedType, props.financialEvents),

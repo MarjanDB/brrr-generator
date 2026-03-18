@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-  type FinancialEvents,
+  type FinancialGrouping,
   TradeEventCashTransactionDividend,
   TradeEventCashTransactionPaymentInLieuOfDividend,
   TradeEventCashTransactionWithholdingTax,
@@ -16,12 +16,10 @@ import {
   DialogTitle,
 } from "reka-ui";
 
-type Grouping = FinancialEvents["groupings"][number];
-
 const props = defineProps<{
   name: string;
   isin: string;
-  groupings: Grouping[];
+  groupings: FinancialGrouping[];
 }>();
 
 const open = defineModel<boolean>("open", { default: false });

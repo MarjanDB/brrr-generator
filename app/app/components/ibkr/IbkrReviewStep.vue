@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { type FinancialEvents, TradeEventCashTransactionDividend } from "@brrr/lib";
-
-type Grouping = FinancialEvents["groupings"][number];
+import { type FinancialEvents, type FinancialGrouping, TradeEventCashTransactionDividend } from "@brrr/lib";
+import { shallowRef } from "vue";
 
 const props = defineProps<{
   financialEvents: FinancialEvents;
@@ -20,7 +19,7 @@ interface InstrumentRow {
   stockTrades: number;
   dividends: number;
   derivatives: number;
-  groupings: Grouping[];
+  groupings: FinancialGrouping[];
 }
 
 const rows = computed<InstrumentRow[]>(() => {
@@ -59,7 +58,7 @@ const rows = computed<InstrumentRow[]>(() => {
 
 const groupingCount = computed(() => rows.value.length);
 
-const modalRow = ref<InstrumentRow | null>(null);
+const modalRow = shallowRef<InstrumentRow | null>(null);
 const modalOpen = ref(false);
 
 function openModal(row: InstrumentRow) {
@@ -116,6 +115,6 @@ function openModal(row: InstrumentRow) {
     v-model:open="modalOpen"
     :name="modalRow.name"
     :isin="modalRow.isin"
-    :groupings="(modalRow.groupings as any)"
+    :groupings="modalRow.groupings"
   />
 </template>

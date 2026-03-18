@@ -106,7 +106,7 @@ function onRestart() {
     <!-- Step 2: Review (mounted only after parsing completes) -->
     <IbkrReviewStep
       v-if="financialEvents !== null"
-      :financial-events="financialEvents!"
+      :financial-events="financialEvents"
       :collapsed="currentStep > 2"
       @confirmed="onConfirmed"
     />
@@ -114,7 +114,7 @@ function onRestart() {
     <!-- Step 3: Configure (mounted once review is confirmed; stays mounted during back-navigation) -->
     <ExportConfigStep
       v-if="financialEvents !== null && step3Unlocked"
-      :financial-events="financialEvents!"
+      :financial-events="financialEvents"
       :collapsed="currentStep > 3"
       @generated="onGenerated"
     />

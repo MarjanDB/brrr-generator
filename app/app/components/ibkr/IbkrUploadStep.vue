@@ -26,12 +26,13 @@ const validateFiles = (v: FileList | null) =>
   v && v.length > 0 ? null : t("validation_select_files");
 
 async function onSubmit(valid: boolean) {
-  if (!valid) return;
+  if (!valid || !xmlFiles.value) return;
+  const files = xmlFiles.value;
   error.value = null;
   loading.value = true;
   try {
     const xmlContents = await Promise.all(
-      Array.from(xmlFiles.value!).map((f) => f.text()),
+      Array.from(files).map((f) => f.text()),
     );
     const container = createContainer(new ApiInfoProvider());
     const stagingEvents = container
@@ -40,7 +41,7 @@ async function onSubmit(valid: boolean) {
     const financialEvents = container
       .get(StagingFinancialGroupingProcessor)
       .processStagingFinancialEvents(stagingEvents);
-    emit("processed", financialEvents, xmlFiles.value!);
+    emit("processed", financialEvents, files);
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
   } finally {
