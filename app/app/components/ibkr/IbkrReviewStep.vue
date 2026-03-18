@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { type FinancialEvents, TradeEventCashTransactionDividend } from "@brrr/lib";
 
+type Grouping = FinancialEvents["groupings"][number];
+
 const props = defineProps<{
   financialEvents: FinancialEvents;
   collapsed: boolean;
@@ -18,24 +20,52 @@ interface InstrumentRow {
   stockTrades: number;
   dividends: number;
   derivatives: number;
+  groupings: Grouping[];
 }
 
-const rows = computed<InstrumentRow[]>(() =>
-  props.financialEvents.groupings.map((g) => ({
-    name: g.financialIdentifier.getTicker() ?? g.financialIdentifier.getName() ?? g.financialIdentifier.getIsin() ?? "—",
-    isin: g.financialIdentifier.getIsin() ?? "—",
-    stockTrades: g.stockTrades.length,
-    dividends: g.cashTransactions.filter(
-      (tx) => tx instanceof TradeEventCashTransactionDividend,
-    ).length,
-    derivatives: g.derivativeGroupings.reduce(
-      (sum, dg) => sum + dg.derivativeTrades.length,
-      0,
-    ),
-  })),
-);
+const rows = computed<InstrumentRow[]>(() => {
+  // Group all FinancialGroupings by ISIN. Groupings that share an ISIN with a
+  // stock/dividend grouping are library-level "satellites" produced because
+  // derivatives use underlyingSecurityID as their ISIN — merge them in.
+  const byIsin = new Map<string, InstrumentRow>();
+  const noIsin: InstrumentRow[] = [];
 
-const groupingCount = computed(() => props.financialEvents.groupings.length);
+  for (const g of props.financialEvents.groupings) {
+    const isin = g.financialIdentifier.getIsin();
+    const name = g.financialIdentifier.getTicker() ?? g.financialIdentifier.getName() ?? isin ?? "—";
+    const stockTrades = g.stockTrades.length;
+    const dividends = g.cashTransactions.filter((tx) => tx instanceof TradeEventCashTransactionDividend).length;
+    const derivatives = g.derivativeGroupings.reduce((s, dg) => s + dg.derivativeTrades.length, 0);
+
+    if (!isin) {
+      noIsin.push({ name, isin: "—", stockTrades, dividends, derivatives, groupings: [g] });
+      continue;
+    }
+
+    const existing = byIsin.get(isin);
+    if (!existing) {
+      byIsin.set(isin, { name, isin, stockTrades, dividends, derivatives, groupings: [g] });
+    } else {
+      if (stockTrades > 0 || dividends > 0) existing.name = name;
+      existing.stockTrades += stockTrades;
+      existing.dividends += dividends;
+      existing.derivatives += derivatives;
+      existing.groupings.push(g);
+    }
+  }
+
+  return [...byIsin.values(), ...noIsin];
+});
+
+const groupingCount = computed(() => rows.value.length);
+
+const modalRow = ref<InstrumentRow | null>(null);
+const modalOpen = ref(false);
+
+function openModal(row: InstrumentRow) {
+  modalRow.value = row;
+  modalOpen.value = true;
+}
 </script>
 
 <template>
@@ -64,13 +94,14 @@ const groupingCount = computed(() => props.financialEvents.groupings.length);
           <tr
             v-for="(row, i) in rows"
             :key="row.isin || String(i)"
-            class="border-b border-stale-200 dark:border-stale-800 last:border-0"
+            class="border-b border-stale-200 dark:border-stale-800 last:border-0 cursor-pointer hover:bg-stale-100 dark:hover:bg-stale-800 transition-colors"
+            @click="openModal(row)"
           >
-            <td class="py-2 pr-4 app-text">{{ row.name }}</td>
+            <td class="pl-2 py-2 pr-4 app-text">{{ row.name }}</td>
             <td class="py-2 pr-4 app-text-muted font-mono text-xs">{{ row.isin }}</td>
-            <td class="py-2 pr-4 text-right app-text">{{ row.stockTrades }}</td>
-            <td class="py-2 pr-4 text-right app-text">{{ row.dividends }}</td>
-            <td class="py-2 text-right app-text">{{ row.derivatives }}</td>
+            <td class="py-2 pr-4 text-right app-text">{{ row.stockTrades  }}</td>
+            <td class="py-2 pr-4 text-right app-text">{{ row.dividends  }}</td>
+            <td class="py-2 pr-2 text-right app-text">{{ row.derivatives  }}</td>
           </tr>
         </tbody>
       </table>
@@ -79,4 +110,12 @@ const groupingCount = computed(() => props.financialEvents.groupings.length);
       {{ t('review_confirm_button') }}
     </AppButton>
   </div>
+
+  <IbkrGroupingModal
+    v-if="modalRow"
+    v-model:open="modalOpen"
+    :name="modalRow.name"
+    :isin="modalRow.isin"
+    :groupings="(modalRow.groupings as any)"
+  />
 </template>

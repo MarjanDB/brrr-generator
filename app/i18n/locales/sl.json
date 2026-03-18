@@ -46,5 +46,20 @@
 	"export_summary": "{type} / {year}",
 	"restart_button": "Začni znova",
 	"download_xml_label": "Prenesi XML (eDavki)",
-	"download_csv_label": "Prenesi CSV"
+	"download_csv_label": "Prenesi CSV",
+	"modal_stock_trades_title": "Trgovanje z delnicami",
+	"modal_cash_transactions_title": "Gotovinske transakcije",
+	"modal_derivatives_title": "Izvedeni finančni instrumenti",
+	"modal_col_date": "Datum",
+	"modal_col_type": "Vrsta",
+	"modal_col_qty": "Kol.",
+	"modal_col_price": "Cena",
+	"modal_col_total": "Skupaj",
+	"modal_col_amount": "Znesek",
+	"modal_trade_buy": "Nakup",
+	"modal_trade_sell": "Prodaja",
+	"modal_cash_dividend": "Dividenda",
+	"modal_cash_payment_in_lieu": "Nadomestilo dividende",
+	"modal_cash_withholding_tax": "Odtegljaj davka",
+	"modal_cash_other": "Gotovina"
 }

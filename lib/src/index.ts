@@ -6,7 +6,13 @@ export { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerage
 export { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.js";
 export { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.js";
 export { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.js";
-export { TradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Events.js";
+export {
+	TradeEventCashTransactionDividend,
+	TradeEventCashTransactionPaymentInLieuOfDividend,
+	TradeEventCashTransactionWithholdingTax,
+	TradeEventDerivativeAcquired,
+	TradeEventStockAcquired,
+} from "@brrr/Core/Schemas/Events.js";
 export { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.js";
 export { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship.js";
 export { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor.js";
