@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FinancialEvents, TradeEventCashTransactionDividend } from "@brrr/lib";
+import { type FinancialEvents, TradeEventCashTransactionDividend } from "@brrr/lib";
 
 const props = defineProps<{
   financialEvents: FinancialEvents;

@@ -29,7 +29,7 @@
 	"validation_select_files": "Please select at least one XML file",
 	"validation_select_report_type": "Please select a report type",
 	"validation_year": "Must be a year between 2010 and 2100",
-	"wizard_step_upload": "Upload Files",
+	"wizard_step_upload": "Select Files",
 	"wizard_step_review": "Review Data",
 	"wizard_step_configure": "Configure Export",
 	"wizard_step_download": "Download",

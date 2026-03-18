@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
   createContainer,
-  FinancialEvents,
+  type FinancialEvents,
   IbkrBrokerageExportProvider,
   StagingFinancialGroupingProcessor,
 } from "@brrr/lib";

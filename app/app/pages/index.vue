@@ -22,6 +22,16 @@ const currentStep = ref<1 | 2 | 3 | 4>(1);
 const xmlFiles = ref<FileList | null>(null);
 const financialEvents = shallowRef<FinancialEvents | null>(null);
 const generatedOutputs = ref<{ xml: string; csv: string; reportType: "kdvp" | "div" | "ifi" } | null>(null);
+// Tracks whether the user has confirmed step 2 (unlocks step 3 component)
+const step3Unlocked = ref(false);
+
+// Highest step whose prerequisites are met — drives stepper navigability
+const maxStep = computed<1 | 2 | 3 | 4>(() => {
+  if (generatedOutputs.value !== null) return 4;
+  if (step3Unlocked.value && financialEvents.value !== null) return 3;
+  if (financialEvents.value !== null) return 2;
+  return 1;
+});
 
 const stepLabels = computed(() => [
   t("wizard_step_upload"),
@@ -33,10 +43,13 @@ const stepLabels = computed(() => [
 function onProcessed(events: FinancialEvents, files: FileList) {
   financialEvents.value = events;
   xmlFiles.value = files;
+  generatedOutputs.value = null;
+  step3Unlocked.value = false;
   currentStep.value = 2;
 }
 
 function onConfirmed() {
+  step3Unlocked.value = true;
   currentStep.value = 3;
 }
 
@@ -45,11 +58,16 @@ function onGenerated(outputs: { xml: string; csv: string; reportType: "kdvp" | "
   currentStep.value = 4;
 }
 
+function onNavigate(step: number) {
+  currentStep.value = step as 1 | 2 | 3 | 4;
+}
+
 function onRestart() {
   currentStep.value = 1;
   xmlFiles.value = null;
   financialEvents.value = null;
   generatedOutputs.value = null;
+  step3Unlocked.value = false;
 }
 </script>
 
@@ -76,7 +94,7 @@ function onRestart() {
     </div>
 
     <!-- Stepper indicator -->
-    <WizardStepper :steps="stepLabels" :current-step="currentStep" />
+    <WizardStepper :steps="stepLabels" :current-step="currentStep" :max-step="maxStep" @navigate="onNavigate" />
 
     <!-- Step 1: Upload (always visible; collapses after completion) -->
     <IbkrUploadStep
@@ -93,9 +111,9 @@ function onRestart() {
       @confirmed="onConfirmed"
     />
 
-    <!-- Step 3: Configure (mounted only once review is confirmed) -->
+    <!-- Step 3: Configure (mounted once review is confirmed; stays mounted during back-navigation) -->
     <ExportConfigStep
-      v-if="financialEvents !== null && currentStep >= 3"
+      v-if="financialEvents !== null && step3Unlocked"
       :financial-events="financialEvents!"
       :collapsed="currentStep > 3"
       @generated="onGenerated"

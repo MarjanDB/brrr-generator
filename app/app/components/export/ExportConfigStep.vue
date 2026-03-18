@@ -3,7 +3,7 @@ import {
   ApplyIdentifierRelationshipsService,
   createContainer,
   DivReportGenerator,
-  FinancialEvents,
+  type FinancialEvents,
   IfiReportGenerator,
   KdvpReportGenerator,
   SlovenianTaxAuthorityProvider,

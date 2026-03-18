@@ -29,7 +29,7 @@
 	"validation_select_files": "Izberite vsaj eno XML datoteko",
 	"validation_select_report_type": "Izberite vrsto poročila",
 	"validation_year": "Vnesite letnico med 2010 in 2100",
-	"wizard_step_upload": "Naloži datoteke",
+	"wizard_step_upload": "Izberi datoteke",
 	"wizard_step_review": "Pregled podatkov",
 	"wizard_step_configure": "Nastavi izvoz",
 	"wizard_step_download": "Prenesi",
