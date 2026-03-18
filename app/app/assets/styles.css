@@ -6,11 +6,11 @@
 
 :root {
 	/* Primary — Pearl Beige (H=47, S=45%) */
-	--primary-10:  #f3eede;
-	--primary-20:  #f2eddc;
-	--primary-30:  #f0ebd9;
-	--primary-40:  #efead6;
-	--primary-50:  #eee8d3;
+	--primary-10: #f3eede;
+	--primary-20: #f2eddc;
+	--primary-30: #f0ebd9;
+	--primary-40: #efead6;
+	--primary-50: #eee8d3;
 	--primary-100: #e8e0c3;
 	--primary-150: #e2d8b3;
 	--primary-200: #dcd0a4;
@@ -35,11 +35,11 @@
 	--primary-990: #211c0c;
 
 	/* Secondary — Powder Blue (H=205, S=32%) */
-	--secondary-10:  #e1eaf0;
-	--secondary-20:  #dfe8ee;
-	--secondary-30:  #dce6ed;
-	--secondary-40:  #d9e4ec;
-	--secondary-50:  #d7e2ea;
+	--secondary-10: #e1eaf0;
+	--secondary-20: #dfe8ee;
+	--secondary-30: #dce6ed;
+	--secondary-40: #d9e4ec;
+	--secondary-50: #d7e2ea;
 	--secondary-100: #c8d8e3;
 	--secondary-150: #bacedc;
 	--secondary-200: #acc3d4;
@@ -64,11 +64,11 @@
 	--secondary-990: #0f181e;
 
 	/* Accent — Blue Slate (H=233, S=12%) */
-	--accent-10:  #e6e6eb;
-	--accent-20:  #e4e4e9;
-	--accent-30:  #e1e2e8;
-	--accent-40:  #dfe0e6;
-	--accent-50:  #dddee4;
+	--accent-10: #e6e6eb;
+	--accent-20: #e4e4e9;
+	--accent-30: #e1e2e8;
+	--accent-40: #dfe0e6;
+	--accent-50: #dddee4;
 	--accent-100: #d1d2db;
 	--accent-150: #c5c6d1;
 	--accent-200: #b9bac8;
@@ -93,11 +93,11 @@
 	--accent-990: #141419;
 
 	/* Neutral — Graphite (H=233, S=4%) */
-	--neutral-10:  #e8e8e9;
-	--neutral-20:  #e6e6e7;
-	--neutral-30:  #e3e4e6;
-	--neutral-40:  #e1e2e4;
-	--neutral-50:  #dfdfe2;
+	--neutral-10: #e8e8e9;
+	--neutral-20: #e6e6e7;
+	--neutral-30: #e3e4e6;
+	--neutral-40: #e1e2e4;
+	--neutral-50: #dfdfe2;
 	--neutral-100: #d4d4d7;
 	--neutral-150: #c9c9cd;
 	--neutral-200: #bebec3;
@@ -122,11 +122,11 @@
 	--neutral-990: #161617;
 
 	/* Stale — Warm Graphite (H=47, S=7%) */
-	--stale-10:  #eae9e7;
-	--stale-20:  #e8e7e5;
-	--stale-30:  #e6e6e3;
-	--stale-40:  #e4e4e0;
-	--stale-50:  #e3e2de;
+	--stale-10: #eae9e7;
+	--stale-20: #e8e7e5;
+	--stale-30: #e6e6e3;
+	--stale-40: #e4e4e0;
+	--stale-50: #e3e2de;
 	--stale-100: #d9d7d3;
 	--stale-150: #cfcdc7;
 	--stale-200: #c5c3bc;
@@ -151,11 +151,11 @@
 	--stale-990: #181715;
 
 	/* Success (H=145, S=28%) */
-	--success-10:  #e2efe8;
-	--success-20:  #e0ede5;
-	--success-30:  #ddece3;
-	--success-40:  #daeae1;
-	--success-50:  #d8e9df;
+	--success-10: #e2efe8;
+	--success-20: #e0ede5;
+	--success-30: #ddece3;
+	--success-40: #daeae1;
+	--success-50: #d8e9df;
 	--success-100: #cae1d4;
 	--success-150: #bcd9c8;
 	--success-200: #aed2bd;
@@ -180,11 +180,11 @@
 	--success-990: #101d15;
 
 	/* Error (H=355, S=38%) */
-	--error-10:  #f1e0e1;
-	--error-20:  #f0dddf;
-	--error-30:  #efdadc;
-	--error-40:  #edd8d9;
-	--error-50:  #ecd5d7;
+	--error-10: #f1e0e1;
+	--error-20: #f0dddf;
+	--error-30: #efdadc;
+	--error-40: #edd8d9;
+	--error-50: #ecd5d7;
 	--error-100: #e5c6c9;
 	--error-150: #dfb7ba;
 	--error-200: #d8a8ac;
@@ -209,11 +209,11 @@
 	--error-990: #1f0e0f;
 
 	/* Warning (H=60, S=38%) */
-	--warning-10:  #f1f1e0;
-	--warning-20:  #f0f0dd;
-	--warning-30:  #efefda;
-	--warning-40:  #ededd8;
-	--warning-50:  #ececd5;
+	--warning-10: #f1f1e0;
+	--warning-20: #f0f0dd;
+	--warning-30: #efefda;
+	--warning-40: #ededd8;
+	--warning-50: #ececd5;
 	--warning-100: #e6e6c7;
 	--warning-150: #dfdfb9;
 	--warning-200: #d9d9ab;
@@ -238,11 +238,11 @@
 	--warning-990: #1f1f0e;
 
 	/* Info (H=210, S=32%) */
-	--info-10:  #e1e9f0;
-	--info-20:  #dfe7ee;
-	--info-30:  #dce4ed;
-	--info-40:  #d9e2ec;
-	--info-50:  #d7e0ea;
+	--info-10: #e1e9f0;
+	--info-20: #dfe7ee;
+	--info-30: #dce4ed;
+	--info-40: #d9e2ec;
+	--info-50: #d7e0ea;
 	--info-100: #c8d6e3;
 	--info-150: #bacbdc;
 	--info-200: #acc0d4;
