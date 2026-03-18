@@ -52,18 +52,18 @@ function cashTxLabel(tx: (typeof cashTransactions.value)[number]): string {
 <template>
   <DialogRoot v-model:open="open">
     <DialogPortal>
-      <DialogOverlay class="fixed inset-0 z-50 bg-black/40 dark:bg-black/60" />
+      <DialogOverlay class="fixed inset-0 z-50 app-overlay" />
       <DialogContent
-        class="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(90vw,760px)] max-h-[85vh] flex flex-col bg-stale-50 dark:bg-stale-950 border border-stale-250 dark:border-stale-750 rounded-lg shadow-xl overflow-hidden"
+        class="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(90vw,760px)] max-h-[85vh] flex flex-col app-surface-overlay border app-border-strong rounded-lg shadow-xl overflow-hidden"
       >
         <!-- Header -->
-        <div class="flex items-start justify-between gap-4 px-5 py-4 border-b border-stale-200 dark:border-stale-800 shrink-0">
+        <div class="flex items-start justify-between gap-4 px-5 py-4 border-b app-border shrink-0">
           <div class="flex flex-col gap-0.5 min-w-0">
             <DialogTitle class="text-h5 truncate">{{ name }}</DialogTitle>
             <span class="text-caption font-mono">{{ isin }}</span>
           </div>
-          <DialogClose class="shrink-0 p-1 -m-1 rounded app-text-muted hover:app-text transition-colors bg-transparent border-0 cursor-pointer">
-            <span class="i-mdi-close text-lg" />
+          <DialogClose class="button-ghost shrink-0 p-1">
+            <span class="i-mdi-close text-lg block" />
           </DialogClose>
         </div>
 
@@ -76,7 +76,7 @@ function cashTxLabel(tx: (typeof cashTransactions.value)[number]): string {
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead>
-                  <tr class="border-b border-stale-200 dark:border-stale-800">
+                  <tr class="border-b app-border">
                     <th class="text-left py-1.5 pr-3 font-medium app-text-muted">{{ t('modal_col_date') }}</th>
                     <th class="text-left py-1.5 pr-3 font-medium app-text-muted">{{ t('modal_col_type') }}</th>
                     <th class="text-right py-1.5 pr-3 font-medium app-text-muted">{{ t('modal_col_qty') }}</th>
@@ -88,7 +88,7 @@ function cashTxLabel(tx: (typeof cashTransactions.value)[number]): string {
                   <tr
                     v-for="trade in stockTrades"
                     :key="trade.id"
-                    class="border-b border-stale-100 dark:border-stale-900 last:border-0"
+                    class="border-b app-border-subtle last:border-0"
                   >
                     <td class="py-1.5 pr-3 app-text font-mono text-xs">{{ formatDate(trade.date) }}</td>
                     <td class="py-1.5 pr-3 app-text text-xs">{{ trade instanceof TradeEventStockAcquired ? t('modal_trade_buy') : t('modal_trade_sell') }}</td>
@@ -109,7 +109,7 @@ function cashTxLabel(tx: (typeof cashTransactions.value)[number]): string {
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead>
-                  <tr class="border-b border-stale-200 dark:border-stale-800">
+                  <tr class="border-b app-border">
                     <th class="text-left py-1.5 pr-3 font-medium app-text-muted">{{ t('modal_col_date') }}</th>
                     <th class="text-left py-1.5 pr-3 font-medium app-text-muted">{{ t('modal_col_type') }}</th>
                     <th class="text-right py-1.5 font-medium app-text-muted">{{ t('modal_col_amount') }}</th>
@@ -119,7 +119,7 @@ function cashTxLabel(tx: (typeof cashTransactions.value)[number]): string {
                   <tr
                     v-for="tx in cashTransactions"
                     :key="tx.id"
-                    class="border-b border-stale-100 dark:border-stale-900 last:border-0"
+                    class="border-b app-border-subtle last:border-0"
                   >
                     <td class="py-1.5 pr-3 app-text font-mono text-xs">{{ formatDate(tx.date) }}</td>
                     <td class="py-1.5 pr-3 app-text text-xs">{{ cashTxLabel(tx) }}</td>
@@ -141,7 +141,7 @@ function cashTxLabel(tx: (typeof cashTransactions.value)[number]): string {
                 <div class="overflow-x-auto">
                   <table class="w-full text-sm">
                     <thead>
-                      <tr class="border-b border-stale-200 dark:border-stale-800">
+                      <tr class="border-b app-border">
                         <th class="text-left py-1.5 pr-3 font-medium app-text-muted">{{ t('modal_col_date') }}</th>
                         <th class="text-left py-1.5 pr-3 font-medium app-text-muted">{{ t('modal_col_type') }}</th>
                         <th class="text-right py-1.5 pr-3 font-medium app-text-muted">{{ t('modal_col_qty') }}</th>
@@ -153,7 +153,7 @@ function cashTxLabel(tx: (typeof cashTransactions.value)[number]): string {
                       <tr
                         v-for="trade in dg.derivativeTrades"
                         :key="trade.id"
-                        class="border-b border-stale-100 dark:border-stale-900 last:border-0"
+                        class="border-b app-border-subtle last:border-0"
                       >
                         <td class="py-1.5 pr-3 app-text font-mono text-xs">{{ formatDate(trade.date) }}</td>
                         <td class="py-1.5 pr-3 app-text text-xs">{{ trade instanceof TradeEventDerivativeAcquired ? t('modal_trade_buy') : t('modal_trade_sell') }}</td>

@@ -70,7 +70,7 @@ function openModal(row: InstrumentRow) {
 
 <template>
   <div v-if="collapsed" class="card p-3 flex items-center gap-3">
-    <span class="i-mdi-check-circle text-secondary-600 dark:text-secondary-400 text-lg shrink-0" />
+    <span class="i-mdi-check-circle text-icon-confirm text-lg shrink-0" />
     <div class="flex flex-col min-w-0">
       <span class="text-h5">{{ t('review_instruments_title') }}</span>
       <span class="text-body-sm app-text-muted">{{ t('review_summary', { n: groupingCount }) }}</span>
@@ -82,7 +82,7 @@ function openModal(row: InstrumentRow) {
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
-          <tr class="border-b border-stale-250 dark:border-stale-750">
+          <tr class="border-b app-border-strong">
             <th class="text-left py-2 pr-4 font-medium app-text">{{ t('review_column_name') }}</th>
             <th class="text-left py-2 pr-4 font-medium app-text">{{ t('review_column_isin') }}</th>
             <th class="text-right py-2 pr-4 font-medium app-text">{{ t('review_column_stock_trades') }}</th>
@@ -94,7 +94,7 @@ function openModal(row: InstrumentRow) {
           <tr
             v-for="(row, i) in rows"
             :key="row.isin || String(i)"
-            class="border-b border-stale-200 dark:border-stale-800 last:border-0 cursor-pointer hover:bg-stale-100 dark:hover:bg-stale-800 transition-colors"
+            class="border-b app-border last:border-0 app-row-interactive"
             @click="openModal(row)"
           >
             <td class="pl-2 py-2 pr-4 app-text">{{ row.name }}</td>

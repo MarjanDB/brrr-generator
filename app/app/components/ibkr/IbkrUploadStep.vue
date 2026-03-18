@@ -51,7 +51,7 @@ async function onSubmit(valid: boolean) {
 
 <template>
   <div v-if="collapsed" class="card p-3 flex items-center gap-3">
-    <span class="i-mdi-check-circle text-secondary-600 dark:text-secondary-400 text-lg shrink-0" />
+    <span class="i-mdi-check-circle text-icon-confirm text-lg shrink-0" />
     <div class="flex flex-col min-w-0">
       <span class="text-h5">{{ t('ibkr_export_title') }}</span>
       <span class="text-body-sm app-text-muted">{{ t('upload_summary', { n: fileCount }) }}</span>
