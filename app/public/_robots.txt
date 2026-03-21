@@ -1,0 +1,3 @@
+User-Agent: *
+Disallow: /en/design
+Disallow: /sl/design

@@ -28,7 +28,14 @@ export default defineNuxtConfig({
 	},
 	components: [{ path: "~/components", pathPrefix: false }],
 
-	modules: ["@posthog/nuxt", "@unocss/nuxt", "@vueuse/nuxt", "reka-ui/nuxt", "@nuxtjs/i18n"],
+	modules: [
+		"@posthog/nuxt",
+		"@unocss/nuxt",
+		"@vueuse/nuxt",
+		"reka-ui/nuxt",
+		"@nuxtjs/i18n",
+		"@nuxtjs/seo",
+	],
 
 	css: ["~/assets/styles.css"],
 
@@ -36,7 +43,7 @@ export default defineNuxtConfig({
 		head: {
 			script: [
 				{
-					innerHTML: `(function(){var s=localStorage.getItem('vueuse-color-scheme');var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;if(s==='dark'||(s!=='light'&&prefersDark)){document.documentElement.classList.add('dark')}})()`,
+					innerHTML: `(function(){var m=document.cookie.match(/(?:^|;\\s*)color-scheme=([^;]*)/);var s=m?m[1]:null;var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;if(s==='dark'||(s!=='light'&&prefersDark)){document.documentElement.classList.add('dark')}})()`,
 					tagPosition: "head",
 				},
 			],
@@ -44,13 +51,19 @@ export default defineNuxtConfig({
 	},
 
 	i18n: {
-		strategy: "no_prefix",
+		strategy: "prefix",
 		locales: [
 			{ code: "en", language: "en-US", name: "English", file: "en.json" },
 			{ code: "sl", language: "sl-SI", name: "Slovenščina", file: "sl.json" },
 		],
 		defaultLocale: "en",
 		langDir: "locales",
+	},
+
+	site: {
+		url: "https://taxesgobrrr.com",
+		name: "BRRR Generator",
+		description: "Generate Tax Authority import forms using your broker's export files",
 	},
 
 	posthogConfig: {

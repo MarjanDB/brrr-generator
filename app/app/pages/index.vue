@@ -1,10 +1,15 @@
 <script setup lang="ts">
-definePageMeta({ ssr: false });
-
 import type { FinancialEvents } from "@brrr/lib";
 
 const { $toggleTheme, $theme } = useNuxtApp();
 const { locale, setLocale, locales, t } = useI18n();
+
+useSeoMeta({
+  title: () => t("app_title"),
+  description: () => t("site_description"),
+  ogTitle: () => t("app_title"),
+  ogDescription: () => t("site_description"),
+});
 
 const localeOptions = computed(() =>
   locales.value.map((l) => ({
