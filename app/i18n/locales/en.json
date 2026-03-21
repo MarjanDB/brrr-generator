@@ -1,5 +1,6 @@
 {
 	"app_title": "BRRR Generator",
+	"site_description": "Generate Slovenian tax authority import forms (KDVP, DIV, IFI) from Interactive Brokers XML exports",
 	"theme_dark": "Dark mode",
 	"theme_light": "Light mode",
 	"ibkr_export_title": "IBKR Export",
