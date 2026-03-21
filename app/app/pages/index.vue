@@ -2,6 +2,7 @@
 import type { FinancialEvents } from "@brrr/lib";
 
 const { $toggleTheme, $theme } = useNuxtApp();
+const { locale, setLocale, locales, t } = useI18n();
 
 useSeoMeta({
   title: () => t("app_title"),
@@ -9,8 +10,6 @@ useSeoMeta({
   ogTitle: () => t("app_title"),
   ogDescription: () => t("site_description"),
 });
-
-const { locale, setLocale, locales, t } = useI18n();
 
 const localeOptions = computed(() =>
   locales.value.map((l) => ({
