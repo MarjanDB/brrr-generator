@@ -44,13 +44,11 @@ function makeDate(iso: string): ValidDateTime {
 }
 
 function makeProvider(
-	taxPayerInfo: TaxPayerInfo,
-	config: TaxAuthorityConfiguration,
+	_taxPayerInfo: TaxPayerInfo,
+	_config: TaxAuthorityConfiguration,
 ): SlovenianTaxAuthorityProvider {
 	const processor = new FinancialEventsProcessor(null, new LotMatcher());
 	return new SlovenianTaxAuthorityProvider(
-		taxPayerInfo,
-		config,
 		new ApplyIdentifierRelationshipsService(),
 		new KdvpReportGenerator(processor),
 		new DivReportGenerator(new NodeInfoProvider()),
@@ -271,7 +269,7 @@ test("testKdvpSimpleXml - 1 purchase and 1 sale in XML", async () => {
 	const provider = makeProvider(simpleTaxPayer, config);
 	const xml = await provider.generateExportForTaxAuthority(
 		SlovenianTaxAuthorityReportTypes.DOH_KDVP,
-		testData,
+		{ taxPayerInfo: simpleTaxPayer, reportConfig: config, events: testData },
 	);
 
 	const purchaseCount = (xml.match(/<Purchase>/g) ?? []).length;
@@ -306,10 +304,11 @@ test("testIfiSimpleXml - 1 purchase and 1 sale in XML", async () => {
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const xml = await provider.generateExportForTaxAuthority(
-		SlovenianTaxAuthorityReportTypes.D_IFI,
-		testData,
-	);
+	const xml = await provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.D_IFI, {
+		taxPayerInfo: simpleTaxPayer,
+		reportConfig: config,
+		events: testData,
+	});
 
 	const purchaseCount = (xml.match(/<Purchase>/g) ?? []).length;
 	const saleCount = (xml.match(/<Sale>/g) ?? []).length;
@@ -345,7 +344,7 @@ test("testDivSimpleXml - 1 dividend line in XML", async () => {
 	const provider = makeProvider(simpleTaxPayer, config);
 	const xml = await provider.generateExportForTaxAuthority(
 		SlovenianTaxAuthorityReportTypes.DOH_DIV,
-		testData,
+		{ taxPayerInfo: simpleTaxPayer, reportConfig: config, events: testData },
 	);
 
 	const dividendCount = (xml.match(/<Dividend>/g) ?? []).length;
@@ -360,10 +359,11 @@ test("testGenerateReportDataKdvpReturnsTypedList - report has items with events"
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const reportData = (await provider.generateReportData(
-		SlovenianTaxAuthorityReportTypes.DOH_KDVP,
-		testData,
-	)) as {
+	const reportData = (await provider.generateReportData(SlovenianTaxAuthorityReportTypes.DOH_KDVP, {
+		taxPayerInfo: simpleTaxPayer,
+		reportConfig: config,
+		events: testData,
+	})) as {
 		items: { events: unknown[] }[];
 	}[];
 
@@ -381,10 +381,11 @@ test("testGenerateReportDataDivReturnsTypedSequence - 1 dividend with correct am
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const reportData = (await provider.generateReportData(
-		SlovenianTaxAuthorityReportTypes.DOH_DIV,
-		testData,
-	)) as {
+	const reportData = (await provider.generateReportData(SlovenianTaxAuthorityReportTypes.DOH_DIV, {
+		taxPayerInfo: simpleTaxPayer,
+		reportConfig: config,
+		events: testData,
+	})) as {
 		dividendAmount: number;
 		foreignTaxPaid: number;
 	}[];
@@ -403,10 +404,11 @@ test("testGenerateReportDataIfiReturnsTypedList - report has items", async () =>
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const reportData = (await provider.generateReportData(
-		SlovenianTaxAuthorityReportTypes.D_IFI,
-		testData,
-	)) as {
+	const reportData = (await provider.generateReportData(SlovenianTaxAuthorityReportTypes.D_IFI, {
+		taxPayerInfo: simpleTaxPayer,
+		reportConfig: config,
+		events: testData,
+	})) as {
 		items: unknown[];
 	}[];
 

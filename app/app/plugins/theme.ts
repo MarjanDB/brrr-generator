@@ -6,8 +6,12 @@ export default defineNuxtPlugin(() => {
 	const theme = useColorMode({
 		storage: {
 			getItem: () => cookie.value,
-			setItem: (_: string, value: string) => { cookie.value = value; },
-			removeItem: () => { cookie.value = "light"; },
+			setItem: (_: string, value: string) => {
+				cookie.value = value;
+			},
+			removeItem: () => {
+				cookie.value = "light";
+			},
 		},
 	});
 

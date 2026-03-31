@@ -2,12 +2,8 @@ import fs from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-	ApplyIdentifierRelationshipsService,
 	createContainer,
-	DivReportGenerator,
 	IbkrBrokerageExportProvider,
-	IfiReportGenerator,
-	KdvpReportGenerator,
 	SlovenianTaxAuthorityProvider,
 	SlovenianTaxAuthorityReportTypes,
 	StagingFinancialGroupingProcessor,
@@ -85,14 +81,7 @@ async function main() {
 
 	const container = createContainer(new NodeInfoProvider());
 
-	const provider = new SlovenianTaxAuthorityProvider(
-		taxPayerInfo,
-		reportConfig,
-		container.get(ApplyIdentifierRelationshipsService),
-		container.get(KdvpReportGenerator),
-		container.get(DivReportGenerator),
-		container.get(IfiReportGenerator),
-	);
+	const provider = container.get(SlovenianTaxAuthorityProvider);
 
 	const ibkrProvider = container.get(IbkrBrokerageExportProvider);
 	const groupingProcessor = container.get(StagingFinancialGroupingProcessor);
@@ -121,8 +110,16 @@ async function main() {
 			console.error(`No output file mapping for report type: ${reportType}`);
 			process.exit(1);
 		}
-		const xmlOutput = await provider.generateExportForTaxAuthority(reportType, financialEvents);
-		const csvOutput = await provider.generateSpreadsheetExport(reportType, financialEvents);
+		const xmlOutput = await provider.generateExportForTaxAuthority(reportType, {
+			taxPayerInfo,
+			reportConfig,
+			events: financialEvents,
+		});
+		const csvOutput = await provider.generateSpreadsheetExport(reportType, {
+			taxPayerInfo,
+			reportConfig,
+			events: financialEvents,
+		});
 		await fs.writeFile(`${EXPORTS_DIR}/${files.xml}`, xmlOutput, "utf-8");
 		await fs.writeFile(`${EXPORTS_DIR}/${files.csv}`, csvOutput, "utf-8");
 		console.log(`Written: ${EXPORTS_DIR}/${files.xml}`);

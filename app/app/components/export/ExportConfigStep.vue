@@ -1,14 +1,9 @@
 <script setup lang="ts">
 import {
-  ApplyIdentifierRelationshipsService,
   createContainer,
-  DivReportGenerator,
   type FinancialEvents,
-  IfiReportGenerator,
-  KdvpReportGenerator,
-  SlovenianTaxAuthorityProvider,
-  SlovenianTaxAuthorityReportTypes,
   TaxAuthorityLotMatchingMethod,
+  TaxAuthorityRegistry,
   TaxPayerConfigSchema,
   zDateTimeFromISOString,
 } from "@brrr/lib";
@@ -26,6 +21,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 const year = ref<number | null>(new Date().getFullYear() - 1);
+const taxAuthorityId = ref("");
 const reportType = ref("");
 const taxNumber = ref("");
 const fullName = ref("");
@@ -43,19 +39,39 @@ const lastYear = ref<number | null>(null);
 const error = ref<string | null>(null);
 const loading = ref(false);
 
-const REPORT_MAP: Record<string, SlovenianTaxAuthorityReportTypes> = {
-  kdvp: SlovenianTaxAuthorityReportTypes.DOH_KDVP,
-  div: SlovenianTaxAuthorityReportTypes.DOH_DIV,
-  ifi: SlovenianTaxAuthorityReportTypes.D_IFI,
-};
+const container = createContainer(new ApiInfoProvider());
+const registry = container.get(TaxAuthorityRegistry);
 
-const reportTypeOptions = computed(() => [
-  { value: "kdvp", label: t("report_type_kdvp") },
-  { value: "div", label: t("report_type_div") },
-  { value: "ifi", label: t("report_type_ifi") },
-]);
+const authorityDescriptors = computed(() => registry.listAuthorities());
+
+watchEffect(() => {
+  if (!taxAuthorityId.value) {
+    taxAuthorityId.value = authorityDescriptors.value[0]?.authorityId ?? "";
+  }
+});
+
+const taxAuthorityOptions = computed(() =>
+  authorityDescriptors.value.map((a) => ({ value: a.authorityId, label: a.displayName })),
+);
+
+const reportTypeOptions = computed(() => {
+  const authority = authorityDescriptors.value.find((a) => a.authorityId === taxAuthorityId.value);
+  if (!authority) return [];
+
+  // For now, we have full i18n labels for the Slovenian report types.
+  if (authority.authorityId === "slovenia") {
+    return [
+      { value: "kdvp", label: t("report_type_kdvp") },
+      { value: "div", label: t("report_type_div") },
+      { value: "ifi", label: t("report_type_ifi") },
+    ];
+  }
+
+  return authority.reportTypes.map((rt) => ({ value: rt.reportTypeId, label: rt.displayName }));
+});
 
 const validateRequired = (v: string) => (v.trim() ? null : t("validation_required"));
+const validateTaxAuthority = (v: string) => (v ? null : t("validation_required"));
 const validateYear = (v: number | null) => {
   if (v === null) return t("validation_required");
   if (!Number.isInteger(v) || v < 2010 || v > 2100) return t("validation_year");
@@ -66,8 +82,6 @@ const validateReportType = (v: string) => (v ? null : t("validation_select_repor
 async function onSubmit(valid: boolean) {
   if (!valid || year.value === null) return;
   const selectedYear = year.value;
-  const selectedType = REPORT_MAP[reportType.value];
-  if (!selectedType) return;
   error.value = null;
   loading.value = true;
   try {
@@ -97,20 +111,13 @@ async function onSubmit(valid: boolean) {
       lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
     };
 
-    const container = createContainer(new ApiInfoProvider());
-    const provider = new SlovenianTaxAuthorityProvider(
+    const { xml, csv } = await registry.generateExports({
+      authorityId: taxAuthorityId.value,
+      reportTypeId: reportType.value,
       taxPayerInfo,
       reportConfig,
-      container.get(ApplyIdentifierRelationshipsService),
-      container.get(KdvpReportGenerator),
-      container.get(DivReportGenerator),
-      container.get(IfiReportGenerator),
-    );
-
-    const [xml, csv] = await Promise.all([
-      provider.generateExportForTaxAuthority(selectedType, props.financialEvents),
-      provider.generateSpreadsheetExport(selectedType, props.financialEvents),
-    ]);
+      events: props.financialEvents,
+    });
 
     lastReportType.value = reportType.value as "kdvp" | "div" | "ifi";
     lastYear.value = year.value;
@@ -139,6 +146,13 @@ async function onSubmit(valid: boolean) {
     <div class="card card-padding-md flex flex-col gap-3">
       <h2 class="text-h5">{{ t('report_settings_title') }}</h2>
       <div class="grid grid-cols-2 gap-3">
+        <AppSelect
+          v-model="taxAuthorityId"
+          label="Tax authority"
+          :placeholder="t('validation_required')"
+          :options="taxAuthorityOptions"
+          :validate="validateTaxAuthority"
+        />
         <AppNumberInput
           v-model="year"
           :label="t('year_label')"
