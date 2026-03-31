@@ -22,20 +22,20 @@
 		"build": "tsdown"
 	},
 	"dependencies": {
-		"csv-stringify": "^6.6.0",
-		"fast-xml-parser": "^5.5.5",
-		"inversify": "^7.11.0",
-		"luxon": "^3.7.2",
-		"yahoo-finance2": "^3.13.2",
-		"zod": "^4.3.6"
+		"csv-stringify": "6.7.0",
+		"fast-xml-parser": "5.5.9",
+		"inversify": "7.11.0",
+		"luxon": "3.7.2",
+		"yahoo-finance2": "3.14.0",
+		"zod": "4.3.6"
 	},
 	"devDependencies": {
-		"@types/luxon": "^3.7.1",
-		"@types/node": "^25.5.0",
-		"tsdown": "^0.21.2",
-		"typescript": "^5.9.3",
-		"vite-tsconfig-paths": "^6.1.1",
-		"@vitest/coverage-v8": "^4.1.0",
-		"vitest": "^4.1.0"
+		"@types/luxon": "3.7.1",
+		"@types/node": "25.5.0",
+		"tsdown": "0.21.7",
+		"typescript": "5.9.3",
+		"vite-tsconfig-paths": "6.1.1",
+		"@vitest/coverage-v8": "4.1.2",
+		"vitest": "4.1.2"
 	}
 }

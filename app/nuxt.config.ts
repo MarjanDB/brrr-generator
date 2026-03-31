@@ -66,6 +66,10 @@ export default defineNuxtConfig({
 		description: "Generate Tax Authority import forms using your broker's export files",
 	},
 
+	ogImage: {
+		zeroRuntime: true,
+	},
+
 	posthogConfig: {
 		clientConfig: {
 			defaults: "2026-01-30",
