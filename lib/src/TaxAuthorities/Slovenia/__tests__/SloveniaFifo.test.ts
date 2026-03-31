@@ -39,13 +39,11 @@ function makeDate(iso: string): ValidDateTime {
 }
 
 function makeProvider(
-	taxPayerInfo: TaxPayerInfo,
-	config: TaxAuthorityConfiguration,
+	_taxPayerInfo: TaxPayerInfo,
+	_config: TaxAuthorityConfiguration,
 ): SlovenianTaxAuthorityProvider {
 	const processor = new FinancialEventsProcessor(null, new LotMatcher());
 	return new SlovenianTaxAuthorityProvider(
-		taxPayerInfo,
-		config,
 		new ApplyIdentifierRelationshipsService(),
 		new KdvpReportGenerator(processor),
 		new DivReportGenerator(new NodeInfoProvider()),
@@ -201,7 +199,7 @@ test("SloveniaFifo - testKdvpSimpleXml - 1 purchase and 1 sale in XML", async ()
 	const provider = makeProvider(simpleTaxPayer, config);
 	const xml = await provider.generateExportForTaxAuthority(
 		SlovenianTaxAuthorityReportTypes.DOH_KDVP,
-		testData,
+		{ taxPayerInfo: simpleTaxPayer, reportConfig: config, events: testData },
 	);
 
 	const purchaseCount = (xml.match(/<Purchase>/g) ?? []).length;
@@ -236,10 +234,11 @@ test("SloveniaFifo - testIfiSimpleXml - 1 purchase and 1 sale in XML", async () 
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const xml = await provider.generateExportForTaxAuthority(
-		SlovenianTaxAuthorityReportTypes.D_IFI,
-		testData,
-	);
+	const xml = await provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.D_IFI, {
+		taxPayerInfo: simpleTaxPayer,
+		reportConfig: config,
+		events: testData,
+	});
 
 	const purchaseCount = (xml.match(/<Purchase>/g) ?? []).length;
 	const saleCount = (xml.match(/<Sale>/g) ?? []).length;

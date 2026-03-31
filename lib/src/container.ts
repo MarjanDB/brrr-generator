@@ -1,7 +1,7 @@
 import { loadBrokeragesModule } from "@brrr/Brokerages/BrokeragesModule.js";
 import { loadCoreModule } from "@brrr/Core/CoreModule.js";
 import { InfoProvider } from "@brrr/InfoProviders/InfoProvider.js";
-import { loadSloveniaModule } from "@brrr/TaxAuthorities/Slovenia/SloveniaModule.js";
+import { loadTaxAuthoritiesModule } from "@brrr/TaxAuthorities/TaxAuthoritiesModule.js";
 import { Container } from "inversify";
 
 export function createContainer(infoProvider: InfoProvider): Container {
@@ -14,7 +14,7 @@ export function createContainer(infoProvider: InfoProvider): Container {
 
 	loadCoreModule(container);
 	loadBrokeragesModule(container);
-	loadSloveniaModule(container);
+	loadTaxAuthoritiesModule(container);
 
 	return container;
 }
