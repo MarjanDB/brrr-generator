@@ -1,10 +1,10 @@
 // lib entry point — re-exports added here as modules are implemented
 
+export type { BrokerageFileDetection } from "@brrr/Brokerages/BrokerageRegistry.js";
+export { BrokerageRegistry } from "@brrr/Brokerages/BrokerageRegistry.js";
 // Brokerages
 export { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider.js";
 export type { IBrokerageProvider } from "@brrr/Brokerages/Interfaces/IBrokerageProvider.js";
-export { BrokerageRegistry } from "@brrr/Brokerages/BrokerageRegistry.js";
-export type { BrokerageFileDetection } from "@brrr/Brokerages/BrokerageRegistry.js";
 export { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.js";
 export { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.js";
 export { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.js";

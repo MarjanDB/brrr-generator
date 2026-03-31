@@ -50,7 +50,8 @@ export class BrokerageRegistry {
 		const detections = this.detect(files);
 
 		const ibkrXmlStrings = this._pickIbkrXmlStrings(files, detections);
-		const ibkrStaging = ibkrXmlStrings.length > 0 ? this.ibkr.loadAndTransform(ibkrXmlStrings) : null;
+		const ibkrStaging =
+			ibkrXmlStrings.length > 0 ? this.ibkr.loadAndTransform(ibkrXmlStrings) : null;
 
 		const stagingEventsList: StagingFinancialEvents[] = [];
 		if (ibkrStaging) stagingEventsList.push(ibkrStaging);
@@ -61,4 +62,3 @@ export class BrokerageRegistry {
 		};
 	}
 }
-
