@@ -1,25 +1,11 @@
-export type TextSegment = {
-	type: "text";
-	textKey: string;
-};
+export type { GuideStep, LinkSegment, Segment, TextSegment } from "../guide/guideTypes";
 
-export type LinkSegment = {
-	type: "link";
-	textKey: string;
-	url: string;
-};
-
-export type Segment = TextSegment | LinkSegment;
-
-export type GuideStep = {
-	titleKey: string;
-	segments: Segment[];
-	imageUrls?: string[];
-};
+import type { GuideStep } from "../guide/guideTypes";
 
 export type BrokerGuide = {
 	id: string;
 	nameKey: string;
+	modalTitleKey: string;
 	taglineKey: string;
 	iconUrl: string;
 	steps: GuideStep[];
@@ -31,6 +17,7 @@ export const BROKER_GUIDES: BrokerGuide[] = [
 	{
 		id: "ibkr",
 		nameKey: "broker_ibkr_name",
+		modalTitleKey: "broker_ibkr_modal_title",
 		taglineKey: "broker_ibkr_tagline",
 		iconUrl: "/icons/brokers/ibkr.svg",
 		steps: [

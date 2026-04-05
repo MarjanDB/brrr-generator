@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BrokerExportGuideModal from "./BrokerExportGuideModal.vue";
+import GuideModal from "../guide/GuideModal.vue";
 import type { BrokerGuide } from "./brokerGuides";
 
 defineProps<{
@@ -45,8 +45,11 @@ function setOpen(id: string, val: boolean) {
         </div>
         <span class="i-mdi-help-circle-outline text-lg app-text-muted shrink-0" />
 
-        <BrokerExportGuideModal
-          :broker="broker"
+        <GuideModal
+          :name-key="broker.modalTitleKey"
+          :tagline-key="broker.taglineKey"
+          :icon-url="broker.iconUrl"
+          :steps="broker.steps"
           :open="isOpen(broker.id)"
           @update:open="(val) => setOpen(broker.id, val)"
         />

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { FinancialEvents } from "@brrr/lib";
 import type { Component } from "vue";
-import SloveniaExportForm from "./SloveniaExportForm.vue";
-import { TAX_AUTHORITY_CARDS, type TaxAuthorityCard } from "./taxAuthorityCards";
+import SloveniaExportForm from "~/components/export/SloveniaExportForm.vue";
+import { TAX_AUTHORITY_CARDS, type TaxAuthorityCard } from "~/components/export/taxAuthorityCards";
 
 const props = defineProps<{
   financialEvents: FinancialEvents;
@@ -10,7 +10,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  generated: [outputs: { xml: string; csv: string; xmlFilename: string; csvFilename: string }];
+  generated: [outputs: { xml: string; csv: string; xmlFilename: string; csvFilename: string; authorityId: string; reportTypeId: string }];
 }>();
 
 const { t } = useI18n();
@@ -40,7 +40,7 @@ function onSelect(authorityId: string) {
   }
 }
 
-function onGenerated(outputs: { xml: string; csv: string; xmlFilename: string; csvFilename: string }) {
+function onGenerated(outputs: { xml: string; csv: string; xmlFilename: string; csvFilename: string; authorityId: string; reportTypeId: string }) {
   lastXmlFilename.value = outputs.xmlFilename;
   emit("generated", outputs);
 }
