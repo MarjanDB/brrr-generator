@@ -6,6 +6,8 @@
 	"ibkr_export_title": "Izberi datoteke",
 	"ibkr_export_hint": "izberite vse izvoze vašega posrednika za leto, ki ga prijavljate, in vsa predhodna leta",
 	"xml_files_label": "XML datoteka(e)",
+	"tax_authority_label": "Davčna uprava",
+	"tax_authority_description": "Izberite davčno upravo, ki ji poročate",
 	"report_settings_title": "Nastavitve poročila",
 	"year_label": "Leto",
 	"report_type_label": "Vrsta poročila",

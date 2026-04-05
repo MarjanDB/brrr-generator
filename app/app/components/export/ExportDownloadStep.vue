@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{
-  outputs: { xml: string; csv: string; reportType: "kdvp" | "div" | "ifi" };
+  outputs: { xml: string; csv: string; xmlFilename: string; csvFilename: string };
 }>();
 
 const emit = defineEmits<{
@@ -8,12 +8,6 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-
-const OUTPUT_FILENAMES: Record<"kdvp" | "div" | "ifi", { xml: string; csv: string }> = {
-  kdvp: { xml: "Doh_KDVP.xml", csv: "export-trades.csv" },
-  div: { xml: "Doh_Div.xml", csv: "export-dividends.csv" },
-  ifi: { xml: "D_Ifi.xml", csv: "export-derivatives.csv" },
-};
 
 const xmlUrl = ref<string | null>(null);
 const csvUrl = ref<string | null>(null);
@@ -35,8 +29,6 @@ onMounted(() => {
 });
 
 onUnmounted(revokeUrls);
-
-const filenames = computed(() => OUTPUT_FILENAMES[props.outputs.reportType]);
 </script>
 
 <template>
@@ -46,7 +38,7 @@ const filenames = computed(() => OUTPUT_FILENAMES[props.outputs.reportType]);
       <a
         v-if="xmlUrl"
         :href="xmlUrl"
-        :download="filenames.xml"
+        :download="outputs.xmlFilename"
         class="button-filled-secondary"
       >
         {{ t('download_xml_label') }}
@@ -54,7 +46,7 @@ const filenames = computed(() => OUTPUT_FILENAMES[props.outputs.reportType]);
       <a
         v-if="csvUrl"
         :href="csvUrl"
-        :download="filenames.csv"
+        :download="outputs.csvFilename"
         class="button-filled-secondary"
       >
         {{ t('download_csv_label') }}

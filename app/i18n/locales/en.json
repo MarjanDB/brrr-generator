@@ -6,6 +6,8 @@
 	"ibkr_export_title": "Select Files",
 	"ibkr_export_hint": "select all of your broker exports for and before the year you are reporting on",
 	"xml_files_label": "XML file(s)",
+	"tax_authority_label": "Tax Authority",
+	"tax_authority_description": "Select the tax authority you are reporting to",
 	"report_settings_title": "Report Settings",
 	"year_label": "Year",
 	"report_type_label": "Report type",
