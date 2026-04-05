@@ -6,6 +6,8 @@ import {
   StagingFinancialEvents,
   StagingFinancialGroupingProcessor,
 } from "@brrr/lib";
+import BrokerSupportSection from "~/components/upload/BrokerSupportSection.vue";
+import { BROKER_GUIDES } from "~/components/upload/brokerGuides";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
 const props = defineProps<{
@@ -110,6 +112,9 @@ watch(xmlFiles, (v) => {
   <div v-else class="card card-padding-md flex flex-col gap-3">
     <h2 class="text-h5">{{ t('ibkr_export_title') }}</h2>
     <p class="text-body-sm app-text-muted">{{ t('ibkr_export_hint') }}</p>
+    
+    <BrokerSupportSection :brokers="BROKER_GUIDES" />
+    
     <AppForm @submit="() => onContinue()">
       <div class="flex flex-col gap-4">
         <AppFileInput
