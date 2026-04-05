@@ -7,7 +7,7 @@ import {
   DialogRoot,
   DialogTitle,
 } from "reka-ui";
-import type { BrokerGuide } from "./brokerGuides";
+import type { BrokerGuide, LinkSegment, Segment } from "./brokerGuides";
 
 defineProps<{
   broker: BrokerGuide;
@@ -16,6 +16,10 @@ defineProps<{
 const open = defineModel<boolean>("open", { default: false });
 
 const { t } = useI18n();
+
+function isLink(segment: Segment): segment is LinkSegment {
+  return segment.type === "link";
+}
 </script>
 
 <template>
@@ -61,23 +65,27 @@ const { t } = useI18n();
             <!-- Step content -->
             <div class="flex flex-col gap-2 pt-0.5 min-w-0 pb-2">
               <span class="text-label">{{ t(step.titleKey) }}</span>
-              <p class="text-body-sm app-text-muted">{{ t(step.descriptionKey) }}</p>
-              <img
-                v-if="step.imageUrl"
-                :src="step.imageUrl"
-                :alt="t(step.titleKey)"
-                class="rounded border app-border max-w-full mt-1"
-              />
-              <a
-                v-if="step.linkUrl && step.linkLabelKey"
-                :href="step.linkUrl"
-                target="_blank"
-                rel="noopener"
-                class="inline-flex items-center gap-1 text-body-sm text-primary hover:underline self-start"
-              >
-                <span class="i-mdi-open-in-new text-sm" />
-                {{ t(step.linkLabelKey) }}
-              </a>
+              <p class="text-body-sm app-text-muted leading-relaxed">
+                <template v-for="(segment, si) in step.segments" :key="si">
+                  <a
+                    v-if="isLink(segment)"
+                    :href="segment.url"
+                    target="_blank"
+                    rel="noopener"
+                    class="text-primary-600 dark:text-primary-400 hover:underline inline-flex items-center gap-0.5"
+                  >{{ t(segment.textKey) }}<span class="i-mdi-open-in-new text-xs ml-0.5" /></a>
+                  <template v-else>{{ t(segment.textKey) }}</template>
+                </template>
+              </p>
+              <div v-if="step.imageUrls && step.imageUrls.length > 0" class="flex flex-col gap-2 mt-1">
+                <img
+                  v-for="(url, ii) in step.imageUrls"
+                  :key="ii"
+                  :src="url"
+                  :alt="t(step.titleKey)"
+                  class="rounded border app-border max-w-full"
+                />
+              </div>
             </div>
           </div>
         </div>
