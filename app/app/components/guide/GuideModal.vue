@@ -61,7 +61,7 @@ function isLink(segment: Segment): segment is LinkSegment {
             <!-- Step number + connecting line -->
             <div class="flex flex-col items-center shrink-0">
               <div class="w-7 h-7 rounded-full app-surface-sunken border app-border-strong flex items-center justify-center shrink-0">
-                <span class="text-xs font-semibold app-text-muted">{{ index + 1 }}</span>
+                <span class="block text-xs font-semibold app-text-muted">{{ index + 1 }}</span>
               </div>
               <div v-if="index < steps.length - 1" class="w-px flex-1 mt-2 app-border-strong border-l border-dashed" />
             </div>
