@@ -27,15 +27,15 @@
 		"inversify": "7.11.0",
 		"luxon": "3.7.2",
 		"yahoo-finance2": "3.14.0",
-		"zod": "4.3.6"
+		"zod": "4.4.3"
 	},
 	"devDependencies": {
 		"@types/luxon": "3.7.1",
-		"@types/node": "25.5.2",
-		"tsdown": "0.21.7",
+		"@types/node": "25.7.0",
+		"tsdown": "0.21.10",
 		"typescript": "5.9.3",
 		"vite-tsconfig-paths": "6.1.1",
-		"@vitest/coverage-v8": "4.1.2",
-		"vitest": "4.1.2"
+		"@vitest/coverage-v8": "4.1.6",
+		"vitest": "4.1.6"
 	}
 }
