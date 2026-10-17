@@ -77,13 +77,18 @@ replace the file and update the namespace and version in the matching `Xml*.ts`.
 
 ## Tests
 
-`__tests__/`: `GoldenReports.test.ts` (golden XML and CSV for every report in `__snapshots__/golden/`; they pin the output byte for
-byte, so never regenerate them to make a refactor pass), `TaxAuthorityProvider.test.ts` (all three reports, builds the provider by hand
-in `makeProvider`), `PaymentInLieuOfDividend.test.ts`, `SloveniaIssues.test.ts` (regressions from real exports),
-`CsvWithoutNodeBuffer.test.ts` (CSV generators without Node's `Buffer`). `ReportGeneration/Div/__tests__/DivReportGenerator.test.ts` pins
-DIV's sums, same-day merge and rounding, `ReportGeneration/__tests__/Amounts.test.ts` the shared amount helpers, and
-`TaxAuthorities/__tests__/LotMatchingMethodFactory.test.ts` the lot matching choice. Tests give the dividend generator a
-`PredefinedInfoProvider` with the companies and countries they need, so they never call Yahoo Finance.
+The expected XML and CSV for every report live with their test cases in `test-cases/cases/<Broker>/<Case>/expected/slovenia/<year>/`
+(`kdvp-fifo`, `kdvp-provided`, `ifi-fifo`, `div`). The acceptance tests in `lib/src/__tests__/Acceptance/` compare against them byte for
+byte, so never regenerate them to make a refactor pass. `lib/src/__tests__/Acceptance/Lookups.ts` holds the company and country data
+the dividend cases were generated with.
+
+`__tests__/`: `TaxAuthorityProvider.integration.test.ts` (all three reports' lines, builds the provider by hand in `makeProvider` to spy
+on its collaborators), `PaymentInLieuOfDividend.unit.test.ts`, `CsvWithoutNodeBuffer.unit.test.ts` (CSV generators without Node's
+`Buffer`). `ReportGeneration/Div/__tests__/DivReportGenerator.unit.test.ts` pins DIV's sums, same-day merge and rounding,
+`ReportGeneration/__tests__/Amounts.unit.test.ts` the shared amount helpers, and
+`TaxAuthorities/__tests__/LotMatchingMethodFactory.unit.test.ts` the lot matching choice. Tests build their data and report configs
+with `Scenario` (`lib/src/__tests__/support/Scenario.ts`; its taxpayer is the one the expected files were generated for) and give the
+dividend generator a `PredefinedInfoProvider` with the companies and countries they need, so they never call Yahoo Finance.
 
 ## References
 
