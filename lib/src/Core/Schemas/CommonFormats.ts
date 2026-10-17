@@ -15,40 +15,16 @@ export enum GenericShortLong {
 	LONG = "LONG",
 }
 
-// Names here are just guesses, since I don't know what these correspond to in English
-export enum GenericTradeReportItemType {
-	STOCK = "STOCK",
-	OPTION = "OPTION",
-	STOCK_SHORT = "STOCK_SHORT",
-	STOCK_CONTRACT = "STOCK_CONTRACT",
-	STOCK_CONTRACT_SHORT = "STOCK_CONTRACT_SHORT",
-	COMPANY_SHARE = "COMPANY_SHARE",
-	PLVPZOK = "PLVPZOK",
-}
-
 export enum GenericTradeReportItemGainType {
 	CAPITAL_INVESTMENT = "CAPITAL_INVESTMENT",
 	BOUGHT = "BOUGHT",
 	CAPITAL_RAISE = "CAPITAL_RAISE",
 	CAPITAL_ASSET = "CAPITAL_ASSET",
 	CAPITALIZATION_CHANGE = "CAPITALIZATION_CHANGE",
-	INHERITENCE = "INHERITENCE",
+	INHERITANCE = "INHERITANCE",
 	GIFT = "GIFT",
 	OTHER = "OTHER",
 	RIGHT_TO_NEWLY_ISSUED_STOCK = "RIGHT_TO_NEWLY_ISSUED_STOCK",
-}
-
-export enum GenericDerivativeReportItemType {
-	DERIVATIVE = "DERIVATIVE",
-	DERIVATIVE_SHORT = "DERIVATIVE_SHORT",
-}
-
-export enum GenericDerivativeReportAssetClassType {
-	FUTURES_CONTRACT = "FUTURES_CONTRACT",
-	CONTRACT_FOR_DIFFERENCE = "CFD",
-	OPTION = "OPTION",
-	CERTIFICATE = "CERTIFICATE",
-	OTHER = "OTHER",
 }
 
 export enum GenericDerivativeReportItemGainType {
@@ -57,36 +33,38 @@ export enum GenericDerivativeReportItemGainType {
 	CAPITAL_RAISE = "CAPITAL_RAISE",
 	CAPITAL_ASSET = "CAPITAL_ASSET",
 	CAPITALIZATION_CHANGE = "CAPITALIZATION_CHANGE",
-	INHERITENCE = "INHERITENCE",
+	INHERITANCE = "INHERITANCE",
 	GIFT = "GIFT",
 	OTHER = "OTHER",
 }
+
+type GenericMonetaryExchangeInformationArgs = {
+	underlyingCurrency: string;
+	underlyingQuantity: number;
+	underlyingTradePrice: number;
+	commissionCurrency: string;
+	commissionTotal: number;
+	taxCurrency: string;
+	taxTotal: number;
+	fxRateToBase: number;
+};
 
 export class GenericMonetaryExchangeInformation {
 	public readonly underlyingCurrency: string;
 	public readonly underlyingQuantity: number;
 	public readonly underlyingTradePrice: number;
-	public readonly comissionCurrency: string;
-	public readonly comissionTotal: number;
+	public readonly commissionCurrency: string;
+	public readonly commissionTotal: number;
 	public readonly taxCurrency: string;
 	public readonly taxTotal: number;
 	public readonly fxRateToBase: number;
 
-	constructor(args: {
-		underlyingCurrency: string;
-		underlyingQuantity: number;
-		underlyingTradePrice: number;
-		comissionCurrency: string;
-		comissionTotal: number;
-		taxCurrency: string;
-		taxTotal: number;
-		fxRateToBase: number;
-	}) {
+	constructor(args: GenericMonetaryExchangeInformationArgs) {
 		this.underlyingCurrency = args.underlyingCurrency;
 		this.underlyingQuantity = args.underlyingQuantity;
 		this.underlyingTradePrice = args.underlyingTradePrice;
-		this.comissionCurrency = args.comissionCurrency;
-		this.comissionTotal = args.comissionTotal;
+		this.commissionCurrency = args.commissionCurrency;
+		this.commissionTotal = args.commissionTotal;
 		this.taxCurrency = args.taxCurrency;
 		this.taxTotal = args.taxTotal;
 		this.fxRateToBase = args.fxRateToBase;

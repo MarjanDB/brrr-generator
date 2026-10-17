@@ -2,7 +2,13 @@ export enum SlovenianTaxAuthorityReportTypes {
 	DOH_DIV = "Dividende",
 	DOH_KDVP = "Vrednostni papirji",
 	D_IFI = "Izvedeni finančni inštrumenti",
-	DOH_OBR = "Obresti",
+}
+
+// The IDs the site and the CLI use to ask for a report.
+export enum SlovenianReportTypeId {
+	KDVP = "kdvp",
+	DIV = "div",
+	IFI = "ifi",
 }
 
 // https://edavki.durs.si/EdavkiPortal/PersonalPortal/[360253]/Pages/Help/sl/WorkflowType1.htm

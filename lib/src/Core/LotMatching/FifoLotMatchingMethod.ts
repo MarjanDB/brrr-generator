@@ -37,11 +37,8 @@ class TrackingTradeBuySellSide {
 }
 
 export class FifoLotMatchingMethod implements LotMatchingMethod {
-	private tradeAssociationTracker: TradeAssociationTracker = new TradeAssociationTracker();
-
 	performMatching(events: Trade[]): Lot[] {
-		// Reset tracker for each matching run
-		this.tradeAssociationTracker = new TradeAssociationTracker();
+		const tracker = new TradeAssociationTracker();
 
 		if (events.length === 0) return [];
 
@@ -84,8 +81,8 @@ export class FifoLotMatchingMethod implements LotMatchingMethod {
 				earliestEventWaitingForMatch,
 			);
 
-			this.tradeAssociationTracker.trackTrade(tracking.buySide);
-			this.tradeAssociationTracker.trackTrade(tracking.sellSide);
+			tracker.trackTrade(tracking.buySide);
+			tracker.trackTrade(tracking.sellSide);
 
 			let newCandidateEventQuantity: number;
 			let earliestEventWaitingForMatchQuantity: number;
@@ -93,20 +90,17 @@ export class FifoLotMatchingMethod implements LotMatchingMethod {
 			if (tracking.buySide.id === tracking.candidateEvent.id) {
 				newCandidateEventQuantity =
 					tracking.candidateEvent.quantity -
-					this.tradeAssociationTracker.getAcquiredTradeTracker(tracking.candidateEvent).quantity;
+					tracker.getAcquiredTradeTracker(tracking.candidateEvent).quantity;
 				earliestEventWaitingForMatchQuantity =
 					tracking.earliestEventWaitingForMatch.quantity -
-					this.tradeAssociationTracker.getSoldTradeTracker(tracking.earliestEventWaitingForMatch)
-						.quantity;
+					tracker.getSoldTradeTracker(tracking.earliestEventWaitingForMatch).quantity;
 			} else {
 				earliestEventWaitingForMatchQuantity =
 					tracking.earliestEventWaitingForMatch.quantity -
-					this.tradeAssociationTracker.getAcquiredTradeTracker(
-						tracking.earliestEventWaitingForMatch,
-					).quantity;
+					tracker.getAcquiredTradeTracker(tracking.earliestEventWaitingForMatch).quantity;
 				newCandidateEventQuantity =
 					tracking.candidateEvent.quantity -
-					this.tradeAssociationTracker.getSoldTradeTracker(tracking.candidateEvent).quantity;
+					tracker.getSoldTradeTracker(tracking.candidateEvent).quantity;
 			}
 
 			// Consume the earliest event waiting for match
@@ -116,23 +110,23 @@ export class FifoLotMatchingMethod implements LotMatchingMethod {
 				earliestEventWaitingForMatchQuantity + newCandidateEventQuantity === 0;
 			if (doQuantitiesMatch) {
 				const quantityOfLot = Math.abs(newCandidateEventQuantity);
-				tracking.confirmConsumedQuantity(quantityOfLot, this.tradeAssociationTracker);
+				tracking.confirmConsumedQuantity(quantityOfLot, tracker);
 
 				createdLots.push({
 					quantity: quantityOfLot,
-					acquired: { date: tracking.buySide.date, relation: tracking.buySide },
-					sold: { date: tracking.sellSide.date, relation: tracking.sellSide },
+					acquired: { relation: tracking.buySide },
+					sold: { relation: tracking.sellSide },
 				});
 				continue;
 			}
 
 			let quantityAvailableFromCandidate = tracking.getRemainingQuantity(
 				tracking.candidateEvent,
-				this.tradeAssociationTracker,
+				tracker,
 			);
 			let quantityAvailableFromEarliest = tracking.getRemainingQuantity(
 				tracking.earliestEventWaitingForMatch,
-				this.tradeAssociationTracker,
+				tracker,
 			);
 
 			if (
@@ -144,24 +138,21 @@ export class FifoLotMatchingMethod implements LotMatchingMethod {
 					Math.abs(quantityAvailableFromEarliest),
 				);
 
-				tracking.confirmConsumedQuantity(willConsumeQuantity, this.tradeAssociationTracker);
+				tracking.confirmConsumedQuantity(willConsumeQuantity, tracker);
 
 				createdLots.push({
 					quantity: willConsumeQuantity,
-					acquired: {
-						date: earliestEventWaitingForMatch.date,
-						relation: earliestEventWaitingForMatch,
-					},
-					sold: { date: newCandidateEvent.date, relation: newCandidateEvent },
+					acquired: { relation: earliestEventWaitingForMatch },
+					sold: { relation: newCandidateEvent },
 				});
 
 				quantityAvailableFromCandidate = tracking.getRemainingQuantity(
 					tracking.candidateEvent,
-					this.tradeAssociationTracker,
+					tracker,
 				);
 				quantityAvailableFromEarliest = tracking.getRemainingQuantity(
 					tracking.earliestEventWaitingForMatch,
-					this.tradeAssociationTracker,
+					tracker,
 				);
 
 				if (
@@ -178,30 +169,14 @@ export class FifoLotMatchingMethod implements LotMatchingMethod {
 			}
 		}
 
-		return createdLots;
-	}
-
-	generateTradesFromLotsWithTracking(lots: Lot[]): Trade[] {
-		const processedTrades = new Map<string, Trade>();
-
-		for (const lot of lots) {
-			const acquiredTrade = lot.acquired.relation;
-			const acquiredTracking = this.tradeAssociationTracker.getAcquiredTradeTracker(acquiredTrade);
-			processedTrades.set(acquiredTrade.id, {
-				id: acquiredTrade.id,
-				quantity: acquiredTracking.quantity,
-				date: acquiredTrade.date,
-			});
-
-			const soldTrade = lot.sold.relation;
-			const soldTracking = this.tradeAssociationTracker.getSoldTradeTracker(soldTrade);
-			processedTrades.set(soldTrade.id, {
-				id: soldTrade.id,
-				quantity: soldTracking.quantity,
-				date: soldTrade.date,
-			});
+		// Every lot must run from a tracked buy to a tracked sell. A short covered in several fills
+		// produces a lot whose acquired side is the sell; the tracker lookup throws for it, so it
+		// never reaches a report.
+		for (const lot of createdLots) {
+			tracker.getAcquiredTradeTracker(lot.acquired.relation);
+			tracker.getSoldTradeTracker(lot.sold.relation);
 		}
 
-		return [...processedTrades.values()].sort((a, b) => a.date.toMillis() - b.date.toMillis());
+		return createdLots;
 	}
 }

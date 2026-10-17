@@ -1,8 +1,8 @@
+import { makeDate, makeMoney } from "@brrr/__tests__/support/Builders";
 import {
 	GenericAssetClass,
 	GenericCategory,
 	GenericDividendType,
-	GenericMonetaryExchangeInformation,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
 	TradeEventCashTransactionDividend,
@@ -13,33 +13,17 @@ import {
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import { NodeInfoProvider } from "@brrr/InfoProviders/Node/NodeInfoProvider";
+import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
-
-function makeDate(iso: string): ValidDateTime {
-	return DateTime.fromISO(iso) as ValidDateTime;
-}
 
 const cashTransactionDividend = new TradeEventCashTransactionDividend({
 	id: "ID",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: makeDate("2023-06-07"),
 	multiplier: 1,
-	exchangedMoney: new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: 1.0,
-		underlyingTradePrice: 10.0,
-		comissionCurrency: "EUR",
-		comissionTotal: 0.0,
-		taxCurrency: "EUR",
-		taxTotal: 0.0,
-		fxRateToBase: 1,
-	}),
+	exchangedMoney: makeMoney({ underlyingTradePrice: 10.0 }),
 	actionId: "DivAction",
 	transactionId: "TranId1",
 	listingExchange: "EXH",
@@ -50,20 +34,10 @@ const cashTransactionDividend = new TradeEventCashTransactionDividend({
 const cashTransactionPaymentInLieuOfDividend = new TradeEventCashTransactionPaymentInLieuOfDividend(
 	{
 		id: "ID",
-		financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 		date: makeDate("2023-06-08"),
 		multiplier: 1,
-		exchangedMoney: new GenericMonetaryExchangeInformation({
-			underlyingCurrency: "EUR",
-			underlyingQuantity: 1.0,
-			underlyingTradePrice: 5.0,
-			comissionCurrency: "EUR",
-			comissionTotal: 0.0,
-			taxCurrency: "EUR",
-			taxTotal: 0.0,
-			fxRateToBase: 1,
-		}),
+		exchangedMoney: makeMoney({ underlyingTradePrice: 5.0 }),
 		actionId: "DivAction2",
 		transactionId: "TranId2",
 		listingExchange: "EXH",
@@ -74,20 +48,10 @@ const cashTransactionPaymentInLieuOfDividend = new TradeEventCashTransactionPaym
 
 const cashTransactionDividendWithholdingTax = new TradeEventCashTransactionWithholdingTax({
 	id: "ID",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: makeDate("2023-06-07"),
 	multiplier: 1,
-	exchangedMoney: new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: 1.0,
-		underlyingTradePrice: -5.0,
-		comissionCurrency: "EUR",
-		comissionTotal: 0.0,
-		taxCurrency: "EUR",
-		taxTotal: 0.0,
-		fxRateToBase: 1,
-	}),
+	exchangedMoney: makeMoney({ underlyingTradePrice: -5.0 }),
 	actionId: "DivAction",
 	transactionId: "TranId3",
 	listingExchange: "EXH",
@@ -97,20 +61,10 @@ const cashTransactionDividendWithholdingTax = new TradeEventCashTransactionWithh
 const cashTransactionPaymentInLieuOfDividendWithholdingTax =
 	new TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend({
 		id: "ID",
-		financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 		date: makeDate("2023-06-08"),
 		multiplier: 1,
-		exchangedMoney: new GenericMonetaryExchangeInformation({
-			underlyingCurrency: "EUR",
-			underlyingQuantity: 1.0,
-			underlyingTradePrice: -2.5,
-			comissionCurrency: "EUR",
-			comissionTotal: 0.0,
-			taxCurrency: "EUR",
-			taxTotal: 0.0,
-			fxRateToBase: 1,
-		}),
+		exchangedMoney: makeMoney({ underlyingTradePrice: -2.5 }),
 		actionId: "DivAction2",
 		transactionId: "TranId4",
 		listingExchange: "EXH",
@@ -145,7 +99,7 @@ test("PaymentInLieuOfDividend - withholding tax is reported separately from divi
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
 	};
 
-	const generator = new DivReportGenerator(new NodeInfoProvider());
+	const generator = new DivReportGenerator(new PredefinedInfoProvider());
 	const rows = await generator.convert(config, testData.groupings);
 
 	expect(rows.length).toEqual(2);

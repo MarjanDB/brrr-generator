@@ -66,8 +66,10 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
 
 - PascalCase for types, classes, enums, Vue components and `lib/src/` folders; camelCase for functions, methods and variables.
 - Imports go at the top of the file. Inside `lib/` import through the `@brrr/*` alias (`@brrr/Core/Schemas/Events`), not relative paths.
-- Domain models are classes with `public readonly` fields, one args-object constructor and a `copy(overrides)` that returns a new
-  instance (see `Core/Schemas/`). Don't mutate them.
+- Domain models are classes with `public readonly` fields and one args-object constructor (see `Core/Schemas/`). Don't mutate them, and
+  don't copy one just to change a field: build each value once with its final contents. Where a value really changes (a split rescaling
+  a trade), one named function builds the new object through the class's constructor and appends a `provenance` step, so the trace back
+  to the original survives (see `scaleTradeForSplit` in `Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts`).
 - Data from outside (XML rows, config files, env) is parsed with zod 4 (`import { z } from "zod/v4"`): a const holding `{ Schema }` and a
   same-named type `z.output<typeof X.Schema>` (see `Brokerages/Ibkr/Schemas/IbkrSchemas.ts`).
 - `type` for plain data shapes. `interface` only for contracts a class implements (`IBrokerageProvider`, `ITaxAuthorityProvider`,

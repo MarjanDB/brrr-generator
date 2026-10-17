@@ -27,19 +27,12 @@ export class StagingIdentifierRelationship {
 		this.changeType = args.changeType;
 		this.effectiveDate = args.effectiveDate;
 	}
-
-	copy(
-		overrides: Partial<ConstructorParameters<typeof StagingIdentifierRelationship>[0]>,
-	): StagingIdentifierRelationship {
-		return new StagingIdentifierRelationship({
-			fromIdentifier: this.fromIdentifier,
-			toIdentifier: this.toIdentifier,
-			changeType: this.changeType,
-			effectiveDate: this.effectiveDate,
-			...overrides,
-		});
-	}
 }
+
+type StagingIdentifierRelationshipSplitArgs = StagingIdentifierRelationshipArgs & {
+	quantityBefore: number;
+	quantityAfter: number;
+};
 
 export class StagingIdentifierRelationshipSplit {
 	public readonly fromIdentifier: StagingFinancialIdentifier;
@@ -49,29 +42,13 @@ export class StagingIdentifierRelationshipSplit {
 	public readonly quantityBefore: number;
 	public readonly quantityAfter: number;
 
-	constructor(
-		args: StagingIdentifierRelationshipArgs & { quantityBefore: number; quantityAfter: number },
-	) {
+	constructor(args: StagingIdentifierRelationshipSplitArgs) {
 		this.fromIdentifier = args.fromIdentifier;
 		this.toIdentifier = args.toIdentifier;
 		this.changeType = args.changeType;
 		this.effectiveDate = args.effectiveDate;
 		this.quantityBefore = args.quantityBefore;
 		this.quantityAfter = args.quantityAfter;
-	}
-
-	copy(
-		overrides: Partial<ConstructorParameters<typeof StagingIdentifierRelationshipSplit>[0]>,
-	): StagingIdentifierRelationshipSplit {
-		return new StagingIdentifierRelationshipSplit({
-			fromIdentifier: this.fromIdentifier,
-			toIdentifier: this.toIdentifier,
-			changeType: this.changeType,
-			effectiveDate: this.effectiveDate,
-			quantityBefore: this.quantityBefore,
-			quantityAfter: this.quantityAfter,
-			...overrides,
-		});
 	}
 }
 
@@ -100,21 +77,12 @@ export class StagingIdentifierRelationshipPartial {
 		this.effectiveDate = args.effectiveDate;
 		this.quantity = args.quantity;
 	}
-
-	copy(
-		overrides: Partial<ConstructorParameters<typeof StagingIdentifierRelationshipPartial>[0]>,
-	): StagingIdentifierRelationshipPartial {
-		return new StagingIdentifierRelationshipPartial({
-			fromIdentifier: this.fromIdentifier,
-			toIdentifier: this.toIdentifier,
-			correlationKey: this.correlationKey,
-			changeType: this.changeType,
-			effectiveDate: this.effectiveDate,
-			quantity: this.quantity,
-			...overrides,
-		});
-	}
 }
+
+type StagingIdentifierRelationshipPartialWithQuantityArgs = Omit<
+	StagingIdentifierRelationshipPartialArgs,
+	"quantity"
+> & { quantity: number };
 
 export class StagingIdentifierRelationshipPartialWithQuantity {
 	public readonly fromIdentifier: StagingFinancialIdentifier | null;
@@ -124,31 +92,13 @@ export class StagingIdentifierRelationshipPartialWithQuantity {
 	public readonly effectiveDate: ValidDateTime;
 	public readonly quantity: number;
 
-	constructor(
-		args: Omit<StagingIdentifierRelationshipPartialArgs, "quantity"> & { quantity: number },
-	) {
+	constructor(args: StagingIdentifierRelationshipPartialWithQuantityArgs) {
 		this.fromIdentifier = args.fromIdentifier;
 		this.toIdentifier = args.toIdentifier;
 		this.correlationKey = args.correlationKey;
 		this.changeType = args.changeType;
 		this.effectiveDate = args.effectiveDate;
 		this.quantity = args.quantity;
-	}
-
-	copy(
-		overrides: Partial<
-			ConstructorParameters<typeof StagingIdentifierRelationshipPartialWithQuantity>[0]
-		>,
-	): StagingIdentifierRelationshipPartialWithQuantity {
-		return new StagingIdentifierRelationshipPartialWithQuantity({
-			fromIdentifier: this.fromIdentifier,
-			toIdentifier: this.toIdentifier,
-			correlationKey: this.correlationKey,
-			changeType: this.changeType,
-			effectiveDate: this.effectiveDate,
-			quantity: this.quantity,
-			...overrides,
-		});
 	}
 }
 

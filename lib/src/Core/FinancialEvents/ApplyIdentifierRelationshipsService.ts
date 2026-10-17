@@ -1,16 +1,17 @@
-import type {
+import { GenericMonetaryExchangeInformation } from "@brrr/Core/Schemas/CommonFormats";
+import {
+	type TradeEventStock,
 	TradeEventStockAcquired,
 	TradeEventStockSold,
-	TransactionCash,
 } from "@brrr/Core/Schemas/Events";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
-import { type DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
+import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import {
 	IdentifierChangeType,
 	IdentifierRelationshipSplit,
 } from "@brrr/Core/Schemas/IdentifierRelationship";
-import type { TaxLotStock } from "@brrr/Core/Schemas/Lots";
+import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import {
 	type AnyProvenanceStep,
 	RenameProvenanceStep,
@@ -37,7 +38,7 @@ export class ApplyIdentifierRelationshipsService {
 		let current = events;
 
 		if (changeTypesToApply.includes(IdentifierChangeType.RENAME)) {
-			current = this._applyRename(current);
+			current = this.applyRename(current);
 		}
 
 		const relsForSplits = current.identifierRelationships.filter(
@@ -48,13 +49,13 @@ export class ApplyIdentifierRelationshipsService {
 		for (const rel of [...relsForSplits].sort(
 			(a, b) => a.effectiveDate.toMillis() - b.effectiveDate.toMillis(),
 		)) {
-			current = this._applySplitOrReverseSplit(current, rel);
+			current = this.applySplitOrReverseSplit(current, rel);
 		}
 
 		return current;
 	}
 
-	private _applyRename(events: FinancialEvents): FinancialEvents {
+	private applyRename(events: FinancialEvents): FinancialEvents {
 		const rels = events.identifierRelationships.filter(
 			(r) => r.changeType === IdentifierChangeType.RENAME,
 		);
@@ -62,20 +63,20 @@ export class ApplyIdentifierRelationshipsService {
 
 		const pairs = rels.map((r) => [r.fromIdentifier, r.toIdentifier] as const);
 
-		const _sink = (identifier: FinancialIdentifier): FinancialIdentifier => {
+		const resolveSink = (identifier: FinancialIdentifier): FinancialIdentifier => {
 			for (const [fromId, toId] of pairs) {
-				if (fromId.isTheSameAs(identifier)) return _sink(toId);
+				if (fromId.isTheSameAs(identifier)) return resolveSink(toId);
 			}
 			return identifier;
 		};
 
 		const idToSink = new Map<FinancialIdentifier, FinancialIdentifier>();
 		for (const r of rels) {
-			idToSink.set(r.fromIdentifier, _sink(r.fromIdentifier));
-			idToSink.set(r.toIdentifier, _sink(r.toIdentifier));
+			idToSink.set(r.fromIdentifier, resolveSink(r.fromIdentifier));
+			idToSink.set(r.toIdentifier, resolveSink(r.toIdentifier));
 		}
 
-		const _getSink = (identifier: FinancialIdentifier): FinancialIdentifier | null => {
+		const findSink = (identifier: FinancialIdentifier): FinancialIdentifier | null => {
 			for (const [node, sink] of idToSink) {
 				if (node.sameInstrumentByIsin(identifier) || sink.sameInstrumentByIsin(identifier)) {
 					return sink;
@@ -88,7 +89,7 @@ export class ApplyIdentifierRelationshipsService {
 		const bySink = new Map<string, { sink: FinancialIdentifier; groupings: FinancialGrouping[] }>();
 
 		for (const g of events.groupings) {
-			const sink = _getSink(g.financialIdentifier);
+			const sink = findSink(g.financialIdentifier);
 			if (sink === null) {
 				notAffected.push(g);
 			} else {
@@ -105,7 +106,7 @@ export class ApplyIdentifierRelationshipsService {
 		// Build provenance per sink
 		const sinkToProvenance = new Map<string, AnyProvenanceStep[]>();
 		for (const r of rels) {
-			const sink = _sink(r.toIdentifier);
+			const sink = resolveSink(r.toIdentifier);
 			const key = sink.toKey();
 			const step = new RenameProvenanceStep({
 				fromIdentifier: r.fromIdentifier,
@@ -128,7 +129,7 @@ export class ApplyIdentifierRelationshipsService {
 		}
 
 		const merged = [...bySink.values()].map(({ sink, groupings }) =>
-			this._mergeGroupings(sink, groupings, sinkToProvenance.get(sink.toKey()) ?? []),
+			this.mergeGroupings(sink, groupings, sinkToProvenance.get(sink.toKey()) ?? []),
 		);
 
 		return new FinancialEvents({
@@ -137,7 +138,7 @@ export class ApplyIdentifierRelationshipsService {
 		});
 	}
 
-	private _applySplitOrReverseSplit(
+	private applySplitOrReverseSplit(
 		events: FinancialEvents,
 		relationship: IdentifierRelationshipSplit,
 	): FinancialEvents {
@@ -150,7 +151,7 @@ export class ApplyIdentifierRelationshipsService {
 			) ?? null;
 		if (!fromGrouping) return events;
 
-		const scaledTrades: (TradeEventStockAcquired | TradeEventStockSold)[] = [];
+		const scaledTrades: TradeEventStock[] = [];
 		for (const t of fromGrouping.stockTrades) {
 			if (!(t.date < relationship.effectiveDate)) {
 				scaledTrades.push(t);
@@ -167,21 +168,9 @@ export class ApplyIdentifierRelationshipsService {
 				quantityAfter: m.underlyingQuantity * ratio,
 				beforeQuantity: m.underlyingQuantity,
 				beforeTradePrice: m.underlyingTradePrice,
-				beforeExchangedMoney: m,
 			});
 
-			const newMoney = {
-				...m,
-				underlyingQuantity: m.underlyingQuantity * ratio,
-				underlyingTradePrice: m.underlyingTradePrice * (1 / ratio),
-			};
-
-			scaledTrades.push(
-				t.copy({
-					exchangedMoney: newMoney,
-					provenance: [...t.provenance, step],
-				}),
-			);
+			scaledTrades.push(scaleTradeForSplit(t, ratio, step));
 		}
 
 		const scaledLots: TaxLotStock[] = [];
@@ -196,12 +185,7 @@ export class ApplyIdentifierRelationshipsService {
 					quantityAfter: relationship.quantityAfter,
 					beforeQuantity: lot.quantity,
 				});
-				scaledLots.push(
-					lot.copy({
-						quantity: lot.quantity * ratio,
-						provenance: [...lot.provenance, step],
-					}),
-				);
+				scaledLots.push(scaleLotForSplit(lot, ratio, step));
 			} else {
 				scaledLots.push(lot);
 			}
@@ -216,7 +200,8 @@ export class ApplyIdentifierRelationshipsService {
 			quantityAfter: relationship.quantityAfter,
 		});
 
-		const scaledFrom = fromGrouping.copy({
+		const scaledFrom = new FinancialGrouping({
+			...fromGrouping,
 			stockTrades: scaledTrades,
 			stockTaxLots: scaledLots,
 			provenance: [...fromGrouping.provenance, splitStep],
@@ -229,20 +214,12 @@ export class ApplyIdentifierRelationshipsService {
 					relationship.toIdentifier.sameInstrumentByIsin(g.financialIdentifier),
 			) ?? null;
 
-		let mergedGrouping: FinancialGrouping;
-		if (toGrouping !== null) {
-			mergedGrouping = this._mergeGroupings(
-				relationship.toIdentifier,
-				[scaledFrom, toGrouping],
-				[...scaledFrom.provenance, ...toGrouping.provenance],
-			);
-		} else {
-			mergedGrouping = this._mergeGroupings(
-				relationship.toIdentifier,
-				[scaledFrom],
-				scaledFrom.provenance,
-			);
-		}
+		const sources = toGrouping !== null ? [scaledFrom, toGrouping] : [scaledFrom];
+		const mergedGrouping = this.mergeGroupings(
+			relationship.toIdentifier,
+			sources,
+			sources.flatMap((g) => g.provenance),
+		);
 
 		const other = events.groupings.filter((g) => g !== fromGrouping && g !== toGrouping);
 		return new FinancialEvents({
@@ -251,58 +228,61 @@ export class ApplyIdentifierRelationshipsService {
 		});
 	}
 
-	private _mergeGroupings(
+	private mergeGroupings(
 		properId: FinancialIdentifier,
 		groupings: FinancialGrouping[],
 		groupingProvenance: AnyProvenanceStep[],
 	): FinancialGrouping {
 		const first = groupings[0];
-		const allStockTrades: (TradeEventStockAcquired | TradeEventStockSold)[] = [];
-		const allStockTaxLots: TaxLotStock[] = [];
-		const allDerivativeGroupings: DerivativeGrouping[] = [];
-		const allCashTransactions: TransactionCash[] = [];
-
-		for (const g of groupings) {
-			for (const t of g.stockTrades) allStockTrades.push(t.copy({ financialIdentifier: properId }));
-			for (const lot of g.stockTaxLots) {
-				allStockTaxLots.push(
-					lot.copy({
-						financialIdentifier: properId,
-						acquired: lot.acquired.copy({ financialIdentifier: properId }),
-						sold: lot.sold.copy({ financialIdentifier: properId }),
-					}),
-				);
-			}
-			for (const dg of g.derivativeGroupings) {
-				allDerivativeGroupings.push(
-					dg.copy({
-						financialIdentifier: properId,
-						derivativeTrades: dg.derivativeTrades.map((t) =>
-							t.copy({ financialIdentifier: properId }),
-						),
-						derivativeTaxLots: dg.derivativeTaxLots.map((lot) =>
-							lot.copy({
-								financialIdentifier: properId,
-								acquired: lot.acquired.copy({ financialIdentifier: properId }),
-								sold: lot.sold.copy({ financialIdentifier: properId }),
-							}),
-						),
-					}),
-				);
-			}
-			for (const c of g.cashTransactions)
-				allCashTransactions.push(c.copy({ financialIdentifier: properId }));
-		}
 
 		return new FinancialGrouping({
 			financialIdentifier: properId,
 			countryOfOrigin: first.countryOfOrigin,
 			underlyingCategory: first.underlyingCategory,
-			stockTrades: allStockTrades,
-			stockTaxLots: allStockTaxLots,
-			derivativeGroupings: allDerivativeGroupings,
-			cashTransactions: allCashTransactions,
+			stockTrades: groupings.flatMap((g) => g.stockTrades),
+			stockTaxLots: groupings.flatMap((g) => g.stockTaxLots),
+			derivativeGroupings: groupings.flatMap((g) =>
+				g.derivativeGroupings.map(
+					(dg) =>
+						new DerivativeGrouping({
+							financialIdentifier: properId,
+							derivativeTrades: dg.derivativeTrades,
+							derivativeTaxLots: dg.derivativeTaxLots,
+							provenance: dg.provenance,
+						}),
+				),
+			),
+			cashTransactions: groupings.flatMap((g) => g.cashTransactions),
 			provenance: groupingProvenance,
 		});
 	}
+}
+
+// A split never changes a trade in place: it builds the trade as it reads after the split, with
+// the step recording the quantity and price it had before.
+function scaleTradeForSplit(
+	trade: TradeEventStock,
+	ratio: number,
+	step: SplitProvenanceStep,
+): TradeEventStock {
+	const scaled = {
+		exchangedMoney: new GenericMonetaryExchangeInformation({
+			...trade.exchangedMoney,
+			underlyingQuantity: trade.exchangedMoney.underlyingQuantity * ratio,
+			underlyingTradePrice: trade.exchangedMoney.underlyingTradePrice * (1 / ratio),
+		}),
+		provenance: [...trade.provenance, step],
+	};
+	if (trade instanceof TradeEventStockAcquired) {
+		return new TradeEventStockAcquired({ ...trade, ...scaled });
+	}
+	return new TradeEventStockSold({ ...trade, ...scaled });
+}
+
+function scaleLotForSplit(lot: TaxLotStock, ratio: number, step: SplitProvenanceStep): TaxLotStock {
+	return new TaxLot({
+		...lot,
+		quantity: lot.quantity * ratio,
+		provenance: [...lot.provenance, step],
+	});
 }

@@ -1,20 +1,18 @@
-import fs from "node:fs";
+import { makeDate } from "@brrr/__tests__/support/Builders";
+import { readFixture } from "@brrr/__tests__/support/Fixtures";
 import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract";
 import { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider";
 import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
+import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
-
-const xmlPath = new URL("./DuplicatingTrades.xml", import.meta.url).pathname;
 
 test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantities", () => {
-	const xmlContent = fs.readFileSync(xmlPath, "utf-8");
+	const xmlContent = readFixture("TaxAuthorities/Slovenia/__tests__/DuplicatingTrades.xml");
 
 	const ibkrProvider = new IbkrBrokerageExportProvider(
 		new IbkrExtractService(),
@@ -22,16 +20,18 @@ test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantities", 
 	);
 	const stagingEvents = ibkrProvider.loadAndTransform([xmlContent]);
 
-	const groupingProcessor = new StagingFinancialGroupingProcessor();
+	const groupingProcessor = new StagingFinancialGroupingProcessor(
+		new IdentifierRelationshipResolution(),
+	);
 	const financialEvents = groupingProcessor.processStagingFinancialEvents(stagingEvents);
 
 	const reportConfig: TaxAuthorityConfiguration = {
-		fromDate: DateTime.fromISO("2024-01-01") as ValidDateTime,
-		toDate: DateTime.fromISO("2025-01-01") as ValidDateTime,
+		fromDate: makeDate("2024-01-01"),
+		toDate: makeDate("2025-01-01"),
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	const processor = new FinancialEventsProcessor(new LotMatcher());
 	const generator = new KdvpReportGenerator(processor);
 	const items = generator.convert(reportConfig, financialEvents.groupings);
 	const events = items.flatMap((item) => item.items.flatMap((line) => line.events));

@@ -12,12 +12,14 @@ import type {
 	TaxAuthorityConfiguration,
 	TaxPayerInfo,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import { round, toOriginalCurrency } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Amounts";
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/CsvDohDiv";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/XmlDohDiv";
 import {
 	EDavkiDividendReportLine,
 	EDavkiDividendType,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
+import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import type { DateTime } from "luxon";
 
 const DIVIDEND_TYPE_MAPPINGS: Record<GenericDividendType, EDavkiDividendType> = {
@@ -30,6 +32,31 @@ const DIVIDEND_TYPE_MAPPINGS: Record<GenericDividendType, EDavkiDividendType> = 
 	[GenericDividendType.BONUS]: EDavkiDividendType.OTHER,
 };
 
+type Dividend =
+	| TradeEventCashTransactionDividend
+	| TradeEventCashTransactionPaymentInLieuOfDividend;
+type Withholding =
+	| TradeEventCashTransactionWithholdingTax
+	| TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend;
+
+// What a dividend line adds up to, before the payer is looked up and the amounts are rounded.
+type DividendTotals = {
+	dateReceived: ValidDateTime;
+	dividendType: EDavkiDividendType;
+	tracking: string;
+	dividendAmount: number;
+	dividendAmountInOriginalCurrency: number;
+	foreignTaxPaid: number;
+	foreignTaxPaidInOriginalCurrency: number;
+};
+
+type Payer = {
+	title: string;
+	address: string;
+	countryOfOrigin: string;
+	taxReliefParagraph: string | null;
+};
+
 function filterOutCashTransactionsBasedOnDate(
 	data: TransactionCash[],
 	fromDateInclusive: DateTime,
@@ -38,141 +65,92 @@ function filterOutCashTransactionsBasedOnDate(
 	return data.filter((line) => line.date >= fromDateInclusive && line.date < toDateExclusive);
 }
 
-function processEdavkiLineItemsFromCashTransactions(
-	dividendLines: (
-		| TradeEventCashTransactionDividend
-		| TradeEventCashTransactionPaymentInLieuOfDividend
-	)[],
-	withholdingLines: (
-		| TradeEventCashTransactionWithholdingTax
-		| TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend
-	)[],
-): EDavkiDividendReportLine[] {
-	const actionToDividendMapping = new Map<string, EDavkiDividendReportLine>();
+function amountOf(transaction: TransactionCash): number {
+	return (
+		transaction.exchangedMoney.underlyingQuantity * transaction.exchangedMoney.underlyingTradePrice
+	);
+}
 
-	for (const dividend of dividendLines) {
-		const actionId = dividend.actionId;
+function inOriginalCurrency(transaction: TransactionCash, amount: number): number {
+	return toOriginalCurrency(amount, transaction.exchangedMoney.fxRateToBase);
+}
 
-		const thisDividendLine = new EDavkiDividendReportLine({
-			dateReceived: dividend.date,
-			taxNumberForDividendPayer: "",
-			dividendPayerIdentificationNumber: dividend.financialIdentifier.getIsin() ?? "",
-			dividendPayerTitle: "",
-			dividendPayerAddress: "",
-			dividendPayerCountryOfOrigin: "",
-			dividendType: DIVIDEND_TYPE_MAPPINGS[dividend.dividendType] ?? EDavkiDividendType.UNKNOWN,
-			countryOfOrigin: "",
-			dividendIdentifierForTracking: actionId,
-			taxReliefParagraphInInternationalTreaty: "",
-			dividendAmount:
-				dividend.exchangedMoney.underlyingQuantity * dividend.exchangedMoney.underlyingTradePrice,
-			dividendAmountInOriginalCurrency:
-				dividend.exchangedMoney.underlyingQuantity *
-				dividend.exchangedMoney.underlyingTradePrice *
-				(1 / dividend.exchangedMoney.fxRateToBase),
-			foreignTaxPaid: dividend.exchangedMoney.taxTotal,
-			foreignTaxPaidInOriginalCurrency:
-				dividend.exchangedMoney.taxTotal * (1 / dividend.exchangedMoney.fxRateToBase),
-		});
+function sum(values: number[]): number {
+	return values.reduce((total, value) => total + value);
+}
 
-		const existing = actionToDividendMapping.get(actionId);
-		if (existing === undefined) {
-			actionToDividendMapping.set(actionId, thisDividendLine);
-			continue;
+// One entry per corporate action. Only the action's first dividend contributes its own tax;
+// the action's withholdings add to it.
+function totalsPerAction(dividends: Dividend[], withholdings: Withholding[]): DividendTotals[] {
+	const byAction = new Map<string, { dividends: Dividend[]; withholdings: Withholding[] }>();
+	for (const dividend of dividends) {
+		const action = byAction.get(dividend.actionId);
+		if (action === undefined) {
+			byAction.set(dividend.actionId, { dividends: [dividend], withholdings: [] });
+		} else {
+			action.dividends.push(dividend);
 		}
-
-		existing.dividendAmount +=
-			dividend.exchangedMoney.underlyingQuantity * dividend.exchangedMoney.underlyingTradePrice;
-		existing.dividendAmountInOriginalCurrency +=
-			dividend.exchangedMoney.underlyingQuantity *
-			dividend.exchangedMoney.underlyingTradePrice *
-			(1 / dividend.exchangedMoney.fxRateToBase);
 	}
-
-	for (const withheldTax of withholdingLines) {
-		const actionId = withheldTax.actionId;
-		const entry = actionToDividendMapping.get(actionId);
-		if (entry === undefined) {
+	for (const withheldTax of withholdings) {
+		const action = byAction.get(withheldTax.actionId);
+		if (action === undefined) {
 			throw new Error("Edge case where Withholding Tax has no matching Dividend Cash Transaction");
 		}
-
-		entry.foreignTaxPaid +=
-			withheldTax.exchangedMoney.underlyingQuantity *
-			withheldTax.exchangedMoney.underlyingTradePrice;
-		entry.foreignTaxPaidInOriginalCurrency +=
-			withheldTax.exchangedMoney.underlyingQuantity *
-			withheldTax.exchangedMoney.underlyingTradePrice *
-			(1 / withheldTax.exchangedMoney.fxRateToBase);
+		action.withholdings.push(withheldTax);
 	}
 
-	return [...actionToDividendMapping.values()];
+	return [...byAction].map(([actionId, action]) => {
+		const [first] = action.dividends;
+		return {
+			dateReceived: first.date,
+			dividendType: DIVIDEND_TYPE_MAPPINGS[first.dividendType] ?? EDavkiDividendType.UNKNOWN,
+			tracking: actionId,
+			dividendAmount: sum(action.dividends.map(amountOf)),
+			dividendAmountInOriginalCurrency: sum(
+				action.dividends.map((dividend) => inOriginalCurrency(dividend, amountOf(dividend))),
+			),
+			foreignTaxPaid: sum([first.exchangedMoney.taxTotal, ...action.withholdings.map(amountOf)]),
+			foreignTaxPaidInOriginalCurrency: sum([
+				inOriginalCurrency(first, first.exchangedMoney.taxTotal),
+				...action.withholdings.map((withheldTax) =>
+					inOriginalCurrency(withheldTax, amountOf(withheldTax)),
+				),
+			]),
+		};
+	});
 }
 
-function mergeDividendsReceivedOnSameDayForSingleIsin(
-	dividends: EDavkiDividendReportLine[],
-): EDavkiDividendReportLine[] {
-	const segmented = new Map<string, EDavkiDividendReportLine[]>();
+// Actions paid on the same day with the same dividend type become one line.
+function mergeDividendsReceivedOnSameDay(totals: DividendTotals[]): DividendTotals[] {
+	// The key ends where the payer's address used to go. It is always empty at this point, and
+	// the separator stays so localeCompare keeps the lines in the same order.
+	const keyOf = (entry: DividendTotals) => `${entry.dateReceived}-${entry.dividendType}-`;
 
-	const dividendsSorted = [...dividends];
-	dividendsSorted.sort((a, b) => {
-		const keyA = `${a.dateReceived}-${a.dividendType}-${a.dividendPayerAddress}`;
-		const keyB = `${b.dateReceived}-${b.dividendType}-${b.dividendPayerAddress}`;
-		return keyA.localeCompare(keyB);
-	});
-
-	for (const dividend of dividendsSorted) {
-		const key = `${dividend.dateReceived}-${dividend.dividendType}-${dividend.dividendPayerAddress}`;
-		const existing = segmented.get(key);
+	const sameDay = new Map<string, DividendTotals[]>();
+	for (const entry of [...totals].sort((a, b) => keyOf(a).localeCompare(keyOf(b)))) {
+		const existing = sameDay.get(keyOf(entry));
 		if (existing === undefined) {
-			segmented.set(key, [dividend]);
+			sameDay.set(keyOf(entry), [entry]);
 		} else {
-			existing.push(dividend);
+			existing.push(entry);
 		}
 	}
 
-	const mergedDividends: EDavkiDividendReportLine[] = [];
-
-	for (const dividendList of segmented.values()) {
-		const combinedTotal = dividendList.reduce((sum, d) => sum + d.dividendAmount, 0);
-		const combinedTotalInOriginalCurrency = dividendList.reduce(
-			(sum, d) => sum + d.dividendAmountInOriginalCurrency,
+	return [...sameDay.values()].map((entries) => ({
+		dateReceived: entries[0].dateReceived,
+		dividendType: entries[0].dividendType,
+		tracking: entries.map((entry) => entry.tracking).join("-"),
+		dividendAmount: entries.reduce((total, entry) => total + entry.dividendAmount, 0),
+		dividendAmountInOriginalCurrency: entries.reduce(
+			(total, entry) => total + entry.dividendAmountInOriginalCurrency,
 			0,
-		);
-		const combinedTotalTax = dividendList.reduce((sum, d) => sum + d.foreignTaxPaid, 0);
-		const combinedTotalTaxInOriginalCurrency = dividendList.reduce(
-			(sum, d) => sum + d.foreignTaxPaidInOriginalCurrency,
+		),
+		foreignTaxPaid: entries.reduce((total, entry) => total + entry.foreignTaxPaid, 0),
+		foreignTaxPaidInOriginalCurrency: entries.reduce(
+			(total, entry) => total + entry.foreignTaxPaidInOriginalCurrency,
 			0,
-		);
-
-		const combinedTracking = dividendList.map((d) => d.dividendIdentifierForTracking).join("-");
-
-		const generatedMerged = new EDavkiDividendReportLine({
-			dateReceived: dividendList[0].dateReceived,
-			taxNumberForDividendPayer: dividendList[0].taxNumberForDividendPayer,
-			dividendPayerIdentificationNumber: dividendList[0].dividendPayerIdentificationNumber,
-			dividendPayerTitle: dividendList[0].dividendPayerTitle,
-			dividendPayerAddress: dividendList[0].dividendPayerAddress,
-			dividendPayerCountryOfOrigin: dividendList[0].dividendPayerCountryOfOrigin,
-			dividendType: dividendList[0].dividendType,
-			countryOfOrigin: dividendList[0].countryOfOrigin,
-			dividendIdentifierForTracking: combinedTracking,
-			taxReliefParagraphInInternationalTreaty:
-				dividendList[0].taxReliefParagraphInInternationalTreaty,
-			dividendAmount: combinedTotal,
-			dividendAmountInOriginalCurrency: combinedTotalInOriginalCurrency,
-			foreignTaxPaid: combinedTotalTax,
-			foreignTaxPaidInOriginalCurrency: combinedTotalTaxInOriginalCurrency,
-		});
-
-		mergedDividends.push(generatedMerged);
-	}
-
-	return mergedDividends;
-}
-
-function round(value: number, decimals: number): number {
-	const factor = 10 ** decimals;
-	return Math.round(value * factor) / factor;
+		),
+	}));
 }
 
 export class DivReportGenerator {
@@ -199,90 +177,74 @@ export class DivReportGenerator {
 			config.toDate,
 		);
 
-		const dividendLines = relevantCashTransactions.filter(
-			(
-				line,
-			): line is
-				| TradeEventCashTransactionDividend
-				| TradeEventCashTransactionPaymentInLieuOfDividend =>
+		const dividends = relevantCashTransactions.filter(
+			(line): line is Dividend =>
 				line instanceof TradeEventCashTransactionDividend ||
 				line instanceof TradeEventCashTransactionPaymentInLieuOfDividend,
 		);
 
-		const withholdingTax = relevantCashTransactions.filter(
-			(
-				line,
-			): line is
-				| TradeEventCashTransactionWithholdingTax
-				| TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend =>
+		const withholdings = relevantCashTransactions.filter(
+			(line): line is Withholding =>
 				line instanceof TradeEventCashTransactionWithholdingTax ||
 				line instanceof TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
 		);
 
-		const processedDividendLines = processEdavkiLineItemsFromCashTransactions(
-			dividendLines,
-			withholdingTax,
-		);
-		const combinedLines = mergeDividendsReceivedOnSameDayForSingleIsin(processedDividendLines);
-		return await this.fillInMissingCompanyInformation(combinedLines);
-	}
-
-	private async fillInMissingCompanyInformation(
-		lines: EDavkiDividendReportLine[],
-	): Promise<EDavkiDividendReportLine[]> {
-		if (lines.length === 0) {
-			return lines;
+		const totals = mergeDividendsReceivedOnSameDay(totalsPerAction(dividends, withholdings));
+		if (totals.length === 0) {
+			return [];
 		}
 
-		const firstLine = lines[0];
+		const isin = data.financialIdentifier.isin ?? "";
+		const payer = await this.lookUpPayer(isin);
 
-		let dividendPayerTitle = "";
-		let dividendPayerCountryOfOrigin = "";
+		return totals.map(
+			(entry) =>
+				new EDavkiDividendReportLine({
+					dateReceived: entry.dateReceived,
+					taxNumberForDividendPayer: "",
+					dividendPayerIdentificationNumber: isin,
+					dividendPayerTitle: payer.title,
+					dividendPayerAddress: payer.address,
+					dividendPayerCountryOfOrigin: payer.countryOfOrigin,
+					dividendType: entry.dividendType,
+					countryOfOrigin: payer.countryOfOrigin,
+					dividendIdentifierForTracking: entry.tracking,
+					taxReliefParagraphInInternationalTreaty: payer.taxReliefParagraph,
+					dividendAmount: round(entry.dividendAmount, 2),
+					dividendAmountInOriginalCurrency: round(entry.dividendAmountInOriginalCurrency, 2),
+					foreignTaxPaid: round(Math.abs(entry.foreignTaxPaid), 2),
+					foreignTaxPaidInOriginalCurrency: round(
+						Math.abs(entry.foreignTaxPaidInOriginalCurrency),
+						2,
+					),
+				}),
+		);
+	}
+
+	private async lookUpPayer(isin: string): Promise<Payer> {
+		let title = "";
+		let address = "";
 		let countryOfOrigin = "";
-		let dividendPayerAddress: string | null = "";
-		let taxReliefParagraphInInternationalTreaty: string | null = null;
+		let taxReliefParagraph: string | null = null;
 
 		try {
-			const responsibleCompany = await this.infoProvider.getCompanyInfo(
-				firstLine.dividendPayerIdentificationNumber,
-			);
+			const responsibleCompany = await this.infoProvider.getCompanyInfo(isin);
 
 			if (responsibleCompany !== null) {
-				dividendPayerTitle = responsibleCompany.longName;
-				dividendPayerCountryOfOrigin = responsibleCompany.location.shortCodeCountry2;
+				title = responsibleCompany.longName;
 				countryOfOrigin = responsibleCompany.location.shortCodeCountry2;
-				dividendPayerAddress = `${responsibleCompany.location.address1}, ${responsibleCompany.location.city}`;
+				address = `${responsibleCompany.location.address1}, ${responsibleCompany.location.city}`;
 
 				const relevantCountry = await this.infoProvider.getCountry(
 					responsibleCompany.location.country,
 				);
-				taxReliefParagraphInInternationalTreaty =
-					relevantCountry?.treaties.get(TreatyType.TaxRelief) ?? null;
+				taxReliefParagraph = relevantCountry?.treaties.get(TreatyType.TaxRelief) ?? null;
 			}
 		} catch (_e) {
 			// Silently fail — company/country lookup is best-effort
 		}
 
-		for (const dividendLine of lines) {
-			dividendLine.dividendAmount = round(dividendLine.dividendAmount, 2);
-			dividendLine.dividendAmountInOriginalCurrency = round(
-				dividendLine.dividendAmountInOriginalCurrency,
-				2,
-			);
-			dividendLine.foreignTaxPaid = round(Math.abs(dividendLine.foreignTaxPaid), 2);
-			dividendLine.foreignTaxPaidInOriginalCurrency = round(
-				Math.abs(dividendLine.foreignTaxPaidInOriginalCurrency),
-				2,
-			);
-			dividendLine.dividendPayerTitle = dividendPayerTitle;
-			dividendLine.dividendPayerCountryOfOrigin = dividendPayerCountryOfOrigin;
-			dividendLine.countryOfOrigin = countryOfOrigin;
-			dividendLine.dividendPayerAddress = dividendPayerAddress;
-			dividendLine.taxReliefParagraphInInternationalTreaty =
-				taxReliefParagraphInInternationalTreaty;
-		}
-
-		return lines;
+		return { title, address, countryOfOrigin, taxReliefParagraph };
 	}
 
 	toXml(

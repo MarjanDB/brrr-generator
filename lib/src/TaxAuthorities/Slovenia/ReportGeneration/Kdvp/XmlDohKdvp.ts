@@ -2,6 +2,7 @@ import type {
 	TaxAuthorityConfiguration,
 	TaxPayerInfo,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import { round } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Amounts";
 import type { EDavkiDocumentWorkflowType } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import {
 	type EDavkiGenericTradeReportItem,
@@ -130,11 +131,6 @@ function buildXmlTree(
 			},
 		},
 	};
-}
-
-function round(value: number, decimals: number): number {
-	const factor = 10 ** decimals;
-	return Math.round(value * factor) / factor;
 }
 
 export function generateXmlReport(

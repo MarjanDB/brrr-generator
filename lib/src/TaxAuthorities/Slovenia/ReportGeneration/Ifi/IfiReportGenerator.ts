@@ -1,15 +1,16 @@
 import type { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
-import { FifoLotMatchingMethod } from "@brrr/Core/LotMatching/FifoLotMatchingMethod";
-import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod";
 import { GenericDerivativeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats";
 import {
 	TradeEventDerivativeAcquired,
 	type TradeEventDerivativeSold,
 } from "@brrr/Core/Schemas/Events";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider";
-import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import { createLotMatchingMethod } from "@brrr/TaxAuthorities/LotMatchingMethodFactory";
+import {
+	foreignTaxOf,
+	toOriginalCurrency,
+} from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Amounts";
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/CsvDIfi";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/XmlDIfi";
 import {
@@ -21,68 +22,68 @@ import {
 	EDavkiGenericDerivativeReportItem,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
 
-const GAIN_MAPPINGS: Record<string, EDavkiDerivativeReportGainType> = {
+const GAIN_MAPPINGS: Record<GenericDerivativeReportItemGainType, EDavkiDerivativeReportGainType> = {
 	[GenericDerivativeReportItemGainType.BOUGHT]: EDavkiDerivativeReportGainType.BOUGHT,
 	[GenericDerivativeReportItemGainType.CAPITAL_INVESTMENT]: EDavkiDerivativeReportGainType.OTHER,
 	[GenericDerivativeReportItemGainType.CAPITAL_RAISE]: EDavkiDerivativeReportGainType.OTHER,
 	[GenericDerivativeReportItemGainType.CAPITAL_ASSET]: EDavkiDerivativeReportGainType.OTHER,
 	[GenericDerivativeReportItemGainType.CAPITALIZATION_CHANGE]: EDavkiDerivativeReportGainType.OTHER,
-	[GenericDerivativeReportItemGainType.INHERITENCE]: EDavkiDerivativeReportGainType.INHERITENCE,
+	[GenericDerivativeReportItemGainType.INHERITANCE]: EDavkiDerivativeReportGainType.INHERITANCE,
 	[GenericDerivativeReportItemGainType.GIFT]: EDavkiDerivativeReportGainType.GIFT,
 	[GenericDerivativeReportItemGainType.OTHER]: EDavkiDerivativeReportGainType.OTHER,
 };
 
 function convertBuy(
-	line: TradeEventDerivativeAcquired,
+	trade: TradeEventDerivativeAcquired,
+	quantity: number,
+	commission: number,
 ): EDavkiDerivativeReportSecurityLineGenericEventBought {
 	return new EDavkiDerivativeReportSecurityLineGenericEventBought({
-		boughtOn: line.date,
-		gainType: GAIN_MAPPINGS[line.acquiredReason] ?? EDavkiDerivativeReportGainType.OTHER,
-		quantity: line.exchangedMoney.underlyingQuantity,
-		pricePerUnit: line.exchangedMoney.underlyingTradePrice * line.multiplier,
-		pricePerUnitInOriginalCurrency:
-			line.exchangedMoney.underlyingTradePrice *
-			line.multiplier *
-			(1 / line.exchangedMoney.fxRateToBase),
-		totalPrice:
-			line.exchangedMoney.underlyingQuantity *
-			line.exchangedMoney.underlyingTradePrice *
-			line.multiplier,
-		totalPriceInOriginalCurrency:
-			line.exchangedMoney.underlyingQuantity *
-			line.exchangedMoney.underlyingTradePrice *
-			line.multiplier *
-			(1 / line.exchangedMoney.fxRateToBase),
-		commissions: line.exchangedMoney.comissionTotal,
-		commissionsInOriginalCurrency:
-			line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+		boughtOn: trade.date,
+		gainType: GAIN_MAPPINGS[trade.acquiredReason] ?? EDavkiDerivativeReportGainType.OTHER,
+		quantity: quantity,
+		pricePerUnit: trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+		pricePerUnitInOriginalCurrency: toOriginalCurrency(
+			trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+			trade.exchangedMoney.fxRateToBase,
+		),
+		totalPrice: quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+		totalPriceInOriginalCurrency: toOriginalCurrency(
+			quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+			trade.exchangedMoney.fxRateToBase,
+		),
+		commissions: commission,
+		commissionsInOriginalCurrency: toOriginalCurrency(
+			commission,
+			trade.exchangedMoney.fxRateToBase,
+		),
 		leveraged: false,
 	});
 }
 
 function convertSell(
-	line: TradeEventDerivativeSold,
+	trade: TradeEventDerivativeSold,
+	quantity: number,
+	commission: number,
 ): EDavkiDerivativeReportSecurityLineGenericEventSold {
 	return new EDavkiDerivativeReportSecurityLineGenericEventSold({
-		soldOn: line.date,
-		quantity: line.exchangedMoney.underlyingQuantity,
-		pricePerUnit: line.exchangedMoney.underlyingTradePrice * line.multiplier,
-		pricePerUnitInOriginalCurrency:
-			line.exchangedMoney.underlyingTradePrice *
-			line.multiplier *
-			(1 / line.exchangedMoney.fxRateToBase),
-		totalPrice:
-			line.exchangedMoney.underlyingQuantity *
-			line.exchangedMoney.underlyingTradePrice *
-			line.multiplier,
-		totalPriceInOriginalCurrency:
-			line.exchangedMoney.underlyingQuantity *
-			line.exchangedMoney.underlyingTradePrice *
-			line.multiplier *
-			(1 / line.exchangedMoney.fxRateToBase),
-		commissions: line.exchangedMoney.comissionTotal,
-		commissionsInOriginalCurrency:
-			line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+		soldOn: trade.date,
+		quantity: quantity,
+		pricePerUnit: trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+		pricePerUnitInOriginalCurrency: toOriginalCurrency(
+			trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+			trade.exchangedMoney.fxRateToBase,
+		),
+		totalPrice: quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+		totalPriceInOriginalCurrency: toOriginalCurrency(
+			quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+			trade.exchangedMoney.fxRateToBase,
+		),
+		commissions: commission,
+		commissionsInOriginalCurrency: toOriginalCurrency(
+			commission,
+			trade.exchangedMoney.fxRateToBase,
+		),
 		leveraged: false,
 	});
 }
@@ -99,59 +100,36 @@ export class IfiReportGenerator {
 		const periodEnd = config.toDate;
 
 		for (const financialGrouping of groupings) {
-			const lotMatchingConfiguration: LotMatchingConfiguration = {
-				fromDate: periodStart,
-				toDate: periodEnd,
-				forStocks: (_grouping) => {
-					if (config.lotMatchingMethod === TaxAuthorityLotMatchingMethod.PROVIDED) {
-						return new ProvidedLotMatchingMethod([]);
-					}
-					return new FifoLotMatchingMethod();
-				},
-				forDerivatives: (_grouping) => {
-					if (config.lotMatchingMethod === TaxAuthorityLotMatchingMethod.PROVIDED) {
-						return new ProvidedLotMatchingMethod([]);
-					}
-					return new FifoLotMatchingMethod();
-				},
-			};
-
-			const interestingGrouping = this.processor.process(
-				financialGrouping,
-				lotMatchingConfiguration,
-			);
-
 			// TODO: Figure out how to get lots (currently only trade events are used, not predefined lots)
-			for (const derivativeGrouping of interestingGrouping.derivativeGroupings) {
-				const allLines = [...derivativeGrouping.derivativeTrades];
-				allLines.sort((a, b) => a.date.toMillis() - b.date.toMillis());
+			for (const derivativeGrouping of financialGrouping.derivativeGroupings) {
+				const legs = this.processor.derivativeLotLegsClosedInPeriod(
+					derivativeGrouping,
+					createLotMatchingMethod(config.lotMatchingMethod, []),
+					periodStart,
+					periodEnd,
+				);
 
-				if (allLines.length === 0) {
+				if (legs.length === 0) {
 					continue;
 				}
 
-				const convertedLines = allLines.map((line) => {
-					if (line instanceof TradeEventDerivativeAcquired) return convertBuy(line);
-					return convertSell(line);
+				const convertedLines = legs.map(({ trade, quantity, commission }) => {
+					if (trade instanceof TradeEventDerivativeAcquired)
+						return convertBuy(trade, quantity, commission);
+					return convertSell(trade, quantity, commission);
 				});
 
-				const foreignTaxPaidSum = allLines.reduce(
-					(sum, e) => sum + (e.exchangedMoney.taxTotal ?? 0),
-					0,
+				// Counts a trade's whole tax once for every lot it falls into; kept so the reports don't change.
+				const { hasForeignTax, foreignTax: foreignTaxPaid } = foreignTaxOf(
+					legs.map((leg) => leg.trade),
 				);
-				let foreignTaxPaid: number | null = foreignTaxPaidSum;
-				let hasForeignTax = true;
-				if (foreignTaxPaidSum <= 0) {
-					foreignTaxPaid = null;
-					hasForeignTax = false;
-				}
 
 				const isinEntry = new EDavkiGenericDerivativeReportItem({
 					inventoryListType: EDavkiDerivativeSecurityType.OPTION_OR_CERTIFICATE,
 					itemType: EDavkiDerivativeReportItemType.DERIVATIVE,
-					code: derivativeGrouping.financialIdentifier.getTicker(),
-					isin: derivativeGrouping.financialIdentifier.getIsin(),
-					name: derivativeGrouping.financialIdentifier.getName(),
+					code: derivativeGrouping.financialIdentifier.ticker,
+					isin: derivativeGrouping.financialIdentifier.isin,
+					name: derivativeGrouping.financialIdentifier.name,
 					hasForeignTax,
 					foreignTax: foreignTaxPaid,
 					ftCountryId: null,

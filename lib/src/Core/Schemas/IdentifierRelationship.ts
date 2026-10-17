@@ -26,19 +26,12 @@ export class IdentifierRelationship {
 		this.changeType = args.changeType;
 		this.effectiveDate = args.effectiveDate;
 	}
-
-	copy(
-		overrides: Partial<ConstructorParameters<typeof IdentifierRelationship>[0]>,
-	): IdentifierRelationship {
-		return new IdentifierRelationship({
-			fromIdentifier: this.fromIdentifier,
-			toIdentifier: this.toIdentifier,
-			changeType: this.changeType,
-			effectiveDate: this.effectiveDate,
-			...overrides,
-		});
-	}
 }
+
+type IdentifierRelationshipSplitArgs = IdentifierRelationshipArgs & {
+	quantityBefore: number;
+	quantityAfter: number;
+};
 
 export class IdentifierRelationshipSplit {
 	public readonly fromIdentifier: FinancialIdentifier;
@@ -48,29 +41,13 @@ export class IdentifierRelationshipSplit {
 	public readonly quantityBefore: number;
 	public readonly quantityAfter: number;
 
-	constructor(
-		args: IdentifierRelationshipArgs & { quantityBefore: number; quantityAfter: number },
-	) {
+	constructor(args: IdentifierRelationshipSplitArgs) {
 		this.fromIdentifier = args.fromIdentifier;
 		this.toIdentifier = args.toIdentifier;
 		this.changeType = args.changeType;
 		this.effectiveDate = args.effectiveDate;
 		this.quantityBefore = args.quantityBefore;
 		this.quantityAfter = args.quantityAfter;
-	}
-
-	copy(
-		overrides: Partial<ConstructorParameters<typeof IdentifierRelationshipSplit>[0]>,
-	): IdentifierRelationshipSplit {
-		return new IdentifierRelationshipSplit({
-			fromIdentifier: this.fromIdentifier,
-			toIdentifier: this.toIdentifier,
-			changeType: this.changeType,
-			effectiveDate: this.effectiveDate,
-			quantityBefore: this.quantityBefore,
-			quantityAfter: this.quantityAfter,
-			...overrides,
-		});
 	}
 }
 

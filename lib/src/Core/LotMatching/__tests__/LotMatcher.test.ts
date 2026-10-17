@@ -1,33 +1,77 @@
+import { makeMoney } from "@brrr/__tests__/support/Builders";
+import { FifoLotMatchingMethod } from "@brrr/Core/LotMatching/FifoLotMatchingMethod";
 import type { Lot } from "@brrr/Core/LotMatching/Lot";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
 import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
+import {
+	GenericAssetClass,
+	type GenericMonetaryExchangeInformation,
+	GenericTradeReportItemGainType,
+} from "@brrr/Core/Schemas/CommonFormats";
+import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events";
+import { zDateTimeFromISOString } from "@brrr/Utils/DateTime";
 
 class FakeLotMatchingMethod implements LotMatchingMethod {
-	performMatchingCalled = false;
-	generateTradesCalled = false;
+	receivedTrades: Trade[] | null = null;
 
-	performMatching(_events: Trade[]): Lot[] {
-		this.performMatchingCalled = true;
-		return [];
-	}
-
-	generateTradesFromLotsWithTracking(_lots: Lot[]): Trade[] {
-		this.generateTradesCalled = true;
+	performMatching(trades: Trade[]): Lot[] {
+		this.receivedTrades = trades;
 		return [];
 	}
 }
 
-test("provided method is called", () => {
+function money(quantity: number, commission: number): GenericMonetaryExchangeInformation {
+	return makeMoney({ underlyingQuantity: quantity, commissionTotal: commission });
+}
+
+test("provided method is called with the converted trades", () => {
 	const fakeMethod = new FakeLotMatchingMethod();
 	const lotMatcher = new LotMatcher();
+	const date = zDateTimeFromISOString.parse("2023-01-01");
+	const event = new TradeEventStockAcquired({
+		id: "ID",
+		assetClass: GenericAssetClass.STOCK,
+		date,
+		multiplier: 1,
+		exchangedMoney: money(1, 0),
+		provenance: [],
+		acquiredReason: GenericTradeReportItemGainType.BOUGHT,
+	});
 
-	lotMatcher.matchLotsWithTrades(fakeMethod, [
-		{ id: "ID", quantity: 1, date: DateTime.fromISO("2023-01-01") as ValidDateTime },
-	]);
+	const lots = lotMatcher.matchLots(fakeMethod, [event]);
 
-	expect(fakeMethod.performMatchingCalled).toEqual(true);
-	expect(fakeMethod.generateTradesCalled).toEqual(true);
+	expect(fakeMethod.receivedTrades).toEqual([{ id: "ID", quantity: 1, date }]);
+	expect(lots).toEqual([]);
+});
+
+test("a matched lot's legs point at the original trades and cover the lot's quantity", () => {
+	const bought = new TradeEventStockAcquired({
+		id: "BUY",
+		assetClass: GenericAssetClass.STOCK,
+		date: zDateTimeFromISOString.parse("2023-01-01"),
+		multiplier: 1,
+		exchangedMoney: money(10, -2),
+		provenance: [],
+		acquiredReason: GenericTradeReportItemGainType.BOUGHT,
+	});
+	const sold = new TradeEventStockSold({
+		id: "SELL",
+		assetClass: GenericAssetClass.STOCK,
+		date: zDateTimeFromISOString.parse("2023-02-01"),
+		multiplier: 1,
+		exchangedMoney: money(-4, -1),
+		provenance: [],
+	});
+
+	const lots = new LotMatcher().matchLots(new FifoLotMatchingMethod(), [bought, sold]);
+
+	expect(lots).toHaveLength(1);
+	const [lot] = lots;
+	expect(lot.acquired.trade).toBe(bought);
+	expect(lot.acquired.quantity).toBe(4);
+	expect(lot.acquired.commission).toBeCloseTo(-0.8);
+	expect(lot.sold.trade).toBe(sold);
+	expect(lot.sold.quantity).toBe(-4);
+	expect(lot.sold.commission).toBe(-1);
 });

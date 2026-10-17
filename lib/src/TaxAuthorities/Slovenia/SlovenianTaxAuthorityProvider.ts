@@ -1,9 +1,10 @@
 import type { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
-import type { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type {
+	GeneratedExports,
 	ITaxAuthorityProvider,
+	TaxAuthorityDescriptor,
 	TaxAuthorityRunContext,
 } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
 import type { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";
@@ -11,31 +12,41 @@ import type { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGen
 import type { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
 import {
 	EDavkiDocumentWorkflowType,
+	SlovenianReportTypeId,
 	SlovenianTaxAuthorityReportTypes,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
-import type {
-	EDavkiDividendReportLine,
-	EDavkiGenericDerivativeReportItem,
-	EDavkiGenericTradeReportItem,
-} from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
 import { DateTime } from "luxon";
 
-type SlovenianReportItem =
-	| EDavkiGenericTradeReportItem
-	| EDavkiDividendReportLine
-	| EDavkiGenericDerivativeReportItem;
+const REPORT_TYPES: {
+	reportTypeId: SlovenianReportTypeId;
+	displayName: string;
+	reportType: SlovenianTaxAuthorityReportTypes;
+}[] = [
+	{
+		reportTypeId: SlovenianReportTypeId.KDVP,
+		displayName: "DOH_KDVP",
+		reportType: SlovenianTaxAuthorityReportTypes.DOH_KDVP,
+	},
+	{
+		reportTypeId: SlovenianReportTypeId.DIV,
+		displayName: "DOH_DIV",
+		reportType: SlovenianTaxAuthorityReportTypes.DOH_DIV,
+	},
+	{
+		reportTypeId: SlovenianReportTypeId.IFI,
+		displayName: "D_IFI",
+		reportType: SlovenianTaxAuthorityReportTypes.D_IFI,
+	},
+];
 
-export class SlovenianTaxAuthorityProvider
-	implements ITaxAuthorityProvider<SlovenianTaxAuthorityReportTypes, SlovenianReportItem>
-{
-	public readonly descriptor = {
+export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider {
+	public readonly descriptor: TaxAuthorityDescriptor = {
 		authorityId: "slovenia",
 		displayName: "Slovenia (eDavki)",
-		reportTypes: [
-			{ reportTypeId: "kdvp", displayName: "DOH_KDVP" },
-			{ reportTypeId: "div", displayName: "DOH_DIV" },
-			{ reportTypeId: "ifi", displayName: "D_IFI" },
-		],
+		reportTypes: REPORT_TYPES.map(({ reportTypeId, displayName }) => ({
+			reportTypeId,
+			displayName,
+		})),
 	};
 
 	constructor(
@@ -46,7 +57,7 @@ export class SlovenianTaxAuthorityProvider
 	) {}
 
 	// A report is a "self-report" if the report period ended more than 1 year before the current date.
-	// This determines the eDavki document workflow type (ORIGINAL vs SELF_REPORT).
+	// It sets DOH_DIV's SelfReport flag; every document is still filed with the ORIGINAL workflow.
 	isSelfReport(currentTime: DateTime, reportConfig: TaxAuthorityConfiguration): boolean {
 		const currentYear = currentTime.year;
 		const lastYear = currentYear - 1;
@@ -54,89 +65,63 @@ export class SlovenianTaxAuthorityProvider
 		return reportEndPeriod < lastYear;
 	}
 
-	private _applyRelationships(events: FinancialEvents) {
-		return this.applyIdentifierRelationshipsService.apply(events, [
+	async generateExports(
+		reportTypeId: string,
+		ctx: TaxAuthorityRunContext,
+	): Promise<GeneratedExports> {
+		const entry = REPORT_TYPES.find((type) => type.reportTypeId === reportTypeId);
+		if (!entry) {
+			throw new Error(
+				`Unsupported report type '${reportTypeId}' for tax authority: ${this.descriptor.authorityId}`,
+			);
+		}
+		return this.generate(entry.reportType, ctx);
+	}
+
+	// Builds the report once and renders it both as the XML eDavki imports and as a CSV.
+	async generate(
+		reportType: SlovenianTaxAuthorityReportTypes,
+		ctx: TaxAuthorityRunContext,
+	): Promise<GeneratedExports> {
+		const { reportConfig, taxPayerInfo } = ctx;
+		const groupings = this.applyIdentifierRelationshipsService.apply(ctx.events, [
 			IdentifierChangeType.RENAME,
 			IdentifierChangeType.SPLIT,
 			IdentifierChangeType.REVERSE_SPLIT,
 		]).groupings;
-	}
 
-	async generateReportData(
-		reportType: SlovenianTaxAuthorityReportTypes,
-		ctx: TaxAuthorityRunContext,
-	): Promise<SlovenianReportItem[]> {
-		const data = this._applyRelationships(ctx.events);
-
-		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_KDVP) {
-			return this.kdvpGenerator.convert(ctx.reportConfig, data);
+		switch (reportType) {
+			case SlovenianTaxAuthorityReportTypes.DOH_KDVP: {
+				const items = this.kdvpGenerator.convert(reportConfig, groupings);
+				return {
+					xml: this.kdvpGenerator.toXml(
+						reportConfig,
+						taxPayerInfo,
+						EDavkiDocumentWorkflowType.ORIGINAL,
+						items,
+					),
+					csv: this.kdvpGenerator.toCsv(items),
+				};
+			}
+			case SlovenianTaxAuthorityReportTypes.DOH_DIV: {
+				const lines = await this.divGenerator.convert(reportConfig, groupings);
+				return {
+					xml: this.divGenerator.toXml(
+						reportConfig,
+						taxPayerInfo,
+						this.isSelfReport(DateTime.now(), reportConfig),
+						lines,
+					),
+					csv: this.divGenerator.toCsv(lines),
+				};
+			}
+			case SlovenianTaxAuthorityReportTypes.D_IFI: {
+				const items = this.ifiGenerator.convert(reportConfig, groupings);
+				return {
+					xml: this.ifiGenerator.toXml(reportConfig, items),
+					csv: this.ifiGenerator.toCsv(items),
+				};
+			}
 		}
-
-		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_DIV) {
-			return await this.divGenerator.convert(ctx.reportConfig, data);
-		}
-
-		if (reportType === SlovenianTaxAuthorityReportTypes.D_IFI) {
-			return this.ifiGenerator.convert(ctx.reportConfig, data);
-		}
-
-		return [];
-	}
-
-	async generateExportForTaxAuthority(
-		reportType: SlovenianTaxAuthorityReportTypes,
-		ctx: TaxAuthorityRunContext,
-	): Promise<string> {
-		const data = this._applyRelationships(ctx.events);
-
-		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_KDVP) {
-			return this.kdvpGenerator.toXml(
-				ctx.reportConfig,
-				ctx.taxPayerInfo,
-				EDavkiDocumentWorkflowType.ORIGINAL,
-				this.kdvpGenerator.convert(ctx.reportConfig, data),
-			);
-		}
-
-		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_DIV) {
-			const converted = await this.divGenerator.convert(ctx.reportConfig, data);
-			return this.divGenerator.toXml(
-				ctx.reportConfig,
-				ctx.taxPayerInfo,
-				this.isSelfReport(DateTime.now(), ctx.reportConfig),
-				converted,
-			);
-		}
-
-		if (reportType === SlovenianTaxAuthorityReportTypes.D_IFI) {
-			return this.ifiGenerator.toXml(
-				ctx.reportConfig,
-				this.ifiGenerator.convert(ctx.reportConfig, data),
-			);
-		}
-
-		return "";
-	}
-
-	async generateSpreadsheetExport(
-		reportType: SlovenianTaxAuthorityReportTypes,
-		ctx: TaxAuthorityRunContext,
-	): Promise<string> {
-		const data = this._applyRelationships(ctx.events);
-
-		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_KDVP) {
-			return this.kdvpGenerator.toCsv(this.kdvpGenerator.convert(ctx.reportConfig, data));
-		}
-
-		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_DIV) {
-			const converted = await this.divGenerator.convert(ctx.reportConfig, data);
-			return this.divGenerator.toCsv(converted);
-		}
-
-		if (reportType === SlovenianTaxAuthorityReportTypes.D_IFI) {
-			return this.ifiGenerator.toCsv(this.ifiGenerator.convert(ctx.reportConfig, data));
-		}
-
-		return "";
 	}
 }

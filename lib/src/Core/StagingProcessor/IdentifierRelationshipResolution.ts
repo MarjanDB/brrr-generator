@@ -4,8 +4,9 @@ import {
 	type StagingIdentifierRelationshipAny,
 	type StagingIdentifierRelationshipPartialAny,
 	StagingIdentifierRelationshipSplit,
+	StagingIdentifierRelationships,
 } from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
-import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
+import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 
 export class IdentifierRelationshipResolution {
 	mergePartialIdentifierRelationships(
@@ -30,26 +31,20 @@ export class IdentifierRelationshipResolution {
 			if (!fromPartial || !toPartial || !fromPartial.fromIdentifier || !toPartial.toIdentifier)
 				continue;
 
-			const changeType =
-				fromPartial.changeType ?? toPartial.changeType ?? StagingIdentifierChangeType.RENAME;
-			const effectiveDate = fromPartial.effectiveDate ?? toPartial.effectiveDate ?? null;
+			const { changeType, effectiveDate } = fromPartial;
 
-			// Check if both are PartialWithQuantity (has required quantity field)
-			const fromQty = fromPartial.quantity != null ? fromPartial.quantity : undefined;
-			const toQty = toPartial.quantity != null ? toPartial.quantity : undefined;
-
-			if (fromQty !== undefined && toQty !== undefined) {
-				const quantityBefore = Math.abs(fromQty);
-				const quantityAfter = Math.abs(toQty);
-				let finalChangeType = changeType;
-				if (quantityAfter < quantityBefore) {
-					finalChangeType = StagingIdentifierChangeType.REVERSE_SPLIT;
-				}
+			// Both sides carry a quantity when the action is a split.
+			if (fromPartial.quantity != null && toPartial.quantity != null) {
+				const quantityBefore = Math.abs(fromPartial.quantity);
+				const quantityAfter = Math.abs(toPartial.quantity);
 				merged.push(
 					new StagingIdentifierRelationshipSplit({
 						fromIdentifier: fromPartial.fromIdentifier,
 						toIdentifier: toPartial.toIdentifier,
-						changeType: finalChangeType,
+						changeType:
+							quantityAfter < quantityBefore
+								? StagingIdentifierChangeType.REVERSE_SPLIT
+								: changeType,
 						effectiveDate,
 						quantityBefore,
 						quantityAfter,
@@ -76,12 +71,12 @@ export class IdentifierRelationshipResolution {
 			events.identifierRelationships.partialRelationships,
 		);
 		const allRelationships = [...events.identifierRelationships.relationships, ...merged];
-		return {
+		return new StagingFinancialEvents({
 			groupings: events.groupings,
-			identifierRelationships: {
+			identifierRelationships: new StagingIdentifierRelationships({
 				relationships: allRelationships,
 				partialRelationships: events.identifierRelationships.partialRelationships,
-			},
-		};
+			}),
+		});
 	}
 }

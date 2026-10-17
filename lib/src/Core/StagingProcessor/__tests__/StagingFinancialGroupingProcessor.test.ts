@@ -1,9 +1,9 @@
+import { makeDate, makeMoney } from "@brrr/__tests__/support/Builders";
 import {
 	GenericAssetClass,
 	GenericCategory,
 	GenericDerivativeReportItemGainType,
 	GenericDividendType,
-	GenericMonetaryExchangeInformation,
 	GenericShortLong,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
@@ -27,27 +27,13 @@ import {
 import { StagingTaxLot, StagingTaxLotMatchingDetails } from "@brrr/Core/Schemas/Staging/Lots";
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
+import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
-
-function makeDate(iso: string): ValidDateTime {
-	return DateTime.fromISO(iso) as ValidDateTime;
-}
 
 const ident = new StagingFinancialIdentifier({ isin: "US123", ticker: "AAPL", name: "AAPL" });
 
 function makeMonetary(qty: number, price: number) {
-	return new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: qty,
-		underlyingTradePrice: price,
-		comissionCurrency: "EUR",
-		comissionTotal: 0,
-		taxCurrency: "EUR",
-		taxTotal: 0,
-		fxRateToBase: 1,
-	});
+	return makeMoney({ underlyingQuantity: qty, underlyingTradePrice: price });
 }
 
 const simpleStagingStockBuy = new StagingTradeEventStockAcquired({
@@ -175,7 +161,7 @@ function makeGrouping(
 }
 
 test("simple stock lot matching", () => {
-	const processor = new StagingFinancialGroupingProcessor();
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const groupings = [
 		makeGrouping({
 			stockTrades: [simpleStagingStockBuy, simpleStagingStockSold],
@@ -191,7 +177,7 @@ test("simple stock lot matching", () => {
 });
 
 test("partial stock lot matching throws", () => {
-	const processor = new StagingFinancialGroupingProcessor();
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const groupings = [
 		makeGrouping({
 			stockTrades: [simpleStagingStockBuy],
@@ -201,8 +187,30 @@ test("partial stock lot matching throws", () => {
 	expect(() => processor.generateGenericGroupings(groupings)).toThrow(Error);
 });
 
+test("throws when a stock lot has no sold date", () => {
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
+	const lotWithoutSoldDate = new StagingTaxLot({
+		id: "Lot",
+		financialIdentifier: ident,
+		quantity: 1,
+		acquired: new StagingTaxLotMatchingDetails({ id: "StockBought", dateTime: null }),
+		sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: null }),
+		shortLongType: GenericShortLong.LONG,
+	});
+	const groupings = [
+		makeGrouping({
+			stockTrades: [simpleStagingStockBuy, simpleStagingStockSold],
+			stockTaxLots: [lotWithoutSoldDate],
+		}),
+	];
+
+	expect(() => processor.generateGenericGroupings(groupings)).toThrow(
+		"LookupError: Failed to match stock lot",
+	);
+});
+
 test("simple derivative lot matching", () => {
-	const processor = new StagingFinancialGroupingProcessor();
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const groupings = [
 		makeGrouping({
 			derivativeTrades: [simpleStagingDerivativeBuy, simpleStagingDerivativeSold],
@@ -227,7 +235,7 @@ test("simple derivative lot matching", () => {
 });
 
 test("dividend with withholding tax", () => {
-	const processor = new StagingFinancialGroupingProcessor();
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const groupings = [
 		makeGrouping({
 			cashTransactions: [simpleStagingDividend, simpleStagingDividendWithholdingTax],
@@ -244,7 +252,7 @@ test("dividend with withholding tax", () => {
 });
 
 test("payment in lieu of dividend with withholding tax", () => {
-	const processor = new StagingFinancialGroupingProcessor();
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const groupings = [
 		makeGrouping({
 			cashTransactions: [
@@ -278,7 +286,7 @@ test("processStagingFinancialEvents returns FinancialEvents with converted relat
 		relationships: [stagingRel],
 		partialRelationships: [],
 	});
-	const processor = new StagingFinancialGroupingProcessor();
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const result = processor.processStagingFinancialEvents(
 		new StagingFinancialEvents({
 			groupings: [makeGrouping({ financialIdentifier: stagingIdA })],
@@ -286,9 +294,9 @@ test("processStagingFinancialEvents returns FinancialEvents with converted relat
 		}),
 	);
 	expect(result.groupings.length).toEqual(1);
-	expect(result.groupings[0].financialIdentifier.getIsin()).toEqual("US111");
+	expect(result.groupings[0].financialIdentifier.isin).toEqual("US111");
 	expect(result.identifierRelationships.length).toEqual(1);
-	expect(result.identifierRelationships[0].fromIdentifier.getIsin()).toEqual("US111");
-	expect(result.identifierRelationships[0].toIdentifier.getIsin()).toEqual("US222");
+	expect(result.identifierRelationships[0].fromIdentifier.isin).toEqual("US111");
+	expect(result.identifierRelationships[0].toIdentifier.isin).toEqual("US222");
 	expect(result.identifierRelationships[0].changeType).toEqual(IdentifierChangeType.RENAME);
 });

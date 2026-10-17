@@ -1,20 +1,15 @@
+import { makeDate } from "@brrr/__tests__/support/Builders";
 import {
 	StagingIdentifierChangeType,
 	StagingIdentifierRelationship,
 	StagingIdentifierRelationshipPartial,
 	StagingIdentifierRelationshipPartialWithQuantity,
-	type StagingIdentifierRelationshipSplit,
+	StagingIdentifierRelationshipSplit,
 	StagingIdentifierRelationships,
 } from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
-
-function makeDate(iso: string): ValidDateTime {
-	return DateTime.fromISO(iso) as ValidDateTime;
-}
 
 test("two partials same key produce one full relationship", () => {
 	const fromId = new StagingFinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old Inc" });
@@ -39,8 +34,8 @@ test("two partials same key produce one full relationship", () => {
 		partials,
 	);
 	expect(result.length).toEqual(1);
-	expect(result[0].fromIdentifier.getIsin()).toEqual("US111");
-	expect(result[0].toIdentifier.getIsin()).toEqual("US222");
+	expect(result[0].fromIdentifier.isin).toEqual("US111");
+	expect(result[0].toIdentifier.isin).toEqual("US222");
 	expect(result[0].changeType).toEqual(StagingIdentifierChangeType.SPLIT);
 	expect(result[0].effectiveDate !== null).toEqual(true);
 });
@@ -78,10 +73,12 @@ test("partials with quantity produce full with quantityBefore/quantityAfter", ()
 		partials,
 	);
 	expect(result.length).toEqual(1);
-	const r = result[0] as StagingIdentifierRelationshipSplit;
-	expect(r.quantityBefore).toEqual(4.0);
-	expect(r.quantityAfter).toEqual(40.0);
-	expect(r.changeType).toEqual(StagingIdentifierChangeType.SPLIT);
+	expect(result[0]).toBeInstanceOf(StagingIdentifierRelationshipSplit);
+	expect(result[0]).toMatchObject({
+		quantityBefore: 4.0,
+		quantityAfter: 40.0,
+		changeType: StagingIdentifierChangeType.SPLIT,
+	});
 });
 
 test("reverse split inferred when quantity after less than before", () => {
@@ -109,10 +106,12 @@ test("reverse split inferred when quantity after less than before", () => {
 		partials,
 	);
 	expect(result.length).toEqual(1);
-	const r = result[0] as StagingIdentifierRelationshipSplit;
-	expect(r.changeType).toEqual(StagingIdentifierChangeType.REVERSE_SPLIT);
-	expect(r.quantityBefore).toEqual(10.0);
-	expect(r.quantityAfter).toEqual(1.0);
+	expect(result[0]).toBeInstanceOf(StagingIdentifierRelationshipSplit);
+	expect(result[0]).toMatchObject({
+		changeType: StagingIdentifierChangeType.REVERSE_SPLIT,
+		quantityBefore: 10.0,
+		quantityAfter: 1.0,
+	});
 });
 
 test("only from partial produces no full relationship", () => {
@@ -159,6 +158,24 @@ test("preserves existing full relationships", () => {
 			events,
 		);
 	expect(result.identifierRelationships.relationships.length).toEqual(1);
-	expect(result.identifierRelationships.relationships[0].fromIdentifier.getIsin()).toEqual("US111");
+	expect(result.identifierRelationships.relationships[0].fromIdentifier.isin).toEqual("US111");
 	expect(result.identifierRelationships.partialRelationships.length).toEqual(0);
+});
+
+test("resolution returns a StagingFinancialEvents instance", () => {
+	const events = new StagingFinancialEvents({
+		groupings: [],
+		identifierRelationships: new StagingIdentifierRelationships({
+			relationships: [],
+			partialRelationships: [],
+		}),
+	});
+
+	const result =
+		new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(
+			events,
+		);
+
+	expect(result).toBeInstanceOf(StagingFinancialEvents);
+	expect(result.identifierRelationships).toBeInstanceOf(StagingIdentifierRelationships);
 });

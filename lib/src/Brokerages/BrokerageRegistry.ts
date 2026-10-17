@@ -1,35 +1,42 @@
-import type { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider";
+import type { IBrokerageProvider } from "@brrr/Brokerages/Interfaces/IBrokerageProvider";
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 
 export type BrokerageFileDetection = {
 	fileName: string;
 	detectedBrokerage: { id: string; name: string } | null;
+	// Set when the file looks like a broker's export but can't be read.
+	error: string | null;
 };
 
 export class BrokerageRegistry {
-	constructor(private readonly ibkr: IbkrBrokerageExportProvider) {}
+	constructor(private readonly ibkr: IBrokerageProvider) {}
 
 	public listBrokerages(): { id: string; name: string }[] {
 		return [{ id: this.ibkr.brokerageId, name: this.ibkr.displayName }];
 	}
 
-	private _detectOne(file: { fileName: string; xml: string }): BrokerageFileDetection {
+	private detectOne(file: { fileName: string; xml: string }): BrokerageFileDetection {
 		const isIbkr = this.ibkr.isThisValidExport(file.xml);
 		if (!isIbkr) {
-			return { fileName: file.fileName, detectedBrokerage: null };
+			return {
+				fileName: file.fileName,
+				detectedBrokerage: null,
+				error: this.ibkr.describeExportProblem(file.xml),
+			};
 		}
 
 		return {
 			fileName: file.fileName,
 			detectedBrokerage: { id: this.ibkr.brokerageId, name: this.ibkr.displayName },
+			error: null,
 		};
 	}
 
 	public detect(files: { fileName: string; xml: string }[]): BrokerageFileDetection[] {
-		return files.map((f) => this._detectOne(f));
+		return files.map((f) => this.detectOne(f));
 	}
 
-	private _pickIbkrXmlStrings(
+	private pickIbkrXmlStrings(
 		files: { fileName: string; xml: string }[],
 		detections: BrokerageFileDetection[],
 	): string[] {
@@ -49,7 +56,7 @@ export class BrokerageRegistry {
 	} {
 		const detections = this.detect(files);
 
-		const ibkrXmlStrings = this._pickIbkrXmlStrings(files, detections);
+		const ibkrXmlStrings = this.pickIbkrXmlStrings(files, detections);
 		const ibkrStaging =
 			ibkrXmlStrings.length > 0 ? this.ibkr.loadAndTransform(ibkrXmlStrings) : null;
 

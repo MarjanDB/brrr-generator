@@ -22,10 +22,13 @@ import {
 	StagingTradeEventCashTransactionPaymentInLieuOfDividends,
 	StagingTradeEventCashTransactionWithholdingTax,
 	StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends,
+	type StagingTradeEventDerivative,
 	StagingTradeEventDerivativeAcquired,
 	StagingTradeEventDerivativeSold,
+	type StagingTradeEventStock,
 	StagingTradeEventStockAcquired,
 	StagingTradeEventStockSold,
+	type StagingTransactionCash,
 } from "@brrr/Core/Schemas/Staging/Events";
 import { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping";
 import {
@@ -55,11 +58,11 @@ export class IbkrTransformService {
 			a.isin.localeCompare(b.isin),
 		);
 
-		const stockTradeEvents = this._convertStockTradesToEvents(stockTrades);
-		const stockLotEvents = this._convertStockLotsToEvents(stockLots);
-		const cashTransactionEvents = this._convertToCashTransactions(cashTransactions);
-		const derivativeTradeEvents = this._convertDerivativeTradesToEvents(derivativeTrades);
-		const derivativeLotEvents = this._convertDerivativeLotsToEvents(derivativeLots);
+		const stockTradeEvents = this.convertStockTradesToEvents(stockTrades);
+		const stockLotEvents = this.convertStockLotsToEvents(stockLots);
+		const cashTransactionEvents = this.convertToCashTransactions(cashTransactions);
+		const derivativeTradeEvents = this.convertDerivativeTradesToEvents(derivativeTrades);
+		const derivativeLotEvents = this.convertDerivativeLotsToEvents(derivativeLots);
 
 		const groupByIdentifier = <T extends AnyEvent>(
 			items: T[],
@@ -104,24 +107,16 @@ export class IbkrTransformService {
 					financialIdentifier: identifier,
 					countryOfOrigin: null,
 					underlyingCategory: GenericCategory.REGULAR,
-					stockTrades: (stocksMap.get(key)?.items ?? []) as (
-						| StagingTradeEventStockAcquired
-						| StagingTradeEventStockSold
-					)[],
+					stockTrades: stocksMap.get(key)?.items ?? [],
 					stockTaxLots: stockLotsMap.get(key)?.items ?? [],
-					derivativeTrades: (derivativesMap.get(key)?.items ?? []) as (
-						| StagingTradeEventDerivativeAcquired
-						| StagingTradeEventDerivativeSold
-					)[],
+					derivativeTrades: derivativesMap.get(key)?.items ?? [],
 					derivativeTaxLots: derivativeLotsMap.get(key)?.items ?? [],
 					cashTransactions: dividendsMap.get(key)?.items ?? [],
 				}),
 			);
 		}
 
-		const partials = this._convertCorporateActionsToPartialRelationships(
-			segmented.corporateActions,
-		);
+		const partials = this.convertCorporateActionsToPartialRelationships(segmented.corporateActions);
 		const identifierRelationships = new StagingIdentifierRelationships({
 			relationships: [],
 			partialRelationships: partials,
@@ -130,7 +125,7 @@ export class IbkrTransformService {
 		return new StagingFinancialEvents({ groupings, identifierRelationships });
 	}
 
-	private _convertToCashTransactions(cashTransactions: TransactionCash[]) {
+	private convertToCashTransactions(cashTransactions: TransactionCash[]): StagingTransactionCash[] {
 		return cashTransactions.map((transaction) => {
 			const descLower = transaction.description.toLowerCase();
 			const isOrdinaryDividend = descLower.includes("ordinary dividend");
@@ -149,8 +144,8 @@ export class IbkrTransformService {
 				underlyingQuantity: 1,
 				underlyingTradePrice: transaction.amount * transaction.fxRateToBase,
 				underlyingCurrency: transaction.currency,
-				comissionCurrency: transaction.currency,
-				comissionTotal: 0,
+				commissionCurrency: transaction.currency,
+				commissionTotal: 0,
 				taxCurrency: transaction.currency,
 				taxTotal: 0,
 				fxRateToBase: transaction.fxRateToBase,
@@ -190,7 +185,7 @@ export class IbkrTransformService {
 		});
 	}
 
-	private _convertStockTradesToEvents(trades: TradeStock[]) {
+	private convertStockTradesToEvents(trades: TradeStock[]): StagingTradeEventStock[] {
 		return trades.map((trade) => {
 			const financialIdentifier = new StagingFinancialIdentifier({
 				isin: trade.isin,
@@ -200,8 +195,8 @@ export class IbkrTransformService {
 				underlyingCurrency: trade.currency,
 				underlyingQuantity: trade.quantity,
 				underlyingTradePrice: trade.tradePrice * trade.fxRateToBase,
-				comissionCurrency: trade.ibCommissionCurrency,
-				comissionTotal: trade.ibCommission * trade.fxRateToBase,
+				commissionCurrency: trade.ibCommissionCurrency,
+				commissionTotal: trade.ibCommission * trade.fxRateToBase,
 				taxCurrency: trade.currency, // NOTE: Taxes Currency == Trade Currency ??
 				taxTotal: trade.taxes,
 				fxRateToBase: trade.fxRateToBase,
@@ -225,7 +220,7 @@ export class IbkrTransformService {
 		});
 	}
 
-	private _convertStockLotsToEvents(lots: LotStock[]): StagingTaxLot[] {
+	private convertStockLotsToEvents(lots: LotStock[]): StagingTaxLot[] {
 		return lots.map(
 			(lot) =>
 				new StagingTaxLot({
@@ -242,7 +237,9 @@ export class IbkrTransformService {
 		);
 	}
 
-	private _convertDerivativeTradesToEvents(trades: TradeDerivative[]) {
+	private convertDerivativeTradesToEvents(
+		trades: TradeDerivative[],
+	): StagingTradeEventDerivative[] {
 		return trades.map((trade) => {
 			const financialIdentifier = new StagingFinancialIdentifier({
 				isin: trade.underlyingSecurityID,
@@ -253,8 +250,8 @@ export class IbkrTransformService {
 				underlyingCurrency: trade.currency,
 				underlyingQuantity: trade.quantity,
 				underlyingTradePrice: trade.tradePrice * trade.fxRateToBase,
-				comissionCurrency: trade.ibCommissionCurrency,
-				comissionTotal: trade.ibCommission * trade.fxRateToBase,
+				commissionCurrency: trade.ibCommissionCurrency,
+				commissionTotal: trade.ibCommission * trade.fxRateToBase,
 				taxCurrency: trade.currency, // NOTE: Taxes Currency == Trade Currency ??
 				taxTotal: trade.taxes,
 				fxRateToBase: trade.fxRateToBase,
@@ -278,7 +275,7 @@ export class IbkrTransformService {
 		});
 	}
 
-	private _convertDerivativeLotsToEvents(lots: LotDerivative[]): StagingTaxLot[] {
+	private convertDerivativeLotsToEvents(lots: LotDerivative[]): StagingTaxLot[] {
 		return lots.map(
 			(lot) =>
 				new StagingTaxLot({
@@ -296,7 +293,7 @@ export class IbkrTransformService {
 		);
 	}
 
-	private _convertCorporateActionsToPartialRelationships(
+	private convertCorporateActionsToPartialRelationships(
 		corporateActions: CorporateAction[],
 	): StagingIdentifierRelationshipPartialAny[] {
 		const partials: StagingIdentifierRelationshipPartialAny[] = [];

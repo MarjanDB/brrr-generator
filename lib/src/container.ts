@@ -1,7 +1,7 @@
-import { loadBrokeragesModule } from "@brrr/Brokerages/BrokeragesModule.js";
-import { loadCoreModule } from "@brrr/Core/CoreModule.js";
-import { InfoProvider } from "@brrr/InfoProviders/InfoProvider.js";
-import { loadTaxAuthoritiesModule } from "@brrr/TaxAuthorities/TaxAuthoritiesModule.js";
+import { loadBrokeragesModule } from "@brrr/Brokerages/BrokeragesModule";
+import { loadCoreModule } from "@brrr/Core/CoreModule";
+import { InfoProvider } from "@brrr/InfoProviders/InfoProvider";
+import { loadTaxAuthoritiesModule } from "@brrr/TaxAuthorities/TaxAuthoritiesModule";
 import { Container } from "inversify";
 
 export function createContainer(infoProvider: InfoProvider): Container {
