@@ -4,7 +4,7 @@ import { defineConfig } from "tsdown";
 const tsconfigPath = path.resolve(import.meta.dirname, "tsconfig.json");
 
 export default defineConfig({
-	entry: "src/**/*.ts",
+	entry: ["src/**/*.ts", "!src/**/__tests__/**"],
 	dts: true,
 	outDir: "dist",
 	format: ["esm"],

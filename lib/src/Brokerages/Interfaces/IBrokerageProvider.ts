@@ -1,4 +1,4 @@
-import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents.js";
+import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 
 export interface IBrokerageProvider {
 	readonly brokerageId: string;

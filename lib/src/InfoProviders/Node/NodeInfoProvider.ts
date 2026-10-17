@@ -4,8 +4,8 @@ import {
 	type Country,
 	type InfoProvider,
 	TreatyType,
-} from "@brrr/InfoProviders/InfoProvider.js";
-import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider.js";
+} from "@brrr/InfoProviders/InfoProvider";
+import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import YahooFinance from "yahoo-finance2";
 import internationalTreaties from "./internationalTreaties.json" with { type: "json" };
 import missingCompaniesLookup from "./missingCompaniesLookup.json" with { type: "json" };

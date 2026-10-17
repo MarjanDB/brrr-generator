@@ -1,63 +1,46 @@
-// lib entry point — re-exports added here as modules are implemented
-
-export type { BrokerageFileDetection } from "@brrr/Brokerages/BrokerageRegistry.js";
-export { BrokerageRegistry } from "@brrr/Brokerages/BrokerageRegistry.js";
 // Brokerages
-export { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider.js";
-export type { IBrokerageProvider } from "@brrr/Brokerages/Interfaces/IBrokerageProvider.js";
-export { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService.js";
-export { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor.js";
-export { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher.js";
+export { type BrokerageFileDetection, BrokerageRegistry } from "@brrr/Brokerages/BrokerageRegistry";
+export { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider";
+
+// Core
 export {
 	TradeEventCashTransactionDividend,
 	TradeEventCashTransactionPaymentInLieuOfDividend,
 	TradeEventCashTransactionWithholdingTax,
 	TradeEventDerivativeAcquired,
 	TradeEventStockAcquired,
-} from "@brrr/Core/Schemas/Events.js";
-export { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents.js";
-export type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping.js";
-export { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship.js";
-export { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents.js";
-export { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor.js";
-// Core
-export { createContainer } from "@brrr/container.js";
-export type {
-	CompanyInfo,
-	CompanyLocationInfo,
-	Country,
-} from "@brrr/InfoProviders/InfoProvider.js";
-// Info providers
-export { InfoProvider, TreatyType } from "@brrr/InfoProviders/InfoProvider.js";
-export { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider.js";
-export type {
-	TaxAuthorityConfiguration,
-	TaxPayerInfo,
-} from "@brrr/TaxAuthorities/ConfigurationProvider.js";
+} from "@brrr/Core/Schemas/Events";
+export { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
+export type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
+export { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
+export { createContainer } from "@brrr/container";
 
-// Tax authority — configuration
+// Info providers
 export {
+	type CompanyInfo,
+	type CompanyLocationInfo,
+	type Country,
+	InfoProvider,
+	TreatyType,
+} from "@brrr/InfoProviders/InfoProvider";
+export { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
+
+// Tax authorities
+export {
+	type TaxAuthorityConfiguration,
 	TaxAuthorityLotMatchingMethod,
 	TaxPayerConfigSchema,
+	type TaxPayerInfo,
 	TaxPayerType,
-} from "@brrr/TaxAuthorities/ConfigurationProvider.js";
-// Tax authority — interface
-export type {
-	ITaxAuthorityProvider,
-	TaxAuthorityDescriptor,
-} from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider.js";
-// Tax authority — Slovenia
-export { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator.js";
-export { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator.js";
-export { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator.js";
-export { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes.js";
-export { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider.js";
-export { SlovenianTaxAuthorityService } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityService.js";
-export { loadTaxAuthoritiesModule } from "@brrr/TaxAuthorities/TaxAuthoritiesModule.js";
-// Tax authority — registry
+} from "@brrr/TaxAuthorities/ConfigurationProvider";
+export type { TaxAuthorityDescriptor } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
+export { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
+export { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider";
+export { SlovenianTaxAuthorityService } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityService";
 export {
 	type GeneratedExports,
 	TaxAuthorityRegistry,
-} from "@brrr/TaxAuthorities/TaxAuthorityRegistry.js";
+} from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
+
 // Utils
-export { zDateTimeFromISOString } from "@brrr/Utils/DateTime.js";
+export { zDateTimeFromISOString } from "@brrr/Utils/DateTime";
