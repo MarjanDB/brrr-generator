@@ -162,3 +162,21 @@ test("preserves existing full relationships", () => {
 	expect(result.identifierRelationships.relationships[0].fromIdentifier.isin).toEqual("US111");
 	expect(result.identifierRelationships.partialRelationships.length).toEqual(0);
 });
+
+test("resolution returns a StagingFinancialEvents instance", () => {
+	const events = new StagingFinancialEvents({
+		groupings: [],
+		identifierRelationships: new StagingIdentifierRelationships({
+			relationships: [],
+			partialRelationships: [],
+		}),
+	});
+
+	const result =
+		new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(
+			events,
+		);
+
+	expect(result).toBeInstanceOf(StagingFinancialEvents);
+	expect(result.identifierRelationships).toBeInstanceOf(StagingIdentifierRelationships);
+});

@@ -1,6 +1,7 @@
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
+import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
 import type { Container } from "inversify";
 
@@ -24,7 +25,16 @@ export function loadCoreModule(container: Container): void {
 		.inSingletonScope();
 
 	container
+		.bind(IdentifierRelationshipResolution)
+		.toResolvedValue(() => new IdentifierRelationshipResolution())
+		.inSingletonScope();
+
+	container
 		.bind(StagingFinancialGroupingProcessor)
-		.toResolvedValue(() => new StagingFinancialGroupingProcessor())
+		.toResolvedValue(
+			(resolution: IdentifierRelationshipResolution) =>
+				new StagingFinancialGroupingProcessor(resolution),
+			[IdentifierRelationshipResolution],
+		)
 		.inSingletonScope();
 }
