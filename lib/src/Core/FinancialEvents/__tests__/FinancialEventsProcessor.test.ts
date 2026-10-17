@@ -90,7 +90,7 @@ test("single stock lot matching", () => {
 	};
 	const interesting = processor.generateInterestingUnderlyingGroupings([grouping], config);
 	expect(interesting.length).toEqual(1);
-	expect(interesting[0].stockTrades.length).toEqual(2);
+	expect(interesting[0].stockLotLegs.length).toEqual(2);
 	expect(interesting[0].derivativeGroupings.length).toEqual(0);
 });
 
@@ -104,7 +104,7 @@ test("simple filtering trades of lots closed in period", () => {
 	};
 	const interesting = processor.generateInterestingUnderlyingGroupings([grouping], config);
 	expect(interesting.length).toEqual(1);
-	expect(interesting[0].stockTrades.length).toEqual(0);
+	expect(interesting[0].stockLotLegs.length).toEqual(0);
 });
 
 test("no stock trades matching when no lots", () => {
@@ -118,6 +118,6 @@ test("no stock trades matching when no lots", () => {
 	};
 	const interesting = processor.generateInterestingUnderlyingGroupings([groupingNoLots], config);
 	expect(interesting.length).toEqual(1);
-	expect(interesting[0].stockTrades.length).toEqual(0);
+	expect(interesting[0].stockLotLegs.length).toEqual(0);
 	expect(interesting[0].derivativeGroupings.length).toEqual(0);
 });

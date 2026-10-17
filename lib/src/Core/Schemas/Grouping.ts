@@ -1,7 +1,10 @@
+import type { LotLeg } from "@brrr/Core/LotMatching/MatchedLot";
 import type { GenericCategory } from "@brrr/Core/Schemas/CommonFormats";
 import type {
+	TradeEventDerivative,
 	TradeEventDerivativeAcquired,
 	TradeEventDerivativeSold,
+	TradeEventStock,
 	TradeEventStockAcquired,
 	TradeEventStockSold,
 	TransactionCash,
@@ -90,14 +93,14 @@ export class FinancialGrouping {
 
 export class UnderlyingDerivativeGrouping {
 	public readonly financialIdentifier: FinancialIdentifier;
-	public readonly derivativeTrades: (TradeEventDerivativeAcquired | TradeEventDerivativeSold)[];
+	public readonly derivativeLotLegs: LotLeg<TradeEventDerivative>[];
 
 	constructor(args: {
 		financialIdentifier: FinancialIdentifier;
-		derivativeTrades: (TradeEventDerivativeAcquired | TradeEventDerivativeSold)[];
+		derivativeLotLegs: LotLeg<TradeEventDerivative>[];
 	}) {
 		this.financialIdentifier = args.financialIdentifier;
-		this.derivativeTrades = args.derivativeTrades;
+		this.derivativeLotLegs = args.derivativeLotLegs;
 	}
 }
 
@@ -105,7 +108,7 @@ export class UnderlyingGroupingWithTradesOfInterest {
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly countryOfOrigin: string | null;
 	public readonly underlyingCategory: GenericCategory;
-	public readonly stockTrades: (TradeEventStockAcquired | TradeEventStockSold)[];
+	public readonly stockLotLegs: LotLeg<TradeEventStock>[];
 	public readonly derivativeGroupings: UnderlyingDerivativeGrouping[];
 	public readonly cashTransactions: TransactionCash[];
 
@@ -113,14 +116,14 @@ export class UnderlyingGroupingWithTradesOfInterest {
 		financialIdentifier: FinancialIdentifier;
 		countryOfOrigin: string | null;
 		underlyingCategory: GenericCategory;
-		stockTrades: (TradeEventStockAcquired | TradeEventStockSold)[];
+		stockLotLegs: LotLeg<TradeEventStock>[];
 		derivativeGroupings: UnderlyingDerivativeGrouping[];
 		cashTransactions: TransactionCash[];
 	}) {
 		this.financialIdentifier = args.financialIdentifier;
 		this.countryOfOrigin = args.countryOfOrigin;
 		this.underlyingCategory = args.underlyingCategory;
-		this.stockTrades = args.stockTrades;
+		this.stockLotLegs = args.stockLotLegs;
 		this.derivativeGroupings = args.derivativeGroupings;
 		this.cashTransactions = args.cashTransactions;
 	}

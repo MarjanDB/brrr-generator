@@ -1,48 +1,13 @@
 import type { Lot } from "@brrr/Core/LotMatching/Lot";
 import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod";
+import type { LotLeg, MatchedLot } from "@brrr/Core/LotMatching/MatchedLot";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
-import { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import type { TradeEvent } from "@brrr/Core/Schemas/Events";
-import { TaxLot } from "@brrr/Core/Schemas/Lots";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
 
 export type LotMatchingDetails = {
 	lots: Lot[];
 	trades: Trade[];
 };
-
-type GeneratedLotWithTradeEvents = {
-	lot: Lot;
-	acquiredTrade: TradeEvent;
-	soldTrade: TradeEvent;
-};
-
-export class GenericLotMatchingDetails {
-	lots: TaxLot<TradeEvent, TradeEvent>[];
-	trades: TradeEvent[];
-
-	constructor(lots: TaxLot<TradeEvent, TradeEvent>[], trades: TradeEvent[]) {
-		this.lots = lots;
-		this.trades = trades;
-	}
-
-	getTradesOfLotsClosedInPeriod(
-		periodStart: ValidDateTime,
-		periodEnd: ValidDateTime,
-	): GenericLotMatchingDetails {
-		const lotsClosedInPeriod = this.lots.filter(
-			(lot) => lot.sold.date >= periodStart && lot.sold.date <= periodEnd,
-		);
-
-		const lotAcquiredTrades = lotsClosedInPeriod.map((lot) => lot.acquired);
-		const lotSoldTrades = lotsClosedInPeriod.map((lot) => lot.sold);
-		const allTrades = [...lotAcquiredTrades, ...lotSoldTrades];
-
-		const sortedTrades = [...allTrades].sort((a, b) => a.date.toMillis() - b.date.toMillis());
-
-		return new GenericLotMatchingDetails(lotsClosedInPeriod, sortedTrades);
-	}
-}
 
 export class LotMatcher {
 	matchLotsWithTrades(method: LotMatchingMethod, events: Trade[]): LotMatchingDetails {
@@ -51,11 +16,8 @@ export class LotMatcher {
 		return { lots, trades };
 	}
 
-	matchLotsWithGenericTradeEvents(
-		method: LotMatchingMethod,
-		events: TradeEvent[],
-	): GenericLotMatchingDetails {
-		const tradeEventMappings = new Map<string, TradeEvent>();
+	matchLots<T extends TradeEvent>(method: LotMatchingMethod, events: T[]): MatchedLot<T>[] {
+		const tradeEventMappings = new Map<string, T>();
 		const tradeMappings = new Map<string, Trade>();
 
 		for (const event of events) {
@@ -64,77 +26,36 @@ export class LotMatcher {
 			tradeMappings.set(convertedEvent.id, convertedEvent);
 		}
 
-		const convertedEvents = [...tradeMappings.values()];
-		const matchingDetails = this.matchLotsWithTrades(method, convertedEvents);
-		const generatedLots = matchingDetails.lots;
+		const matchingDetails = this.matchLotsWithTrades(method, [...tradeMappings.values()]);
 
-		const generatedLotsWithTradeEvents = generatedLots.map((lot) =>
-			this.generateTradeEventBasedOnLot(lot, tradeEventMappings),
-		);
+		return matchingDetails.lots.map((lot) => {
+			const acquiredTrade = tradeEventMappings.get(lot.acquired.relation.id);
+			const soldTrade = tradeEventMappings.get(lot.sold.relation.id);
 
-		const convertedLots: TaxLot<TradeEvent, TradeEvent>[] = generatedLotsWithTradeEvents.map(
-			(lotWithEvents) => {
-				const lotId = lotWithEvents.lot.acquired.relation.id;
-				return new TaxLot<TradeEvent, TradeEvent>({
-					id: lotId,
-					quantity: lotWithEvents.lot.quantity,
-					acquired: lotWithEvents.acquiredTrade,
-					sold: lotWithEvents.soldTrade,
-					shortLongType: GenericShortLong.LONG,
-					provenance: [],
-				});
-			},
-		);
+			if (!acquiredTrade || !soldTrade) {
+				throw new Error("Acquired Trade or Sold Trade is missing lookup");
+			}
 
-		const buys = generatedLotsWithTradeEvents.map((l) => l.acquiredTrade);
-		const sells = generatedLotsWithTradeEvents.map((l) => l.soldTrade);
-		const allTradesTakenFromLots = [...buys, ...sells];
-
-		return new GenericLotMatchingDetails(convertedLots, allTradesTakenFromLots);
+			return {
+				acquired: this.legOf(acquiredTrade, lot.quantity),
+				sold: this.legOf(soldTrade, -lot.quantity),
+			};
+		});
 	}
 
 	private convertTradeEvent(event: TradeEvent): Trade {
 		return { id: event.id, quantity: event.exchangedMoney.underlyingQuantity, date: event.date };
 	}
 
-	private generateTradeEventBasedOnLot(
-		lot: Lot,
-		tradeEventMappings: Map<string, TradeEvent>,
-	): GeneratedLotWithTradeEvents {
-		const acquiredRelation = lot.acquired.relation;
-		const soldRelation = lot.sold.relation;
-
-		const underlyingAcquiredTrade = tradeEventMappings.get(acquiredRelation.id);
-		const underlyingSoldTrade = tradeEventMappings.get(soldRelation.id);
-
-		if (!underlyingAcquiredTrade || !underlyingSoldTrade) {
-			throw new Error("Acquired Trade or Sold Trade is missing lookup");
-		}
-
-		const lotQuantity = lot.quantity;
-
-		const clonedAcquiredTrade: TradeEvent = underlyingAcquiredTrade.copy({
-			exchangedMoney: {
-				...underlyingAcquiredTrade.exchangedMoney,
-				underlyingQuantity: lotQuantity,
-				comissionTotal:
-					(1 / underlyingAcquiredTrade.exchangedMoney.underlyingQuantity) *
-					lotQuantity *
-					underlyingAcquiredTrade.exchangedMoney.comissionTotal,
-			},
-		});
-
-		const clonedSoldTrade: TradeEvent = underlyingSoldTrade.copy({
-			exchangedMoney: {
-				...underlyingSoldTrade.exchangedMoney,
-				underlyingQuantity: -lotQuantity,
-				comissionTotal:
-					(1 / underlyingSoldTrade.exchangedMoney.underlyingQuantity) *
-					-lotQuantity *
-					underlyingSoldTrade.exchangedMoney.comissionTotal,
-			},
-		});
-
-		return { lot, acquiredTrade: clonedAcquiredTrade, soldTrade: clonedSoldTrade };
+	// The commission is split in proportion to the quantity the lot takes from the trade.
+	private legOf<T extends TradeEvent>(trade: T, quantity: number): LotLeg<T> {
+		return {
+			trade,
+			quantity,
+			commission:
+				(1 / trade.exchangedMoney.underlyingQuantity) *
+				quantity *
+				trade.exchangedMoney.comissionTotal,
+		};
 	}
 }

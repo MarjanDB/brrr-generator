@@ -33,56 +33,52 @@ const GAIN_MAPPINGS: Record<string, EDavkiDerivativeReportGainType> = {
 };
 
 function convertBuy(
-	line: TradeEventDerivativeAcquired,
+	trade: TradeEventDerivativeAcquired,
+	quantity: number,
+	commission: number,
 ): EDavkiDerivativeReportSecurityLineGenericEventBought {
 	return new EDavkiDerivativeReportSecurityLineGenericEventBought({
-		boughtOn: line.date,
-		gainType: GAIN_MAPPINGS[line.acquiredReason] ?? EDavkiDerivativeReportGainType.OTHER,
-		quantity: line.exchangedMoney.underlyingQuantity,
-		pricePerUnit: line.exchangedMoney.underlyingTradePrice * line.multiplier,
+		boughtOn: trade.date,
+		gainType: GAIN_MAPPINGS[trade.acquiredReason] ?? EDavkiDerivativeReportGainType.OTHER,
+		quantity: quantity,
+		pricePerUnit: trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
 		pricePerUnitInOriginalCurrency:
-			line.exchangedMoney.underlyingTradePrice *
-			line.multiplier *
-			(1 / line.exchangedMoney.fxRateToBase),
-		totalPrice:
-			line.exchangedMoney.underlyingQuantity *
-			line.exchangedMoney.underlyingTradePrice *
-			line.multiplier,
+			trade.exchangedMoney.underlyingTradePrice *
+			trade.multiplier *
+			(1 / trade.exchangedMoney.fxRateToBase),
+		totalPrice: quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
 		totalPriceInOriginalCurrency:
-			line.exchangedMoney.underlyingQuantity *
-			line.exchangedMoney.underlyingTradePrice *
-			line.multiplier *
-			(1 / line.exchangedMoney.fxRateToBase),
-		commissions: line.exchangedMoney.comissionTotal,
-		commissionsInOriginalCurrency:
-			line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+			quantity *
+			trade.exchangedMoney.underlyingTradePrice *
+			trade.multiplier *
+			(1 / trade.exchangedMoney.fxRateToBase),
+		commissions: commission,
+		commissionsInOriginalCurrency: commission * (1 / trade.exchangedMoney.fxRateToBase),
 		leveraged: false,
 	});
 }
 
 function convertSell(
-	line: TradeEventDerivativeSold,
+	trade: TradeEventDerivativeSold,
+	quantity: number,
+	commission: number,
 ): EDavkiDerivativeReportSecurityLineGenericEventSold {
 	return new EDavkiDerivativeReportSecurityLineGenericEventSold({
-		soldOn: line.date,
-		quantity: line.exchangedMoney.underlyingQuantity,
-		pricePerUnit: line.exchangedMoney.underlyingTradePrice * line.multiplier,
+		soldOn: trade.date,
+		quantity: quantity,
+		pricePerUnit: trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
 		pricePerUnitInOriginalCurrency:
-			line.exchangedMoney.underlyingTradePrice *
-			line.multiplier *
-			(1 / line.exchangedMoney.fxRateToBase),
-		totalPrice:
-			line.exchangedMoney.underlyingQuantity *
-			line.exchangedMoney.underlyingTradePrice *
-			line.multiplier,
+			trade.exchangedMoney.underlyingTradePrice *
+			trade.multiplier *
+			(1 / trade.exchangedMoney.fxRateToBase),
+		totalPrice: quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
 		totalPriceInOriginalCurrency:
-			line.exchangedMoney.underlyingQuantity *
-			line.exchangedMoney.underlyingTradePrice *
-			line.multiplier *
-			(1 / line.exchangedMoney.fxRateToBase),
-		commissions: line.exchangedMoney.comissionTotal,
-		commissionsInOriginalCurrency:
-			line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+			quantity *
+			trade.exchangedMoney.underlyingTradePrice *
+			trade.multiplier *
+			(1 / trade.exchangedMoney.fxRateToBase),
+		commissions: commission,
+		commissionsInOriginalCurrency: commission * (1 / trade.exchangedMoney.fxRateToBase),
 		leveraged: false,
 	});
 }
@@ -123,20 +119,21 @@ export class IfiReportGenerator {
 
 			// TODO: Figure out how to get lots (currently only trade events are used, not predefined lots)
 			for (const derivativeGrouping of interestingGrouping.derivativeGroupings) {
-				const allLines = [...derivativeGrouping.derivativeTrades];
-				allLines.sort((a, b) => a.date.toMillis() - b.date.toMillis());
+				const legs = derivativeGrouping.derivativeLotLegs;
 
-				if (allLines.length === 0) {
+				if (legs.length === 0) {
 					continue;
 				}
 
-				const convertedLines = allLines.map((line) => {
-					if (line instanceof TradeEventDerivativeAcquired) return convertBuy(line);
-					return convertSell(line);
+				const convertedLines = legs.map(({ trade, quantity, commission }) => {
+					if (trade instanceof TradeEventDerivativeAcquired)
+						return convertBuy(trade, quantity, commission);
+					return convertSell(trade, quantity, commission);
 				});
 
-				const foreignTaxPaidSum = allLines.reduce(
-					(sum, e) => sum + (e.exchangedMoney.taxTotal ?? 0),
+				// Counts a trade's whole tax once for every lot it falls into, like the lot clones did.
+				const foreignTaxPaidSum = legs.reduce(
+					(sum, leg) => sum + (leg.trade.exchangedMoney.taxTotal ?? 0),
 					0,
 				);
 				let foreignTaxPaid: number | null = foreignTaxPaidSum;

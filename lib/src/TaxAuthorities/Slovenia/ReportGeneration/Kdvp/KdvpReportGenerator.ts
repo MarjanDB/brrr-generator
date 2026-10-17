@@ -36,45 +36,47 @@ const GAIN_MAPPINGS: Record<string, EDavkiTradeReportGainType> = {
 };
 
 function convertStockBuy(
-	line: TradeEventStockAcquired,
+	trade: TradeEventStockAcquired,
+	quantity: number,
+	commission: number,
 ): EDavkiTradeReportSecurityLineGenericEventBought {
 	return new EDavkiTradeReportSecurityLineGenericEventBought({
-		boughtOn: line.date,
-		gainType: GAIN_MAPPINGS[line.acquiredReason] ?? EDavkiTradeReportGainType.OTHER,
-		quantity: line.exchangedMoney.underlyingQuantity,
-		pricePerUnit: line.exchangedMoney.underlyingTradePrice,
+		boughtOn: trade.date,
+		gainType: GAIN_MAPPINGS[trade.acquiredReason] ?? EDavkiTradeReportGainType.OTHER,
+		quantity: quantity,
+		pricePerUnit: trade.exchangedMoney.underlyingTradePrice,
 		pricePerUnitInOriginalCurrency:
-			line.exchangedMoney.underlyingTradePrice * (1 / line.exchangedMoney.fxRateToBase),
-		totalPrice: line.exchangedMoney.underlyingQuantity * line.exchangedMoney.underlyingTradePrice,
+			trade.exchangedMoney.underlyingTradePrice * (1 / trade.exchangedMoney.fxRateToBase),
+		totalPrice: quantity * trade.exchangedMoney.underlyingTradePrice,
 		totalPriceInOriginalCurrency:
-			line.exchangedMoney.underlyingQuantity *
-			line.exchangedMoney.underlyingTradePrice *
-			(1 / line.exchangedMoney.fxRateToBase),
-		commissions: line.exchangedMoney.comissionTotal,
-		commissionsInOriginalCurrency:
-			line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+			quantity *
+			trade.exchangedMoney.underlyingTradePrice *
+			(1 / trade.exchangedMoney.fxRateToBase),
+		commissions: commission,
+		commissionsInOriginalCurrency: commission * (1 / trade.exchangedMoney.fxRateToBase),
 		inheritanceAndGiftTaxPaid: null,
 		baseTaxReduction: null,
 	});
 }
 
 function convertStockSell(
-	line: TradeEventStockSold,
+	trade: TradeEventStockSold,
+	quantity: number,
+	commission: number,
 ): EDavkiTradeReportSecurityLineGenericEventSold {
 	return new EDavkiTradeReportSecurityLineGenericEventSold({
-		soldOn: line.date,
-		quantity: line.exchangedMoney.underlyingQuantity,
-		pricePerUnit: line.exchangedMoney.underlyingTradePrice,
+		soldOn: trade.date,
+		quantity: quantity,
+		pricePerUnit: trade.exchangedMoney.underlyingTradePrice,
 		pricePerUnitInOriginalCurrency:
-			line.exchangedMoney.underlyingTradePrice * (1 / line.exchangedMoney.fxRateToBase),
-		totalPrice: line.exchangedMoney.underlyingQuantity * line.exchangedMoney.underlyingTradePrice,
+			trade.exchangedMoney.underlyingTradePrice * (1 / trade.exchangedMoney.fxRateToBase),
+		totalPrice: quantity * trade.exchangedMoney.underlyingTradePrice,
 		totalPriceInOriginalCurrency:
-			line.exchangedMoney.underlyingQuantity *
-			line.exchangedMoney.underlyingTradePrice *
-			(1 / line.exchangedMoney.fxRateToBase),
-		commissions: line.exchangedMoney.comissionTotal,
-		commissionsInOriginalCurrency:
-			line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+			quantity *
+			trade.exchangedMoney.underlyingTradePrice *
+			(1 / trade.exchangedMoney.fxRateToBase),
+		commissions: commission,
+		commissionsInOriginalCurrency: commission * (1 / trade.exchangedMoney.fxRateToBase),
 		satisfiesTaxBasisReduction: false, // TODO: Wash sale handling
 	});
 }
@@ -112,16 +114,16 @@ export class KdvpReportGenerator {
 
 			const interestingGrouping = this.processor.process(isinGrouping, lotMatchingConfiguration);
 
-			const allLines = [...interestingGrouping.stockTrades];
-			allLines.sort((a, b) => a.date.toMillis() - b.date.toMillis());
+			const legs = interestingGrouping.stockLotLegs;
 
-			if (allLines.length === 0) {
+			if (legs.length === 0) {
 				continue;
 			}
 
-			const convertedLines = allLines.map((line) => {
-				if (line instanceof TradeEventStockAcquired) return convertStockBuy(line);
-				return convertStockSell(line);
+			const convertedLines = legs.map(({ trade, quantity, commission }) => {
+				if (trade instanceof TradeEventStockAcquired)
+					return convertStockBuy(trade, quantity, commission);
+				return convertStockSell(trade, quantity, commission);
 			});
 
 			const isTrustFund = isinGrouping.underlyingCategory === GenericCategory.TRUST_FUND;
@@ -136,8 +138,9 @@ export class KdvpReportGenerator {
 				events: convertedLines,
 			});
 
-			const foreignTaxPaidSum = allLines.reduce(
-				(sum, e) => sum + (e.exchangedMoney.taxTotal ?? 0),
+			// Counts a trade's whole tax once for every lot it falls into, like the lot clones did.
+			const foreignTaxPaidSum = legs.reduce(
+				(sum, leg) => sum + (leg.trade.exchangedMoney.taxTotal ?? 0),
 				0,
 			);
 			let foreignTaxPaid: number | null = foreignTaxPaidSum;

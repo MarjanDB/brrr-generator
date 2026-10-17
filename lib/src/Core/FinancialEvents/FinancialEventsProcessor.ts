@@ -1,11 +1,13 @@
 import type { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
 import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod";
+import type { LotLeg, MatchedLot } from "@brrr/Core/LotMatching/MatchedLot";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import {
 	UnderlyingDerivativeGrouping,
 	UnderlyingGroupingWithTradesOfInterest,
 } from "@brrr/Core/Schemas/Grouping";
 import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration";
+import type { ValidDateTime } from "@brrr/Utils/DateTime";
 
 export class FinancialEventsProcessor {
 	private lotMatcher: LotMatcher;
@@ -25,12 +27,8 @@ export class FinancialEventsProcessor {
 		const lotMatchingMethodInstance = lotMatchingConfiguration.forStocks(
 			input,
 		) as unknown as LotMatchingMethod;
-		const stockTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(
-			lotMatchingMethodInstance,
-			input.stockTrades,
-		);
-
-		const stockTradesOfInterestFiltered = stockTradesOfInterest.getTradesOfLotsClosedInPeriod(
+		const stockLotLegs = legsOfLotsClosedInPeriod(
+			lotMatcher.matchLots(lotMatchingMethodInstance, input.stockTrades),
 			lotMatchingConfiguration.fromDate,
 			lotMatchingConfiguration.toDate,
 		);
@@ -40,21 +38,14 @@ export class FinancialEventsProcessor {
 			const derivMethodInstance = lotMatchingConfiguration.forDerivatives(
 				input,
 			) as unknown as LotMatchingMethod;
-			const derivativeTradesOfInterest = lotMatcher.matchLotsWithGenericTradeEvents(
-				derivMethodInstance,
-				derivativeGrouping.derivativeTrades,
-			);
-
-			const derivativeTradesOfInterestFiltered =
-				derivativeTradesOfInterest.getTradesOfLotsClosedInPeriod(
-					lotMatchingConfiguration.fromDate,
-					lotMatchingConfiguration.toDate,
-				);
-
 			derivativeGroupingsOfInterest.push(
 				new UnderlyingDerivativeGrouping({
 					financialIdentifier: derivativeGrouping.financialIdentifier,
-					derivativeTrades: derivativeTradesOfInterestFiltered.trades as never,
+					derivativeLotLegs: legsOfLotsClosedInPeriod(
+						lotMatcher.matchLots(derivMethodInstance, derivativeGrouping.derivativeTrades),
+						lotMatchingConfiguration.fromDate,
+						lotMatchingConfiguration.toDate,
+					),
 				}),
 			);
 		}
@@ -63,7 +54,7 @@ export class FinancialEventsProcessor {
 			financialIdentifier: input.financialIdentifier,
 			countryOfOrigin: input.countryOfOrigin,
 			underlyingCategory: input.underlyingCategory,
-			stockTrades: stockTradesOfInterestFiltered.trades as never,
+			stockLotLegs,
 			derivativeGroupings: derivativeGroupingsOfInterest,
 			cashTransactions: input.cashTransactions,
 		});
@@ -75,4 +66,21 @@ export class FinancialEventsProcessor {
 	): UnderlyingGroupingWithTradesOfInterest[] {
 		return groupings.map((g) => this.process(g, lotMatchingMethod));
 	}
+}
+
+// The legs of the lots closed in the period, in date order: the trades a capital gains report
+// lists, each with the lot's share of it.
+function legsOfLotsClosedInPeriod<T extends { date: ValidDateTime }>(
+	lots: MatchedLot<T>[],
+	periodStart: ValidDateTime,
+	periodEnd: ValidDateTime,
+): LotLeg<T>[] {
+	const closedInPeriod = lots.filter(
+		(lot) => lot.sold.trade.date >= periodStart && lot.sold.trade.date <= periodEnd,
+	);
+	const legs = [
+		...closedInPeriod.map((lot) => lot.acquired),
+		...closedInPeriod.map((lot) => lot.sold),
+	];
+	return legs.sort((a, b) => a.trade.date.toMillis() - b.trade.date.toMillis());
 }
