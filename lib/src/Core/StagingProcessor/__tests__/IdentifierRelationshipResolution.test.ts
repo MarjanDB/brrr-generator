@@ -4,7 +4,7 @@ import {
 	StagingIdentifierRelationship,
 	StagingIdentifierRelationshipPartial,
 	StagingIdentifierRelationshipPartialWithQuantity,
-	type StagingIdentifierRelationshipSplit,
+	StagingIdentifierRelationshipSplit,
 	StagingIdentifierRelationships,
 } from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
@@ -73,10 +73,12 @@ test("partials with quantity produce full with quantityBefore/quantityAfter", ()
 		partials,
 	);
 	expect(result.length).toEqual(1);
-	const r = result[0] as StagingIdentifierRelationshipSplit;
-	expect(r.quantityBefore).toEqual(4.0);
-	expect(r.quantityAfter).toEqual(40.0);
-	expect(r.changeType).toEqual(StagingIdentifierChangeType.SPLIT);
+	expect(result[0]).toBeInstanceOf(StagingIdentifierRelationshipSplit);
+	expect(result[0]).toMatchObject({
+		quantityBefore: 4.0,
+		quantityAfter: 40.0,
+		changeType: StagingIdentifierChangeType.SPLIT,
+	});
 });
 
 test("reverse split inferred when quantity after less than before", () => {
@@ -104,10 +106,12 @@ test("reverse split inferred when quantity after less than before", () => {
 		partials,
 	);
 	expect(result.length).toEqual(1);
-	const r = result[0] as StagingIdentifierRelationshipSplit;
-	expect(r.changeType).toEqual(StagingIdentifierChangeType.REVERSE_SPLIT);
-	expect(r.quantityBefore).toEqual(10.0);
-	expect(r.quantityAfter).toEqual(1.0);
+	expect(result[0]).toBeInstanceOf(StagingIdentifierRelationshipSplit);
+	expect(result[0]).toMatchObject({
+		changeType: StagingIdentifierChangeType.REVERSE_SPLIT,
+		quantityBefore: 10.0,
+		quantityAfter: 1.0,
+	});
 });
 
 test("only from partial produces no full relationship", () => {

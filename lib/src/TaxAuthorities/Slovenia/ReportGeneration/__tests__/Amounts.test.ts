@@ -27,9 +27,13 @@ function tradeWithTax(taxTotal: number): TradeEventStockSold {
 	});
 }
 
-test("round rounds half away like Math.round on the scaled value", () => {
-	expect(round(2.675, 2)).toEqual(Math.round(2.675 * 100) / 100);
-	expect(round(1.234565, 5)).toEqual(Math.round(1.234565 * 100000) / 100000);
+test("round applies Math.round to the scaled value, so halves go up", () => {
+	expect(round(2.5, 0)).toEqual(3);
+	expect(round(-2.5, 0)).toEqual(-2);
+	expect(round(1.25, 1)).toEqual(1.3);
+	expect(round(2.675, 2)).toEqual(2.68);
+	// 1.234565 * 100000 lands just below the half in binary, so it rounds down.
+	expect(round(1.234565, 5)).toEqual(1.23456);
 });
 
 test("toOriginalCurrency divides by the rate to base", () => {

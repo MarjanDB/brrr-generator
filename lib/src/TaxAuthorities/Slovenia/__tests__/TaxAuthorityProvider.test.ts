@@ -37,15 +37,18 @@ import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGenerat
 import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider";
 
-function makeProvider(
-	_taxPayerInfo: TaxPayerInfo,
-	_config: TaxAuthorityConfiguration,
-): SlovenianTaxAuthorityProvider {
+function makeProvider({
+	apply = new ApplyIdentifierRelationshipsService(),
+	info = new PredefinedInfoProvider(),
+}: {
+	apply?: ApplyIdentifierRelationshipsService;
+	info?: PredefinedInfoProvider;
+} = {}): SlovenianTaxAuthorityProvider {
 	const processor = new FinancialEventsProcessor(new LotMatcher());
 	return new SlovenianTaxAuthorityProvider(
-		new ApplyIdentifierRelationshipsService(),
+		apply,
 		new KdvpReportGenerator(processor),
-		new DivReportGenerator(new PredefinedInfoProvider()),
+		new DivReportGenerator(info),
 		new IfiReportGenerator(processor),
 	);
 }
@@ -174,7 +177,7 @@ const testData = new FinancialEvents({
 	identifierRelationships: [],
 });
 
-test("testKdvpSimpleCsv - 2 rows with correct quantities", () => {
+test("KDVP lines: the buy and the sale with their quantities", () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -191,14 +194,14 @@ test("testKdvpSimpleCsv - 2 rows with correct quantities", () => {
 	expect(events[1].quantity).toEqual(-1);
 });
 
-test("testKdvpSimpleXml - 1 purchase and 1 sale in XML", async () => {
+test("KDVP XML: 1 purchase and 1 sale", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const provider = makeProvider(simpleTaxPayer, config);
+	const provider = makeProvider();
 	const { xml } = await provider.generate(SlovenianTaxAuthorityReportTypes.DOH_KDVP, {
 		taxPayerInfo: simpleTaxPayer,
 		reportConfig: config,
@@ -212,7 +215,7 @@ test("testKdvpSimpleXml - 1 purchase and 1 sale in XML", async () => {
 	expect(saleCount).toEqual(1);
 });
 
-test("testIfiSimpleCsv - 2 rows with correct quantities", () => {
+test("IFI lines: the buy and the sale with their quantities", () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -229,14 +232,14 @@ test("testIfiSimpleCsv - 2 rows with correct quantities", () => {
 	expect(rows[1].quantity).toEqual(-1);
 });
 
-test("testIfiSimpleXml - 1 purchase and 1 sale in XML", async () => {
+test("IFI XML: 1 purchase and 1 sale", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const provider = makeProvider(simpleTaxPayer, config);
+	const provider = makeProvider();
 	const { xml } = await provider.generate(SlovenianTaxAuthorityReportTypes.D_IFI, {
 		taxPayerInfo: simpleTaxPayer,
 		reportConfig: config,
@@ -250,7 +253,7 @@ test("testIfiSimpleXml - 1 purchase and 1 sale in XML", async () => {
 	expect(saleCount).toEqual(1);
 });
 
-test("testDivSimpleCsv - 1 row with correct amounts", async () => {
+test("DIV lines: the dividend with its withholding tax", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
@@ -267,14 +270,14 @@ test("testDivSimpleCsv - 1 row with correct amounts", async () => {
 	expect(rows[0].foreignTaxPaidInOriginalCurrency).toEqual(10.0);
 });
 
-test("testDivSimpleXml - 1 dividend line in XML", async () => {
+test("DIV XML: 1 dividend", async () => {
 	const config: TaxAuthorityConfiguration = {
 		fromDate: makeDate("2023-01-01"),
 		toDate: makeDate("2024-01-01"),
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
 	};
 
-	const provider = makeProvider(simpleTaxPayer, config);
+	const provider = makeProvider();
 	const { xml } = await provider.generate(SlovenianTaxAuthorityReportTypes.DOH_DIV, {
 		taxPayerInfo: simpleTaxPayer,
 		reportConfig: config,
@@ -285,81 +288,16 @@ test("testDivSimpleXml - 1 dividend line in XML", async () => {
 	expect(dividendCount).toEqual(1);
 });
 
-test("testGenerateReportDataKdvpReturnsTypedList - report has items with events", async () => {
-	const config: TaxAuthorityConfiguration = {
-		fromDate: makeDate("2023-01-01"),
-		toDate: makeDate("2024-01-01"),
-		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
-	};
-
-	const reportData = new KdvpReportGenerator(
-		new FinancialEventsProcessor(new LotMatcher()),
-	).convert(config, testData.groupings);
-
-	expect(Array.isArray(reportData)).toEqual(true);
-	expect(reportData.length >= 1).toEqual(true);
-	expect(reportData[0].items !== null).toEqual(true);
-	expect(reportData[0].items[0].events.length).toEqual(2);
-});
-
-test("testGenerateReportDataDivReturnsTypedSequence - 1 dividend with correct amounts", async () => {
-	const config: TaxAuthorityConfiguration = {
-		fromDate: makeDate("2023-01-01"),
-		toDate: makeDate("2024-01-01"),
-		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
-	};
-
-	const reportData = await new DivReportGenerator(new PredefinedInfoProvider()).convert(
-		config,
-		testData.groupings,
-	);
-
-	expect(Array.isArray(reportData)).toEqual(true);
-	expect(reportData.length).toEqual(1);
-	expect(reportData[0].dividendAmount).toEqual(10.0);
-	expect(reportData[0].foreignTaxPaid).toEqual(5.0);
-});
-
-test("testGenerateReportDataIfiReturnsTypedList - report has items", async () => {
-	const config: TaxAuthorityConfiguration = {
-		fromDate: makeDate("2023-01-01"),
-		toDate: makeDate("2024-01-01"),
-		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
-	};
-
-	const reportData = new IfiReportGenerator(new FinancialEventsProcessor(new LotMatcher())).convert(
-		config,
-		testData.groupings,
-	);
-
-	expect(Array.isArray(reportData)).toEqual(true);
-	expect(reportData.length >= 1).toEqual(true);
-	expect(reportData[0].items.length).toEqual(2);
-});
-
 const reportConfig2023: TaxAuthorityConfiguration = {
 	fromDate: makeDate("2023-01-01"),
 	toDate: makeDate("2024-01-01"),
 	lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 };
 
-function makeProviderWith(
-	apply: ApplyIdentifierRelationshipsService,
-	info: PredefinedInfoProvider,
-): SlovenianTaxAuthorityProvider {
-	const processor = new FinancialEventsProcessor(new LotMatcher());
-	return new SlovenianTaxAuthorityProvider(
-		apply,
-		new KdvpReportGenerator(processor),
-		new DivReportGenerator(info),
-		new IfiReportGenerator(processor),
-	);
-}
-
 test("generate applies identifier relationships once", async () => {
 	const apply = new ApplyIdentifierRelationshipsService();
 	const applySpy = vi.spyOn(apply, "apply");
-	const provider = makeProviderWith(apply, new PredefinedInfoProvider());
+	const provider = makeProvider({ apply });
 
 	await provider.generate(SlovenianTaxAuthorityReportTypes.DOH_KDVP, {
 		taxPayerInfo: simpleTaxPayer,
@@ -373,7 +311,7 @@ test("generate applies identifier relationships once", async () => {
 test("DIV looks each company up once", async () => {
 	const info = new PredefinedInfoProvider();
 	const lookupSpy = vi.spyOn(info, "getCompanyInfo");
-	const provider = makeProviderWith(new ApplyIdentifierRelationshipsService(), info);
+	const provider = makeProvider({ info });
 
 	await provider.generate(SlovenianTaxAuthorityReportTypes.DOH_DIV, {
 		taxPayerInfo: simpleTaxPayer,
@@ -385,10 +323,7 @@ test("DIV looks each company up once", async () => {
 });
 
 test("unknown report type id is rejected", async () => {
-	const provider = makeProviderWith(
-		new ApplyIdentifierRelationshipsService(),
-		new PredefinedInfoProvider(),
-	);
+	const provider = makeProvider();
 
 	await expect(
 		provider.generateExports("nope", {

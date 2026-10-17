@@ -16,6 +16,7 @@ import {
 	IdentifierRelationshipSplit,
 } from "@brrr/Core/Schemas/IdentifierRelationship";
 import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
+import { SplitProvenanceStep } from "@brrr/Core/Schemas/Provenance";
 
 function makeMonetary(qty: number, price = 10.0) {
 	return makeMoney({
@@ -296,16 +297,13 @@ test("apply split scales trades before effective date and merges into to", () =>
 	expect(trade.exchangedMoney.underlyingQuantity).toEqual(40.0);
 	expect(trade.exchangedMoney.underlyingTradePrice).toEqual(1.0);
 	expect(trade.provenance.length).toEqual(1);
-	const step = trade.provenance[0] as {
-		quantityBefore: number;
-		quantityAfter: number;
-		beforeQuantity: number;
-		beforeTradePrice: number;
-	};
-	expect(step.quantityBefore).toEqual(4.0);
-	expect(step.quantityAfter).toEqual(40.0);
-	expect(step.beforeQuantity).toEqual(4.0);
-	expect(step.beforeTradePrice).toEqual(10.0);
+	expect(trade.provenance[0]).toBeInstanceOf(SplitProvenanceStep);
+	expect(trade.provenance[0]).toMatchObject({
+		quantityBefore: 4.0,
+		quantityAfter: 40.0,
+		beforeQuantity: 4.0,
+		beforeTradePrice: 10.0,
+	});
 });
 
 test("apply split builds new trades and leaves the originals untouched", () => {
@@ -431,8 +429,8 @@ test("apply split scales lots before effective date", () => {
 	const scaledLot = result.groupings[0].stockTaxLots[0];
 	expect(scaledLot.quantity).toEqual(20.0);
 	expect(scaledLot.provenance.length).toEqual(1);
-	const step = scaledLot.provenance[0] as { beforeQuantity: number };
-	expect(step.beforeQuantity).toEqual(2.0);
+	expect(scaledLot.provenance[0]).toBeInstanceOf(SplitProvenanceStep);
+	expect(scaledLot.provenance[0]).toMatchObject({ beforeQuantity: 2.0 });
 });
 
 test("apply reverse split scales by ratio", () => {

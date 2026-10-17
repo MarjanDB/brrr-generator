@@ -9,6 +9,7 @@ import {
 	type TaxPayerInfo,
 	TaxPayerType,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
 import { zDateTimeFromISOString } from "@brrr/Utils/DateTime";
 import { DateTime, Settings, type Zone } from "luxon";
@@ -16,18 +17,11 @@ import { DateTime, Settings, type Zone } from "luxon";
 // Golden outputs for every report. These pin the generated XML and CSV byte for byte, so
 // refactors can prove they change nothing. Never regenerate them to make a refactor pass.
 
-// The registry takes report type IDs as strings; this enum pins the three it knows.
-enum ReportTypeId {
-	KDVP = "kdvp",
-	DIV = "div",
-	IFI = "ifi",
-}
-
 type GoldenCase = {
 	name: string;
 	files: string[]; // paths from lib/src, read with readFixture
 	year: number;
-	reportTypeId: ReportTypeId;
+	reportTypeId: SlovenianReportTypeId;
 	lotMatchingMethod: TaxAuthorityLotMatchingMethod;
 };
 
@@ -49,46 +43,46 @@ const CASES: GoldenCase[] = [
 		name: "kdvp-2022-fifo",
 		files: [`${IBKR}SimpleStockTrade.xml`],
 		year: 2022,
-		reportTypeId: ReportTypeId.KDVP,
+		reportTypeId: SlovenianReportTypeId.KDVP,
 		lotMatchingMethod: FIFO,
 	},
 	{
 		name: "kdvp-2022-provided",
 		files: [`${IBKR}SimpleStockTrade.xml`],
 		year: 2022,
-		reportTypeId: ReportTypeId.KDVP,
+		reportTypeId: SlovenianReportTypeId.KDVP,
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.PROVIDED,
 	},
 	{
 		name: "kdvp-2024-fifo",
 		files: [`${SLOVENIA}DuplicatingTrades.xml`],
 		year: 2024,
-		reportTypeId: ReportTypeId.KDVP,
+		reportTypeId: SlovenianReportTypeId.KDVP,
 		lotMatchingMethod: FIFO,
 	},
 	{
 		name: "ifi-2023-fifo",
 		files: [`${IBKR}SimpleOptionTrade.xml`],
 		year: 2023,
-		reportTypeId: ReportTypeId.IFI,
+		reportTypeId: SlovenianReportTypeId.IFI,
 		lotMatchingMethod: FIFO,
 	},
 	{
 		name: "div-2022",
 		files: [`${IBKR}SimpleCashTransactionOfDividends.xml`],
 		year: 2022,
-		reportTypeId: ReportTypeId.DIV,
+		reportTypeId: SlovenianReportTypeId.DIV,
 		lotMatchingMethod: FIFO,
 	},
 	{
 		name: "div-2024",
 		files: [`${IBKR}SimpleCashTransactionOfPaymentInLieuOfDividends.xml`],
 		year: 2024,
-		reportTypeId: ReportTypeId.DIV,
+		reportTypeId: SlovenianReportTypeId.DIV,
 		lotMatchingMethod: FIFO,
 	},
 	// All fixtures together: merging, corporate actions, several groupings.
-	...Object.values(ReportTypeId).flatMap((reportTypeId) =>
+	...Object.values(SlovenianReportTypeId).flatMap((reportTypeId) =>
 		[2022, 2023, 2024].map((year) => ({
 			name: `all-${reportTypeId}-${year}`,
 			files: ALL,
