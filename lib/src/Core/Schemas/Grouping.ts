@@ -1,10 +1,7 @@
-import type { LotLeg } from "@brrr/Core/LotMatching/MatchedLot";
 import type { GenericCategory } from "@brrr/Core/Schemas/CommonFormats";
 import type {
-	TradeEventDerivative,
 	TradeEventDerivativeAcquired,
 	TradeEventDerivativeSold,
-	TradeEventStock,
 	TradeEventStockAcquired,
 	TradeEventStockSold,
 	TransactionCash,
@@ -64,43 +61,5 @@ export class FinancialGrouping {
 		this.derivativeGroupings = args.derivativeGroupings;
 		this.cashTransactions = args.cashTransactions;
 		this.provenance = args.provenance;
-	}
-}
-
-export class UnderlyingDerivativeGrouping {
-	public readonly financialIdentifier: FinancialIdentifier;
-	public readonly derivativeLotLegs: LotLeg<TradeEventDerivative>[];
-
-	constructor(args: {
-		financialIdentifier: FinancialIdentifier;
-		derivativeLotLegs: LotLeg<TradeEventDerivative>[];
-	}) {
-		this.financialIdentifier = args.financialIdentifier;
-		this.derivativeLotLegs = args.derivativeLotLegs;
-	}
-}
-
-export class UnderlyingGroupingWithTradesOfInterest {
-	public readonly financialIdentifier: FinancialIdentifier;
-	public readonly countryOfOrigin: string | null;
-	public readonly underlyingCategory: GenericCategory;
-	public readonly stockLotLegs: LotLeg<TradeEventStock>[];
-	public readonly derivativeGroupings: UnderlyingDerivativeGrouping[];
-	public readonly cashTransactions: TransactionCash[];
-
-	constructor(args: {
-		financialIdentifier: FinancialIdentifier;
-		countryOfOrigin: string | null;
-		underlyingCategory: GenericCategory;
-		stockLotLegs: LotLeg<TradeEventStock>[];
-		derivativeGroupings: UnderlyingDerivativeGrouping[];
-		cashTransactions: TransactionCash[];
-	}) {
-		this.financialIdentifier = args.financialIdentifier;
-		this.countryOfOrigin = args.countryOfOrigin;
-		this.underlyingCategory = args.underlyingCategory;
-		this.stockLotLegs = args.stockLotLegs;
-		this.derivativeGroupings = args.derivativeGroupings;
-		this.cashTransactions = args.cashTransactions;
 	}
 }

@@ -1,15 +1,12 @@
 import type { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
-import { FifoLotMatchingMethod } from "@brrr/Core/LotMatching/FifoLotMatchingMethod";
-import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod";
 import { GenericCategory, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats";
 import { TradeEventStockAcquired, type TradeEventStockSold } from "@brrr/Core/Schemas/Events";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration";
 import type {
 	TaxAuthorityConfiguration,
 	TaxPayerInfo,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
-import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import { createLotMatchingMethod } from "@brrr/TaxAuthorities/LotMatchingMethodFactory";
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/CsvDohKdvp";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/XmlDohKdvp";
 import type { EDavkiDocumentWorkflowType } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
@@ -95,26 +92,12 @@ export class KdvpReportGenerator {
 		for (const isinGrouping of groupings) {
 			const isin = isinGrouping.financialIdentifier.isin; // TODO: Security line has 3 possible identifiers, not just isin
 
-			const lotMatchingConfiguration: LotMatchingConfiguration = {
-				fromDate: periodStart,
-				toDate: periodEnd,
-				forStocks: (_grouping) => {
-					if (config.lotMatchingMethod === TaxAuthorityLotMatchingMethod.PROVIDED) {
-						return new ProvidedLotMatchingMethod(isinGrouping.stockTaxLots);
-					}
-					return new FifoLotMatchingMethod();
-				},
-				forDerivatives: (_grouping) => {
-					if (config.lotMatchingMethod === TaxAuthorityLotMatchingMethod.PROVIDED) {
-						return new ProvidedLotMatchingMethod([]);
-					}
-					return new FifoLotMatchingMethod();
-				},
-			};
-
-			const interestingGrouping = this.processor.process(isinGrouping, lotMatchingConfiguration);
-
-			const legs = interestingGrouping.stockLotLegs;
+			const legs = this.processor.stockLotLegsClosedInPeriod(
+				isinGrouping,
+				createLotMatchingMethod(config.lotMatchingMethod, isinGrouping.stockTaxLots),
+				periodStart,
+				periodEnd,
+			);
 
 			if (legs.length === 0) {
 				continue;

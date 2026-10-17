@@ -14,7 +14,7 @@ export function loadCoreModule(container: Container): void {
 	container
 		.bind(FinancialEventsProcessor)
 		.toResolvedValue(
-			(lotMatcher: LotMatcher) => new FinancialEventsProcessor(null, lotMatcher),
+			(lotMatcher: LotMatcher) => new FinancialEventsProcessor(lotMatcher),
 			[LotMatcher],
 		)
 		.inSingletonScope();

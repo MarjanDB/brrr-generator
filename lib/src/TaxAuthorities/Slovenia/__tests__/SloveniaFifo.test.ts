@@ -42,7 +42,7 @@ function makeProvider(
 	_taxPayerInfo: TaxPayerInfo,
 	_config: TaxAuthorityConfiguration,
 ): SlovenianTaxAuthorityProvider {
-	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	const processor = new FinancialEventsProcessor(new LotMatcher());
 	return new SlovenianTaxAuthorityProvider(
 		new ApplyIdentifierRelationshipsService(),
 		new KdvpReportGenerator(processor),
@@ -175,7 +175,7 @@ test("SloveniaFifo - testKdvpSimpleCsv - 2 rows with correct quantities", () => 
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	const processor = new FinancialEventsProcessor(new LotMatcher());
 	const generator = new KdvpReportGenerator(processor);
 	const items = generator.convert(config, testData.groupings);
 	const events = items.flatMap((item) => item.items.flatMap((line) => line.events));
@@ -212,7 +212,7 @@ test("SloveniaFifo - testIfiSimpleCsv - 2 rows with correct quantities", () => {
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	const processor = new FinancialEventsProcessor(new LotMatcher());
 	const generator = new IfiReportGenerator(processor);
 	const items = generator.convert(config, testData.groupings);
 	const rows = items.flatMap((item) => item.items);

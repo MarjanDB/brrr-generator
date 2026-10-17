@@ -11,7 +11,6 @@ import {
 import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration";
 import { TaxLot } from "@brrr/Core/Schemas/Lots";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import { DateTime } from "luxon";
@@ -74,50 +73,42 @@ const grouping = new FinancialGrouping({
 	provenance: [],
 });
 
-function matchingMethodFactory(g: FinancialGrouping) {
-	return new ProvidedLotMatchingMethod(g.stockTaxLots) as unknown as ReturnType<
-		LotMatchingConfiguration["forStocks"]
-	>;
-}
-
 test("single stock lot matching", () => {
-	const processor = new FinancialEventsProcessor(null, new LotMatcher());
-	const config: LotMatchingConfiguration = {
-		fromDate: makeDate("2023-01-01"),
-		toDate: makeDate("2023-01-02"),
-		forStocks: matchingMethodFactory,
-		forDerivatives: matchingMethodFactory,
-	};
-	const interesting = processor.generateInterestingUnderlyingGroupings([grouping], config);
-	expect(interesting.length).toEqual(1);
-	expect(interesting[0].stockLotLegs.length).toEqual(2);
-	expect(interesting[0].derivativeGroupings.length).toEqual(0);
+	const processor = new FinancialEventsProcessor(new LotMatcher());
+
+	const legs = processor.stockLotLegsClosedInPeriod(
+		grouping,
+		new ProvidedLotMatchingMethod(grouping.stockTaxLots),
+		makeDate("2023-01-01"),
+		makeDate("2023-01-02"),
+	);
+
+	expect(legs.length).toEqual(2);
 });
 
 test("simple filtering trades of lots closed in period", () => {
-	const processor = new FinancialEventsProcessor(null, new LotMatcher());
-	const config: LotMatchingConfiguration = {
-		fromDate: makeDate("2022-01-01"),
-		toDate: makeDate("2022-01-02"),
-		forStocks: matchingMethodFactory,
-		forDerivatives: matchingMethodFactory,
-	};
-	const interesting = processor.generateInterestingUnderlyingGroupings([grouping], config);
-	expect(interesting.length).toEqual(1);
-	expect(interesting[0].stockLotLegs.length).toEqual(0);
+	const processor = new FinancialEventsProcessor(new LotMatcher());
+
+	const legs = processor.stockLotLegsClosedInPeriod(
+		grouping,
+		new ProvidedLotMatchingMethod(grouping.stockTaxLots),
+		makeDate("2022-01-01"),
+		makeDate("2022-01-02"),
+	);
+
+	expect(legs.length).toEqual(0);
 });
 
 test("no stock trades matching when no lots", () => {
 	const groupingNoLots = new FinancialGrouping({ ...grouping, stockTaxLots: [] });
-	const processor = new FinancialEventsProcessor(null, new LotMatcher());
-	const config: LotMatchingConfiguration = {
-		fromDate: makeDate("2023-01-01"),
-		toDate: makeDate("2023-01-02"),
-		forStocks: matchingMethodFactory,
-		forDerivatives: matchingMethodFactory,
-	};
-	const interesting = processor.generateInterestingUnderlyingGroupings([groupingNoLots], config);
-	expect(interesting.length).toEqual(1);
-	expect(interesting[0].stockLotLegs.length).toEqual(0);
-	expect(interesting[0].derivativeGroupings.length).toEqual(0);
+	const processor = new FinancialEventsProcessor(new LotMatcher());
+
+	const legs = processor.stockLotLegsClosedInPeriod(
+		groupingNoLots,
+		new ProvidedLotMatchingMethod(groupingNoLots.stockTaxLots),
+		makeDate("2023-01-01"),
+		makeDate("2023-01-02"),
+	);
+
+	expect(legs.length).toEqual(0);
 });
