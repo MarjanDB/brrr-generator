@@ -7,6 +7,7 @@ import {
 	type IdentifierRelationshipAny,
 	IdentifierRelationshipSplit,
 } from "@brrr/Core/Schemas/IdentifierRelationship";
+import type { FinancialIdentifierKey } from "@brrr/Core/Schemas/Identifiers";
 import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping";
 import {
 	StagingIdentifierChangeType,
@@ -40,7 +41,7 @@ export class StagingFinancialGroupingProcessor {
 	constructor(private readonly relationshipResolution: IdentifierRelationshipResolution) {}
 
 	private processAndGroupDerivativeTrades(input: StagingFinancialGrouping): DerivativeGrouping[] {
-		const tradesByIdKey = new Map<string, typeof input.derivativeTrades>();
+		const tradesByIdKey = new Map<FinancialIdentifierKey, typeof input.derivativeTrades>();
 		for (const trade of input.derivativeTrades) {
 			const key = trade.financialIdentifier.toKey();
 			const arr = tradesByIdKey.get(key) ?? [];
@@ -48,7 +49,7 @@ export class StagingFinancialGroupingProcessor {
 			tradesByIdKey.set(key, arr);
 		}
 
-		const lotsByIdKey = new Map<string, typeof input.derivativeTaxLots>();
+		const lotsByIdKey = new Map<FinancialIdentifierKey, typeof input.derivativeTaxLots>();
 		for (const lot of input.derivativeTaxLots) {
 			const key = lot.financialIdentifier.toKey();
 			const arr = lotsByIdKey.get(key) ?? [];

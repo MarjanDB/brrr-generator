@@ -1,46 +1,47 @@
+import type { CountryName, Isin } from "@brrr/Core/Schemas/Identifiers";
 import type { CompanyInfo, Country, InfoProvider } from "@brrr/InfoProviders/InfoProvider";
 
 export class PredefinedInfoProvider implements InfoProvider {
-	private readonly companies = new Map<string, CompanyInfo>();
-	private readonly countries = new Map<string, Country>();
+	private readonly companies = new Map<Isin, CompanyInfo>();
+	private readonly countries = new Map<CountryName, Country>();
 
-	getCompanyInfo(isin: string): Promise<CompanyInfo | null> {
+	getCompanyInfo(isin: Isin): Promise<CompanyInfo | null> {
 		return Promise.resolve(this.companies.get(isin) ?? null);
 	}
 
-	getCountry(name: string): Promise<Country | null> {
+	getCountry(name: CountryName): Promise<Country | null> {
 		return Promise.resolve(this.countries.get(name) ?? null);
 	}
 
-	addCompany(isin: string, info: CompanyInfo): void {
+	addCompany(isin: Isin, info: CompanyInfo): void {
 		this.companies.set(isin, info);
 	}
 
-	updateCompany(isin: string, info: CompanyInfo): void {
+	updateCompany(isin: Isin, info: CompanyInfo): void {
 		this.companies.set(isin, info);
 	}
 
-	removeCompany(isin: string): void {
+	removeCompany(isin: Isin): void {
 		this.companies.delete(isin);
 	}
 
-	listCompanies(): Map<string, CompanyInfo> {
+	listCompanies(): Map<Isin, CompanyInfo> {
 		return this.companies;
 	}
 
-	addCountry(name: string, country: Country): void {
+	addCountry(name: CountryName, country: Country): void {
 		this.countries.set(name, country);
 	}
 
-	updateCountry(name: string, country: Country): void {
+	updateCountry(name: CountryName, country: Country): void {
 		this.countries.set(name, country);
 	}
 
-	removeCountry(name: string): void {
+	removeCountry(name: CountryName): void {
 		this.countries.delete(name);
 	}
 
-	listCountries(): Map<string, Country> {
+	listCountries(): Map<CountryName, Country> {
 		return this.countries;
 	}
 }

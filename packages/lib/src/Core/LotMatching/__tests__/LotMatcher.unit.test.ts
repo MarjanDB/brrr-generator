@@ -4,6 +4,7 @@ import type { Lot } from "@brrr/Core/LotMatching/Lot";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
 import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
+import { CurrencyCode, TradeEventId } from "@brrr/Core/Schemas/Identifiers";
 
 const { build } = Scenario;
 
@@ -19,11 +20,11 @@ class FakeLotMatchingMethod implements LotMatchingMethod {
 test("provided method is called with the converted trades", () => {
 	const fakeMethod = new FakeLotMatchingMethod();
 	const event = build.stockBought({
-		id: "ID",
+		id: TradeEventId.Schema.parse("ID"),
 		date: "2023-01-01",
 		quantity: 1,
 		price: 1,
-		currency: "EUR",
+		currency: CurrencyCode.Schema.parse("EUR"),
 		commission: 0,
 		tax: 0,
 		fxRateToBase: 1,
@@ -37,21 +38,21 @@ test("provided method is called with the converted trades", () => {
 
 test("a matched lot's legs point at the original trades and cover the lot's quantity", () => {
 	const bought = build.stockBought({
-		id: "BUY",
+		id: TradeEventId.Schema.parse("BUY"),
 		date: "2023-01-01",
 		quantity: 10,
 		price: 1,
-		currency: "EUR",
+		currency: CurrencyCode.Schema.parse("EUR"),
 		commission: -2,
 		tax: 0,
 		fxRateToBase: 1,
 	});
 	const sold = build.stockSold({
-		id: "SELL",
+		id: TradeEventId.Schema.parse("SELL"),
 		date: "2023-02-01",
 		quantity: -4,
 		price: 1,
-		currency: "EUR",
+		currency: CurrencyCode.Schema.parse("EUR"),
 		commission: -1,
 		tax: 0,
 		fxRateToBase: 1,

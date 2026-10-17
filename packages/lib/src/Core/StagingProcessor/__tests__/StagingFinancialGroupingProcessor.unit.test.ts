@@ -6,6 +6,16 @@ import {
 } from "@brrr/Core/Schemas/CommonFormats";
 import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship";
 import {
+	CashActionId,
+	CashTransactionId,
+	CurrencyCode,
+	Isin,
+	ListingExchange,
+	TaxLotId,
+	Ticker,
+	TradeEventId,
+} from "@brrr/Core/Schemas/Identifiers";
+import {
 	StagingIdentifierChangeType,
 	StagingIdentifierRelationship,
 	StagingIdentifierRelationships,
@@ -18,131 +28,135 @@ import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/S
 const { build } = Scenario;
 const { staging } = build;
 
-const ident = new StagingFinancialIdentifier({ isin: "US123", ticker: "AAPL", name: "AAPL" });
+const ident = new StagingFinancialIdentifier({
+	isin: Isin.Schema.parse("US123"),
+	ticker: Ticker.Schema.parse("AAPL"),
+	name: "AAPL",
+});
 
 const simpleStagingStockBuy = staging.stockBought({
-	id: "StockBought",
+	id: TradeEventId.Schema.parse("StockBought"),
 	identifier: ident,
 	date: "2023-01-01",
 	quantity: 1,
 	price: 10,
-	currency: "EUR",
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const simpleStagingStockSold = staging.stockSold({
-	id: "StockSold",
+	id: TradeEventId.Schema.parse("StockSold"),
 	identifier: ident,
 	date: "2023-01-02",
 	quantity: -1,
 	price: 15,
-	currency: "EUR",
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const simpleStagingDividend = staging.dividend({
-	id: "Dividend",
+	id: TradeEventId.Schema.parse("Dividend"),
 	identifier: ident,
 	date: "2023-01-01",
 	amount: 10,
-	actionId: "ActionID",
-	transactionId: "TransactionID",
-	listingExchange: "ListingExchange",
+	actionId: CashActionId.Schema.parse("ActionID"),
+	transactionId: CashTransactionId.Schema.parse("TransactionID"),
+	listingExchange: ListingExchange.Schema.parse("ListingExchange"),
 	dividendType: GenericDividendType.ORDINARY,
-	currency: "EUR",
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const simpleStagingDividendWithholdingTax = staging.withholdingTax({
-	id: "DividendWithholdingTax",
+	id: TradeEventId.Schema.parse("DividendWithholdingTax"),
 	identifier: ident,
 	date: "2023-01-01",
 	amount: -5,
-	actionId: "ActionID",
-	transactionId: "TransactionID",
-	listingExchange: "ListingExchange",
-	currency: "EUR",
+	actionId: CashActionId.Schema.parse("ActionID"),
+	transactionId: CashTransactionId.Schema.parse("TransactionID"),
+	listingExchange: ListingExchange.Schema.parse("ListingExchange"),
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const simpleStagingPaymentInLieuOfDividend = staging.paymentInLieu({
-	id: "PaymentInLieuOfDividend",
+	id: TradeEventId.Schema.parse("PaymentInLieuOfDividend"),
 	identifier: ident,
 	date: "2023-01-01",
 	amount: 5,
-	actionId: "ActionID",
-	transactionId: "TransactionID",
-	listingExchange: "ListingExchange",
+	actionId: CashActionId.Schema.parse("ActionID"),
+	transactionId: CashTransactionId.Schema.parse("TransactionID"),
+	listingExchange: ListingExchange.Schema.parse("ListingExchange"),
 	dividendType: GenericDividendType.ORDINARY,
-	currency: "EUR",
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const simpleStagingPaymentInLieuOfDividendWithholdingTax = staging.paymentInLieuWithholdingTax({
-	id: "PaymentInLieuOfDividendWithholdingTax",
+	id: TradeEventId.Schema.parse("PaymentInLieuOfDividendWithholdingTax"),
 	identifier: ident,
 	date: "2023-01-01",
 	amount: -2.5,
-	actionId: "ActionID",
-	transactionId: "TransactionID",
-	listingExchange: "ListingExchange",
-	currency: "EUR",
+	actionId: CashActionId.Schema.parse("ActionID"),
+	transactionId: CashTransactionId.Schema.parse("TransactionID"),
+	listingExchange: ListingExchange.Schema.parse("ListingExchange"),
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const simpleStagingStockLot = staging.taxLot({
-	id: "Lot",
+	id: TaxLotId.Schema.parse("Lot"),
 	identifier: ident,
 	quantity: 1,
 	shortLongType: GenericShortLong.LONG,
-	acquired: { id: "StockBought", date: null },
+	acquired: { id: TradeEventId.Schema.parse("StockBought"), date: null },
 	sold: { id: null, date: "2023-01-02" },
 });
 
 const simpleStagingDerivativeBuy = staging.optionBought({
-	id: "DerivativeBought",
+	id: TradeEventId.Schema.parse("DerivativeBought"),
 	identifier: ident,
 	date: "2023-01-01",
 	multiplier: 100,
 	quantity: 1,
 	price: 10,
-	currency: "EUR",
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const simpleStagingDerivativeSold = staging.optionSold({
-	id: "DerivativeSold",
+	id: TradeEventId.Schema.parse("DerivativeSold"),
 	identifier: ident,
 	date: "2023-01-02",
 	multiplier: 1,
 	quantity: -1,
 	price: 15,
-	currency: "EUR",
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const simpleStagingDerivativeLot = staging.taxLot({
-	id: "Lot",
+	id: TaxLotId.Schema.parse("Lot"),
 	identifier: ident,
 	quantity: 1,
 	shortLongType: GenericShortLong.LONG,
-	acquired: { id: "DerivativeBought", date: null },
+	acquired: { id: TradeEventId.Schema.parse("DerivativeBought"), date: null },
 	sold: { id: null, date: "2023-01-02" },
 });
 
@@ -188,11 +202,11 @@ test("partial stock lot matching throws", () => {
 test("throws when a stock lot has no sold date", () => {
 	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const lotWithoutSoldDate = staging.taxLot({
-		id: "Lot",
+		id: TaxLotId.Schema.parse("Lot"),
 		identifier: ident,
 		quantity: 1,
 		shortLongType: GenericShortLong.LONG,
-		acquired: { id: "StockBought", date: null },
+		acquired: { id: TradeEventId.Schema.parse("StockBought"), date: null },
 		sold: { id: null, date: null },
 	});
 	const groupings = [
@@ -298,8 +312,16 @@ test("payment in lieu of dividend with withholding tax", () => {
 });
 
 test("processStagingFinancialEvents returns FinancialEvents with converted relationships", () => {
-	const stagingIdA = new StagingFinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
-	const stagingIdB = new StagingFinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });
+	const stagingIdA = new StagingFinancialIdentifier({
+		isin: Isin.Schema.parse("US111"),
+		ticker: Ticker.Schema.parse("OLD"),
+		name: "Old",
+	});
+	const stagingIdB = new StagingFinancialIdentifier({
+		isin: Isin.Schema.parse("US222"),
+		ticker: Ticker.Schema.parse("NEW"),
+		name: "New",
+	});
 	const stagingRel = new StagingIdentifierRelationship({
 		fromIdentifier: stagingIdA,
 		toIdentifier: stagingIdB,

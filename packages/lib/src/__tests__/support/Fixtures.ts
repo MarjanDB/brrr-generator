@@ -15,6 +15,7 @@ import {
 	type TransactionCash,
 	TransactionType,
 } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
+import { CountryCode, CountryName } from "@brrr/Core/Schemas/Identifiers";
 import { type CompanyInfo, type Country, TreatyType } from "@brrr/InfoProviders/InfoProvider";
 import { type TaxPayerInfo, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider";
 
@@ -46,38 +47,38 @@ const lookups: { companies: Record<string, CompanyInfo>; countries: Record<strin
 			shortName: "TotalEnergies",
 			longName: "TotalEnergies SE",
 			location: {
-				country: "France",
+				country: CountryName.Schema.parse("France"),
 				address1: "2 Place Jean Millier",
 				address2: null,
 				zipCode: "92400",
 				city: "Courbevoie",
 				state: null,
-				shortCodeCountry2: "FR",
+				shortCodeCountry2: CountryCode.Schema.parse("FR"),
 			},
 		},
 		US5801351017: {
 			shortName: "McDonald's",
 			longName: "McDonald's Corporation",
 			location: {
-				country: "United States",
+				country: CountryName.Schema.parse("United States"),
 				address1: "110 North Carpenter Street",
 				address2: null,
 				zipCode: "60607",
 				city: "Chicago",
 				state: "IL",
-				shortCodeCountry2: "US",
+				shortCodeCountry2: CountryCode.Schema.parse("US"),
 			},
 		},
 	},
 	countries: {
 		France: {
-			name: "France",
-			shortCode2: "FR",
+			name: CountryName.Schema.parse("France"),
+			shortCode2: CountryCode.Schema.parse("FR"),
 			treaties: new Map([[TreatyType.TaxRelief, "Article 10"]]),
 		},
 		"United States": {
-			name: "United States",
-			shortCode2: "US",
+			name: CountryName.Schema.parse("United States"),
+			shortCode2: CountryCode.Schema.parse("US"),
 			treaties: new Map([[TreatyType.TaxRelief, "Article 10"]]),
 		},
 	},

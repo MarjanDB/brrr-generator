@@ -9,6 +9,7 @@ import {
 	type TransactionCash,
 } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
 import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform";
+import { CorrelationKey } from "@brrr/Core/Schemas/Identifiers";
 import {
 	StagingTradeEventCashTransactionDividend,
 	StagingTradeEventCashTransactionPaymentInLieuOfDividends,
@@ -213,7 +214,7 @@ test("transform: corporate actions produce partial relationships only", () => {
 	const keys = new Set(
 		result.identifierRelationships.partialRelationships.map((p) => p.correlationKey),
 	);
-	expect(keys.has("141913764")).toEqual(true);
+	expect(keys.has(CorrelationKey.Schema.parse("141913764"))).toEqual(true);
 	// biome-ignore lint/style/noNonNullAssertion: test data guarantees both partials exist
 	const fromPartial = result.identifierRelationships.partialRelationships.find(
 		(p) => p.fromIdentifier !== null && p.toIdentifier === null,

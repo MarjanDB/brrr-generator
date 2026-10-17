@@ -18,6 +18,18 @@ import {
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
+	CashActionId,
+	CashTransactionId,
+	CorrelationKey,
+	CurrencyCode,
+	type FinancialIdentifierKey,
+	Isin,
+	ListingExchange,
+	TaxLotId,
+	Ticker,
+	TradeEventId,
+} from "@brrr/Core/Schemas/Identifiers";
+import {
 	StagingTradeEventCashTransactionDividend,
 	StagingTradeEventCashTransactionPaymentInLieuOfDividends,
 	StagingTradeEventCashTransactionWithholdingTax,
@@ -66,8 +78,11 @@ export class IbkrTransformService {
 
 		const groupByIdentifier = <T extends AnyEvent>(
 			items: T[],
-		): Map<string, { identifier: StagingFinancialIdentifier; items: T[] }> => {
-			const map = new Map<string, { identifier: StagingFinancialIdentifier; items: T[] }>();
+		): Map<FinancialIdentifierKey, { identifier: StagingFinancialIdentifier; items: T[] }> => {
+			const map = new Map<
+				FinancialIdentifierKey,
+				{ identifier: StagingFinancialIdentifier; items: T[] }
+			>();
 			for (const item of items) {
 				const key = item.financialIdentifier.toKey();
 				if (!map.has(key)) {
@@ -137,29 +152,30 @@ export class IbkrTransformService {
 			if (isBonusDividend) dividendType = GenericDividendType.BONUS;
 
 			const financialIdentifier = new StagingFinancialIdentifier({
-				isin: transaction.isin,
-				ticker: transaction.symbol,
+				isin: Isin.Schema.parse(transaction.isin),
+				ticker: Ticker.Schema.parse(transaction.symbol),
 			});
+			const currency = CurrencyCode.Schema.parse(transaction.currency);
 			const exchangedMoney = new GenericMonetaryExchangeInformation({
 				underlyingQuantity: 1,
 				underlyingTradePrice: transaction.amount * transaction.fxRateToBase,
-				underlyingCurrency: transaction.currency,
-				commissionCurrency: transaction.currency,
+				underlyingCurrency: currency,
+				commissionCurrency: currency,
 				commissionTotal: 0,
-				taxCurrency: transaction.currency,
+				taxCurrency: currency,
 				taxTotal: 0,
 				fxRateToBase: transaction.fxRateToBase,
 			});
 			const base = {
-				id: transaction.transactionID,
+				id: TradeEventId.Schema.parse(transaction.transactionID),
 				financialIdentifier,
 				assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 				date: transaction.dateTime,
 				multiplier: 1,
 				exchangedMoney,
-				actionId: transaction.actionID,
-				transactionId: transaction.transactionID,
-				listingExchange: transaction.listingExchange,
+				actionId: CashActionId.Schema.parse(transaction.actionID),
+				transactionId: CashTransactionId.Schema.parse(transaction.transactionID),
+				listingExchange: ListingExchange.Schema.parse(transaction.listingExchange),
 			};
 
 			if (transaction.type === CashTransactionType.DIVIDEND) {
@@ -188,21 +204,21 @@ export class IbkrTransformService {
 	private convertStockTradesToEvents(trades: TradeStock[]): StagingTradeEventStock[] {
 		return trades.map((trade) => {
 			const financialIdentifier = new StagingFinancialIdentifier({
-				isin: trade.isin,
-				ticker: trade.symbol,
+				isin: Isin.Schema.parse(trade.isin),
+				ticker: Ticker.Schema.parse(trade.symbol),
 			});
 			const exchangedMoney = new GenericMonetaryExchangeInformation({
-				underlyingCurrency: trade.currency,
+				underlyingCurrency: CurrencyCode.Schema.parse(trade.currency),
 				underlyingQuantity: trade.quantity,
 				underlyingTradePrice: trade.tradePrice * trade.fxRateToBase,
-				commissionCurrency: trade.ibCommissionCurrency,
+				commissionCurrency: CurrencyCode.Schema.parse(trade.ibCommissionCurrency),
 				commissionTotal: trade.ibCommission * trade.fxRateToBase,
-				taxCurrency: trade.currency, // NOTE: Taxes Currency == Trade Currency ??
+				taxCurrency: CurrencyCode.Schema.parse(trade.currency), // NOTE: Taxes Currency == Trade Currency ??
 				taxTotal: trade.taxes,
 				fxRateToBase: trade.fxRateToBase,
 			});
 			const base = {
-				id: trade.transactionID,
+				id: TradeEventId.Schema.parse(trade.transactionID),
 				financialIdentifier,
 				assetClass: GenericAssetClass.STOCK,
 				date: trade.dateTime,
@@ -224,13 +240,16 @@ export class IbkrTransformService {
 		return lots.map(
 			(lot) =>
 				new StagingTaxLot({
-					id: lot.transactionID,
+					id: TaxLotId.Schema.parse(lot.transactionID),
 					financialIdentifier: new StagingFinancialIdentifier({
-						isin: lot.isin,
-						ticker: lot.symbol,
+						isin: Isin.Schema.parse(lot.isin),
+						ticker: Ticker.Schema.parse(lot.symbol),
 					}),
 					quantity: lot.quantity,
-					acquired: new StagingTaxLotMatchingDetails({ id: lot.transactionID, dateTime: null }),
+					acquired: new StagingTaxLotMatchingDetails({
+						id: TradeEventId.Schema.parse(lot.transactionID),
+						dateTime: null,
+					}),
 					sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
 					shortLongType: GenericShortLong.LONG,
 				}),
@@ -242,22 +261,22 @@ export class IbkrTransformService {
 	): StagingTradeEventDerivative[] {
 		return trades.map((trade) => {
 			const financialIdentifier = new StagingFinancialIdentifier({
-				isin: trade.underlyingSecurityID,
-				ticker: trade.symbol,
+				isin: Isin.Schema.parse(trade.underlyingSecurityID),
+				ticker: Ticker.Schema.parse(trade.symbol),
 				name: trade.description,
 			});
 			const exchangedMoney = new GenericMonetaryExchangeInformation({
-				underlyingCurrency: trade.currency,
+				underlyingCurrency: CurrencyCode.Schema.parse(trade.currency),
 				underlyingQuantity: trade.quantity,
 				underlyingTradePrice: trade.tradePrice * trade.fxRateToBase,
-				commissionCurrency: trade.ibCommissionCurrency,
+				commissionCurrency: CurrencyCode.Schema.parse(trade.ibCommissionCurrency),
 				commissionTotal: trade.ibCommission * trade.fxRateToBase,
-				taxCurrency: trade.currency, // NOTE: Taxes Currency == Trade Currency ??
+				taxCurrency: CurrencyCode.Schema.parse(trade.currency), // NOTE: Taxes Currency == Trade Currency ??
 				taxTotal: trade.taxes,
 				fxRateToBase: trade.fxRateToBase,
 			});
 			const base = {
-				id: trade.transactionID,
+				id: TradeEventId.Schema.parse(trade.transactionID),
 				financialIdentifier,
 				assetClass: GenericAssetClass.OPTION,
 				multiplier: trade.multiplier,
@@ -279,14 +298,17 @@ export class IbkrTransformService {
 		return lots.map(
 			(lot) =>
 				new StagingTaxLot({
-					id: lot.transactionID,
+					id: TaxLotId.Schema.parse(lot.transactionID),
 					financialIdentifier: new StagingFinancialIdentifier({
-						isin: lot.underlyingSecurityID,
-						ticker: lot.symbol,
+						isin: Isin.Schema.parse(lot.underlyingSecurityID),
+						ticker: Ticker.Schema.parse(lot.symbol),
 						name: lot.description,
 					}),
 					quantity: lot.quantity,
-					acquired: new StagingTaxLotMatchingDetails({ id: lot.transactionID, dateTime: null }),
+					acquired: new StagingTaxLotMatchingDetails({
+						id: TradeEventId.Schema.parse(lot.transactionID),
+						dateTime: null,
+					}),
 					sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
 					shortLongType: GenericShortLong.LONG,
 				}),
@@ -299,7 +321,10 @@ export class IbkrTransformService {
 		const partials: StagingIdentifierRelationshipPartialAny[] = [];
 
 		for (const row of corporateActions) {
-			const identifier = new StagingFinancialIdentifier({ isin: row.isin, ticker: row.symbol });
+			const identifier = new StagingFinancialIdentifier({
+				isin: Isin.Schema.parse(row.isin),
+				ticker: Ticker.Schema.parse(row.symbol),
+			});
 			const isFromSide = row.symbol.endsWith(".OLD");
 			const actionType = (row.type || "").toUpperCase();
 
@@ -321,7 +346,7 @@ export class IbkrTransformService {
 					new StagingIdentifierRelationshipPartialWithQuantity({
 						fromIdentifier,
 						toIdentifier,
-						correlationKey: row.actionID,
+						correlationKey: CorrelationKey.Schema.parse(row.actionID),
 						changeType,
 						effectiveDate: row.dateTime,
 						quantity: Math.abs(row.quantity),
@@ -332,7 +357,7 @@ export class IbkrTransformService {
 					new StagingIdentifierRelationshipPartial({
 						fromIdentifier,
 						toIdentifier,
-						correlationKey: row.actionID,
+						correlationKey: CorrelationKey.Schema.parse(row.actionID),
 						changeType,
 						effectiveDate: row.dateTime,
 					}),

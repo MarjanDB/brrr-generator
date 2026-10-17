@@ -29,6 +29,7 @@ import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import type { IdentifierRelationshipAny } from "@brrr/Core/Schemas/IdentifierRelationship";
+import { CountryName, Isin } from "@brrr/Core/Schemas/Identifiers";
 import { TaxLot, type TaxLotDerivative, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
 import { createContainer } from "@brrr/container";
@@ -151,7 +152,7 @@ const build = {
 
 	grouping(fields: {
 		identifier: FinancialIdentifier;
-		countryOfOrigin: string | null;
+		countryOfOrigin: FinancialGrouping["countryOfOrigin"];
 		category: GenericCategory;
 		stockTrades: TradeEventStock[];
 		stockTaxLots: TaxLotStock[];
@@ -221,10 +222,10 @@ const config = {
 	}): PredefinedInfoProvider {
 		const info = new PredefinedInfoProvider();
 		for (const [isin, company] of Object.entries(lookups.companies)) {
-			info.addCompany(isin, company);
+			info.addCompany(Isin.Schema.parse(isin), company);
 		}
 		for (const [name, country] of Object.entries(lookups.countries)) {
-			info.addCountry(name, country);
+			info.addCountry(CountryName.Schema.parse(name), country);
 		}
 		return info;
 	},

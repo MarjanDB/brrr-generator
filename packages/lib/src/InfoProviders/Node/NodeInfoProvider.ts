@@ -1,3 +1,4 @@
+import { CountryCode, CountryName, type Isin } from "@brrr/Core/Schemas/Identifiers";
 import {
 	type CompanyInfo,
 	type CompanyLocationInfo,
@@ -146,39 +147,39 @@ export class NodeInfoProvider implements InfoProvider {
 	private readonly yf = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
 
 	// Override methods — forward to predefined
-	addCompany(isin: string, info: CompanyInfo): void {
+	addCompany(isin: Isin, info: CompanyInfo): void {
 		this.predefined.addCompany(isin, info);
 	}
 
-	updateCompany(isin: string, info: CompanyInfo): void {
+	updateCompany(isin: Isin, info: CompanyInfo): void {
 		this.predefined.updateCompany(isin, info);
 	}
 
-	removeCompany(isin: string): void {
+	removeCompany(isin: Isin): void {
 		this.predefined.removeCompany(isin);
 	}
 
-	listCompanies(): Map<string, CompanyInfo> {
+	listCompanies(): Map<Isin, CompanyInfo> {
 		return this.predefined.listCompanies();
 	}
 
-	addCountry(name: string, country: Country): void {
+	addCountry(name: CountryName, country: Country): void {
 		this.predefined.addCountry(name, country);
 	}
 
-	updateCountry(name: string, country: Country): void {
+	updateCountry(name: CountryName, country: Country): void {
 		this.predefined.updateCountry(name, country);
 	}
 
-	removeCountry(name: string): void {
+	removeCountry(name: CountryName): void {
 		this.predefined.removeCountry(name);
 	}
 
-	listCountries(): Map<string, Country> {
+	listCountries(): Map<CountryName, Country> {
 		return this.predefined.listCountries();
 	}
 
-	async getCountry(name: string): Promise<Country | null> {
+	async getCountry(name: CountryName): Promise<Country | null> {
 		// 1. Check predefined
 		const fromPredefined = await this.predefined.getCountry(name);
 		if (fromPredefined !== null) {
@@ -202,10 +203,10 @@ export class NodeInfoProvider implements InfoProvider {
 			treaties.set(TreatyType.TaxRelief, taxReliefTreaties[shortCode]);
 		}
 
-		return { name, shortCode2: shortCode, treaties };
+		return { name, shortCode2: CountryCode.Schema.parse(shortCode), treaties };
 	}
 
-	async getCompanyInfo(isin: string): Promise<CompanyInfo | null> {
+	async getCompanyInfo(isin: Isin): Promise<CompanyInfo | null> {
 		// 1. Check predefined
 		const fromPredefined = await this.predefined.getCompanyInfo(isin);
 		if (fromPredefined !== null) {
@@ -217,13 +218,14 @@ export class NodeInfoProvider implements InfoProvider {
 			isinToCompanyLookup[isin] ?? isinToCompanyLookup[isinToTickerLookup[isin] ?? ""];
 
 		if (companyData !== undefined) {
-			const countryDef = await this.getCountry(companyData.country);
+			const country = CountryName.Schema.parse(companyData.country);
+			const countryDef = await this.getCountry(country);
 			if (countryDef === null) {
 				return null;
 			}
 
 			const location: CompanyLocationInfo = {
-				country: companyData.country,
+				country,
 				address1: companyData.address1,
 				address2: companyData.address2 ?? null,
 				zipCode: companyData.zip,
@@ -258,7 +260,7 @@ export class NodeInfoProvider implements InfoProvider {
 				return null;
 			}
 
-			const countryName = profile.country ?? "";
+			const countryName = CountryName.Schema.parse(profile.country ?? "");
 
 			const countryDef = countryName ? await this.getCountry(countryName) : null;
 			if (countryDef === null) {

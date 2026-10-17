@@ -5,11 +5,17 @@ import type {
 	GenericMonetaryExchangeInformation,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
+import type {
+	CashActionId,
+	CashTransactionId,
+	ListingExchange,
+	TradeEventId,
+} from "@brrr/Core/Schemas/Identifiers";
 import type { AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 
 type TradeEventArgs = {
-	id: string;
+	id: TradeEventId;
 	assetClass: GenericAssetClass;
 	date: ValidDateTime;
 	multiplier: number;
@@ -18,13 +24,13 @@ type TradeEventArgs = {
 };
 
 type CashTransactionArgs = TradeEventArgs & {
-	actionId: string;
-	transactionId: string;
-	listingExchange: string;
+	actionId: CashActionId;
+	transactionId: CashTransactionId;
+	listingExchange: ListingExchange;
 };
 
 export abstract class TradeEventBase {
-	public readonly id: string;
+	public readonly id: TradeEventId;
 	public readonly assetClass: GenericAssetClass;
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
@@ -42,9 +48,9 @@ export abstract class TradeEventBase {
 }
 
 abstract class CashTransactionBase extends TradeEventBase {
-	public readonly actionId: string;
-	public readonly transactionId: string;
-	public readonly listingExchange: string;
+	public readonly actionId: CashActionId;
+	public readonly transactionId: CashTransactionId;
+	public readonly listingExchange: ListingExchange;
 
 	constructor(args: CashTransactionArgs) {
 		super(args);

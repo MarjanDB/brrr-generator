@@ -1,4 +1,5 @@
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
+import type { TradeEventId } from "@brrr/Core/Schemas/Identifiers";
 
 export type TradeAssociation = {
 	quantity: number;
@@ -6,8 +7,8 @@ export type TradeAssociation = {
 };
 
 export class TradeAssociationTracker {
-	private tradeAcquiredTracker: Map<string, TradeAssociation> = new Map();
-	private tradeSoldTracker: Map<string, TradeAssociation> = new Map();
+	private tradeAcquiredTracker: Map<TradeEventId, TradeAssociation> = new Map();
+	private tradeSoldTracker: Map<TradeEventId, TradeAssociation> = new Map();
 
 	private associateAcquiredTrade(event: Trade): void {
 		if (!this.tradeAcquiredTracker.has(event.id)) {

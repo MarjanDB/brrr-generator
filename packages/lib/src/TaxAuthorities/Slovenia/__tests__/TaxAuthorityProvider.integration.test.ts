@@ -7,6 +7,15 @@ import {
 	GenericShortLong,
 } from "@brrr/Core/Schemas/CommonFormats";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
+import {
+	CashActionId,
+	CashTransactionId,
+	CurrencyCode,
+	Isin,
+	ListingExchange,
+	TaxLotId,
+	TradeEventId,
+} from "@brrr/Core/Schemas/Identifiers";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";
@@ -34,73 +43,73 @@ function makeProvider({
 }
 
 const stockBought = build.stockBought({
-	id: "ID1",
+	id: TradeEventId.Schema.parse("ID1"),
 	date: "2023-06-06",
 	quantity: 1,
 	price: 1,
-	currency: "EUR",
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const stockSold = build.stockSold({
-	id: "ID2",
+	id: TradeEventId.Schema.parse("ID2"),
 	date: "2023-06-07",
 	quantity: -1,
 	price: 1,
-	currency: "EUR",
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const optionBought = build.optionBought({
-	id: "ID1",
+	id: TradeEventId.Schema.parse("ID1"),
 	date: "2023-06-07",
 	multiplier: 100,
 	quantity: 1,
 	price: 1,
-	currency: "EUR",
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const optionSold = build.optionSold({
-	id: "ID2",
+	id: TradeEventId.Schema.parse("ID2"),
 	date: "2023-06-08",
 	multiplier: 100,
 	quantity: -1,
 	price: 1.5,
-	currency: "EUR",
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const dividend = build.dividend({
-	id: "ID",
+	id: TradeEventId.Schema.parse("ID"),
 	date: "2023-06-07",
 	amount: 10,
-	actionId: "DivAction",
-	transactionId: "TranId1",
-	listingExchange: "EXH",
+	actionId: CashActionId.Schema.parse("DivAction"),
+	transactionId: CashTransactionId.Schema.parse("TranId1"),
+	listingExchange: ListingExchange.Schema.parse("EXH"),
 	dividendType: GenericDividendType.ORDINARY,
-	currency: "EUR",
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 0.5,
 });
 
 const withholdingTax = build.withholdingTax({
-	id: "ID",
+	id: TradeEventId.Schema.parse("ID"),
 	date: "2023-06-07",
 	amount: -5,
-	actionId: "DivAction",
-	transactionId: "TranId1",
-	listingExchange: "EXH",
-	currency: "EUR",
+	actionId: CashActionId.Schema.parse("DivAction"),
+	transactionId: CashTransactionId.Schema.parse("TranId1"),
+	listingExchange: ListingExchange.Schema.parse("EXH"),
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 0.5,
@@ -109,13 +118,13 @@ const withholdingTax = build.withholdingTax({
 const testData = build.events(
 	[
 		build.grouping({
-			identifier: new FinancialIdentifier({ isin: "ISIN" }),
+			identifier: new FinancialIdentifier({ isin: Isin.Schema.parse("ISIN") }),
 			countryOfOrigin: null,
 			category: GenericCategory.REGULAR,
 			stockTrades: [stockBought, stockSold],
 			stockTaxLots: [
 				build.stockTaxLot({
-					id: "ID1",
+					id: TaxLotId.Schema.parse("ID1"),
 					quantity: 1,
 					shortLongType: GenericShortLong.LONG,
 					acquired: stockBought,
@@ -124,11 +133,11 @@ const testData = build.events(
 			],
 			derivativeGroupings: [
 				build.derivativeGrouping({
-					identifier: new FinancialIdentifier({ isin: "ISIN" }),
+					identifier: new FinancialIdentifier({ isin: Isin.Schema.parse("ISIN") }),
 					trades: [optionBought, optionSold],
 					taxLots: [
 						build.derivativeTaxLot({
-							id: "ID1",
+							id: TaxLotId.Schema.parse("ID1"),
 							quantity: 1,
 							shortLongType: GenericShortLong.LONG,
 							acquired: optionBought,

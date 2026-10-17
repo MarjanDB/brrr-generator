@@ -1,6 +1,14 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { GenericCategory, GenericDividendType } from "@brrr/Core/Schemas/CommonFormats";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
+import {
+	CashActionId,
+	CashTransactionId,
+	CurrencyCode,
+	Isin,
+	ListingExchange,
+	TradeEventId,
+} from "@brrr/Core/Schemas/Identifiers";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";
@@ -8,54 +16,54 @@ import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGenerati
 const { build, config } = Scenario;
 
 const dividend = build.dividend({
-	id: "ID",
+	id: TradeEventId.Schema.parse("ID"),
 	date: "2023-06-07",
 	amount: 10.0,
-	actionId: "DivAction",
-	transactionId: "TranId1",
-	listingExchange: "EXH",
+	actionId: CashActionId.Schema.parse("DivAction"),
+	transactionId: CashTransactionId.Schema.parse("TranId1"),
+	listingExchange: ListingExchange.Schema.parse("EXH"),
 	dividendType: GenericDividendType.ORDINARY,
-	currency: "EUR",
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const paymentInLieuOfDividend = build.paymentInLieu({
-	id: "ID",
+	id: TradeEventId.Schema.parse("ID"),
 	date: "2023-06-08",
 	amount: 5.0,
-	actionId: "DivAction2",
-	transactionId: "TranId2",
-	listingExchange: "EXH",
+	actionId: CashActionId.Schema.parse("DivAction2"),
+	transactionId: CashTransactionId.Schema.parse("TranId2"),
+	listingExchange: ListingExchange.Schema.parse("EXH"),
 	dividendType: GenericDividendType.ORDINARY,
-	currency: "EUR",
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const dividendWithholdingTax = build.withholdingTax({
-	id: "ID",
+	id: TradeEventId.Schema.parse("ID"),
 	date: "2023-06-07",
 	amount: -5.0,
-	actionId: "DivAction",
-	transactionId: "TranId3",
-	listingExchange: "EXH",
-	currency: "EUR",
+	actionId: CashActionId.Schema.parse("DivAction"),
+	transactionId: CashTransactionId.Schema.parse("TranId3"),
+	listingExchange: ListingExchange.Schema.parse("EXH"),
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
 });
 
 const paymentInLieuOfDividendWithholdingTax = build.paymentInLieuWithholdingTax({
-	id: "ID",
+	id: TradeEventId.Schema.parse("ID"),
 	date: "2023-06-08",
 	amount: -2.5,
-	actionId: "DivAction2",
-	transactionId: "TranId4",
-	listingExchange: "EXH",
-	currency: "EUR",
+	actionId: CashActionId.Schema.parse("DivAction2"),
+	transactionId: CashTransactionId.Schema.parse("TranId4"),
+	listingExchange: ListingExchange.Schema.parse("EXH"),
+	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
 	fxRateToBase: 1,
@@ -64,7 +72,7 @@ const paymentInLieuOfDividendWithholdingTax = build.paymentInLieuWithholdingTax(
 const testData = build.events(
 	[
 		build.grouping({
-			identifier: new FinancialIdentifier({ isin: "ISIN" }),
+			identifier: new FinancialIdentifier({ isin: Isin.Schema.parse("ISIN") }),
 			countryOfOrigin: null,
 			category: GenericCategory.REGULAR,
 			stockTrades: [],

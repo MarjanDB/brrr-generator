@@ -11,6 +11,7 @@ import {
 	IdentifierChangeType,
 	IdentifierRelationshipSplit,
 } from "@brrr/Core/Schemas/IdentifierRelationship";
+import type { FinancialIdentifierKey } from "@brrr/Core/Schemas/Identifiers";
 import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import {
 	type AnyProvenanceStep,
@@ -86,7 +87,10 @@ export class ApplyIdentifierRelationshipsService {
 		};
 
 		const notAffected: FinancialGrouping[] = [];
-		const bySink = new Map<string, { sink: FinancialIdentifier; groupings: FinancialGrouping[] }>();
+		const bySink = new Map<
+			FinancialIdentifierKey,
+			{ sink: FinancialIdentifier; groupings: FinancialGrouping[] }
+		>();
 
 		for (const g of events.groupings) {
 			const sink = findSink(g.financialIdentifier);
@@ -104,7 +108,7 @@ export class ApplyIdentifierRelationshipsService {
 		}
 
 		// Build provenance per sink
-		const sinkToProvenance = new Map<string, AnyProvenanceStep[]>();
+		const sinkToProvenance = new Map<FinancialIdentifierKey, AnyProvenanceStep[]>();
 		for (const r of rels) {
 			const sink = resolveSink(r.toIdentifier);
 			const key = sink.toKey();

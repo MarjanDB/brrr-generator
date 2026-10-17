@@ -135,7 +135,7 @@ export const StagingBuilders = {
 
 	grouping(
 		fields: {
-			countryOfOrigin: string | null;
+			countryOfOrigin: StagingFinancialGrouping["countryOfOrigin"];
 			category: GenericCategory;
 			stockTrades: StagingTradeEventStock[];
 			stockTaxLots: StagingTaxLot[];

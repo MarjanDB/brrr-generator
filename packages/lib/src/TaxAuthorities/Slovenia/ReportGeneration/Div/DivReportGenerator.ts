@@ -7,6 +7,7 @@ import {
 	type TransactionCash,
 } from "@brrr/Core/Schemas/Events";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
+import { type CashActionId, Isin } from "@brrr/Core/Schemas/Identifiers";
 import { type InfoProvider, TreatyType } from "@brrr/InfoProviders/InfoProvider";
 import type {
 	TaxAuthorityConfiguration,
@@ -82,7 +83,7 @@ function sum(values: number[]): number {
 // One entry per corporate action. Only the action's first dividend contributes its own tax;
 // the action's withholdings add to it.
 function totalsPerAction(dividends: Dividend[], withholdings: Withholding[]): DividendTotals[] {
-	const byAction = new Map<string, { dividends: Dividend[]; withholdings: Withholding[] }>();
+	const byAction = new Map<CashActionId, { dividends: Dividend[]; withholdings: Withholding[] }>();
 	for (const dividend of dividends) {
 		const action = byAction.get(dividend.actionId);
 		if (action === undefined) {
@@ -194,7 +195,7 @@ export class DivReportGenerator {
 			return [];
 		}
 
-		const isin = data.financialIdentifier.isin ?? "";
+		const isin = data.financialIdentifier.isin ?? Isin.Schema.parse("");
 		const payer = await this.lookUpPayer(isin);
 
 		return totals.map(
@@ -221,7 +222,7 @@ export class DivReportGenerator {
 		);
 	}
 
-	private async lookUpPayer(isin: string): Promise<Payer> {
+	private async lookUpPayer(isin: Isin): Promise<Payer> {
 		let title = "";
 		let address = "";
 		let countryOfOrigin = "";

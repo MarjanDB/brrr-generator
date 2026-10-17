@@ -1,3 +1,4 @@
+import type { CurrencyCode } from "@brrr/Core/Schemas/Identifiers";
 export enum GenericAssetClass {
 	STOCK = "STOCK",
 	OPTION = "OPTION",
@@ -39,23 +40,23 @@ export enum GenericDerivativeReportItemGainType {
 }
 
 type GenericMonetaryExchangeInformationArgs = {
-	underlyingCurrency: string;
+	underlyingCurrency: CurrencyCode;
 	underlyingQuantity: number;
 	underlyingTradePrice: number;
-	commissionCurrency: string;
+	commissionCurrency: CurrencyCode;
 	commissionTotal: number;
-	taxCurrency: string;
+	taxCurrency: CurrencyCode;
 	taxTotal: number;
 	fxRateToBase: number;
 };
 
 export class GenericMonetaryExchangeInformation {
-	public readonly underlyingCurrency: string;
+	public readonly underlyingCurrency: CurrencyCode;
 	public readonly underlyingQuantity: number;
 	public readonly underlyingTradePrice: number;
-	public readonly commissionCurrency: string;
+	public readonly commissionCurrency: CurrencyCode;
 	public readonly commissionTotal: number;
-	public readonly taxCurrency: string;
+	public readonly taxCurrency: CurrencyCode;
 	public readonly taxTotal: number;
 	public readonly fxRateToBase: number;
 

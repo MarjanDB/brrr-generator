@@ -1,3 +1,4 @@
+import type { CorrelationKey } from "@brrr/Core/Schemas/Identifiers";
 import {
 	StagingIdentifierChangeType,
 	StagingIdentifierRelationship,
@@ -15,7 +16,7 @@ export class IdentifierRelationshipResolution {
 		if (partials.length === 0) return [];
 
 		// Group by correlationKey
-		const grouped = new Map<string, StagingIdentifierRelationshipPartialAny[]>();
+		const grouped = new Map<CorrelationKey, StagingIdentifierRelationshipPartialAny[]>();
 		for (const p of partials) {
 			const arr = grouped.get(p.correlationKey) ?? [];
 			arr.push(p);
