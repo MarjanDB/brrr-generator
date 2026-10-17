@@ -1,11 +1,10 @@
-import path from "node:path";
-import viteTsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
-const tsconfigPath = path.resolve(import.meta.dirname, "tsconfig.json");
-
 export default defineConfig({
-	plugins: [viteTsconfigPaths({ projects: [tsconfigPath] })],
+	resolve: {
+		// Vite resolves tsconfig `paths` natively since v8; vite-tsconfig-paths is no longer needed.
+		tsconfigPaths: true,
+	},
 	test: {
 		environment: "node",
 		include: ["src/**/*.test.ts"],

@@ -8,13 +8,12 @@
 	},
 	"dependencies": {
 		"@brrr/lib": "workspace:*",
-		"commander": "14.0.3",
-		"js-yaml": "4.1.1"
+		"commander": "15.0.0",
+		"js-yaml": "5.5.0"
 	},
 	"devDependencies": {
-		"@types/js-yaml": "4.0.9",
-		"@types/node": "25.7.0",
-		"tsx": "4.21.0",
-		"typescript": "5.9.3"
+		"@types/node": "24.19.2",
+		"tsx": "4.23.15",
+		"typescript": "6.0.3"
 	}
 }
