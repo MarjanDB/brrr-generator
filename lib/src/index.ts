@@ -1,6 +1,5 @@
 // Brokerages
 export { type BrokerageFileDetection, BrokerageRegistry } from "@brrr/Brokerages/BrokerageRegistry";
-export { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider";
 
 // Core
 export {
@@ -37,8 +36,7 @@ export type {
 	GeneratedExports,
 	TaxAuthorityDescriptor,
 } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
-export { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
-export { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider";
+export { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 export { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
 
 // Utils
