@@ -32,18 +32,6 @@ export class TaxLot<A, S> {
 		this.shortLongType = args.shortLongType;
 		this.provenance = args.provenance;
 	}
-
-	copy(overrides: Partial<TaxLotArgs<A, S>>): TaxLot<A, S> {
-		return new TaxLot<A, S>({
-			id: this.id,
-			quantity: this.quantity,
-			acquired: this.acquired,
-			sold: this.sold,
-			shortLongType: this.shortLongType,
-			provenance: this.provenance,
-			...overrides,
-		});
-	}
 }
 
 export type TaxLotStock = TaxLot<TradeEventStockAcquired, TradeEventStockSold>;

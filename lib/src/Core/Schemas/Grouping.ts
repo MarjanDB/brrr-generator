@@ -32,16 +32,6 @@ export class DerivativeGrouping {
 		this.derivativeTaxLots = args.derivativeTaxLots;
 		this.provenance = args.provenance;
 	}
-
-	copy(overrides: Partial<DerivativeGroupingArgs>): DerivativeGrouping {
-		return new DerivativeGrouping({
-			financialIdentifier: this.financialIdentifier,
-			derivativeTrades: this.derivativeTrades,
-			derivativeTaxLots: this.derivativeTaxLots,
-			provenance: this.provenance,
-			...overrides,
-		});
-	}
 }
 
 type FinancialGroupingArgs = {
@@ -74,20 +64,6 @@ export class FinancialGrouping {
 		this.derivativeGroupings = args.derivativeGroupings;
 		this.cashTransactions = args.cashTransactions;
 		this.provenance = args.provenance;
-	}
-
-	copy(overrides: Partial<FinancialGroupingArgs>): FinancialGrouping {
-		return new FinancialGrouping({
-			financialIdentifier: this.financialIdentifier,
-			countryOfOrigin: this.countryOfOrigin,
-			underlyingCategory: this.underlyingCategory,
-			stockTrades: this.stockTrades,
-			stockTaxLots: this.stockTaxLots,
-			derivativeGroupings: this.derivativeGroupings,
-			cashTransactions: this.cashTransactions,
-			provenance: this.provenance,
-			...overrides,
-		});
 	}
 }
 

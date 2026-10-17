@@ -108,7 +108,7 @@ test("simple filtering trades of lots closed in period", () => {
 });
 
 test("no stock trades matching when no lots", () => {
-	const groupingNoLots = grouping.copy({ stockTaxLots: [] });
+	const groupingNoLots = new FinancialGrouping({ ...grouping, stockTaxLots: [] });
 	const processor = new FinancialEventsProcessor(null, new LotMatcher());
 	const config: LotMatchingConfiguration = {
 		fromDate: makeDate("2023-01-01"),
