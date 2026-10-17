@@ -21,6 +21,18 @@ export class IbkrBrokerageExportProvider implements IBrokerageProvider {
 		}
 	}
 
+	public describeExportProblem(xmlString: string): string | null {
+		if (!xmlString.includes("<FlexQueryResponse")) {
+			return null;
+		}
+		try {
+			this.extract.extractFromXML(xmlString);
+			return null;
+		} catch (error) {
+			return error instanceof Error ? error.message : String(error);
+		}
+	}
+
 	public loadAndTransform(xmlStrings: string[]): StagingFinancialEvents {
 		const segmentedList = xmlStrings.map((xml) => this.extract.extractFromXML(xml));
 

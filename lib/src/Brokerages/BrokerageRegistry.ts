@@ -4,6 +4,8 @@ import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinanc
 export type BrokerageFileDetection = {
 	fileName: string;
 	detectedBrokerage: { id: string; name: string } | null;
+	// Set when the file looks like a broker's export but can't be read.
+	error: string | null;
 };
 
 export class BrokerageRegistry {
@@ -16,12 +18,17 @@ export class BrokerageRegistry {
 	private detectOne(file: { fileName: string; xml: string }): BrokerageFileDetection {
 		const isIbkr = this.ibkr.isThisValidExport(file.xml);
 		if (!isIbkr) {
-			return { fileName: file.fileName, detectedBrokerage: null };
+			return {
+				fileName: file.fileName,
+				detectedBrokerage: null,
+				error: this.ibkr.describeExportProblem(file.xml),
+			};
 		}
 
 		return {
 			fileName: file.fileName,
 			detectedBrokerage: { id: this.ibkr.brokerageId, name: this.ibkr.displayName },
+			error: null,
 		};
 	}
 

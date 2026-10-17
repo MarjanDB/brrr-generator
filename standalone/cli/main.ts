@@ -112,6 +112,16 @@ async function main() {
 	console.log(`Found ${files.length} XML file(s)`);
 
 	const { detections, stagingEvents } = brokerages.loadAndTransformDetected(files);
+	// A broker export that can't be read must stop the run: leaving it out would silently change
+	// the reports (e.g. the cost basis of later sales).
+	const unreadable = detections.filter((detection) => detection.error !== null);
+	if (unreadable.length > 0) {
+		for (const detection of unreadable) {
+			console.error(`${detection.fileName} looks like a broker export but can't be read:`);
+			console.error(detection.error);
+		}
+		process.exit(1);
+	}
 	for (const detection of detections) {
 		if (detection.detectedBrokerage === null) {
 			console.warn(`Skipping ${detection.fileName}: not a recognised broker export`);
