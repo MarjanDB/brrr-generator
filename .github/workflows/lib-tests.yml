@@ -21,9 +21,7 @@ jobs:
         with:
           node-version: lts/*
 
-      - uses: pnpm/action-setup@v4
-        with:
-          package_json_file: lib/package.json
+      - uses: pnpm/action-setup@v6
 
       - name: Install dependencies
         run: pnpm install

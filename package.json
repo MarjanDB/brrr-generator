@@ -1,6 +1,7 @@
 {
 	"name": "brrr-tax-generator",
 	"private": true,
+	"packageManager": "pnpm@11.28.6",
 	"scripts": {
 		"cli": "pnpm --filter @brrr/cli start",
 		"dev": "pnpm --filter @brrr/app dev",

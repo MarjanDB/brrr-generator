@@ -1,6 +1,34 @@
 hoist: true
+# Nuxt resolves modules that other modules depend on (e.g. @nuxtjs/robots from @nuxtjs/seo) only from
+# its modulesDir, which reaches them through the hoisted node_modules/.pnpm/node_modules. With the
+# global virtual store Nuxt lives outside the project and can't see that directory.
+enableGlobalVirtualStore: false
 
 packages:
   - lib
   - standalone/cli
   - app
+
+# Supply-chain hardening. pnpm 11 turns most of these on by default; they are spelled out so they
+# don't silently change with a pnpm upgrade, and trustPolicy is off by default.
+
+# Refuse versions published less than a day ago; most compromised releases are pulled within hours.
+minimumReleaseAge: 1440
+
+# Fail when a version is published with weaker trust evidence (no provenance / trusted publisher)
+# than earlier versions of the same package: the usual sign of a stolen publish token.
+trustPolicy: no-downgrade
+# Only check releases from the last 30 days. Publish times come from the registry and can't be
+# backdated, so a takeover release is always checked; older releases that predate provenance (e.g.
+# semver@6.3.1, which Babel 7 still pulls in) are let through.
+trustPolicyIgnoreAfter: 43200
+
+# Transitive dependencies may only resolve from the registry, never from git URLs or tarballs.
+blockExoticSubdeps: true
+
+allowBuilds:
+  "@posthog/cli": false
+  core-js: false
+  esbuild: false
+  protobufjs: false
+  vue-demi: false
