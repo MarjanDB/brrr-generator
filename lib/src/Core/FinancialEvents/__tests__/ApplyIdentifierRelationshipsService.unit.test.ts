@@ -1,5 +1,6 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
+import { GenericCategory, GenericShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
@@ -21,11 +22,43 @@ test("two groupings with rename produce one merged grouping", () => {
 		groupings: [
 			build.grouping({
 				identifier: idA,
-				stockTrades: [build.stockBought({ id: "t1", quantity: 1.0, date: "2024-01-01" })],
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [
+					build.stockBought({
+						id: "t1",
+						date: "2024-01-01",
+						quantity: 1.0,
+						price: 10.0,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 1,
+					}),
+				],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
 			}),
 			build.grouping({
 				identifier: idB,
-				stockTrades: [build.stockSold({ id: "t2", quantity: -1.0, date: "2024-02-01" })],
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [
+					build.stockSold({
+						id: "t2",
+						date: "2024-02-01",
+						quantity: -1.0,
+						price: 10.0,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 1,
+					}),
+				],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
 			}),
 		],
 		identifierRelationships: [
@@ -52,12 +85,46 @@ test("two groupings with rename produce one merged grouping", () => {
 test("a rename merge keeps the original trades", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old Co" });
 	const idB = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New Co" });
-	const bought = build.stockBought({ id: "t1", quantity: 1.0, date: "2024-01-01" });
-	const sold = build.stockSold({ id: "t2", quantity: -1.0, date: "2024-02-01" });
+	const bought = build.stockBought({
+		id: "t1",
+		date: "2024-01-01",
+		quantity: 1.0,
+		price: 10.0,
+		currency: "USD",
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	});
+	const sold = build.stockSold({
+		id: "t2",
+		date: "2024-02-01",
+		quantity: -1.0,
+		price: 10.0,
+		currency: "USD",
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	});
 	const events = new FinancialEvents({
 		groupings: [
-			build.grouping({ identifier: idA, stockTrades: [bought] }),
-			build.grouping({ identifier: idB, stockTrades: [sold] }),
+			build.grouping({
+				identifier: idA,
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [bought],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
+			}),
+			build.grouping({
+				identifier: idB,
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [sold],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
+			}),
 		],
 		identifierRelationships: [
 			new IdentifierRelationship({
@@ -80,7 +147,17 @@ test("a rename merge keeps the original trades", () => {
 test("empty relationships leaves groupings unchanged", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "A", name: "A" });
 	const events = new FinancialEvents({
-		groupings: [build.grouping({ identifier: idA })],
+		groupings: [
+			build.grouping({
+				identifier: idA,
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
+			}),
+		],
 		identifierRelationships: [],
 	});
 	const service = new ApplyIdentifierRelationshipsService();
@@ -93,7 +170,17 @@ test("no rename in change types leaves unchanged", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "A", name: "A" });
 	const idB = new FinancialIdentifier({ isin: "US222", ticker: "B", name: "B" });
 	const events = new FinancialEvents({
-		groupings: [build.grouping({ identifier: idA })],
+		groupings: [
+			build.grouping({
+				identifier: idA,
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
+			}),
+		],
 		identifierRelationships: [
 			new IdentifierRelationship({
 				fromIdentifier: idA,
@@ -117,13 +204,53 @@ test("chain A to B to C produces one grouping with C", () => {
 		groupings: [
 			build.grouping({
 				identifier: idA,
-				stockTrades: [build.stockBought({ id: "t1", quantity: 1.0, date: "2024-01-01" })],
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [
+					build.stockBought({
+						id: "t1",
+						date: "2024-01-01",
+						quantity: 1.0,
+						price: 10.0,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 1,
+					}),
+				],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
 			}),
 			build.grouping({
 				identifier: idB,
-				stockTrades: [build.stockBought({ id: "t2", quantity: 1.0, date: "2024-02-01" })],
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [
+					build.stockBought({
+						id: "t2",
+						date: "2024-02-01",
+						quantity: 1.0,
+						price: 10.0,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 1,
+					}),
+				],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
 			}),
-			build.grouping({ identifier: idC }),
+			build.grouping({
+				identifier: idC,
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
+			}),
 		],
 		identifierRelationships: [
 			new IdentifierRelationship({
@@ -173,11 +300,43 @@ test("sink grouping with different instance merges into one", () => {
 		groupings: [
 			build.grouping({
 				identifier: idOld,
-				stockTrades: [build.stockBought({ id: "t1", quantity: 10.0, date: "2024-01-01" })],
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [
+					build.stockBought({
+						id: "t1",
+						date: "2024-01-01",
+						quantity: 10.0,
+						price: 10.0,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 1,
+					}),
+				],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
 			}),
 			build.grouping({
 				identifier: idNewInGrouping,
-				stockTrades: [build.stockSold({ id: "t2", quantity: -5.0, date: "2024-07-01" })],
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [
+					build.stockSold({
+						id: "t2",
+						date: "2024-07-01",
+						quantity: -5.0,
+						price: 10.0,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 1,
+					}),
+				],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
 			}),
 		],
 		identifierRelationships: [
@@ -217,7 +376,23 @@ test("same ISIN different ticker matches rename chain", () => {
 		groupings: [
 			build.grouping({
 				identifier: idInGrouping,
-				stockTrades: [build.stockBought({ id: "t1", quantity: 5.0, date: "2024-01-01" })],
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [
+					build.stockBought({
+						id: "t1",
+						date: "2024-01-01",
+						quantity: 5.0,
+						price: 10.0,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 1,
+					}),
+				],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
 			}),
 		],
 		identifierRelationships: [
@@ -253,9 +428,23 @@ test("apply split scales trades before effective date and merges into to", () =>
 		groupings: [
 			build.grouping({
 				identifier: idFrom,
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
 				stockTrades: [
-					build.stockBought({ id: "t1", quantity: 4.0, date: "2024-09-01", price: 10.0 }),
+					build.stockBought({
+						id: "t1",
+						date: "2024-09-01",
+						quantity: 4.0,
+						price: 10.0,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 1,
+					}),
 				],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
 			}),
 		],
 		identifierRelationships: [rel],
@@ -282,10 +471,38 @@ test("apply split scales trades before effective date and merges into to", () =>
 test("apply split builds new trades and leaves the originals untouched", () => {
 	const idFrom = new FinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
 	const idTo = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });
-	const bought = build.stockBought({ id: "t1", quantity: 4.0, date: "2024-09-01" });
-	const sold = build.stockSold({ id: "t2", quantity: -2.0, date: "2024-09-02" });
+	const bought = build.stockBought({
+		id: "t1",
+		date: "2024-09-01",
+		quantity: 4.0,
+		price: 10.0,
+		currency: "USD",
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	});
+	const sold = build.stockSold({
+		id: "t2",
+		date: "2024-09-02",
+		quantity: -2.0,
+		price: 10.0,
+		currency: "USD",
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	});
 	const events = new FinancialEvents({
-		groupings: [build.grouping({ identifier: idFrom, stockTrades: [bought, sold] })],
+		groupings: [
+			build.grouping({
+				identifier: idFrom,
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [bought, sold],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
+			}),
+		],
 		identifierRelationships: [
 			new IdentifierRelationshipSplit({
 				fromIdentifier: idFrom,
@@ -326,9 +543,23 @@ test("apply split scales underlying trade price", () => {
 		groupings: [
 			build.grouping({
 				identifier: idFrom,
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
 				stockTrades: [
-					build.stockBought({ id: "t1", quantity: 1.0, date: "2024-09-01", price: 100.0 }),
+					build.stockBought({
+						id: "t1",
+						date: "2024-09-01",
+						quantity: 1.0,
+						price: 100.0,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 1,
+					}),
 				],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
 			}),
 		],
 		identifierRelationships: [rel],
@@ -356,7 +587,23 @@ test("apply split does not scale trades on or after effective date", () => {
 		groupings: [
 			build.grouping({
 				identifier: idFrom,
-				stockTrades: [build.stockBought({ id: "t1", quantity: 5.0, date: "2024-10-15" })],
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [
+					build.stockBought({
+						id: "t1",
+						date: "2024-10-15",
+						quantity: 5.0,
+						price: 10.0,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 1,
+					}),
+				],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
 			}),
 		],
 		identifierRelationships: [rel],
@@ -378,13 +625,45 @@ test("apply split scales lots before effective date", () => {
 		quantityBefore: 2.0,
 		quantityAfter: 20.0,
 	});
+	const acquired = build.stockBought({
+		id: "acq",
+		date: "2024-09-01",
+		quantity: 2.0,
+		price: 10.0,
+		currency: "USD",
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	});
+	const sold = build.stockSold({
+		id: "sold",
+		date: "2024-09-15",
+		quantity: -2.0,
+		price: 10.0,
+		currency: "USD",
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	});
 	const lot = build.stockTaxLot({
 		id: "lot1",
-		acquired: build.stockBought({ id: "acq", date: "2024-09-01", quantity: 2.0, price: 10.0 }),
-		sold: build.stockSold({ id: "sold", date: "2024-09-15", quantity: -2.0, price: 10.0 }),
+		quantity: 2.0,
+		shortLongType: GenericShortLong.LONG,
+		acquired,
+		sold,
 	});
 	const events = new FinancialEvents({
-		groupings: [build.grouping({ identifier: idFrom, stockTaxLots: [lot] })],
+		groupings: [
+			build.grouping({
+				identifier: idFrom,
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [],
+				stockTaxLots: [lot],
+				derivativeGroupings: [],
+				cashTransactions: [],
+			}),
+		],
 		identifierRelationships: [rel],
 	});
 	const service = new ApplyIdentifierRelationshipsService();
@@ -413,9 +692,23 @@ test("apply reverse split scales by ratio", () => {
 		groupings: [
 			build.grouping({
 				identifier: idFrom,
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
 				stockTrades: [
-					build.stockBought({ id: "t1", quantity: 10.0, date: "2024-09-01", price: 10.0 }),
+					build.stockBought({
+						id: "t1",
+						date: "2024-09-01",
+						quantity: 10.0,
+						price: 10.0,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 1,
+					}),
 				],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
 			}),
 		],
 		identifierRelationships: [rel],
@@ -443,11 +736,43 @@ test("apply split merges from into existing to grouping", () => {
 		groupings: [
 			build.grouping({
 				identifier: idFrom,
-				stockTrades: [build.stockBought({ id: "t1", quantity: 1.0, date: "2024-09-01" })],
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [
+					build.stockBought({
+						id: "t1",
+						date: "2024-09-01",
+						quantity: 1.0,
+						price: 10.0,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 1,
+					}),
+				],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
 			}),
 			build.grouping({
 				identifier: idTo,
-				stockTrades: [build.stockBought({ id: "t2", quantity: 5.0, date: "2024-10-15" })],
+				countryOfOrigin: "US",
+				category: GenericCategory.REGULAR,
+				stockTrades: [
+					build.stockBought({
+						id: "t2",
+						date: "2024-10-15",
+						quantity: 5.0,
+						price: 10.0,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 1,
+					}),
+				],
+				stockTaxLots: [],
+				derivativeGroupings: [],
+				cashTransactions: [],
 			}),
 		],
 		identifierRelationships: [rel],

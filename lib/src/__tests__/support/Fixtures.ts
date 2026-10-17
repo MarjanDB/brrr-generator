@@ -15,10 +15,76 @@ import {
 	type TransactionCash,
 	TransactionType,
 } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
-import { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades";
+import { type CompanyInfo, type Country, TreatyType } from "@brrr/InfoProviders/InfoProvider";
+import { type TaxPayerInfo, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider";
+
+// The taxpayer every expected report file was generated for.
+const taxPayer: TaxPayerInfo = {
+	taxNumber: "12345678",
+	taxpayerType: TaxPayerType.PHYSICAL_SUBJECT,
+	name: "Ime Priimek",
+	address1: "Naslov 1",
+	address2: null,
+	city: "Ljubljana",
+	postNumber: "1000",
+	postName: "Ljubljana",
+	municipalityName: "Ljubljana",
+	birthDate: Values.date("1990-01-01"),
+	maticnaStevilka: "1234567",
+	invalidskoPodjetje: false,
+	resident: true,
+	activityCode: "",
+	activityName: "",
+	countryId: "SI",
+	countryName: "Slovenija",
+};
+
+// The company and country lookups the IBKR dividend cases' expected files were generated with.
+const lookups: { companies: Record<string, CompanyInfo>; countries: Record<string, Country> } = {
+	companies: {
+		FR0000120271: {
+			shortName: "TotalEnergies",
+			longName: "TotalEnergies SE",
+			location: {
+				country: "France",
+				address1: "2 Place Jean Millier",
+				address2: null,
+				zipCode: "92400",
+				city: "Courbevoie",
+				state: null,
+				shortCodeCountry2: "FR",
+			},
+		},
+		US5801351017: {
+			shortName: "McDonald's",
+			longName: "McDonald's Corporation",
+			location: {
+				country: "United States",
+				address1: "110 North Carpenter Street",
+				address2: null,
+				zipCode: "60607",
+				city: "Chicago",
+				state: "IL",
+				shortCodeCountry2: "US",
+			},
+		},
+	},
+	countries: {
+		France: {
+			name: "France",
+			shortCode2: "FR",
+			treaties: new Map([[TreatyType.TaxRelief, "Article 10"]]),
+		},
+		"United States": {
+			name: "United States",
+			shortCode2: "US",
+			treaties: new Map([[TreatyType.TaxRelief, "Article 10"]]),
+		},
+	},
+};
 
 // A buy of 2 TEST at 15 EUR on 2023-01-01.
-const tradeStock: TradeStock = {
+const ibkrStockTradeBuy: TradeStock = {
 	clientAccountID: "test",
 	currency: "EUR",
 	fxRateToBase: 1,
@@ -66,7 +132,7 @@ const tradeStock: TradeStock = {
 };
 
 // The closed lot of that buy, sold on 2023-01-05.
-const lotStock: LotStock = {
+const ibkrStockLotClosed: LotStock = {
 	clientAccountID: "test",
 	currency: "EUR",
 	fxRateToBase: 1,
@@ -102,7 +168,7 @@ const lotStock: LotStock = {
 };
 
 // A TotalEnergies dividend of 2.64 USD.
-const cashTransaction: TransactionCash = {
+const ibkrDividend: TransactionCash = {
 	clientAccountID: "FakeAccount",
 	currency: "USD",
 	fxRateToBase: 1.2,
@@ -128,7 +194,7 @@ const cashTransaction: TransactionCash = {
 };
 
 // The old-ISIN row of SMCI's 10-for-1 split on 2024-09-30.
-const corporateAction: CorporateAction = {
+const ibkrSmciSplitOldRow: CorporateAction = {
 	clientAccountID: "U1",
 	accountAlias: null,
 	model: null,
@@ -177,32 +243,16 @@ const corporateAction: CorporateAction = {
 	weight: 0.0,
 };
 
-// Raw IBKR Flex Query rows, the way the extract step parses them: every field once, overridable.
-export const IbkrRows = {
-	tradeStock: (overrides: Partial<TradeStock> = {}): TradeStock => ({
-		...tradeStock,
-		...overrides,
-	}),
-	lotStock: (overrides: Partial<LotStock> = {}): LotStock => ({ ...lotStock, ...overrides }),
-	cashTransaction: (overrides: Partial<TransactionCash> = {}): TransactionCash => ({
-		...cashTransaction,
-		...overrides,
-	}),
-	corporateAction: (overrides: Partial<CorporateAction> = {}): CorporateAction => ({
-		...corporateAction,
-		...overrides,
-	}),
-
-	// What the extract step hands the transform step; every row list not given is empty.
-	segmentedTrades: (
-		rows: Partial<ConstructorParameters<typeof SegmentedTrades>[0]> = {},
-	): SegmentedTrades =>
-		new SegmentedTrades({
-			cashTransactions: rows.cashTransactions ?? [],
-			corporateActions: rows.corporateActions ?? [],
-			stockTrades: rows.stockTrades ?? [],
-			stockLots: rows.stockLots ?? [],
-			derivativeTrades: rows.derivativeTrades ?? [],
-			derivativeLots: rows.derivativeLots ?? [],
-		}),
+// Named test data, looked up on purpose. Nothing here fills in values a test didn't ask for.
+export const Fixtures = {
+	taxPayer,
+	lookups,
+	// Raw IBKR Flex Query rows, the way the extract step parses them. A test that needs a variant
+	// spreads one and lists what it changes.
+	ibkr: {
+		stockTradeBuy: ibkrStockTradeBuy,
+		stockLotClosed: ibkrStockLotClosed,
+		dividend: ibkrDividend,
+		smciSplitOldRow: ibkrSmciSplitOldRow,
+	},
 };

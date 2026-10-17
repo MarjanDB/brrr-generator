@@ -1,6 +1,8 @@
+import { Fixtures } from "@brrr/__tests__/support/Fixtures";
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
 import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship";
+import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
 import { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import { TestKit } from "@brrr/test-cases";
@@ -17,6 +19,9 @@ describe("IBKR: SMCI bought before and after its 10-for-1 split in 2024, then so
 		const report = await Scenario.pipeline.generate(events, {
 			report: SlovenianReportTypeId.KDVP,
 			year: 2024,
+			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
+			taxPayer: Fixtures.taxPayer,
+			info: Scenario.config.infoProvider(Fixtures.lookups),
 		});
 		const expected = split.expectedReport("slovenia/2024/kdvp-fifo");
 
@@ -30,7 +35,10 @@ describe("IBKR: SMCI bought before and after its 10-for-1 split in 2024, then so
 			IdentifierChangeType.SPLIT,
 		]);
 		const generator = new KdvpReportGenerator(Scenario.pipeline.eventsProcessor());
-		const items = generator.convert(Scenario.config.report(2024), splitApplied.groupings);
+		const items = generator.convert(
+			Scenario.config.report(2024, TaxAuthorityLotMatchingMethod.FIFO),
+			splitApplied.groupings,
+		);
 		const kdvpEvents = items.flatMap((item) => item.items.flatMap((line) => line.events));
 
 		expect(kdvpEvents.length).toEqual(8);

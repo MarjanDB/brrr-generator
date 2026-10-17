@@ -1,5 +1,12 @@
+import { Fixtures } from "@brrr/__tests__/support/Fixtures";
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
+import {
+	GenericCategory,
+	GenericDividendType,
+	GenericShortLong,
+} from "@brrr/Core/Schemas/CommonFormats";
+import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";
@@ -26,31 +33,119 @@ function makeProvider({
 	);
 }
 
-const stockBought = build.stockBought({ date: "2023-06-06" });
-const stockSold = build.stockSold({ date: "2023-06-07" });
-const optionBought = build.derivativeBought({ date: "2023-06-07", multiplier: 100 });
-const optionSold = build.derivativeSold({ date: "2023-06-08", multiplier: 100, price: 1.5 });
+const stockBought = build.stockBought({
+	id: "ID1",
+	date: "2023-06-06",
+	quantity: 1,
+	price: 1,
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
+});
 
-const testData = build.events([
-	build.grouping({
-		stockTrades: [stockBought, stockSold],
-		stockTaxLots: [build.stockTaxLot({ acquired: stockBought, sold: stockSold })],
-		derivativeGroupings: [
-			build.derivativeGrouping({
-				trades: [optionBought, optionSold],
-				taxLots: [build.derivativeTaxLot({ acquired: optionBought, sold: optionSold })],
-			}),
-		],
-		cashTransactions: [
-			build.dividend({ date: "2023-06-07", amount: 10, money: { fxRateToBase: 0.5 } }),
-			build.withholdingTax({ date: "2023-06-07", amount: -5, money: { fxRateToBase: 0.5 } }),
-		],
-	}),
-]);
+const stockSold = build.stockSold({
+	id: "ID2",
+	date: "2023-06-07",
+	quantity: -1,
+	price: 1,
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
+});
+
+const optionBought = build.optionBought({
+	id: "ID1",
+	date: "2023-06-07",
+	multiplier: 100,
+	quantity: 1,
+	price: 1,
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
+});
+
+const optionSold = build.optionSold({
+	id: "ID2",
+	date: "2023-06-08",
+	multiplier: 100,
+	quantity: -1,
+	price: 1.5,
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
+});
+
+const dividend = build.dividend({
+	id: "ID",
+	date: "2023-06-07",
+	amount: 10,
+	actionId: "DivAction",
+	transactionId: "TranId1",
+	listingExchange: "EXH",
+	dividendType: GenericDividendType.ORDINARY,
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 0.5,
+});
+
+const withholdingTax = build.withholdingTax({
+	id: "ID",
+	date: "2023-06-07",
+	amount: -5,
+	actionId: "DivAction",
+	transactionId: "TranId1",
+	listingExchange: "EXH",
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 0.5,
+});
+
+const testData = build.events(
+	[
+		build.grouping({
+			identifier: new FinancialIdentifier({ isin: "ISIN" }),
+			countryOfOrigin: null,
+			category: GenericCategory.REGULAR,
+			stockTrades: [stockBought, stockSold],
+			stockTaxLots: [
+				build.stockTaxLot({
+					id: "ID1",
+					quantity: 1,
+					shortLongType: GenericShortLong.LONG,
+					acquired: stockBought,
+					sold: stockSold,
+				}),
+			],
+			derivativeGroupings: [
+				build.derivativeGrouping({
+					identifier: new FinancialIdentifier({ isin: "ISIN" }),
+					trades: [optionBought, optionSold],
+					taxLots: [
+						build.derivativeTaxLot({
+							id: "ID1",
+							quantity: 1,
+							shortLongType: GenericShortLong.LONG,
+							acquired: optionBought,
+							sold: optionSold,
+						}),
+					],
+				}),
+			],
+			cashTransactions: [dividend, withholdingTax],
+		}),
+	],
+	[],
+);
 
 test("KDVP lines: the buy and the sale with their quantities", () => {
 	const items = new KdvpReportGenerator(pipeline.eventsProcessor()).convert(
-		config.report(2023),
+		config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		testData.groupings,
 	);
 	const events = items.flatMap((item) => item.items.flatMap((line) => line.events));
@@ -62,7 +157,7 @@ test("KDVP lines: the buy and the sale with their quantities", () => {
 
 test("IFI lines: the buy and the sale with their quantities", () => {
 	const items = new IfiReportGenerator(pipeline.eventsProcessor()).convert(
-		config.report(2023),
+		config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		testData.groupings,
 	);
 	const rows = items.flatMap((item) => item.items);
@@ -92,8 +187,8 @@ test("generate applies identifier relationships once", async () => {
 	const provider = makeProvider({ apply });
 
 	await provider.generate(SlovenianTaxAuthorityReportTypes.DOH_KDVP, {
-		taxPayerInfo: config.taxPayer,
-		reportConfig: config.report(2023),
+		taxPayerInfo: Fixtures.taxPayer,
+		reportConfig: config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		events: testData,
 	});
 
@@ -106,8 +201,8 @@ test("DIV looks each company up once", async () => {
 	const provider = makeProvider({ info });
 
 	await provider.generate(SlovenianTaxAuthorityReportTypes.DOH_DIV, {
-		taxPayerInfo: config.taxPayer,
-		reportConfig: config.report(2023),
+		taxPayerInfo: Fixtures.taxPayer,
+		reportConfig: config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		events: testData,
 	});
 
@@ -119,8 +214,8 @@ test("unknown report type id is rejected", async () => {
 
 	await expect(
 		provider.generateExports("nope", {
-			taxPayerInfo: config.taxPayer,
-			reportConfig: config.report(2023),
+			taxPayerInfo: Fixtures.taxPayer,
+			reportConfig: config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 			events: testData,
 		}),
 	).rejects.toThrow("Unsupported report type 'nope' for tax authority: slovenia");

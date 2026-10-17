@@ -1,4 +1,5 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
+import { GenericCategory, GenericDividendType } from "@brrr/Core/Schemas/CommonFormats";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
@@ -9,49 +10,94 @@ const { build } = Scenario;
 const config = Scenario.config.report(2023, TaxAuthorityLotMatchingMethod.NONE);
 const identifier = new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" });
 
-// Paid in USD at 0.5 EUR per USD.
-const usd = {
-	underlyingCurrency: "USD",
-	commissionCurrency: "USD",
-	taxCurrency: "USD",
-	fxRateToBase: 0.5,
-};
-
 test("dividends add up per action, then per day, and are rounded at the end", async () => {
 	const lines = await new DivReportGenerator(new PredefinedInfoProvider()).convert(config, [
 		build.grouping({
 			identifier,
+			countryOfOrigin: null,
+			category: GenericCategory.REGULAR,
+			stockTrades: [],
+			stockTaxLots: [],
+			derivativeGroupings: [],
 			cashTransactions: [
 				// Action A pays twice. Only its first payment's own tax counts; the withholdings add to it.
 				build.dividend({
-					actionId: "A",
+					id: "A-10",
 					date: "2023-06-07",
 					amount: 10,
-					money: {
-						underlyingCurrency: "USD",
-						commissionCurrency: "USD",
-						taxCurrency: "USD",
-						taxTotal: 0.5,
-						fxRateToBase: 0.5,
-					},
+					actionId: "A",
+					transactionId: "A-10",
+					listingExchange: "EXH",
+					dividendType: GenericDividendType.ORDINARY,
+					currency: "USD",
+					commission: 0,
+					tax: 0.5,
+					fxRateToBase: 0.5,
 				}),
 				build.dividend({
-					actionId: "A",
+					id: "A-2.5",
 					date: "2023-06-07",
 					amount: 2.5,
-					money: {
-						underlyingCurrency: "USD",
-						commissionCurrency: "USD",
-						taxCurrency: "USD",
-						taxTotal: 0.7,
-						fxRateToBase: 0.5,
-					},
+					actionId: "A",
+					transactionId: "A-2.5",
+					listingExchange: "EXH",
+					dividendType: GenericDividendType.ORDINARY,
+					currency: "USD",
+					commission: 0,
+					tax: 0.7,
+					fxRateToBase: 0.5,
 				}),
-				build.withholdingTax({ actionId: "A", date: "2023-06-07", amount: -1.5, money: usd }),
-				build.withholdingTax({ actionId: "A", date: "2023-06-07", amount: -0.25, money: usd }),
+				build.withholdingTax({
+					id: "A--1.5",
+					date: "2023-06-07",
+					amount: -1.5,
+					actionId: "A",
+					transactionId: "A--1.5",
+					listingExchange: "EXH",
+					currency: "USD",
+					commission: 0,
+					tax: 0,
+					fxRateToBase: 0.5,
+				}),
+				build.withholdingTax({
+					id: "A--0.25",
+					date: "2023-06-07",
+					amount: -0.25,
+					actionId: "A",
+					transactionId: "A--0.25",
+					listingExchange: "EXH",
+					currency: "USD",
+					commission: 0,
+					tax: 0,
+					fxRateToBase: 0.5,
+				}),
 				// Action B is paid on the same day, so it joins A's line.
-				build.dividend({ actionId: "B", date: "2023-06-07", amount: 1, money: usd }),
-				build.dividend({ actionId: "C", date: "2023-06-08", amount: 4.444, money: usd }),
+				build.dividend({
+					id: "B-1",
+					date: "2023-06-07",
+					amount: 1,
+					actionId: "B",
+					transactionId: "B-1",
+					listingExchange: "EXH",
+					dividendType: GenericDividendType.ORDINARY,
+					currency: "USD",
+					commission: 0,
+					tax: 0,
+					fxRateToBase: 0.5,
+				}),
+				build.dividend({
+					id: "C-4.444",
+					date: "2023-06-08",
+					amount: 4.444,
+					actionId: "C",
+					transactionId: "C-4.444",
+					listingExchange: "EXH",
+					dividendType: GenericDividendType.ORDINARY,
+					currency: "USD",
+					commission: 0,
+					tax: 0,
+					fxRateToBase: 0.5,
+				}),
 			],
 		}),
 	]);
@@ -93,9 +139,37 @@ test("a withholding without a dividend of the same action is rejected", async ()
 		new DivReportGenerator(new PredefinedInfoProvider()).convert(config, [
 			build.grouping({
 				identifier,
+				countryOfOrigin: null,
+				category: GenericCategory.REGULAR,
+				stockTrades: [],
+				stockTaxLots: [],
+				derivativeGroupings: [],
 				cashTransactions: [
-					build.dividend({ actionId: "A", date: "2023-06-07", amount: 10, money: usd }),
-					build.withholdingTax({ actionId: "B", date: "2023-06-07", amount: -1.5, money: usd }),
+					build.dividend({
+						id: "A-10",
+						date: "2023-06-07",
+						amount: 10,
+						actionId: "A",
+						transactionId: "A-10",
+						listingExchange: "EXH",
+						dividendType: GenericDividendType.ORDINARY,
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 0.5,
+					}),
+					build.withholdingTax({
+						id: "B--1.5",
+						date: "2023-06-07",
+						amount: -1.5,
+						actionId: "B",
+						transactionId: "B--1.5",
+						listingExchange: "EXH",
+						currency: "USD",
+						commission: 0,
+						tax: 0,
+						fxRateToBase: 0.5,
+					}),
 				],
 			}),
 		]),

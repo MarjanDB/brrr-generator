@@ -1,5 +1,6 @@
-import { Lookups } from "@brrr/__tests__/Acceptance/Lookups";
+import { Fixtures } from "@brrr/__tests__/support/Fixtures";
 import { Scenario } from "@brrr/__tests__/support/Scenario";
+import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import { TestKit } from "@brrr/test-cases";
 
@@ -12,7 +13,9 @@ describe("IBKR: a TotalEnergies dividend in 2022 with French withholding tax", (
 		const report = await Scenario.pipeline.generate(events, {
 			report: SlovenianReportTypeId.DIV,
 			year: 2022,
-			info: Scenario.config.infoProvider(Lookups),
+			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
+			taxPayer: Fixtures.taxPayer,
+			info: Scenario.config.infoProvider(Fixtures.lookups),
 		});
 		const expected = dividends.expectedReport("slovenia/2022/div");
 

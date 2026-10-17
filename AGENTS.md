@@ -123,12 +123,19 @@ To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
 - **Write tests out line by line.** A reader should see what is checked without working anything out: one `expect` per value
   (`expect(events[0].quantity).toEqual(10)`), each test's data written in the test or right above it, and no loops, `test.each`,
   helper assertions or `map`/`filter` chains that compute the expectations.
-- **`Scenario`** (`lib/src/__tests__/support/Scenario.ts`) builds everything else a test needs: `Scenario.build.*` for lib's events,
-  lots and groupings with defaults (1 unit at 1 EUR, generated ids), their `staging` twins and raw `ibkr` rows; `Scenario.config` for
-  the taxpayer, report config and info provider; `Scenario.pipeline` for exports → `FinancialEvents` → reports. Give a test only the
-  values it is about, and call `Scenario` directly: no local wrapper functions around it, and every buy, sale and lot built with its
-  exact type (`stockBought`, `stockSold`, `stockTaxLot`, …). A local helper is only for wiring that isn't test data, such as a
-  provider built with collaborators the test spies on. `support/Setup.ts` pins Luxon's zone and clock for every test.
+- **`Scenario`** (`lib/src/__tests__/support/Scenario.ts`) builds lib's objects and runs the pipeline, and it **invents no values**:
+  - `Scenario.build.*` (events, lots, groupings, their `staging` twins, `ibkr.segmentedTrades`) fixes only what a builder's name
+    says. `stockBought` is a STOCK bought with multiplier 1, `optionSold` an OPTION sold, and everything built has no provenance yet.
+    Every other value (id, date, quantity, price, currency, commission, tax, fx rate, lot quantity, long/short, every grouping
+    list, even an empty one) is required, so the test shows the exact scenario.
+  - `Scenario.config.report(year, lotMatching)` and `.infoProvider(lookups)`.
+  - `Scenario.pipeline.run(files)` and `.generate(events, { report, year, lotMatching, taxPayer, info })`, all arguments required.
+- **`Fixtures`** (`lib/src/__tests__/support/Fixtures.ts`) holds named test data that tests look up on purpose: `taxPayer` (the
+  one the expected files were generated for), `lookups` (company and country data), and IBKR sample rows (`ibkr.stockTradeBuy`, …).
+  A test that needs a variant spreads a fixture and lists what it changes.
+- Call `Scenario` and `Fixtures` directly: no local wrapper functions around them, and every buy, sale and lot built with its exact
+  type. A local helper is only for wiring that isn't test data, such as a provider built with collaborators the test spies on.
+  `support/Setup.ts` pins Luxon's zone and clock for every test.
 - **A test case or a unit test?** A case for a real-shaped export turned into whole reports: regressions from users' exports and
   anything that crosses layers. A unit test with `Scenario` for one rule in one class, where hand-built input states the rule more
   clearly than an export.

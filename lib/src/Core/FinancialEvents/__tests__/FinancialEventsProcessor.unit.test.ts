@@ -1,18 +1,50 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod";
+import { GenericCategory, GenericShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 
 const { build, pipeline } = Scenario;
 
 const identifier = new FinancialIdentifier({ isin: "US123", ticker: "AAPL", name: "AAPL" });
-const stockBought = build.stockBought({ id: "StockBought", date: "2023-01-01", price: 10 });
-const stockSold = build.stockSold({ id: "StockSold", date: "2023-01-02", price: 15 });
+
+const stockBought = build.stockBought({
+	id: "StockBought",
+	date: "2023-01-01",
+	quantity: 1,
+	price: 10,
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
+});
+
+const stockSold = build.stockSold({
+	id: "StockSold",
+	date: "2023-01-02",
+	quantity: -1,
+	price: 15,
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
+});
 
 const grouping = build.grouping({
 	identifier,
 	countryOfOrigin: "US",
+	category: GenericCategory.REGULAR,
 	stockTrades: [stockBought, stockSold],
-	stockTaxLots: [build.stockTaxLot({ id: "Lot", acquired: stockBought, sold: stockSold })],
+	stockTaxLots: [
+		build.stockTaxLot({
+			id: "Lot",
+			quantity: 1,
+			shortLongType: GenericShortLong.LONG,
+			acquired: stockBought,
+			sold: stockSold,
+		}),
+	],
+	derivativeGroupings: [],
+	cashTransactions: [],
 });
 
 test("single stock lot matching", () => {
@@ -45,7 +77,11 @@ test("no stock trades matching when no lots", () => {
 	const groupingNoLots = build.grouping({
 		identifier,
 		countryOfOrigin: "US",
+		category: GenericCategory.REGULAR,
 		stockTrades: [stockBought, stockSold],
+		stockTaxLots: [],
+		derivativeGroupings: [],
+		cashTransactions: [],
 	});
 
 	const legs = pipeline

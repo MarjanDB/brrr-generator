@@ -6,88 +6,63 @@ import { type ValidDateTime, zDateTimeFromISOString } from "@brrr/Utils/DateTime
 type EventId = TradeEventBase["id"];
 type CashTransaction = TradeEventCashTransactionDividend;
 
-export type MoneyFields = Partial<
-	ConstructorParameters<typeof GenericMonetaryExchangeInformation>[0]
->;
-
-// What every trade builder takes. `money` holds the rest of the exchanged money: currencies,
-// commission, tax, rate to base.
-export type TradeOptions = {
-	id?: EventId;
-	date?: string;
-	quantity?: number;
-	price?: number;
-	multiplier?: number;
-	money?: MoneyFields;
+// The money every event carries. `currency` is the currency of the amount, the commission and the tax.
+export type MoneyFields = {
+	currency: GenericMonetaryExchangeInformation["underlyingCurrency"];
+	commission: number;
+	tax: number;
+	fxRateToBase: number;
 };
 
-// What every cash transaction builder takes. `amount` is the payment (negative for a withholding).
-export type CashOptions = {
-	id?: EventId;
-	date?: string;
-	amount?: number;
-	actionId?: CashTransaction["actionId"];
-	transactionId?: CashTransaction["transactionId"];
-	listingExchange?: CashTransaction["listingExchange"];
-	money?: MoneyFields;
+// Everything a trade builder needs; none of it has a default.
+export type TradeFields = MoneyFields & {
+	id: EventId;
+	date: string;
+	quantity: number;
+	price: number;
 };
 
-let lastId = 0;
+// Everything a cash transaction builder needs; none of it has a default. `amount` is the payment
+// (negative for a withholding).
+export type CashFields = MoneyFields & {
+	id: EventId;
+	date: string;
+	amount: number;
+	actionId: CashTransaction["actionId"];
+	transactionId: CashTransaction["transactionId"];
+	listingExchange: CashTransaction["listingExchange"];
+};
 
-// The values the builders share: defaults for dates, money and ids.
+// Turns the builders' fields into the model's values. Nothing here invents a value.
 export const Values = {
-	defaultDate: "2023-01-01",
-
 	date(iso: string): ValidDateTime {
 		return zDateTimeFromISOString.parse(iso);
 	},
 
-	// Anything not given is 1 EUR unit at a price of 1, with no commission or tax, at a rate of 1.
-	money(fields: MoneyFields = {}): GenericMonetaryExchangeInformation {
+	tradeMoney(fields: TradeFields): GenericMonetaryExchangeInformation {
 		return new GenericMonetaryExchangeInformation({
-			underlyingCurrency: "EUR",
+			underlyingCurrency: fields.currency,
+			underlyingQuantity: fields.quantity,
+			underlyingTradePrice: fields.price,
+			commissionCurrency: fields.currency,
+			commissionTotal: fields.commission,
+			taxCurrency: fields.currency,
+			taxTotal: fields.tax,
+			fxRateToBase: fields.fxRateToBase,
+		});
+	},
+
+	// A cash transaction is one unit of its amount.
+	cashMoney(fields: CashFields): GenericMonetaryExchangeInformation {
+		return new GenericMonetaryExchangeInformation({
+			underlyingCurrency: fields.currency,
 			underlyingQuantity: 1,
-			underlyingTradePrice: 1,
-			commissionCurrency: "EUR",
-			commissionTotal: 0,
-			taxCurrency: "EUR",
-			taxTotal: 0,
-			fxRateToBase: 1,
-			...fields,
+			underlyingTradePrice: fields.amount,
+			commissionCurrency: fields.currency,
+			commissionTotal: fields.commission,
+			taxCurrency: fields.currency,
+			taxTotal: fields.tax,
+			fxRateToBase: fields.fxRateToBase,
 		});
-	},
-
-	// A unique id for a built object nobody refers to by id.
-	nextId(prefix: string): EventId {
-		lastId += 1;
-		return `${prefix}-${lastId}`;
-	},
-
-	tradeMoney(options: TradeOptions, defaultQuantity: number): GenericMonetaryExchangeInformation {
-		return Values.money({
-			...options.money,
-			underlyingQuantity: options.quantity ?? options.money?.underlyingQuantity ?? defaultQuantity,
-			underlyingTradePrice: options.price ?? options.money?.underlyingTradePrice ?? 1,
-		});
-	},
-
-	cashMoney(options: CashOptions, defaultAmount: number): GenericMonetaryExchangeInformation {
-		return Values.money({
-			...options.money,
-			underlyingTradePrice: options.amount ?? options.money?.underlyingTradePrice ?? defaultAmount,
-		});
-	},
-
-	// The fields every cash transaction carries.
-	cashFields(options: CashOptions, prefix: string) {
-		const id = options.id ?? Values.nextId(prefix);
-		return {
-			id,
-			date: Values.date(options.date ?? Values.defaultDate),
-			multiplier: 1,
-			actionId: options.actionId ?? "ACTION",
-			transactionId: options.transactionId ?? id,
-			listingExchange: options.listingExchange ?? "EXH",
-		};
 	},
 };

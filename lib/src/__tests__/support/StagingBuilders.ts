@@ -1,10 +1,10 @@
-import { type CashOptions, type TradeOptions, Values } from "@brrr/__tests__/support/Values";
+import { type CashFields, type TradeFields, Values } from "@brrr/__tests__/support/Values";
 import {
 	GenericAssetClass,
-	GenericCategory,
+	type GenericCategory,
 	GenericDerivativeReportItemGainType,
-	GenericDividendType,
-	GenericShortLong,
+	type GenericDividendType,
+	type GenericShortLong,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
@@ -22,144 +22,159 @@ import {
 } from "@brrr/Core/Schemas/Staging/Events";
 import { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping";
 import { StagingTaxLot, StagingTaxLotMatchingDetails } from "@brrr/Core/Schemas/Staging/Lots";
-import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
+import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
 
-type WithIdentifier = { identifier?: StagingFinancialIdentifier };
+type WithIdentifier = { identifier: StagingFinancialIdentifier };
 
-const defaultIdentifier = () => new StagingFinancialIdentifier({ isin: "ISIN" });
+// One side of a staging lot: the trade it names by id, and the date it happened (either may be null).
+type LotSide = { id: StagingTaxLotMatchingDetails["id"]; date: string | null };
 
-function tradeFields(options: TradeOptions & WithIdentifier, prefix: string, quantity: number) {
-	return {
-		id: options.id ?? Values.nextId(prefix),
-		financialIdentifier: options.identifier ?? defaultIdentifier(),
-		date: Values.date(options.date ?? Values.defaultDate),
-		multiplier: options.multiplier ?? 1,
-		exchangedMoney: Values.tradeMoney(options, quantity),
-	};
-}
-
-function cashFields(options: CashOptions & WithIdentifier, prefix: string, amount: number) {
-	return {
-		...Values.cashFields(options, prefix),
-		financialIdentifier: options.identifier ?? defaultIdentifier(),
-		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-		exchangedMoney: Values.cashMoney(options, amount),
-	};
-}
-
-// One side of a staging lot: the trade it names by id, or the date it happened.
-type LotSide = { id?: StagingTaxLotMatchingDetails["id"]; date?: string | null };
-
-function lotSide(side: LotSide): StagingTaxLotMatchingDetails {
-	return new StagingTaxLotMatchingDetails({
-		id: side.id ?? null,
-		dateTime: side.date ? Values.date(side.date) : null,
-	});
-}
-
-// The Staging* twins of the core builders, as a broker's transform produces them.
+// The Staging* twins of the core builders, as a broker's transform produces them. Like those, each
+// builder fixes only what its name says; every other value is required.
 export const StagingBuilders = {
-	stockBought(options: TradeOptions & WithIdentifier = {}): StagingTradeEventStockAcquired {
+	stockBought(fields: TradeFields & WithIdentifier): StagingTradeEventStockAcquired {
 		return new StagingTradeEventStockAcquired({
-			...tradeFields(options, "stockBought", 1),
+			id: fields.id,
+			financialIdentifier: fields.identifier,
 			assetClass: GenericAssetClass.STOCK,
+			date: Values.date(fields.date),
+			multiplier: 1,
+			exchangedMoney: Values.tradeMoney(fields),
 			acquiredReason: GenericTradeReportItemGainType.BOUGHT,
 		});
 	},
 
-	stockSold(options: TradeOptions & WithIdentifier = {}): StagingTradeEventStockSold {
+	stockSold(fields: TradeFields & WithIdentifier): StagingTradeEventStockSold {
 		return new StagingTradeEventStockSold({
-			...tradeFields(options, "stockSold", -1),
+			id: fields.id,
+			financialIdentifier: fields.identifier,
 			assetClass: GenericAssetClass.STOCK,
+			date: Values.date(fields.date),
+			multiplier: 1,
+			exchangedMoney: Values.tradeMoney(fields),
 		});
 	},
 
-	derivativeBought(
-		options: TradeOptions & WithIdentifier = {},
+	optionBought(
+		fields: TradeFields & WithIdentifier & { multiplier: number },
 	): StagingTradeEventDerivativeAcquired {
 		return new StagingTradeEventDerivativeAcquired({
-			...tradeFields(options, "derivativeBought", 1),
+			id: fields.id,
+			financialIdentifier: fields.identifier,
 			assetClass: GenericAssetClass.OPTION,
+			date: Values.date(fields.date),
+			multiplier: fields.multiplier,
+			exchangedMoney: Values.tradeMoney(fields),
 			acquiredReason: GenericDerivativeReportItemGainType.BOUGHT,
 		});
 	},
 
-	derivativeSold(options: TradeOptions & WithIdentifier = {}): StagingTradeEventDerivativeSold {
+	optionSold(
+		fields: TradeFields & WithIdentifier & { multiplier: number },
+	): StagingTradeEventDerivativeSold {
 		return new StagingTradeEventDerivativeSold({
-			...tradeFields(options, "derivativeSold", -1),
+			id: fields.id,
+			financialIdentifier: fields.identifier,
 			assetClass: GenericAssetClass.OPTION,
+			date: Values.date(fields.date),
+			multiplier: fields.multiplier,
+			exchangedMoney: Values.tradeMoney(fields),
 		});
 	},
 
-	dividend(options: CashOptions & WithIdentifier = {}): StagingTradeEventCashTransactionDividend {
+	dividend(
+		fields: CashFields & WithIdentifier & { dividendType: GenericDividendType },
+	): StagingTradeEventCashTransactionDividend {
 		return new StagingTradeEventCashTransactionDividend({
-			...cashFields(options, "dividend", 1),
-			dividendType: GenericDividendType.ORDINARY,
+			...cashEvent(fields),
+			dividendType: fields.dividendType,
 		});
 	},
 
 	withholdingTax(
-		options: CashOptions & WithIdentifier = {},
+		fields: CashFields & WithIdentifier,
 	): StagingTradeEventCashTransactionWithholdingTax {
-		return new StagingTradeEventCashTransactionWithholdingTax(
-			cashFields(options, "withholdingTax", -1),
-		);
+		return new StagingTradeEventCashTransactionWithholdingTax(cashEvent(fields));
 	},
 
 	paymentInLieu(
-		options: CashOptions & WithIdentifier = {},
+		fields: CashFields & WithIdentifier & { dividendType: GenericDividendType },
 	): StagingTradeEventCashTransactionPaymentInLieuOfDividends {
 		return new StagingTradeEventCashTransactionPaymentInLieuOfDividends({
-			...cashFields(options, "paymentInLieu", 1),
-			dividendType: GenericDividendType.ORDINARY,
+			...cashEvent(fields),
+			dividendType: fields.dividendType,
 		});
 	},
 
 	paymentInLieuWithholdingTax(
-		options: CashOptions & WithIdentifier = {},
+		fields: CashFields & WithIdentifier,
 	): StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends {
 		return new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends(
-			cashFields(options, "paymentInLieuWithholdingTax", -1),
+			cashEvent(fields),
 		);
 	},
 
 	taxLot(
-		options: {
-			id?: StagingTaxLot["id"];
-			quantity?: number;
+		fields: {
+			id: StagingTaxLot["id"];
+			quantity: number;
+			shortLongType: GenericShortLong;
 			acquired: LotSide;
 			sold: LotSide;
 		} & WithIdentifier,
 	): StagingTaxLot {
 		return new StagingTaxLot({
-			id: options.id ?? Values.nextId("lot"),
-			financialIdentifier: options.identifier ?? defaultIdentifier(),
-			quantity: options.quantity ?? 1,
-			acquired: lotSide(options.acquired),
-			sold: lotSide(options.sold),
-			shortLongType: GenericShortLong.LONG,
+			id: fields.id,
+			financialIdentifier: fields.identifier,
+			quantity: fields.quantity,
+			acquired: lotSide(fields.acquired),
+			sold: lotSide(fields.sold),
+			shortLongType: fields.shortLongType,
 		});
 	},
 
 	grouping(
-		options: {
-			countryOfOrigin?: string | null;
-			stockTrades?: StagingTradeEventStock[];
-			stockTaxLots?: StagingTaxLot[];
-			derivativeTrades?: StagingTradeEventDerivative[];
-			derivativeTaxLots?: StagingTaxLot[];
-			cashTransactions?: StagingTransactionCash[];
-		} & WithIdentifier = {},
+		fields: {
+			countryOfOrigin: string | null;
+			category: GenericCategory;
+			stockTrades: StagingTradeEventStock[];
+			stockTaxLots: StagingTaxLot[];
+			derivativeTrades: StagingTradeEventDerivative[];
+			derivativeTaxLots: StagingTaxLot[];
+			cashTransactions: StagingTransactionCash[];
+		} & WithIdentifier,
 	): StagingFinancialGrouping {
 		return new StagingFinancialGrouping({
-			financialIdentifier: options.identifier ?? defaultIdentifier(),
-			countryOfOrigin: options.countryOfOrigin ?? null,
-			underlyingCategory: GenericCategory.REGULAR,
-			stockTrades: options.stockTrades ?? [],
-			stockTaxLots: options.stockTaxLots ?? [],
-			derivativeTrades: options.derivativeTrades ?? [],
-			derivativeTaxLots: options.derivativeTaxLots ?? [],
-			cashTransactions: options.cashTransactions ?? [],
+			financialIdentifier: fields.identifier,
+			countryOfOrigin: fields.countryOfOrigin,
+			underlyingCategory: fields.category,
+			stockTrades: fields.stockTrades,
+			stockTaxLots: fields.stockTaxLots,
+			derivativeTrades: fields.derivativeTrades,
+			derivativeTaxLots: fields.derivativeTaxLots,
+			cashTransactions: fields.cashTransactions,
 		});
 	},
 };
+
+// The fields every staging cash transaction carries.
+function cashEvent(fields: CashFields & WithIdentifier) {
+	return {
+		id: fields.id,
+		financialIdentifier: fields.identifier,
+		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+		date: Values.date(fields.date),
+		multiplier: 1,
+		exchangedMoney: Values.cashMoney(fields),
+		actionId: fields.actionId,
+		transactionId: fields.transactionId,
+		listingExchange: fields.listingExchange,
+	};
+}
+
+function lotSide(side: LotSide): StagingTaxLotMatchingDetails {
+	return new StagingTaxLotMatchingDetails({
+		id: side.id,
+		dateTime: side.date === null ? null : Values.date(side.date),
+	});
+}

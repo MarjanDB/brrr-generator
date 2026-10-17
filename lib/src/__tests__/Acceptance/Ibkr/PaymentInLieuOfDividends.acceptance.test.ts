@@ -1,5 +1,6 @@
-import { Lookups } from "@brrr/__tests__/Acceptance/Lookups";
+import { Fixtures } from "@brrr/__tests__/support/Fixtures";
 import { Scenario } from "@brrr/__tests__/support/Scenario";
+import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import { TestKit } from "@brrr/test-cases";
 
@@ -12,7 +13,9 @@ describe("IBKR: a McDonald's payment in lieu of dividend in 2024 with US withhol
 		const report = await Scenario.pipeline.generate(events, {
 			report: SlovenianReportTypeId.DIV,
 			year: 2024,
-			info: Scenario.config.infoProvider(Lookups),
+			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
+			taxPayer: Fixtures.taxPayer,
+			info: Scenario.config.infoProvider(Fixtures.lookups),
 		});
 		const expected = paymentInLieu.expectedReport("slovenia/2024/div");
 

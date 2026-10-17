@@ -1,4 +1,9 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
+import {
+	GenericCategory,
+	GenericDividendType,
+	GenericShortLong,
+} from "@brrr/Core/Schemas/CommonFormats";
 import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship";
 import {
 	StagingIdentifierChangeType,
@@ -19,75 +24,126 @@ const simpleStagingStockBuy = staging.stockBought({
 	id: "StockBought",
 	identifier: ident,
 	date: "2023-01-01",
+	quantity: 1,
 	price: 10,
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
 });
 
 const simpleStagingStockSold = staging.stockSold({
 	id: "StockSold",
 	identifier: ident,
 	date: "2023-01-02",
+	quantity: -1,
 	price: 15,
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
 });
 
 const simpleStagingDividend = staging.dividend({
 	id: "Dividend",
 	identifier: ident,
+	date: "2023-01-01",
+	amount: 10,
 	actionId: "ActionID",
 	transactionId: "TransactionID",
-	amount: 10,
+	listingExchange: "ListingExchange",
+	dividendType: GenericDividendType.ORDINARY,
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
 });
 
 const simpleStagingDividendWithholdingTax = staging.withholdingTax({
 	id: "DividendWithholdingTax",
 	identifier: ident,
+	date: "2023-01-01",
+	amount: -5,
 	actionId: "ActionID",
 	transactionId: "TransactionID",
-	amount: -5,
+	listingExchange: "ListingExchange",
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
 });
 
 const simpleStagingPaymentInLieuOfDividend = staging.paymentInLieu({
 	id: "PaymentInLieuOfDividend",
 	identifier: ident,
+	date: "2023-01-01",
+	amount: 5,
 	actionId: "ActionID",
 	transactionId: "TransactionID",
-	amount: 5,
+	listingExchange: "ListingExchange",
+	dividendType: GenericDividendType.ORDINARY,
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
 });
 
 const simpleStagingPaymentInLieuOfDividendWithholdingTax = staging.paymentInLieuWithholdingTax({
 	id: "PaymentInLieuOfDividendWithholdingTax",
 	identifier: ident,
+	date: "2023-01-01",
+	amount: -2.5,
 	actionId: "ActionID",
 	transactionId: "TransactionID",
-	amount: -2.5,
+	listingExchange: "ListingExchange",
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
 });
 
 const simpleStagingStockLot = staging.taxLot({
 	id: "Lot",
 	identifier: ident,
-	acquired: { id: "StockBought" },
-	sold: { date: "2023-01-02" },
+	quantity: 1,
+	shortLongType: GenericShortLong.LONG,
+	acquired: { id: "StockBought", date: null },
+	sold: { id: null, date: "2023-01-02" },
 });
 
-const simpleStagingDerivativeBuy = staging.derivativeBought({
+const simpleStagingDerivativeBuy = staging.optionBought({
 	id: "DerivativeBought",
 	identifier: ident,
 	date: "2023-01-01",
 	multiplier: 100,
+	quantity: 1,
 	price: 10,
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
 });
 
-const simpleStagingDerivativeSold = staging.derivativeSold({
+const simpleStagingDerivativeSold = staging.optionSold({
 	id: "DerivativeSold",
 	identifier: ident,
 	date: "2023-01-02",
+	multiplier: 1,
+	quantity: -1,
 	price: 15,
+	currency: "EUR",
+	commission: 0,
+	tax: 0,
+	fxRateToBase: 1,
 });
 
 const simpleStagingDerivativeLot = staging.taxLot({
 	id: "Lot",
 	identifier: ident,
-	acquired: { id: "DerivativeBought" },
-	sold: { date: "2023-01-02" },
+	quantity: 1,
+	shortLongType: GenericShortLong.LONG,
+	acquired: { id: "DerivativeBought", date: null },
+	sold: { id: null, date: "2023-01-02" },
 });
 
 test("simple stock lot matching", () => {
@@ -95,8 +151,13 @@ test("simple stock lot matching", () => {
 	const groupings = [
 		staging.grouping({
 			identifier: ident,
+			countryOfOrigin: null,
+			category: GenericCategory.REGULAR,
 			stockTrades: [simpleStagingStockBuy, simpleStagingStockSold],
 			stockTaxLots: [simpleStagingStockLot],
+			derivativeTrades: [],
+			derivativeTaxLots: [],
+			cashTransactions: [],
 		}),
 	];
 	const results = processor.generateGenericGroupings(groupings);
@@ -112,8 +173,13 @@ test("partial stock lot matching throws", () => {
 	const groupings = [
 		staging.grouping({
 			identifier: ident,
+			countryOfOrigin: null,
+			category: GenericCategory.REGULAR,
 			stockTrades: [simpleStagingStockBuy],
 			stockTaxLots: [simpleStagingStockLot],
+			derivativeTrades: [],
+			derivativeTaxLots: [],
+			cashTransactions: [],
 		}),
 	];
 	expect(() => processor.generateGenericGroupings(groupings)).toThrow(Error);
@@ -124,14 +190,21 @@ test("throws when a stock lot has no sold date", () => {
 	const lotWithoutSoldDate = staging.taxLot({
 		id: "Lot",
 		identifier: ident,
-		acquired: { id: "StockBought" },
-		sold: {},
+		quantity: 1,
+		shortLongType: GenericShortLong.LONG,
+		acquired: { id: "StockBought", date: null },
+		sold: { id: null, date: null },
 	});
 	const groupings = [
 		staging.grouping({
 			identifier: ident,
+			countryOfOrigin: null,
+			category: GenericCategory.REGULAR,
 			stockTrades: [simpleStagingStockBuy, simpleStagingStockSold],
 			stockTaxLots: [lotWithoutSoldDate],
+			derivativeTrades: [],
+			derivativeTaxLots: [],
+			cashTransactions: [],
 		}),
 	];
 
@@ -145,8 +218,13 @@ test("simple derivative lot matching", () => {
 	const groupings = [
 		staging.grouping({
 			identifier: ident,
+			countryOfOrigin: null,
+			category: GenericCategory.REGULAR,
+			stockTrades: [],
+			stockTaxLots: [],
 			derivativeTrades: [simpleStagingDerivativeBuy, simpleStagingDerivativeSold],
 			derivativeTaxLots: [simpleStagingDerivativeLot],
+			cashTransactions: [],
 		}),
 	];
 	const results = processor.generateGenericGroupings(groupings);
@@ -171,6 +249,12 @@ test("dividend with withholding tax", () => {
 	const groupings = [
 		staging.grouping({
 			identifier: ident,
+			countryOfOrigin: null,
+			category: GenericCategory.REGULAR,
+			stockTrades: [],
+			stockTaxLots: [],
+			derivativeTrades: [],
+			derivativeTaxLots: [],
 			cashTransactions: [simpleStagingDividend, simpleStagingDividendWithholdingTax],
 		}),
 	];
@@ -189,6 +273,12 @@ test("payment in lieu of dividend with withholding tax", () => {
 	const groupings = [
 		staging.grouping({
 			identifier: ident,
+			countryOfOrigin: null,
+			category: GenericCategory.REGULAR,
+			stockTrades: [],
+			stockTaxLots: [],
+			derivativeTrades: [],
+			derivativeTaxLots: [],
 			cashTransactions: [
 				simpleStagingPaymentInLieuOfDividend,
 				simpleStagingPaymentInLieuOfDividendWithholdingTax,
@@ -223,7 +313,18 @@ test("processStagingFinancialEvents returns FinancialEvents with converted relat
 	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const result = processor.processStagingFinancialEvents(
 		new StagingFinancialEvents({
-			groupings: [staging.grouping({ identifier: stagingIdA })],
+			groupings: [
+				staging.grouping({
+					identifier: stagingIdA,
+					countryOfOrigin: null,
+					category: GenericCategory.REGULAR,
+					stockTrades: [],
+					stockTaxLots: [],
+					derivativeTrades: [],
+					derivativeTaxLots: [],
+					cashTransactions: [],
+				}),
+			],
 			identifierRelationships: relationships,
 		}),
 	);

@@ -1,20 +1,60 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod";
+import { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats";
 
 const { build } = Scenario;
 
 const simpleLot = build.stockTaxLot({
 	id: "ID",
-	acquired: build.stockBought({ id: "ID", date: "2023-01-01" }),
-	sold: build.stockSold({ id: "ID2", date: "2023-01-02" }),
+	quantity: 1,
+	shortLongType: GenericShortLong.LONG,
+	acquired: build.stockBought({
+		id: "ID",
+		date: "2023-01-01",
+		quantity: 1,
+		price: 1,
+		currency: "EUR",
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	}),
+	sold: build.stockSold({
+		id: "ID2",
+		date: "2023-01-02",
+		quantity: -1,
+		price: 1,
+		currency: "EUR",
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	}),
 });
 
 // A lot of 1 over a buy and a sale of 2 each.
 const underUtilizedLot = build.stockTaxLot({
 	id: "ID",
 	quantity: 1,
-	acquired: build.stockBought({ id: "ID", date: "2023-01-01", quantity: 2 }),
-	sold: build.stockSold({ id: "ID2", date: "2023-01-02", quantity: -2 }),
+	shortLongType: GenericShortLong.LONG,
+	acquired: build.stockBought({
+		id: "ID",
+		date: "2023-01-01",
+		quantity: 2,
+		price: 1,
+		currency: "EUR",
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	}),
+	sold: build.stockSold({
+		id: "ID2",
+		date: "2023-01-02",
+		quantity: -2,
+		price: 1,
+		currency: "EUR",
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	}),
 });
 
 test("simple single lot generation", () => {

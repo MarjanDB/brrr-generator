@@ -1,4 +1,6 @@
+import { Fixtures } from "@brrr/__tests__/support/Fixtures";
 import { Scenario } from "@brrr/__tests__/support/Scenario";
+import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
 import { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import { TestKit } from "@brrr/test-cases";
@@ -14,6 +16,9 @@ describe("IBKR: RKLB trades in 2024 that the export repeats", () => {
 		const report = await Scenario.pipeline.generate(events, {
 			report: SlovenianReportTypeId.KDVP,
 			year: 2024,
+			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
+			taxPayer: Fixtures.taxPayer,
+			info: Scenario.config.infoProvider(Fixtures.lookups),
 		});
 		const expected = duplicatingTrades.expectedReport("slovenia/2024/kdvp-fifo");
 
@@ -23,7 +28,10 @@ describe("IBKR: RKLB trades in 2024 that the export repeats", () => {
 
 	test("4 buys and 4 sales, each once", () => {
 		const generator = new KdvpReportGenerator(Scenario.pipeline.eventsProcessor());
-		const items = generator.convert(Scenario.config.report(2024), events.groupings);
+		const items = generator.convert(
+			Scenario.config.report(2024, TaxAuthorityLotMatchingMethod.FIFO),
+			events.groupings,
+		);
 		const kdvpEvents = items.flatMap((item) => item.items.flatMap((line) => line.events));
 
 		expect(kdvpEvents.length).toEqual(8);

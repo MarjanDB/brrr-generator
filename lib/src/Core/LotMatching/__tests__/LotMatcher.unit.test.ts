@@ -18,7 +18,16 @@ class FakeLotMatchingMethod implements LotMatchingMethod {
 
 test("provided method is called with the converted trades", () => {
 	const fakeMethod = new FakeLotMatchingMethod();
-	const event = build.stockBought({ id: "ID", date: "2023-01-01" });
+	const event = build.stockBought({
+		id: "ID",
+		date: "2023-01-01",
+		quantity: 1,
+		price: 1,
+		currency: "EUR",
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	});
 
 	const lots = new LotMatcher().matchLots(fakeMethod, [event]);
 
@@ -31,13 +40,21 @@ test("a matched lot's legs point at the original trades and cover the lot's quan
 		id: "BUY",
 		date: "2023-01-01",
 		quantity: 10,
-		money: { commissionTotal: -2 },
+		price: 1,
+		currency: "EUR",
+		commission: -2,
+		tax: 0,
+		fxRateToBase: 1,
 	});
 	const sold = build.stockSold({
 		id: "SELL",
 		date: "2023-02-01",
 		quantity: -4,
-		money: { commissionTotal: -1 },
+		price: 1,
+		currency: "EUR",
+		commission: -1,
+		tax: 0,
+		fxRateToBase: 1,
 	});
 
 	const lots = new LotMatcher().matchLots(new FifoLotMatchingMethod(), [bought, sold]);

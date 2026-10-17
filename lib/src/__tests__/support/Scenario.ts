@@ -1,15 +1,15 @@
-import { IbkrRows } from "@brrr/__tests__/support/IbkrRows";
 import { StagingBuilders } from "@brrr/__tests__/support/StagingBuilders";
-import { type CashOptions, type TradeOptions, Values } from "@brrr/__tests__/support/Values";
+import { type CashFields, type TradeFields, Values } from "@brrr/__tests__/support/Values";
 import { BrokerageRegistry } from "@brrr/Brokerages/BrokerageRegistry";
+import { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
 import {
 	GenericAssetClass,
-	GenericCategory,
+	type GenericCategory,
 	GenericDerivativeReportItemGainType,
-	GenericDividendType,
-	GenericShortLong,
+	type GenericDividendType,
+	type GenericShortLong,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
@@ -26,224 +26,187 @@ import {
 	type TransactionCash,
 } from "@brrr/Core/Schemas/Events";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
+import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import type { IdentifierRelationshipAny } from "@brrr/Core/Schemas/IdentifierRelationship";
 import { TaxLot, type TaxLotDerivative, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
-import type { AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
 import { createContainer } from "@brrr/container";
 import type { CompanyInfo, Country, InfoProvider } from "@brrr/InfoProviders/InfoProvider";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
-import {
-	type TaxAuthorityConfiguration,
+import type {
+	TaxAuthorityConfiguration,
 	TaxAuthorityLotMatchingMethod,
-	type TaxPayerInfo,
-	TaxPayerType,
+	TaxPayerInfo,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type { GeneratedExports } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
 import type { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
 
-type WithProvenance = { provenance?: AnyProvenanceStep[] };
+type LotFields = { id: TaxLotStock["id"]; quantity: number; shortLongType: GenericShortLong };
 
-function tradeFields(options: TradeOptions & WithProvenance, prefix: string, quantity: number) {
-	return {
-		id: options.id ?? Values.nextId(prefix),
-		date: Values.date(options.date ?? Values.defaultDate),
-		multiplier: options.multiplier ?? 1,
-		exchangedMoney: Values.tradeMoney(options, quantity),
-		provenance: options.provenance ?? [],
-	};
-}
-
-type LotOptions = { id?: TaxLotStock["id"]; quantity?: number } & WithProvenance;
-
-function lotFields(
-	options: LotOptions,
-	acquired: TradeEventStockAcquired | TradeEventDerivativeAcquired,
-) {
-	return {
-		id: options.id ?? Values.nextId("lot"),
-		quantity: options.quantity ?? acquired.exchangedMoney.underlyingQuantity,
-		shortLongType: GenericShortLong.LONG,
-		provenance: options.provenance ?? [],
-	};
-}
-
-function cashFields(options: CashOptions & WithProvenance, prefix: string, amount: number) {
-	return {
-		...Values.cashFields(options, prefix),
-		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-		exchangedMoney: Values.cashMoney(options, amount),
-		provenance: options.provenance ?? [],
-	};
-}
-
-const stockBought = (options: TradeOptions & WithProvenance = {}): TradeEventStockAcquired =>
-	new TradeEventStockAcquired({
-		...tradeFields(options, "stockBought", 1),
-		assetClass: GenericAssetClass.STOCK,
-		acquiredReason: GenericTradeReportItemGainType.BOUGHT,
-	});
-
-const stockSold = (options: TradeOptions & WithProvenance = {}): TradeEventStockSold =>
-	new TradeEventStockSold({
-		...tradeFields(options, "stockSold", -1),
-		assetClass: GenericAssetClass.STOCK,
-	});
-
+// Builders for lib's objects. Each fixes only what its name says (a stock buy is a STOCK bought
+// with multiplier 1; everything built has no provenance yet); every other value is required.
 const build = {
 	date: Values.date,
-	money: Values.money,
 
-	stockBought,
-	stockSold,
+	stockBought(fields: TradeFields): TradeEventStockAcquired {
+		return new TradeEventStockAcquired({
+			id: fields.id,
+			assetClass: GenericAssetClass.STOCK,
+			date: Values.date(fields.date),
+			multiplier: 1,
+			exchangedMoney: Values.tradeMoney(fields),
+			acquiredReason: GenericTradeReportItemGainType.BOUGHT,
+			provenance: [],
+		});
+	},
 
-	derivativeBought(options: TradeOptions & WithProvenance = {}): TradeEventDerivativeAcquired {
+	stockSold(fields: TradeFields): TradeEventStockSold {
+		return new TradeEventStockSold({
+			id: fields.id,
+			assetClass: GenericAssetClass.STOCK,
+			date: Values.date(fields.date),
+			multiplier: 1,
+			exchangedMoney: Values.tradeMoney(fields),
+			provenance: [],
+		});
+	},
+
+	optionBought(fields: TradeFields & { multiplier: number }): TradeEventDerivativeAcquired {
 		return new TradeEventDerivativeAcquired({
-			...tradeFields(options, "derivativeBought", 1),
+			id: fields.id,
 			assetClass: GenericAssetClass.OPTION,
+			date: Values.date(fields.date),
+			multiplier: fields.multiplier,
+			exchangedMoney: Values.tradeMoney(fields),
 			acquiredReason: GenericDerivativeReportItemGainType.BOUGHT,
+			provenance: [],
 		});
 	},
 
-	derivativeSold(options: TradeOptions & WithProvenance = {}): TradeEventDerivativeSold {
+	optionSold(fields: TradeFields & { multiplier: number }): TradeEventDerivativeSold {
 		return new TradeEventDerivativeSold({
-			...tradeFields(options, "derivativeSold", -1),
+			id: fields.id,
 			assetClass: GenericAssetClass.OPTION,
+			date: Values.date(fields.date),
+			multiplier: fields.multiplier,
+			exchangedMoney: Values.tradeMoney(fields),
+			provenance: [],
 		});
 	},
 
-	dividend(options: CashOptions & WithProvenance = {}): TradeEventCashTransactionDividend {
+	dividend(
+		fields: CashFields & { dividendType: GenericDividendType },
+	): TradeEventCashTransactionDividend {
 		return new TradeEventCashTransactionDividend({
-			...cashFields(options, "dividend", 1),
-			dividendType: GenericDividendType.ORDINARY,
+			...cashEvent(fields),
+			dividendType: fields.dividendType,
 		});
 	},
 
-	withholdingTax(
-		options: CashOptions & WithProvenance = {},
-	): TradeEventCashTransactionWithholdingTax {
-		return new TradeEventCashTransactionWithholdingTax(cashFields(options, "withholdingTax", -1));
+	withholdingTax(fields: CashFields): TradeEventCashTransactionWithholdingTax {
+		return new TradeEventCashTransactionWithholdingTax(cashEvent(fields));
 	},
 
 	paymentInLieu(
-		options: CashOptions & WithProvenance = {},
+		fields: CashFields & { dividendType: GenericDividendType },
 	): TradeEventCashTransactionPaymentInLieuOfDividend {
 		return new TradeEventCashTransactionPaymentInLieuOfDividend({
-			...cashFields(options, "paymentInLieu", 1),
-			dividendType: GenericDividendType.ORDINARY,
+			...cashEvent(fields),
+			dividendType: fields.dividendType,
 		});
 	},
 
 	paymentInLieuWithholdingTax(
-		options: CashOptions & WithProvenance = {},
+		fields: CashFields,
 	): TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend {
-		return new TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend(
-			cashFields(options, "paymentInLieuWithholdingTax", -1),
-		);
+		return new TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend(cashEvent(fields));
 	},
 
-	// The quantity defaults to the bought trade's.
 	stockTaxLot(
-		options: LotOptions & { acquired: TradeEventStockAcquired; sold: TradeEventStockSold },
+		fields: LotFields & { acquired: TradeEventStockAcquired; sold: TradeEventStockSold },
 	): TaxLotStock {
-		return new TaxLot({
-			...lotFields(options, options.acquired),
-			acquired: options.acquired,
-			sold: options.sold,
-		});
+		return new TaxLot({ ...fields, provenance: [] });
 	},
 
-	// The quantity defaults to the bought trade's.
 	derivativeTaxLot(
-		options: LotOptions & {
-			acquired: TradeEventDerivativeAcquired;
-			sold: TradeEventDerivativeSold;
-		},
+		fields: LotFields & { acquired: TradeEventDerivativeAcquired; sold: TradeEventDerivativeSold },
 	): TaxLotDerivative {
-		return new TaxLot({
-			...lotFields(options, options.acquired),
-			acquired: options.acquired,
-			sold: options.sold,
-		});
+		return new TaxLot({ ...fields, provenance: [] });
 	},
 
-	derivativeGrouping(
-		options: {
-			identifier?: FinancialIdentifier;
-			trades?: TradeEventDerivative[];
-			taxLots?: TaxLotDerivative[];
-		} & WithProvenance = {},
-	): DerivativeGrouping {
+	derivativeGrouping(fields: {
+		identifier: FinancialIdentifier;
+		trades: TradeEventDerivative[];
+		taxLots: TaxLotDerivative[];
+	}): DerivativeGrouping {
 		return new DerivativeGrouping({
-			financialIdentifier: options.identifier ?? new FinancialIdentifier({ isin: "ISIN" }),
-			derivativeTrades: options.trades ?? [],
-			derivativeTaxLots: options.taxLots ?? [],
-			provenance: options.provenance ?? [],
+			financialIdentifier: fields.identifier,
+			derivativeTrades: fields.trades,
+			derivativeTaxLots: fields.taxLots,
+			provenance: [],
 		});
 	},
 
-	grouping(
-		options: {
-			identifier?: FinancialIdentifier;
-			countryOfOrigin?: string | null;
-			stockTrades?: TradeEventStock[];
-			stockTaxLots?: TaxLotStock[];
-			derivativeGroupings?: DerivativeGrouping[];
-			cashTransactions?: TransactionCash[];
-		} & WithProvenance = {},
-	): FinancialGrouping {
+	grouping(fields: {
+		identifier: FinancialIdentifier;
+		countryOfOrigin: string | null;
+		category: GenericCategory;
+		stockTrades: TradeEventStock[];
+		stockTaxLots: TaxLotStock[];
+		derivativeGroupings: DerivativeGrouping[];
+		cashTransactions: TransactionCash[];
+	}): FinancialGrouping {
 		return new FinancialGrouping({
-			financialIdentifier: options.identifier ?? new FinancialIdentifier({ isin: "ISIN" }),
-			countryOfOrigin: options.countryOfOrigin ?? null,
-			underlyingCategory: GenericCategory.REGULAR,
-			stockTrades: options.stockTrades ?? [],
-			stockTaxLots: options.stockTaxLots ?? [],
-			derivativeGroupings: options.derivativeGroupings ?? [],
-			cashTransactions: options.cashTransactions ?? [],
-			provenance: options.provenance ?? [],
+			financialIdentifier: fields.identifier,
+			countryOfOrigin: fields.countryOfOrigin,
+			underlyingCategory: fields.category,
+			stockTrades: fields.stockTrades,
+			stockTaxLots: fields.stockTaxLots,
+			derivativeGroupings: fields.derivativeGroupings,
+			cashTransactions: fields.cashTransactions,
+			provenance: [],
 		});
 	},
 
 	events(
 		groupings: FinancialGrouping[],
-		identifierRelationships: IdentifierRelationshipAny[] = [],
+		identifierRelationships: IdentifierRelationshipAny[],
 	): FinancialEvents {
 		return new FinancialEvents({ groupings, identifierRelationships });
 	},
 
 	staging: StagingBuilders,
-	ibkr: IbkrRows,
+
+	ibkr: {
+		// What the extract step hands the transform step; every row list is required.
+		segmentedTrades(rows: ConstructorParameters<typeof SegmentedTrades>[0]): SegmentedTrades {
+			return new SegmentedTrades(rows);
+		},
+	},
 };
 
-const config = {
-	// The taxpayer every expected report file was generated for.
-	taxPayer: {
-		taxNumber: "12345678",
-		taxpayerType: TaxPayerType.PHYSICAL_SUBJECT,
-		name: "Ime Priimek",
-		address1: "Naslov 1",
-		address2: null,
-		city: "Ljubljana",
-		postNumber: "1000",
-		postName: "Ljubljana",
-		municipalityName: "Ljubljana",
-		birthDate: Values.date("1990-01-01"),
-		maticnaStevilka: "1234567",
-		invalidskoPodjetje: false,
-		resident: true,
-		activityCode: "",
-		activityName: "",
-		countryId: "SI",
-		countryName: "Slovenija",
-	} satisfies TaxPayerInfo,
+// The fields every cash transaction carries.
+function cashEvent(fields: CashFields) {
+	return {
+		id: fields.id,
+		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+		date: Values.date(fields.date),
+		multiplier: 1,
+		exchangedMoney: Values.cashMoney(fields),
+		actionId: fields.actionId,
+		transactionId: fields.transactionId,
+		listingExchange: fields.listingExchange,
+		provenance: [],
+	};
+}
 
-	// The calendar year, from January 1st to the next January 1st.
+const config = {
+	// The calendar year: from January 1st to the next January 1st.
 	report(
 		year: number,
-		lotMatchingMethod = TaxAuthorityLotMatchingMethod.FIFO,
+		lotMatchingMethod: TaxAuthorityLotMatchingMethod,
 	): TaxAuthorityConfiguration {
 		return {
 			fromDate: Values.date(`${year}-01-01`),
@@ -252,14 +215,15 @@ const config = {
 		};
 	},
 
-	infoProvider(
-		lookups: { companies?: Record<string, CompanyInfo>; countries?: Record<string, Country> } = {},
-	): PredefinedInfoProvider {
+	infoProvider(lookups: {
+		companies: Record<string, CompanyInfo>;
+		countries: Record<string, Country>;
+	}): PredefinedInfoProvider {
 		const info = new PredefinedInfoProvider();
-		for (const [isin, company] of Object.entries(lookups.companies ?? {})) {
+		for (const [isin, company] of Object.entries(lookups.companies)) {
 			info.addCompany(isin, company);
 		}
-		for (const [name, country] of Object.entries(lookups.countries ?? {})) {
+		for (const [name, country] of Object.entries(lookups.countries)) {
 			info.addCountry(name, country);
 		}
 		return info;
@@ -291,16 +255,16 @@ const pipeline = {
 		options: {
 			report: SlovenianReportTypeId;
 			year: number;
-			lotMatching?: TaxAuthorityLotMatchingMethod;
-			info?: InfoProvider;
-			taxPayer?: TaxPayerInfo;
+			lotMatching: TaxAuthorityLotMatchingMethod;
+			taxPayer: TaxPayerInfo;
+			info: InfoProvider;
 		},
 	): Promise<GeneratedExports> {
-		const container = createContainer(options.info ?? new PredefinedInfoProvider());
+		const container = createContainer(options.info);
 		return await container.get(TaxAuthorityRegistry).generateExports({
 			authorityId: "slovenia",
 			reportTypeId: options.report,
-			taxPayerInfo: options.taxPayer ?? config.taxPayer,
+			taxPayerInfo: options.taxPayer,
 			reportConfig: config.report(options.year, options.lotMatching),
 			events,
 		});
@@ -311,5 +275,5 @@ const pipeline = {
 	},
 };
 
-// Everything lib's tests build: lib's objects with defaults, shared configuration, the pipeline.
+// Builders, configuration and the pipeline for lib's tests. Named test data lives in Fixtures.
 export const Scenario = { build, config, pipeline };

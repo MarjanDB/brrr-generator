@@ -32,20 +32,44 @@ test("foreignTaxOf reports no foreign tax for no trades", () => {
 });
 
 test("foreignTaxOf sums the trades' taxes", () => {
-	expect(
-		foreignTaxOf([
-			build.stockSold({ money: { taxTotal: 1.5 } }),
-			build.stockSold({ money: { taxTotal: 2 } }),
-		]),
-	).toEqual({
+	const soldWithTax1_5 = build.stockSold({
+		id: "T1.5",
+		date: "2024-01-02",
+		quantity: -1,
+		price: 10,
+		currency: "USD",
+		commission: 0,
+		tax: 1.5,
+		fxRateToBase: 0.9,
+	});
+	const soldWithTax2 = build.stockSold({
+		id: "T2",
+		date: "2024-01-02",
+		quantity: -1,
+		price: 10,
+		currency: "USD",
+		commission: 0,
+		tax: 2,
+		fxRateToBase: 0.9,
+	});
+
+	expect(foreignTaxOf([soldWithTax1_5, soldWithTax2])).toEqual({
 		hasForeignTax: true,
 		foreignTax: 3.5,
 	});
 });
 
 test("foreignTaxOf treats a non-positive total as no foreign tax", () => {
-	expect(foreignTaxOf([build.stockSold({ money: { taxTotal: -1 } })])).toEqual({
-		hasForeignTax: false,
-		foreignTax: null,
+	const soldWithNegativeTax = build.stockSold({
+		id: "T-1",
+		date: "2024-01-02",
+		quantity: -1,
+		price: 10,
+		currency: "USD",
+		commission: 0,
+		tax: -1,
+		fxRateToBase: 0.9,
 	});
+
+	expect(foreignTaxOf([soldWithNegativeTax])).toEqual({ hasForeignTax: false, foreignTax: null });
 });
