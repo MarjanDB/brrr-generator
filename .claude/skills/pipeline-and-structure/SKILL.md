@@ -58,9 +58,9 @@ before checking them.
 4. `BrokerageRegistry` takes each provider in its constructor and has the IBKR one written into `listBrokerages`, `detectOne` and
    `loadAndTransformDetected`. Add the new provider to all three; staging events from several brokers are combined with
    `StagingFinancialEvents.merge`.
-5. Unit tests in `Brokerages/<Broker>/__tests__/`. Anonymised exports go in `test-cases/cases/<Broker>/<Case>/input/`, exposed through
-   a `<broker>` group in `TestKit` (`test-cases/index.ts`), with an acceptance test per case in
-   `lib/src/__tests__/Acceptance/<Broker>/`.
+5. Unit tests in `Brokerages/<Broker>/__tests__/`. Anonymised exports go in `test-cases/cases/<Broker>/<Case>/input/`, each case
+   declared in a `<broker>` group of the `TestKit` registry (`test-cases/index.ts`: year, named inputs, named expected reports),
+   with an acceptance test per case in `lib/src/__tests__/Acceptance/<Broker>/`.
 6. Site: icon at `app/public/icons/brokers/<id>.svg` and in `brokerIconById` (`IbkrUploadStep.vue`); a guide in
    `app/app/components/upload/brokerGuides.ts` with screenshots in `app/public/screenshots/brokers/<id>/`; i18n keys in both locale files.
 

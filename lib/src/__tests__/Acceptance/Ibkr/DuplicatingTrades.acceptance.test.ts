@@ -12,24 +12,27 @@ const duplicatingTrades = TestKit.ibkr.duplicatingTrades;
 describe("IBKR: RKLB trades in 2024 that the export repeats", () => {
 	const { events } = Scenario.pipeline.run(duplicatingTrades.readInputs());
 
-	test("KDVP 2024, FIFO", async () => {
+	test("KDVP, FIFO", async () => {
 		const report = await Scenario.pipeline.generate(events, {
 			report: SlovenianReportTypeId.KDVP,
-			year: 2024,
+			year: duplicatingTrades.year,
 			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
 			taxPayer: Fixtures.taxPayer,
 			info: Scenario.config.infoProvider(Fixtures.lookups),
 		});
-		const expected = duplicatingTrades.expectedReport("slovenia/2024/kdvp-fifo");
 
-		await expect(report.xml).toMatchFileSnapshot(expected.xmlPath);
-		await expect(report.csv).toMatchFileSnapshot(expected.csvPath);
+		await expect(report.xml).toMatchFileSnapshot(
+			duplicatingTrades.expected.slovenia.kdvpFifo.xmlPath,
+		);
+		await expect(report.csv).toMatchFileSnapshot(
+			duplicatingTrades.expected.slovenia.kdvpFifo.csvPath,
+		);
 	});
 
 	test("4 buys and 4 sales, each once", () => {
 		const generator = new KdvpReportGenerator(Scenario.pipeline.eventsProcessor());
 		const items = generator.convert(
-			Scenario.config.report(2024, TaxAuthorityLotMatchingMethod.FIFO),
+			Scenario.config.report(duplicatingTrades.year, TaxAuthorityLotMatchingMethod.FIFO),
 			events.groupings,
 		);
 		const kdvpEvents = items.flatMap((item) => item.items.flatMap((line) => line.events));

@@ -9,17 +9,16 @@ const paymentInLieu = TestKit.ibkr.paymentInLieuOfDividends;
 describe("IBKR: a McDonald's payment in lieu of dividend in 2024 with US withholding tax", () => {
 	const { events } = Scenario.pipeline.run(paymentInLieu.readInputs());
 
-	test("DIV 2024", async () => {
+	test("DIV", async () => {
 		const report = await Scenario.pipeline.generate(events, {
 			report: SlovenianReportTypeId.DIV,
-			year: 2024,
+			year: paymentInLieu.year,
 			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
 			taxPayer: Fixtures.taxPayer,
 			info: Scenario.config.infoProvider(Fixtures.lookups),
 		});
-		const expected = paymentInLieu.expectedReport("slovenia/2024/div");
 
-		await expect(report.xml).toMatchFileSnapshot(expected.xmlPath);
-		await expect(report.csv).toMatchFileSnapshot(expected.csvPath);
+		await expect(report.xml).toMatchFileSnapshot(paymentInLieu.expected.slovenia.div.xmlPath);
+		await expect(report.csv).toMatchFileSnapshot(paymentInLieu.expected.slovenia.div.csvPath);
 	});
 });

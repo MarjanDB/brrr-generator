@@ -111,9 +111,12 @@ Every test file names its kind:
 To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
 
 - **Test cases** live in `test-cases/cases/<Broker>/<Case>/`: broker exports in `input/`, the files they should produce in
-  `expected/<authority>/<year>/<report>[-<lotMatching>].{xml,csv}` (DIV ignores lot matching, so its files carry no suffix). The
-  package's only export, `TestKit`, gives each case's file paths and contents (`TestKit.ibkr.stockTrade.readInputs()`,
-  `.expectedReport("slovenia/2022/kdvp-fifo")`). Every broker export a test reads lives here, unit tests included. Exports are trimmed and
+  `expected/<authority>/<report>[-<lotMatching>].{xml,csv}` (DIV ignores lot matching, so its files carry no suffix). A case covers
+  one year. Each case is declared once in the registry `TestKit` (`test-cases/index.ts`, the package's only export): its `year`,
+  its named `inputs` and its named `expected` reports. Tests reach them as typed properties, never path strings:
+  `stockTrade.year`, `stockTrade.inputs.simpleStockTrade.read()`, `stockTrade.readInputs()`,
+  `stockTrade.expected.slovenia.kdvpFifo.xmlPath`. On import the registry fails if a case's declared files and its folder differ,
+  so adding a file means declaring it. Every broker export a test reads lives here, unit tests included. Exports are trimmed and
   anonymised (fake account IDs); never copy anything from `imports/`.
 - **Acceptance tests** sit in `lib/src/__tests__/Acceptance/<Broker>/<Case>.acceptance.test.ts`, one per case with expected files. They
   run the case through `Scenario.pipeline` and compare each file with its own

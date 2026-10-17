@@ -9,17 +9,16 @@ const dividends = TestKit.ibkr.dividends;
 describe("IBKR: a TotalEnergies dividend in 2022 with French withholding tax", () => {
 	const { events } = Scenario.pipeline.run(dividends.readInputs());
 
-	test("DIV 2022", async () => {
+	test("DIV", async () => {
 		const report = await Scenario.pipeline.generate(events, {
 			report: SlovenianReportTypeId.DIV,
-			year: 2022,
+			year: dividends.year,
 			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
 			taxPayer: Fixtures.taxPayer,
 			info: Scenario.config.infoProvider(Fixtures.lookups),
 		});
-		const expected = dividends.expectedReport("slovenia/2022/div");
 
-		await expect(report.xml).toMatchFileSnapshot(expected.xmlPath);
-		await expect(report.csv).toMatchFileSnapshot(expected.csvPath);
+		await expect(report.xml).toMatchFileSnapshot(dividends.expected.slovenia.div.xmlPath);
+		await expect(report.csv).toMatchFileSnapshot(dividends.expected.slovenia.div.csvPath);
 	});
 });

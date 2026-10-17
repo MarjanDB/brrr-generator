@@ -3,16 +3,14 @@ import { BuyOrSell, CashTransactionType } from "@brrr/Brokerages/Ibkr/Schemas/Ib
 import { TestKit } from "@brrr/test-cases";
 
 const { ibkr } = TestKit;
-const stockTradeXml = ibkr.stockTrade.readInput("SimpleStockTrade.xml").xml;
-const optionTradeXml = ibkr.optionTrade.readInput("SimpleOptionTrade.xml").xml;
-const corporateActionXml = ibkr.corporateAction.readInput("SimpleCorporateAction.xml").xml;
-const corporateActionsTwoRowsXml = ibkr.corporateActionsTwoRows.readInput(
-	"CorporateActionsTwoRows.xml",
-).xml;
-const dividendsXml = ibkr.dividends.readInput("SimpleCashTransactionOfDividends.xml").xml;
-const paymentInLieuXml = ibkr.paymentInLieuOfDividends.readInput(
-	"SimpleCashTransactionOfPaymentInLieuOfDividends.xml",
-).xml;
+const stockTradeXml = ibkr.stockTrade.inputs.simpleStockTrade.read().xml;
+const optionTradeXml = ibkr.optionTrade.inputs.simpleOptionTrade.read().xml;
+const corporateActionXml = ibkr.corporateAction.inputs.simpleCorporateAction.read().xml;
+const corporateActionsTwoRowsXml =
+	ibkr.corporateActionsTwoRows.inputs.corporateActionsTwoRows.read().xml;
+const dividendsXml = ibkr.dividends.inputs.simpleCashTransactionOfDividends.read().xml;
+const paymentInLieuXml =
+	ibkr.paymentInLieuOfDividends.inputs.simpleCashTransactionOfPaymentInLieuOfDividends.read().xml;
 
 const service = new IbkrExtractService();
 

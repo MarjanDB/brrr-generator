@@ -15,18 +15,17 @@ const split = TestKit.ibkr.split;
 describe("IBKR: SMCI bought before and after its 10-for-1 split in 2024, then sold", () => {
 	const { events } = Scenario.pipeline.run(split.readInputs());
 
-	test("KDVP 2024, FIFO", async () => {
+	test("KDVP, FIFO", async () => {
 		const report = await Scenario.pipeline.generate(events, {
 			report: SlovenianReportTypeId.KDVP,
-			year: 2024,
+			year: split.year,
 			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
 			taxPayer: Fixtures.taxPayer,
 			info: Scenario.config.infoProvider(Fixtures.lookups),
 		});
-		const expected = split.expectedReport("slovenia/2024/kdvp-fifo");
 
-		await expect(report.xml).toMatchFileSnapshot(expected.xmlPath);
-		await expect(report.csv).toMatchFileSnapshot(expected.csvPath);
+		await expect(report.xml).toMatchFileSnapshot(split.expected.slovenia.kdvpFifo.xmlPath);
+		await expect(report.csv).toMatchFileSnapshot(split.expected.slovenia.kdvpFifo.csvPath);
 	});
 
 	test("the shares bought before the split count ten times over", () => {
@@ -36,7 +35,7 @@ describe("IBKR: SMCI bought before and after its 10-for-1 split in 2024, then so
 		]);
 		const generator = new KdvpReportGenerator(Scenario.pipeline.eventsProcessor());
 		const items = generator.convert(
-			Scenario.config.report(2024, TaxAuthorityLotMatchingMethod.FIFO),
+			Scenario.config.report(split.year, TaxAuthorityLotMatchingMethod.FIFO),
 			splitApplied.groupings,
 		);
 		const kdvpEvents = items.flatMap((item) => item.items.flatMap((line) => line.events));

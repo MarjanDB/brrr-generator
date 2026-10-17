@@ -77,8 +77,9 @@ replace the file and update the namespace and version in the matching `Xml*.ts`.
 
 ## Tests
 
-The expected XML and CSV for every report live with their test cases in `test-cases/cases/<Broker>/<Case>/expected/slovenia/<year>/`
-(`kdvp-fifo`, `kdvp-provided`, `ifi-fifo`, `div`). The acceptance tests in `lib/src/__tests__/Acceptance/` compare against them byte for
+The expected XML and CSV for every report live with their test cases in `test-cases/cases/<Broker>/<Case>/expected/slovenia/`
+(`kdvp-fifo`, `kdvp-provided`, `ifi-fifo`, `div`; each case covers one year, declared in the `TestKit` registry and reached as
+`case.expected.slovenia.kdvpFifo`). The acceptance tests in `lib/src/__tests__/Acceptance/` compare against them byte for
 byte, so never regenerate them to make a refactor pass. `Fixtures.taxPayer` and `Fixtures.lookups`
 (`lib/src/__tests__/support/Fixtures.ts`) are the taxpayer and the company and country data they were generated with.
 
