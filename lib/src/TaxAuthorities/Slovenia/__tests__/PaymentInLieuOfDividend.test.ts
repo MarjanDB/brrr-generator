@@ -13,7 +13,7 @@ import {
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import { NodeInfoProvider } from "@brrr/InfoProviders/Node/NodeInfoProvider";
+import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";
@@ -145,7 +145,7 @@ test("PaymentInLieuOfDividend - withholding tax is reported separately from divi
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
 	};
 
-	const generator = new DivReportGenerator(new NodeInfoProvider());
+	const generator = new DivReportGenerator(new PredefinedInfoProvider());
 	const rows = await generator.convert(config, testData.groupings);
 
 	expect(rows.length).toEqual(2);

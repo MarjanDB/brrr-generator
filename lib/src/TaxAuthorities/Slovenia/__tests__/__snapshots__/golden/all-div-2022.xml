@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Envelope xmlns:edp="http://edavki.durs.si/Documents/Schemas/EDP-Common-1.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://edavki.durs.si/Documents/Schemas/Doh_Div_3.xsd">
+  <edp:Header>
+    <edp:taxpayer>
+      <edp:taxNumber>12345678</edp:taxNumber>
+      <edp:taxpayerType>FO</edp:taxpayerType>
+      <edp:name>Ime Priimek</edp:name>
+      <edp:address1>Naslov 1</edp:address1>
+      <edp:address2></edp:address2>
+      <edp:city>Ljubljana</edp:city>
+      <edp:postNumber>1000</edp:postNumber>
+      <edp:postName>Ljubljana</edp:postName>
+    </edp:taxpayer>
+    <edp:Workflow>
+      <edp:DocumentWorkflowID>O</edp:DocumentWorkflowID>
+    </edp:Workflow>
+  </edp:Header>
+  <edp:AttachmentList></edp:AttachmentList>
+  <edp:Signatures></edp:Signatures>
+  <body>
+    <Doh_Div>
+      <Period>2022</Period>
+      <EmailAddress>email</EmailAddress>
+      <PhoneNumber>telefonska</PhoneNumber>
+      <ResidentCountry>SI</ResidentCountry>
+      <IsResident>true</IsResident>
+      <SelfReport>true</SelfReport>
+    </Doh_Div>
+    <Dividend>
+      <Date>2022-04-02</Date>
+      <PayerTaxNumber></PayerTaxNumber>
+      <PayerIdentificationNumber>FR0000120271</PayerIdentificationNumber>
+      <PayerName>TotalEnergies SE</PayerName>
+      <PayerAddress>2 Place Jean Millier, Courbevoie</PayerAddress>
+      <PayerCountry>FR</PayerCountry>
+      <Type>1</Type>
+      <Value>2.64</Value>
+      <ForeignTax>0.66</ForeignTax>
+      <SourceCountry>FR</SourceCountry>
+      <ReliefStatement>Article 10</ReliefStatement>
+    </Dividend>
+  </body>
+</Envelope>

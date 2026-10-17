@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Envelope xmlns:edp="http://edavki.durs.si/Documents/Schemas/EDP-Common-1.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <edp:Header>
+    <edp:taxpayer></edp:taxpayer>
+    <edp:Workflow>
+      <edp:DocumentWorkflowID>O</edp:DocumentWorkflowID>
+    </edp:Workflow>
+  </edp:Header>
+  <edp:AttachmentList></edp:AttachmentList>
+  <edp:Signatures></edp:Signatures>
+  <body>
+    <edp:bodyContent></edp:bodyContent>
+    <D_IFI>
+      <PeriodStart>2023-01-01</PeriodStart>
+      <PeriodEnd>2023-12-31</PeriodEnd>
+      <TItem>
+        <TypeId>PLIFI</TypeId>
+        <Type>03</Type>
+        <TypeName>opcija in certifikat</TypeName>
+        <Name>AAPL 22DEC23 202.5 C</Name>
+        <HasForeignTax>false</HasForeignTax>
+        <TSubItem>
+          <Purchase>
+            <F1>2023-12-14</F1>
+            <F2>A</F2>
+            <F3>1</F3>
+            <F4>41.84574</F4>
+            <F9>false</F9>
+          </Purchase>
+        </TSubItem>
+        <TSubItem>
+          <Sale>
+            <F5>2023-12-20</F5>
+            <F6>1</F6>
+            <F7>4.56925</F7>
+          </Sale>
+        </TSubItem>
+      </TItem>
+    </D_IFI>
+  </body>
+</Envelope>

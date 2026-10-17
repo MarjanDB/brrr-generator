@@ -1,4 +1,4 @@
-import fs from "node:fs";
+import { readFixture } from "@brrr/__tests__/support/Fixtures";
 import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract";
 import { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider";
 import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform";
@@ -11,10 +11,8 @@ import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGenerat
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import { DateTime } from "luxon";
 
-const xmlPath = new URL("./DuplicatingTrades.xml", import.meta.url).pathname;
-
 test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantities", () => {
-	const xmlContent = fs.readFileSync(xmlPath, "utf-8");
+	const xmlContent = readFixture("TaxAuthorities/Slovenia/__tests__/DuplicatingTrades.xml");
 
 	const ibkrProvider = new IbkrBrokerageExportProvider(
 		new IbkrExtractService(),

@@ -1,13 +1,9 @@
-import fs from "node:fs";
-import path from "node:path";
+import { readFixture } from "@brrr/__tests__/support/Fixtures";
 import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract";
 import { BuyOrSell, CashTransactionType } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
 
-const dir = new URL(".", import.meta.url).pathname;
-const casesDir = path.join(dir, "Cases");
-
 function readXml(filename: string): string {
-	return fs.readFileSync(path.join(casesDir, filename), "utf-8");
+	return readFixture(`Brokerages/Ibkr/__tests__/Cases/${filename}`);
 }
 
 const service = new IbkrExtractService();

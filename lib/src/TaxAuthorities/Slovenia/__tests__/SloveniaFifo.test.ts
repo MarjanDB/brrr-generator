@@ -17,7 +17,7 @@ import {
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import { NodeInfoProvider } from "@brrr/InfoProviders/Node/NodeInfoProvider";
+import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import type {
 	TaxAuthorityConfiguration,
 	TaxPayerInfo,
@@ -46,7 +46,7 @@ function makeProvider(
 	return new SlovenianTaxAuthorityProvider(
 		new ApplyIdentifierRelationshipsService(),
 		new KdvpReportGenerator(processor),
-		new DivReportGenerator(new NodeInfoProvider()),
+		new DivReportGenerator(new PredefinedInfoProvider()),
 		new IfiReportGenerator(processor),
 	);
 }
