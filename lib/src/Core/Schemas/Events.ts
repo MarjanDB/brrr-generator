@@ -26,7 +26,9 @@ type CashTransactionArgs = TradeEventArgs & {
 	listingExchange: string;
 };
 
-abstract class TradeEventBase<TArgs extends TradeEventArgs = TradeEventArgs> extends Model<TArgs> {
+export abstract class TradeEventBase<
+	TArgs extends TradeEventArgs = TradeEventArgs,
+> extends Model<TArgs> {
 	public readonly id: string;
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;

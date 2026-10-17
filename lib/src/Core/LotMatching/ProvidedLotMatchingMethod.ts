@@ -6,7 +6,6 @@ import type { TradeEvent } from "@brrr/Core/Schemas/Events";
 import type { TaxLot } from "@brrr/Core/Schemas/Lots";
 
 export class ProvidedLotMatchingMethod implements LotMatchingMethod {
-	private tradeAssociationTracker: TradeAssociationTracker = new TradeAssociationTracker();
 	private predefinedLots: TaxLot<TradeEvent, TradeEvent>[];
 
 	constructor(predefinedLots: TaxLot<TradeEvent, TradeEvent>[]) {
@@ -14,7 +13,8 @@ export class ProvidedLotMatchingMethod implements LotMatchingMethod {
 	}
 
 	performMatching(_events: Trade[]): Lot[] {
-		this.tradeAssociationTracker = new TradeAssociationTracker();
+		// Validates that the lots never use more of a trade than it has.
+		const tracker = new TradeAssociationTracker();
 
 		const lots = this.predefinedLots;
 
@@ -24,14 +24,14 @@ export class ProvidedLotMatchingMethod implements LotMatchingMethod {
 				quantity: lot.acquired.exchangedMoney.underlyingQuantity,
 				date: lot.acquired.date,
 			};
-			this.tradeAssociationTracker.trackAcquiredQuantity(acquiredTrade, lot.quantity);
+			tracker.trackAcquiredQuantity(acquiredTrade, lot.quantity);
 
 			const soldTrade: Trade = {
 				id: lot.sold.id,
 				quantity: lot.sold.exchangedMoney.underlyingQuantity,
 				date: lot.sold.date,
 			};
-			this.tradeAssociationTracker.trackSoldQuantity(soldTrade, -lot.quantity); // NOTE: Lots subtract, as sells remove from holding
+			tracker.trackSoldQuantity(soldTrade, -lot.quantity); // NOTE: Lots subtract, as sells remove from holding
 		}
 
 		const processedLots: Lot[] = [];
@@ -55,29 +55,5 @@ export class ProvidedLotMatchingMethod implements LotMatchingMethod {
 		}
 
 		return processedLots;
-	}
-
-	generateTradesFromLotsWithTracking(lots: Lot[]): Trade[] {
-		const processedTrades = new Map<string, Trade>();
-
-		for (const lot of lots) {
-			const acquiredTrade = lot.acquired.relation;
-			const acquiredTracking = this.tradeAssociationTracker.getAcquiredTradeTracker(acquiredTrade);
-			processedTrades.set(acquiredTrade.id, {
-				id: acquiredTrade.id,
-				quantity: acquiredTracking.quantity,
-				date: acquiredTrade.date,
-			});
-
-			const soldTrade = lot.sold.relation;
-			const soldTracking = this.tradeAssociationTracker.getSoldTradeTracker(soldTrade);
-			processedTrades.set(soldTrade.id, {
-				id: soldTrade.id,
-				quantity: soldTracking.quantity,
-				date: soldTrade.date,
-			});
-		}
-
-		return [...processedTrades.values()].sort((a, b) => a.date.toMillis() - b.date.toMillis());
 	}
 }
