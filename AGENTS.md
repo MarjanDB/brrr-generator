@@ -79,8 +79,23 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
 - `type` for plain data shapes. `interface` only for contracts a class implements (`IBrokerageProvider`, `ITaxAuthorityProvider`,
   `InfoProvider`).
 - `enum` for fixed sets of values, not string-literal unions or `as const` objects.
-- Identifiers in new code (ISINs, transaction IDs, report type IDs, …) get a nominal type, `Nominal<string, "Isin">` from
-  `@brrr/Utils/NominalType`, rather than a bare `string`.
+- Identifiers (ISINs, transaction IDs, report type IDs, …) get a nominal type from `@brrr/Utils/NominalType`, never a bare `string`.
+  Each domain owns its own, even for the same concept: IBKR's in `Brokerages/Ibkr/Schemas/IbkrIdentifiers.ts`, core's (staging and
+  the lookups included) in `Core/Schemas/Identifiers.ts`, eDavki's in `TaxAuthorities/Slovenia/Schemas/EDavkiIdentifiers.ts`, the
+  registries' in `TaxAuthorities/TaxAuthorityIdentifiers.ts` and `Brokerages/BrokerageIdentifiers.ts` (enums where the set is fixed).
+  A value changes type only where it crosses into the next domain. Declare the type, then a same-named const whose `Schema` holds
+  the one cast; the brand names the domain:
+
+  ```ts
+  export type Isin = Nominal<string, "Core.Isin">;
+  export const Isin = {
+  	Schema: z.string().transform((value) => value as Isin),
+  };
+  ```
+
+  A type built from another domain's adds a `From<X>` helper that goes through its `Schema` (`EDavkiIsin.FromIsin`), where its
+  domain may depend on the other. Core can't know brokers, so `Transform.ts` turns IBKR values into core ones with the core type's
+  `Schema`. Tests build ids the same way: `Isin.Schema.parse("US0378331005")`.
 - Dates and times use luxon. Models hold `ValidDateTime` (`DateTime<true>`); parse input with `zDateTimeFromISOString`
   (`@brrr/Utils/DateTime`). No `Date`.
 - Dependency injection is Inversify without decorators: each area has a `*Module.ts` that binds classes with

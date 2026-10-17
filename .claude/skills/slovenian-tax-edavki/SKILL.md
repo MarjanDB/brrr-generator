@@ -24,7 +24,7 @@ report period of 1 January to 1 January of the following year.
 
 ## Flow inside the country
 
-- `SlovenianTaxAuthorityProvider` (`ITaxAuthorityProvider`) holds the `TaxAuthorityDescriptor` (`authorityId: "slovenia"`) and the
+- `SlovenianTaxAuthorityProvider` (`ITaxAuthorityProvider`) holds the `TaxAuthorityDescriptor` (`authorityId: TaxAuthorityId.SLOVENIA`) and the
   `REPORT_TYPES` table mapping IDs (`SlovenianReportTypeId`) to the enum. `generate` applies `RENAME`, `SPLIT` and `REVERSE_SPLIT`
   relationships, calls the generator's `convert` once → report lines, and renders them with `toXml` and `toCsv` into `{ xml, csv }`.
 - Shared amount helpers (`round`, `toOriginalCurrency`, `foreignTaxOf`) are in `ReportGeneration/Amounts.ts`.
