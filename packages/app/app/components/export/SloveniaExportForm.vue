@@ -2,7 +2,6 @@
 import {
 	createContainer,
 	type FinancialEvents,
-	ReportTypeId,
 	SlovenianReportTypeId,
 	TaxAuthorityId,
 	TaxAuthorityLotMatchingMethod,
@@ -92,17 +91,16 @@ async function onSubmit(valid: boolean) {
 			lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 		};
 
-		const reportTypeId = ReportTypeId.Schema.parse(reportType.value);
 		const { xml, csv } = await registry.generateExports({
 			authorityId: TaxAuthorityId.SLOVENIA,
-			reportTypeId,
+			reportTypeId: reportType.value,
 			taxPayerInfo,
 			reportConfig,
 			events: props.financialEvents,
 		});
 
 		const filenames = FILENAMES[reportType.value] ?? { xml: "export.xml", csv: "export.csv" };
-		emit("generated", { xml, csv, xmlFilename: filenames.xml, csvFilename: filenames.csv, authorityId: TaxAuthorityId.SLOVENIA, reportTypeId });
+		emit("generated", { xml, csv, xmlFilename: filenames.xml, csvFilename: filenames.csv, authorityId: TaxAuthorityId.SLOVENIA, reportTypeId: reportType.value });
 	} catch (e) {
 		error.value = e instanceof Error ? e.message : String(e);
 	} finally {

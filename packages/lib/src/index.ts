@@ -13,7 +13,6 @@ export {
 } from "@brrr/Core/Schemas/Events";
 export { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 export type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-export { CountryCode, CountryName, Isin } from "@brrr/Core/Schemas/Identifiers";
 export { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
 export { createContainer } from "@brrr/container";
 
@@ -42,7 +41,7 @@ export type {
 	TaxAuthorityRunContext,
 } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
 export { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
-export { ReportTypeId, TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
+export { TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
 export { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
 
 // Utils

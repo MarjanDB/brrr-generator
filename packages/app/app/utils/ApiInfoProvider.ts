@@ -1,12 +1,13 @@
-import type { CompanyInfo, Country, InfoProvider, Isin } from "@brrr/lib";
-import { CountryCode, CountryName, PredefinedInfoProvider, type TreatyType } from "@brrr/lib";
+import type { CompanyInfo, Country, InfoProvider } from "@brrr/lib";
+import { PredefinedInfoProvider, type TreatyType } from "@brrr/lib";
 
-type SerializedCountry = { name: string; shortCode2: string; treaties: Record<string, string> };
+// The country route's JSON: a Country with its treaties as a plain object.
+type SerializedCountry = Omit<Country, "treaties"> & { treaties: Record<string, string> };
 
 export class ApiInfoProvider implements InfoProvider {
 	private readonly predefined = new PredefinedInfoProvider();
 
-	async getCompanyInfo(isin: Isin): Promise<CompanyInfo | null> {
+	async getCompanyInfo(isin: string): Promise<CompanyInfo | null> {
 		const local = await this.predefined.getCompanyInfo(isin);
 		if (local) return local;
 
@@ -16,7 +17,7 @@ export class ApiInfoProvider implements InfoProvider {
 		return result;
 	}
 
-	async getCountry(name: CountryName): Promise<Country | null> {
+	async getCountry(name: string): Promise<Country | null> {
 		const local = await this.predefined.getCountry(name);
 		if (local) return local;
 
@@ -30,39 +31,35 @@ export class ApiInfoProvider implements InfoProvider {
 			treaties.set(k as TreatyType, v);
 		}
 
-		const country: Country = {
-			name: CountryName.Schema.parse(result.name),
-			shortCode2: CountryCode.Schema.parse(result.shortCode2),
-			treaties,
-		};
+		const country: Country = { name: result.name, shortCode2: result.shortCode2, treaties };
 
 		this.predefined.addCountry(name, country);
 
 		return country;
 	}
 
-	addCompany(isin: Isin, info: CompanyInfo): void {
+	addCompany(isin: string, info: CompanyInfo): void {
 		this.predefined.addCompany(isin, info);
 	}
-	updateCompany(isin: Isin, info: CompanyInfo): void {
+	updateCompany(isin: string, info: CompanyInfo): void {
 		this.predefined.updateCompany(isin, info);
 	}
-	removeCompany(isin: Isin): void {
+	removeCompany(isin: string): void {
 		this.predefined.removeCompany(isin);
 	}
-	listCompanies(): Map<Isin, CompanyInfo> {
+	listCompanies() {
 		return this.predefined.listCompanies();
 	}
-	addCountry(name: CountryName, country: Country): void {
+	addCountry(name: string, country: Country): void {
 		this.predefined.addCountry(name, country);
 	}
-	updateCountry(name: CountryName, country: Country): void {
+	updateCountry(name: string, country: Country): void {
 		this.predefined.updateCountry(name, country);
 	}
-	removeCountry(name: CountryName): void {
+	removeCountry(name: string): void {
 		this.predefined.removeCountry(name);
 	}
-	listCountries(): Map<CountryName, Country> {
+	listCountries() {
 		return this.predefined.listCountries();
 	}
 }

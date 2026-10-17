@@ -96,6 +96,9 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
   A type built from another domain's adds a `From<X>` helper that goes through its `Schema` (`EDavkiIsin.FromIsin`), where its
   domain may depend on the other. Core can't know brokers, so `Transform.ts` turns IBKR values into core ones with the core type's
   `Schema`. Tests build ids the same way: `Isin.Schema.parse("US0378331005")`.
+  Lib's exports never make a caller (the site, the CLI) create one: `index.ts` exports enums but no nominal types, and the
+  public entry points (`TaxAuthorityRegistry.generateExports`, `PredefinedInfoProvider`, `NodeInfoProvider`) take plain strings
+  and build the ids inside lib.
 - Dates and times use luxon. Models hold `ValidDateTime` (`DateTime<true>`); parse input with `zDateTimeFromISOString`
   (`@brrr/Utils/DateTime`). No `Date`.
 - Dependency injection is Inversify without decorators: each area has a `*Module.ts` that binds classes with

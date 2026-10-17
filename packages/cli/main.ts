@@ -5,7 +5,6 @@ import { fileURLToPath } from "node:url";
 import {
 	BrokerageRegistry,
 	createContainer,
-	ReportTypeId,
 	SlovenianReportTypeId,
 	StagingFinancialGroupingProcessor,
 	TaxAuthorityId,
@@ -140,7 +139,7 @@ async function main() {
 		const outputFiles = OUTPUT_FILES[reportType];
 		const { xml, csv } = await taxAuthorities.generateExports({
 			authorityId: TaxAuthorityId.SLOVENIA,
-			reportTypeId: ReportTypeId.Schema.parse(reportType),
+			reportTypeId: reportType,
 			taxPayerInfo,
 			reportConfig,
 			events: financialEvents,

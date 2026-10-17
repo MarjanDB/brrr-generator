@@ -1,4 +1,4 @@
-import type { ReportTypeId, TaxAuthorityId } from "@brrr/lib";
+import type { TaxAuthorityId } from "@brrr/lib";
 
 // A generated report, as the configure step hands it to the download step.
 export type GeneratedOutputs = {
@@ -7,5 +7,5 @@ export type GeneratedOutputs = {
 	xmlFilename: string;
 	csvFilename: string;
 	authorityId: TaxAuthorityId;
-	reportTypeId: ReportTypeId;
+	reportTypeId: string;
 };

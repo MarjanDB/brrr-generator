@@ -29,7 +29,6 @@ import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import type { IdentifierRelationshipAny } from "@brrr/Core/Schemas/IdentifierRelationship";
-import { CountryName, Isin } from "@brrr/Core/Schemas/Identifiers";
 import { TaxLot, type TaxLotDerivative, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
 import { createContainer } from "@brrr/container";
@@ -42,7 +41,7 @@ import type {
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type { GeneratedExports } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
 import type { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
-import { ReportTypeId, TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
+import { TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
 import { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
 
 type LotFields = { id: TaxLotStock["id"]; quantity: number; shortLongType: GenericShortLong };
@@ -223,10 +222,10 @@ const config = {
 	}): PredefinedInfoProvider {
 		const info = new PredefinedInfoProvider();
 		for (const [isin, company] of Object.entries(lookups.companies)) {
-			info.addCompany(Isin.Schema.parse(isin), company);
+			info.addCompany(isin, company);
 		}
 		for (const [name, country] of Object.entries(lookups.countries)) {
-			info.addCountry(CountryName.Schema.parse(name), country);
+			info.addCountry(name, country);
 		}
 		return info;
 	},
@@ -265,7 +264,7 @@ const pipeline = {
 		const container = createContainer(options.info);
 		return await container.get(TaxAuthorityRegistry).generateExports({
 			authorityId: TaxAuthorityId.SLOVENIA,
-			reportTypeId: ReportTypeId.Schema.parse(options.report),
+			reportTypeId: options.report,
 			taxPayerInfo: options.taxPayer,
 			reportConfig: config.report(options.year, options.lotMatching),
 			events,

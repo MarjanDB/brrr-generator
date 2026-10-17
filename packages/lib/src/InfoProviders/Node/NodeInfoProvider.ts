@@ -142,20 +142,21 @@ const isinToCompanyLookup = missingCompaniesLookup as Record<
 	}
 >;
 
+// Takes plain strings like PredefinedInfoProvider, for the site's lookup routes and the CLI.
 export class NodeInfoProvider implements InfoProvider {
 	private readonly predefined = new PredefinedInfoProvider();
 	private readonly yf = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
 
 	// Override methods — forward to predefined
-	addCompany(isin: Isin, info: CompanyInfo): void {
+	addCompany(isin: string, info: CompanyInfo): void {
 		this.predefined.addCompany(isin, info);
 	}
 
-	updateCompany(isin: Isin, info: CompanyInfo): void {
+	updateCompany(isin: string, info: CompanyInfo): void {
 		this.predefined.updateCompany(isin, info);
 	}
 
-	removeCompany(isin: Isin): void {
+	removeCompany(isin: string): void {
 		this.predefined.removeCompany(isin);
 	}
 
@@ -163,15 +164,15 @@ export class NodeInfoProvider implements InfoProvider {
 		return this.predefined.listCompanies();
 	}
 
-	addCountry(name: CountryName, country: Country): void {
+	addCountry(name: string, country: Country): void {
 		this.predefined.addCountry(name, country);
 	}
 
-	updateCountry(name: CountryName, country: Country): void {
+	updateCountry(name: string, country: Country): void {
 		this.predefined.updateCountry(name, country);
 	}
 
-	removeCountry(name: CountryName): void {
+	removeCountry(name: string): void {
 		this.predefined.removeCountry(name);
 	}
 
@@ -179,7 +180,7 @@ export class NodeInfoProvider implements InfoProvider {
 		return this.predefined.listCountries();
 	}
 
-	async getCountry(name: CountryName): Promise<Country | null> {
+	async getCountry(name: string): Promise<Country | null> {
 		// 1. Check predefined
 		const fromPredefined = await this.predefined.getCountry(name);
 		if (fromPredefined !== null) {
@@ -203,10 +204,14 @@ export class NodeInfoProvider implements InfoProvider {
 			treaties.set(TreatyType.TaxRelief, taxReliefTreaties[shortCode]);
 		}
 
-		return { name, shortCode2: CountryCode.Schema.parse(shortCode), treaties };
+		return {
+			name: CountryName.Schema.parse(name),
+			shortCode2: CountryCode.Schema.parse(shortCode),
+			treaties,
+		};
 	}
 
-	async getCompanyInfo(isin: Isin): Promise<CompanyInfo | null> {
+	async getCompanyInfo(isin: string): Promise<CompanyInfo | null> {
 		// 1. Check predefined
 		const fromPredefined = await this.predefined.getCompanyInfo(isin);
 		if (fromPredefined !== null) {

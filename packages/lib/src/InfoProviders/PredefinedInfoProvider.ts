@@ -1,44 +1,45 @@
-import type { CountryName, Isin } from "@brrr/Core/Schemas/Identifiers";
+import { CountryName, Isin } from "@brrr/Core/Schemas/Identifiers";
 import type { CompanyInfo, Country, InfoProvider } from "@brrr/InfoProviders/InfoProvider";
 
+// Takes plain strings, so the site and the CLI can use it without building lib's identifiers.
 export class PredefinedInfoProvider implements InfoProvider {
 	private readonly companies = new Map<Isin, CompanyInfo>();
 	private readonly countries = new Map<CountryName, Country>();
 
-	getCompanyInfo(isin: Isin): Promise<CompanyInfo | null> {
-		return Promise.resolve(this.companies.get(isin) ?? null);
+	getCompanyInfo(isin: string): Promise<CompanyInfo | null> {
+		return Promise.resolve(this.companies.get(Isin.Schema.parse(isin)) ?? null);
 	}
 
-	getCountry(name: CountryName): Promise<Country | null> {
-		return Promise.resolve(this.countries.get(name) ?? null);
+	getCountry(name: string): Promise<Country | null> {
+		return Promise.resolve(this.countries.get(CountryName.Schema.parse(name)) ?? null);
 	}
 
-	addCompany(isin: Isin, info: CompanyInfo): void {
-		this.companies.set(isin, info);
+	addCompany(isin: string, info: CompanyInfo): void {
+		this.companies.set(Isin.Schema.parse(isin), info);
 	}
 
-	updateCompany(isin: Isin, info: CompanyInfo): void {
-		this.companies.set(isin, info);
+	updateCompany(isin: string, info: CompanyInfo): void {
+		this.companies.set(Isin.Schema.parse(isin), info);
 	}
 
-	removeCompany(isin: Isin): void {
-		this.companies.delete(isin);
+	removeCompany(isin: string): void {
+		this.companies.delete(Isin.Schema.parse(isin));
 	}
 
 	listCompanies(): Map<Isin, CompanyInfo> {
 		return this.companies;
 	}
 
-	addCountry(name: CountryName, country: Country): void {
-		this.countries.set(name, country);
+	addCountry(name: string, country: Country): void {
+		this.countries.set(CountryName.Schema.parse(name), country);
 	}
 
-	updateCountry(name: CountryName, country: Country): void {
-		this.countries.set(name, country);
+	updateCountry(name: string, country: Country): void {
+		this.countries.set(CountryName.Schema.parse(name), country);
 	}
 
-	removeCountry(name: CountryName): void {
-		this.countries.delete(name);
+	removeCountry(name: string): void {
+		this.countries.delete(CountryName.Schema.parse(name));
 	}
 
 	listCountries(): Map<CountryName, Country> {
