@@ -22,10 +22,13 @@ import {
 	StagingTradeEventCashTransactionPaymentInLieuOfDividends,
 	StagingTradeEventCashTransactionWithholdingTax,
 	StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends,
+	type StagingTradeEventDerivative,
 	StagingTradeEventDerivativeAcquired,
 	StagingTradeEventDerivativeSold,
+	type StagingTradeEventStock,
 	StagingTradeEventStockAcquired,
 	StagingTradeEventStockSold,
+	type StagingTransactionCash,
 } from "@brrr/Core/Schemas/Staging/Events";
 import { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping";
 import {
@@ -104,15 +107,9 @@ export class IbkrTransformService {
 					financialIdentifier: identifier,
 					countryOfOrigin: null,
 					underlyingCategory: GenericCategory.REGULAR,
-					stockTrades: (stocksMap.get(key)?.items ?? []) as (
-						| StagingTradeEventStockAcquired
-						| StagingTradeEventStockSold
-					)[],
+					stockTrades: stocksMap.get(key)?.items ?? [],
 					stockTaxLots: stockLotsMap.get(key)?.items ?? [],
-					derivativeTrades: (derivativesMap.get(key)?.items ?? []) as (
-						| StagingTradeEventDerivativeAcquired
-						| StagingTradeEventDerivativeSold
-					)[],
+					derivativeTrades: derivativesMap.get(key)?.items ?? [],
 					derivativeTaxLots: derivativeLotsMap.get(key)?.items ?? [],
 					cashTransactions: dividendsMap.get(key)?.items ?? [],
 				}),
@@ -128,7 +125,7 @@ export class IbkrTransformService {
 		return new StagingFinancialEvents({ groupings, identifierRelationships });
 	}
 
-	private convertToCashTransactions(cashTransactions: TransactionCash[]) {
+	private convertToCashTransactions(cashTransactions: TransactionCash[]): StagingTransactionCash[] {
 		return cashTransactions.map((transaction) => {
 			const descLower = transaction.description.toLowerCase();
 			const isOrdinaryDividend = descLower.includes("ordinary dividend");
@@ -188,7 +185,7 @@ export class IbkrTransformService {
 		});
 	}
 
-	private convertStockTradesToEvents(trades: TradeStock[]) {
+	private convertStockTradesToEvents(trades: TradeStock[]): StagingTradeEventStock[] {
 		return trades.map((trade) => {
 			const financialIdentifier = new StagingFinancialIdentifier({
 				isin: trade.isin,
@@ -240,7 +237,9 @@ export class IbkrTransformService {
 		);
 	}
 
-	private convertDerivativeTradesToEvents(trades: TradeDerivative[]) {
+	private convertDerivativeTradesToEvents(
+		trades: TradeDerivative[],
+	): StagingTradeEventDerivative[] {
 		return trades.map((trade) => {
 			const financialIdentifier = new StagingFinancialIdentifier({
 				isin: trade.underlyingSecurityID,

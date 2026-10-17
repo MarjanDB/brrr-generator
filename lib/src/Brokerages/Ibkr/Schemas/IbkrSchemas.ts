@@ -154,10 +154,10 @@ function parseDateString(s: string, ctx: z.RefinementCtx): ValidDateTime {
 	const normalized = s.replace("EDT", "-04:00").replace("EST", "-05:00");
 	for (const fmt of DATE_FORMATS) {
 		const parsed = DateTime.fromFormat(normalized, fmt);
-		if (parsed.isValid) return parsed as ValidDateTime;
+		if (parsed.isValid) return parsed;
 	}
 	const iso = DateTime.fromISO(normalized);
-	if (iso.isValid) return iso as ValidDateTime;
+	if (iso.isValid) return iso;
 	ctx.addIssue({ code: "custom", message: `Could not parse date: ${s}` });
 	return z.NEVER;
 }

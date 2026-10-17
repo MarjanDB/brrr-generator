@@ -1,4 +1,4 @@
-import type { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider";
+import type { IBrokerageProvider } from "@brrr/Brokerages/Interfaces/IBrokerageProvider";
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 
 export type BrokerageFileDetection = {
@@ -9,7 +9,7 @@ export type BrokerageFileDetection = {
 };
 
 export class BrokerageRegistry {
-	constructor(private readonly ibkr: IbkrBrokerageExportProvider) {}
+	constructor(private readonly ibkr: IBrokerageProvider) {}
 
 	public listBrokerages(): { id: string; name: string }[] {
 		return [{ id: this.ibkr.brokerageId, name: this.ibkr.displayName }];

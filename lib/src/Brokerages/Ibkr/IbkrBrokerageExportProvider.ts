@@ -13,24 +13,14 @@ export class IbkrBrokerageExportProvider implements IBrokerageProvider {
 	) {}
 
 	public isThisValidExport(xmlString: string): boolean {
-		try {
-			this.extract.extractFromXML(xmlString);
-			return true;
-		} catch {
-			return false;
-		}
+		return this.extractionError(xmlString) === null;
 	}
 
 	public describeExportProblem(xmlString: string): string | null {
 		if (!xmlString.includes("<FlexQueryResponse")) {
 			return null;
 		}
-		try {
-			this.extract.extractFromXML(xmlString);
-			return null;
-		} catch (error) {
-			return error instanceof Error ? error.message : String(error);
-		}
+		return this.extractionError(xmlString);
 	}
 
 	public loadAndTransform(xmlStrings: string[]): StagingFinancialEvents {
@@ -40,5 +30,14 @@ export class IbkrBrokerageExportProvider implements IBrokerageProvider {
 		const transformed = this.transform.convertSegmentedTradesToStagingEvents(merged);
 
 		return transformed;
+	}
+
+	private extractionError(xmlString: string): string | null {
+		try {
+			this.extract.extractFromXML(xmlString);
+			return null;
+		} catch (error) {
+			return error instanceof Error ? error.message : String(error);
+		}
 	}
 }
