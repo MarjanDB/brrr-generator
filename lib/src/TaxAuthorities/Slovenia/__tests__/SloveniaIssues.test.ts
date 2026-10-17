@@ -32,7 +32,7 @@ test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantities", 
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 
-	const processor = new FinancialEventsProcessor(null, new LotMatcher());
+	const processor = new FinancialEventsProcessor(new LotMatcher());
 	const generator = new KdvpReportGenerator(processor);
 	const items = generator.convert(reportConfig, financialEvents.groupings);
 	const events = items.flatMap((item) => item.items.flatMap((line) => line.events));

@@ -10,7 +10,7 @@ import {
 	TaxPayerType,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
+import { zDateTimeFromISOString } from "@brrr/Utils/DateTime";
 import { DateTime, Settings, type Zone } from "luxon";
 
 // Golden outputs for every report. These pin the generated XML and CSV byte for byte, so
@@ -109,7 +109,7 @@ const taxPayerInfo: TaxPayerInfo = {
 	postNumber: "1000",
 	postName: "Ljubljana",
 	municipalityName: "Ljubljana",
-	birthDate: DateTime.fromISO("1990-01-01") as ValidDateTime,
+	birthDate: zDateTimeFromISOString.parse("1990-01-01"),
 	maticnaStevilka: "1234567",
 	invalidskoPodjetje: false,
 	resident: true,
@@ -191,8 +191,8 @@ test.each(CASES)("$name", async (golden) => {
 		reportTypeId: golden.reportTypeId,
 		taxPayerInfo,
 		reportConfig: {
-			fromDate: DateTime.fromISO(`${golden.year}-01-01`) as ValidDateTime,
-			toDate: DateTime.fromISO(`${golden.year + 1}-01-01`) as ValidDateTime,
+			fromDate: zDateTimeFromISOString.parse(`${golden.year}-01-01`),
+			toDate: zDateTimeFromISOString.parse(`${golden.year + 1}-01-01`),
 			lotMatchingMethod: golden.lotMatchingMethod,
 		},
 		events,

@@ -9,8 +9,7 @@ import {
 } from "@brrr/Core/Schemas/CommonFormats";
 import { TradeEventStockAcquired } from "@brrr/Core/Schemas/Events";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
+import { zDateTimeFromISOString } from "@brrr/Utils/DateTime";
 
 class FakeLotMatchingMethod implements LotMatchingMethod {
 	receivedTrades: Trade[] | null = null;
@@ -24,7 +23,7 @@ class FakeLotMatchingMethod implements LotMatchingMethod {
 test("provided method is called with the converted trades", () => {
 	const fakeMethod = new FakeLotMatchingMethod();
 	const lotMatcher = new LotMatcher();
-	const date = DateTime.fromISO("2023-01-01") as ValidDateTime;
+	const date = zDateTimeFromISOString.parse("2023-01-01");
 	const event = new TradeEventStockAcquired({
 		id: "ID",
 		financialIdentifier: new FinancialIdentifier({ isin: "ISIN" }),

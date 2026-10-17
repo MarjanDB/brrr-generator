@@ -6,7 +6,8 @@
 // keys they don't know, such as a constant `kind` field that `copy` passes back in.
 export abstract class Model<TArgs extends object> {
 	copy(overrides: Partial<TArgs>): this {
-		const Ctor = this.constructor as new (args: TArgs) => this;
-		return new Ctor({ ...this, ...overrides } as unknown as TArgs);
+		// TypeScript types `constructor` as Function; every subclass takes its own args object.
+		const Ctor = this.constructor as new (args: this & Partial<TArgs>) => this;
+		return new Ctor({ ...this, ...overrides });
 	}
 }

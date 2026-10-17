@@ -18,10 +18,9 @@ import {
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship";
 import { RenameProvenanceStep } from "@brrr/Core/Schemas/Provenance";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
+import { zDateTimeFromISOString } from "@brrr/Utils/DateTime";
 
-const date = DateTime.fromISO("2024-05-01") as ValidDateTime;
+const date = zDateTimeFromISOString.parse("2024-05-01");
 const identifier = new FinancialIdentifier({ isin: "US0000000001", ticker: "ABC" });
 
 const base = {

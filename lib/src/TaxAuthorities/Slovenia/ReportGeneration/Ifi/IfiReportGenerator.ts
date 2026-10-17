@@ -1,15 +1,12 @@
 import type { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
-import { FifoLotMatchingMethod } from "@brrr/Core/LotMatching/FifoLotMatchingMethod";
-import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod";
 import { GenericDerivativeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats";
 import {
 	TradeEventDerivativeAcquired,
 	type TradeEventDerivativeSold,
 } from "@brrr/Core/Schemas/Events";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import type { LotMatchingConfiguration } from "@brrr/Core/Schemas/LotMatchingConfiguration";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider";
-import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import { createLotMatchingMethod } from "@brrr/TaxAuthorities/LotMatchingMethodFactory";
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/CsvDIfi";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/XmlDIfi";
 import {
@@ -99,31 +96,14 @@ export class IfiReportGenerator {
 		const periodEnd = config.toDate;
 
 		for (const financialGrouping of groupings) {
-			const lotMatchingConfiguration: LotMatchingConfiguration = {
-				fromDate: periodStart,
-				toDate: periodEnd,
-				forStocks: (_grouping) => {
-					if (config.lotMatchingMethod === TaxAuthorityLotMatchingMethod.PROVIDED) {
-						return new ProvidedLotMatchingMethod([]);
-					}
-					return new FifoLotMatchingMethod();
-				},
-				forDerivatives: (_grouping) => {
-					if (config.lotMatchingMethod === TaxAuthorityLotMatchingMethod.PROVIDED) {
-						return new ProvidedLotMatchingMethod([]);
-					}
-					return new FifoLotMatchingMethod();
-				},
-			};
-
-			const interestingGrouping = this.processor.process(
-				financialGrouping,
-				lotMatchingConfiguration,
-			);
-
 			// TODO: Figure out how to get lots (currently only trade events are used, not predefined lots)
-			for (const derivativeGrouping of interestingGrouping.derivativeGroupings) {
-				const allLines = [...derivativeGrouping.derivativeTrades];
+			for (const derivativeGrouping of financialGrouping.derivativeGroupings) {
+				const allLines = this.processor.derivativeTradesClosedInPeriod(
+					derivativeGrouping,
+					createLotMatchingMethod(config.lotMatchingMethod, []),
+					periodStart,
+					periodEnd,
+				);
 				allLines.sort((a, b) => a.date.toMillis() - b.date.toMillis());
 
 				if (allLines.length === 0) {
