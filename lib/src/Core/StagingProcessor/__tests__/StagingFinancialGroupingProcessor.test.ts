@@ -201,6 +201,28 @@ test("partial stock lot matching throws", () => {
 	expect(() => processor.generateGenericGroupings(groupings)).toThrow(Error);
 });
 
+test("throws when a stock lot has no sold date", () => {
+	const processor = new StagingFinancialGroupingProcessor();
+	const lotWithoutSoldDate = new StagingTaxLot({
+		id: "Lot",
+		financialIdentifier: ident,
+		quantity: 1,
+		acquired: new StagingTaxLotMatchingDetails({ id: "StockBought", dateTime: null }),
+		sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: null }),
+		shortLongType: GenericShortLong.LONG,
+	});
+	const groupings = [
+		makeGrouping({
+			stockTrades: [simpleStagingStockBuy, simpleStagingStockSold],
+			stockTaxLots: [lotWithoutSoldDate],
+		}),
+	];
+
+	expect(() => processor.generateGenericGroupings(groupings)).toThrow(
+		"LookupError: Failed to match stock lot",
+	);
+});
+
 test("simple derivative lot matching", () => {
 	const processor = new StagingFinancialGroupingProcessor();
 	const groupings = [

@@ -11,11 +11,13 @@ import type { StagingIdentifierRelationshipSplit } from "@brrr/Core/Schemas/Stag
 import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
 import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
-import { processCashTransaction } from "@brrr/Core/StagingProcessor/Transformers/CashTransactionEventProcessor";
-import { processDerivativeEvent } from "@brrr/Core/StagingProcessor/Transformers/DerivativeEventProcessor";
-import { processDerivativeLot } from "@brrr/Core/StagingProcessor/Transformers/DerivativeLotProcessor";
-import { processStockEvent } from "@brrr/Core/StagingProcessor/Transformers/StockEventProcessor";
-import { processStockLot } from "@brrr/Core/StagingProcessor/Transformers/StockLotProcessor";
+import {
+	toCoreCashTransaction,
+	toCoreDerivativeLot,
+	toCoreDerivativeTrade,
+	toCoreStockLot,
+	toCoreStockTrade,
+} from "@brrr/Core/StagingProcessor/StagingToCore";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import { DateTime } from "luxon";
 
@@ -42,9 +44,9 @@ export class StagingFinancialGroupingProcessor {
 
 		const derivativeGroupings: DerivativeGrouping[] = [];
 		for (const [key, stagingTrades] of tradesByIdKey) {
-			const trades = stagingTrades.map(processDerivativeEvent);
+			const trades = stagingTrades.map(toCoreDerivativeTrade);
 			const lots = lotsByIdKey.get(key) ?? [];
-			const processedLots = lots.map((lot) => processDerivativeLot(lot, trades));
+			const processedLots = lots.map((lot) => toCoreDerivativeLot(lot, trades));
 			derivativeGroupings.push(
 				new DerivativeGrouping({
 					financialIdentifier: FinancialIdentifier.fromStagingIdentifier(
@@ -60,14 +62,14 @@ export class StagingFinancialGroupingProcessor {
 	}
 
 	process(input: StagingFinancialGrouping): FinancialGrouping {
-		const processedTrades = input.stockTrades.map(processStockEvent);
+		const processedTrades = input.stockTrades.map(toCoreStockTrade);
 		const allTrades = processedTrades;
 
-		const processedStockLots = input.stockTaxLots.map((lot) => processStockLot(lot, allTrades));
+		const processedStockLots = input.stockTaxLots.map((lot) => toCoreStockLot(lot, allTrades));
 
 		const derivativeGroupings = this.processAndGroupDerivativeTrades(input);
 
-		const processedCashTransactions = input.cashTransactions.map(processCashTransaction);
+		const processedCashTransactions = input.cashTransactions.map(toCoreCashTransaction);
 
 		return new FinancialGrouping({
 			financialIdentifier: FinancialIdentifier.fromStagingIdentifier(input.financialIdentifier),
