@@ -1,11 +1,11 @@
 ---
 name: slovenian-tax-edavki
-description: Slovenian eDavki reports (DOH_KDVP, DOH_DIV, D_IFI; DOH_OBR not implemented) and how lib generates them — report generators, XML/CSV output, XSDs, taxpayer fields, workflow types, dividend and treaty handling. Use when changing anything under lib/src/TaxAuthorities/Slovenia, the Slovenian export form on the site, the CLI's report options, or userConfig.yml.
+description: Slovenian eDavki reports (DOH_KDVP, DOH_DIV, D_IFI; DOH_OBR not implemented) and how lib generates them — report generators, XML/CSV output, XSDs, taxpayer fields, workflow types, dividend and treaty handling. Use when changing anything under packages/lib/src/TaxAuthorities/Slovenia, the Slovenian export form on the site, the CLI's report options, or userConfig.yml.
 ---
 
 # Slovenian tax reports (eDavki)
 
-Lives in `lib/src/TaxAuthorities/Slovenia/`. For how a tax authority plugs into the pipeline, see the **pipeline-and-structure** skill;
+Lives in `packages/lib/src/TaxAuthorities/Slovenia/`. For how a tax authority plugs into the pipeline, see the **pipeline-and-structure** skill;
 for company, country and treaty data, see **infoproviders-lookup-data**.
 
 ## Report types
@@ -49,13 +49,13 @@ report period of 1 January to 1 January of the following year.
 
 ## Taxpayer fields
 
-`TaxPayerConfigSchema` in `lib/src/TaxAuthorities/ConfigurationProvider.ts`: `taxNumber`, `taxpayerType` (`FO` natural person, `PO` legal
+`TaxPayerConfigSchema` in `packages/lib/src/TaxAuthorities/ConfigurationProvider.ts`: `taxNumber`, `taxpayerType` (`FO` natural person, `PO` legal
 entity, `SP` sole trader), `name`, `address1`, `address2` (nullable), `city`, `postNumber`, `postName`, `municipalityName`, `birthDate`,
 `maticnaStevilka`, `invalidskoPodjetje`, `resident`, `activityCode`, `activityName`, `countryId`, `countryName`.
 
 - The CLI reads `config/userConfig.yml` (template: `config/userConfig.example.yml`) with js-yaml and validates it with this schema.
   Keep the example in step with the schema.
-- The site's `app/app/components/export/SloveniaExportForm.vue` asks for tax number, name, address, city, post number and name, and
+- The site's `packages/app/app/components/export/SloveniaExportForm.vue` asks for tax number, name, address, city, post number and name, and
   country, and fills the rest with fixed defaults (`FO`, resident, empty strings).
 
 ## Output
@@ -66,8 +66,8 @@ entity, `SP` sole trader), `name`, `address1`, `address2` (nullable), `city`, `p
 | DIV | `Doh_Div.xml` | `export-dividends.csv` |
 | IFI | `D_Ifi.xml` | `export-derivatives.csv` |
 
-The same names appear in `standalone/cli/main.ts` (`OUTPUT_FILES`) and `SloveniaExportForm.vue` (`FILENAMES`). The site's upload
-instructions for eDavki are in `app/app/components/download/taxAuthorityGuides.ts`.
+The same names appear in `packages/cli/main.ts` (`OUTPUT_FILES`) and `SloveniaExportForm.vue` (`FILENAMES`). The site's upload
+instructions for eDavki are in `packages/app/app/components/download/taxAuthorityGuides.ts`.
 
 ## XSDs
 
@@ -77,19 +77,19 @@ replace the file and update the namespace and version in the matching `Xml*.ts`.
 
 ## Tests
 
-The expected XML and CSV for every report live with their test cases in `test-cases/cases/<Broker>/<Case>/expected/slovenia/`
+The expected XML and CSV for every report live with their test cases in `packages/test-cases/cases/<Broker>/<Case>/expected/slovenia/`
 (`kdvp-fifo`, `kdvp-provided`, `ifi-fifo`, `div`; each case covers one year, declared in the `TestKit` registry and reached as
 `case.expected.slovenia.kdvpFifo`). The acceptance tests in `__tests__/Acceptance/` (`Kdvp`, `Ifi`, `Div`, one test per input
 case, judging only the generated form) compare against them byte for
 byte, so never regenerate them to make a refactor pass. `Fixtures.taxPayer` and `Fixtures.lookups`
-(`lib/src/__tests__/support/Fixtures.ts`) are the taxpayer and the company and country data they were generated with.
+(`packages/lib/src/__tests__/support/Fixtures.ts`) are the taxpayer and the company and country data they were generated with.
 
 `__tests__/`: `TaxAuthorityProvider.integration.test.ts` (all three reports' lines, builds the provider by hand in `makeProvider` to spy
 on its collaborators), `PaymentInLieuOfDividend.unit.test.ts`, `CsvWithoutNodeBuffer.unit.test.ts` (CSV generators without Node's
 `Buffer`). `ReportGeneration/Div/__tests__/DivReportGenerator.unit.test.ts` pins DIV's sums, same-day merge and rounding,
 `ReportGeneration/__tests__/Amounts.unit.test.ts` the shared amount helpers, and
 `TaxAuthorities/__tests__/LotMatchingMethodFactory.unit.test.ts` the lot matching choice. Tests build their data and report configs
-with `Scenario` (`lib/src/__tests__/support/Scenario.ts`), writing every value out, and give the dividend generator a
+with `Scenario` (`packages/lib/src/__tests__/support/Scenario.ts`), writing every value out, and give the dividend generator a
 `PredefinedInfoProvider` with the companies and countries they need, so they never call Yahoo Finance.
 
 ## References

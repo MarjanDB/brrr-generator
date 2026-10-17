@@ -6,7 +6,7 @@ description: Where code goes in the tax report pipeline and how the layers conne
 # Pipeline and project structure
 
 Broker- and country-specific details live in the **ibkr-flex-query** and **slovenian-tax-edavki** skills; this one covers the layers they
-plug into. All paths are under `lib/src/` unless they say otherwise.
+plug into. All paths are under `packages/lib/src/` unless they say otherwise.
 
 ## Flow
 
@@ -20,8 +20,8 @@ export files (XML strings)
   → { xml, csv }
 ```
 
-The site runs this in the browser (`app/app/components/ibkr/IbkrUploadStep.vue`, `app/app/components/export/SloveniaExportForm.vue`);
-the CLI runs it in Node (`standalone/cli/main.ts`, through the same two registries).
+The site runs this in the browser (`packages/app/app/components/ibkr/IbkrUploadStep.vue`, `packages/app/app/components/export/SloveniaExportForm.vue`);
+the CLI runs it in Node (`packages/cli/main.ts`, through the same two registries).
 
 ## Layers
 
@@ -44,7 +44,7 @@ the CLI runs it in Node (`standalone/cli/main.ts`, through the same two registri
 `toResolvedValue(factory, [dependencies])` in singleton scope; there are no decorators. Classes take their dependencies through the
 constructor, so tests build them by hand without a container.
 
-Anything the app or CLI uses must be exported from `index.ts`. They consume `lib/dist/`, so rebuild lib (`pnpm --filter @brrr/lib build`)
+Anything the app or CLI uses must be exported from `index.ts`. They consume `packages/lib/dist/`, so rebuild lib (`pnpm --filter @brrr/lib build`)
 before checking them.
 
 ## Adding a broker
@@ -58,11 +58,11 @@ before checking them.
 4. `BrokerageRegistry` takes each provider in its constructor and has the IBKR one written into `listBrokerages`, `detectOne` and
    `loadAndTransformDetected`. Add the new provider to all three; staging events from several brokers are combined with
    `StagingFinancialEvents.merge`.
-5. Unit tests in `Brokerages/<Broker>/__tests__/`. Anonymised exports go in `test-cases/cases/<Broker>/<Case>/input/`, each case
-   declared in a `<broker>` group of the `TestKit` registry (`test-cases/index.ts`: year, named inputs, named expected reports),
+5. Unit tests in `Brokerages/<Broker>/__tests__/`. Anonymised exports go in `packages/test-cases/cases/<Broker>/<Case>/input/`, each case
+   declared in a `<broker>` group of the `TestKit` registry (`packages/test-cases/index.ts`: year, named inputs, named expected reports),
    with an acceptance test per case in each tax authority's `__tests__/Acceptance/<Form>.acceptance.test.ts`.
-6. Site: icon at `app/public/icons/brokers/<id>.svg` and in `brokerIconById` (`IbkrUploadStep.vue`); a guide in
-   `app/app/components/upload/brokerGuides.ts` with screenshots in `app/public/screenshots/brokers/<id>/`; i18n keys in both locale files.
+6. Site: icon at `packages/app/public/icons/brokers/<id>.svg` and in `brokerIconById` (`IbkrUploadStep.vue`); a guide in
+   `packages/app/app/components/upload/brokerGuides.ts` with screenshots in `packages/app/public/screenshots/brokers/<id>/`; i18n keys in both locale files.
 
 ## Adding a tax authority
 
@@ -74,8 +74,8 @@ before checking them.
    (constructor, `listAuthorities`, `generateExports`).
 3. If the country needs taxpayer fields `TaxPayerConfigSchema` lacks, extend the schema; the CLI and `config/userConfig.example.yml`
    follow it.
-4. Site: a card in `app/app/components/export/taxAuthorityCards.ts` (icon in `app/public/icons/tax-authorities/`), a form component
-   registered in `authorityForms` in `ExportConfigStep.vue`, a submission guide in `app/app/components/download/taxAuthorityGuides.ts`,
+4. Site: a card in `packages/app/app/components/export/taxAuthorityCards.ts` (icon in `packages/app/public/icons/tax-authorities/`), a form component
+   registered in `authorityForms` in `ExportConfigStep.vue`, a submission guide in `packages/app/app/components/download/taxAuthorityGuides.ts`,
    i18n keys in both locale files.
 
 ## Adding a report type to an existing country

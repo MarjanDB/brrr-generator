@@ -1,23 +1,23 @@
 ---
 name: web-app
-description: The Nuxt 4 site in app/ — the four-step wizard, component layout, form components, i18n (en + sl), UnoCSS shortcuts and theme colours, charts, the lookup server routes, env config and deployment. Use when changing anything under app/, adding UI text, adding a page or component, or styling.
+description: The Nuxt 4 site in packages/app/ — the four-step wizard, component layout, form components, i18n (en + sl), UnoCSS shortcuts and theme colours, charts, the lookup server routes, env config and deployment. Use when changing anything under packages/app/, adding UI text, adding a page or component, or styling.
 ---
 
-# Web app (`app/`)
+# Web app (`packages/app/`)
 
 Nuxt 4 site at https://taxesgobrrr.com. Everything that touches the user's broker data runs in the browser; the server only answers
-company and country lookups. Nuxt's source directory is `app/app/`.
+company and country lookups. Nuxt's source directory is `packages/app/app/`.
 
 ## Running and checking
 
-- `pnpm --filter @brrr/lib build` first, and again after every lib change: the app imports `@brrr/lib` from `lib/dist/`.
+- `pnpm --filter @brrr/lib build` first, and again after every lib change: the app imports `@brrr/lib` from `packages/lib/dist/`.
 - `pnpm dev` (root) for the dev server, `pnpm --filter @brrr/app typecheck`, `pnpm --filter @brrr/app build`, `pnpm lint:fix`.
-- Env: `app/util/env.config.ts` (`APP_CONFIG`, zod) reads `app/.env` if present: `PORT`, `HOST`, `NODE_ENV`, and
+- Env: `packages/app/util/env.config.ts` (`APP_CONFIG`, zod) reads `packages/app/.env` if present: `PORT`, `HOST`, `NODE_ENV`, and
   `NUXT_PUBLIC_POSTHOG_PUBLIC_KEY` / `NUXT_PUBLIC_POSTHOG_HOST` for analytics.
 
 ## The wizard
 
-`app/app/pages/index.vue` is the whole product: one page holding the state of four steps, each a component that emits to move on.
+`packages/app/app/pages/index.vue` is the whole product: one page holding the state of four steps, each a component that emits to move on.
 
 1. **Upload** — `components/ibkr/IbkrUploadStep.vue`: reads the files, runs `BrokerageRegistry.loadAndTransformDetected` and
    `StagingFinancialGroupingProcessor`, emits `FinancialEvents`.
@@ -28,7 +28,7 @@ company and country lookups. Nuxt's source directory is `app/app/`.
 4. **Download** — `components/export/ExportDownloadStep.vue`, plus the submission guide from `components/download/taxAuthorityGuides.ts`.
 
 Guides (broker export instructions, tax authority submission instructions) are data: `GuideStep`s in `components/guide/guideTypes.ts`,
-shown by `GuideModal.vue`, with screenshots under `app/public/screenshots/` and icons under `app/public/icons/`.
+shown by `GuideModal.vue`, with screenshots under `packages/app/public/screenshots/` and icons under `packages/app/public/icons/`.
 
 `pages/design/` is a design-system showcase (colours, buttons, badges, form controls). Check new shortcuts and components there.
 
@@ -36,7 +36,7 @@ shown by `GuideModal.vue`, with screenshots under `app/public/screenshots/` and 
 
 - Build a container with `createContainer(new ApiInfoProvider())` and `container.get(...)` the registry you need.
 - Hold lib objects (`FinancialEvents`, groupings) in `shallowRef`: they are class instances and shouldn't be made deeply reactive.
-- Lookups go through `app/app/utils/ApiInfoProvider.ts` → `app/server/api/isin/[isin].get.ts` and `app/server/api/country/[name].get.ts`,
+- Lookups go through `packages/app/app/utils/ApiInfoProvider.ts` → `packages/app/server/api/isin/[isin].get.ts` and `packages/app/server/api/country/[name].get.ts`,
   which run `NodeInfoProvider` on the server. `Country.treaties` is a `Map` and is sent as a plain object.
 
 ## Components
@@ -53,16 +53,16 @@ shown by `GuideModal.vue`, with screenshots under `app/public/screenshots/` and 
 
 ## Text (i18n)
 
-`@nuxtjs/i18n` with `strategy: "prefix"` (`/en/…`, `/sl/…`). Messages are flat snake_case keys in `app/i18n/locales/en.json` and
+`@nuxtjs/i18n` with `strategy: "prefix"` (`/en/…`, `/sl/…`). Messages are flat snake_case keys in `packages/app/i18n/locales/en.json` and
 `sl.json`; every key goes into both files, in Slovenian too. Use `const { t } = useI18n()` and `t("key")` in components; data files such
 as the guides hold keys, not text. Page meta goes through `useSeoMeta` with translated strings.
 
 ## Styling
 
-UnoCSS (`presetWind4`, `presetIcons`), configured in `app/unocss.config.ts`:
+UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config.ts`:
 
 - Colours are theme names, not raw palette or hex: `primary`, `secondary`, `accent`, `neutral`, `stale`, `success`, `warning`, `error`,
-  `info`, each with stops 10–990 backed by CSS variables in `app/app/assets/styles.css`.
+  `info`, each with stops 10–990 backed by CSS variables in `packages/app/app/assets/styles.css`.
 - Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`, `text-label`,
   `text-caption`, `input-md`, `button-filled-<colour>`, `button-inverse-<colour>`, `button-ghost`, `alert-error`, …
 - Dark mode is the `dark` class on `<html>`, set from a `color-scheme` cookie by the inline script in `nuxt.config.ts` and

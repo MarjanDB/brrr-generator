@@ -23,7 +23,7 @@
 	},
 	"overrides": [
 		{
-			"includes": ["app/app/pages/**"],
+			"includes": ["packages/app/app/pages/**"],
 			"linter": {
 				"rules": {
 					"style": {
