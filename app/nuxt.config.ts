@@ -61,6 +61,10 @@ export default defineNuxtConfig({
 		zeroRuntime: true,
 	},
 
+	sitemap: {
+		zeroRuntime: true,
+	},
+
 	posthogConfig: {
 		clientConfig: {
 			defaults: "2026-01-30",
