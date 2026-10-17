@@ -1,18 +1,19 @@
+import { ReportTypeId, SlovenianReportTypeId, TaxAuthorityId } from "@brrr/lib";
 import type { GuideStep } from "~/components/guide/guideTypes";
 
 const SLOVENIA_SCREENSHOTS = "/screenshots/tax-authorities/slovenia-edavki";
 
 export type TaxAuthorityGuide = {
-	authorityId: string;
-	reportTypeId: string;
+	authorityId: TaxAuthorityId;
+	reportTypeId: ReportTypeId;
 	nameKey: string;
 	steps: GuideStep[];
 };
 
 export const TAX_AUTHORITY_GUIDES: TaxAuthorityGuide[] = [
 	{
-		authorityId: "slovenia",
-		reportTypeId: "kdvp",
+		authorityId: TaxAuthorityId.SLOVENIA,
+		reportTypeId: ReportTypeId.Schema.parse(SlovenianReportTypeId.KDVP),
 		nameKey: "ta_slovenia_kdvp_guide_name",
 		steps: [
 			{
@@ -36,8 +37,8 @@ export const TAX_AUTHORITY_GUIDES: TaxAuthorityGuide[] = [
 		],
 	},
 	{
-		authorityId: "slovenia",
-		reportTypeId: "div",
+		authorityId: TaxAuthorityId.SLOVENIA,
+		reportTypeId: ReportTypeId.Schema.parse(SlovenianReportTypeId.DIV),
 		nameKey: "ta_slovenia_div_guide_name",
 		steps: [
 			{
@@ -61,8 +62,8 @@ export const TAX_AUTHORITY_GUIDES: TaxAuthorityGuide[] = [
 		],
 	},
 	{
-		authorityId: "slovenia",
-		reportTypeId: "ifi",
+		authorityId: TaxAuthorityId.SLOVENIA,
+		reportTypeId: ReportTypeId.Schema.parse(SlovenianReportTypeId.IFI),
 		nameKey: "ta_slovenia_ifi_guide_name",
 		steps: [
 			{
@@ -88,8 +89,8 @@ export const TAX_AUTHORITY_GUIDES: TaxAuthorityGuide[] = [
 ];
 
 export function findTaxAuthorityGuide(
-	authorityId: string,
-	reportTypeId: string,
+	authorityId: TaxAuthorityId,
+	reportTypeId: ReportTypeId,
 ): TaxAuthorityGuide | undefined {
 	return TAX_AUTHORITY_GUIDES.find(
 		(g) => g.authorityId === authorityId && g.reportTypeId === reportTypeId,

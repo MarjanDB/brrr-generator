@@ -2,11 +2,15 @@
 import {
 	createContainer,
 	type FinancialEvents,
+	ReportTypeId,
+	SlovenianReportTypeId,
+	TaxAuthorityId,
 	TaxAuthorityLotMatchingMethod,
 	TaxAuthorityRegistry,
 	TaxPayerConfigSchema,
 	zDateTimeFromISOString,
 } from "@brrr/lib";
+import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
 const props = defineProps<{
@@ -14,7 +18,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	generated: [outputs: { xml: string; csv: string; xmlFilename: string; csvFilename: string; authorityId: string; reportTypeId: string }];
+	generated: [outputs: GeneratedOutputs];
 }>();
 
 const { t } = useI18n();
@@ -37,15 +41,15 @@ const container = createContainer(new ApiInfoProvider());
 const registry = container.get(TaxAuthorityRegistry);
 
 const FILENAMES: Record<string, { xml: string; csv: string }> = {
-	kdvp: { xml: "Doh_KDVP.xml", csv: "export-trades.csv" },
-	div: { xml: "Doh_Div.xml", csv: "export-dividends.csv" },
-	ifi: { xml: "D_Ifi.xml", csv: "export-derivatives.csv" },
+	[SlovenianReportTypeId.KDVP]: { xml: "Doh_KDVP.xml", csv: "export-trades.csv" },
+	[SlovenianReportTypeId.DIV]: { xml: "Doh_Div.xml", csv: "export-dividends.csv" },
+	[SlovenianReportTypeId.IFI]: { xml: "D_Ifi.xml", csv: "export-derivatives.csv" },
 };
 
 const reportTypeOptions = computed(() => [
-	{ value: "kdvp", label: t("report_type_kdvp") },
-	{ value: "div", label: t("report_type_div") },
-	{ value: "ifi", label: t("report_type_ifi") },
+	{ value: SlovenianReportTypeId.KDVP, label: t("report_type_kdvp") },
+	{ value: SlovenianReportTypeId.DIV, label: t("report_type_div") },
+	{ value: SlovenianReportTypeId.IFI, label: t("report_type_ifi") },
 ]);
 
 const validateRequired = (v: string) => (v.trim() ? null : t("validation_required"));
@@ -88,16 +92,17 @@ async function onSubmit(valid: boolean) {
 			lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 		};
 
+		const reportTypeId = ReportTypeId.Schema.parse(reportType.value);
 		const { xml, csv } = await registry.generateExports({
-			authorityId: "slovenia",
-			reportTypeId: reportType.value,
+			authorityId: TaxAuthorityId.SLOVENIA,
+			reportTypeId,
 			taxPayerInfo,
 			reportConfig,
 			events: props.financialEvents,
 		});
 
 		const filenames = FILENAMES[reportType.value] ?? { xml: "export.xml", csv: "export.csv" };
-		emit("generated", { xml, csv, xmlFilename: filenames.xml, csvFilename: filenames.csv, authorityId: "slovenia", reportTypeId: reportType.value });
+		emit("generated", { xml, csv, xmlFilename: filenames.xml, csvFilename: filenames.csv, authorityId: TaxAuthorityId.SLOVENIA, reportTypeId });
 	} catch (e) {
 		error.value = e instanceof Error ? e.message : String(e);
 	} finally {

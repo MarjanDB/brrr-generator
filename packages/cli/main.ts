@@ -5,8 +5,10 @@ import { fileURLToPath } from "node:url";
 import {
 	BrokerageRegistry,
 	createContainer,
+	ReportTypeId,
 	SlovenianReportTypeId,
 	StagingFinancialGroupingProcessor,
+	TaxAuthorityId,
 	TaxAuthorityLotMatchingMethod,
 	TaxAuthorityRegistry,
 	TaxPayerConfigSchema,
@@ -35,8 +37,6 @@ const ROOT = findWorkspaceRoot(path.dirname(fileURLToPath(import.meta.url)));
 const IMPORTS_DIR = path.join(ROOT, "imports");
 const EXPORTS_DIR = path.join(ROOT, "exports");
 const CONFIG_FILE = path.join(ROOT, "config", "userConfig.yml");
-
-const AUTHORITY_ID = "slovenia";
 
 const OUTPUT_FILES: Record<SlovenianReportTypeId, { xml: string; csv: string }> = {
 	[SlovenianReportTypeId.KDVP]: { xml: "Doh_KDVP.xml", csv: "export-trades.csv" },
@@ -139,8 +139,8 @@ async function main() {
 	for (const reportType of reportTypes) {
 		const outputFiles = OUTPUT_FILES[reportType];
 		const { xml, csv } = await taxAuthorities.generateExports({
-			authorityId: AUTHORITY_ID,
-			reportTypeId: reportType,
+			authorityId: TaxAuthorityId.SLOVENIA,
+			reportTypeId: ReportTypeId.Schema.parse(reportType),
 			taxPayerInfo,
 			reportConfig,
 			events: financialEvents,

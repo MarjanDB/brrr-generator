@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { findTaxAuthorityGuide } from "~/components/download/taxAuthorityGuides";
+import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
 import GuideModal from "~/components/guide/GuideModal.vue";
 
 const props = defineProps<{
-  outputs: { xml: string; csv: string; xmlFilename: string; csvFilename: string; authorityId: string; reportTypeId: string };
+  outputs: GeneratedOutputs;
 }>();
 
 const emit = defineEmits<{

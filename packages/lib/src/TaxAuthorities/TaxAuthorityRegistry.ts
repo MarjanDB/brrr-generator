@@ -4,6 +4,7 @@ import type {
 	TaxAuthorityDescriptor,
 	TaxAuthorityRunContext,
 } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
+import type { ReportTypeId, TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
 
 export class TaxAuthorityRegistry {
 	constructor(private readonly slovenia: ITaxAuthorityProvider) {}
@@ -17,8 +18,8 @@ export class TaxAuthorityRegistry {
 		reportTypeId,
 		...ctx
 	}: TaxAuthorityRunContext & {
-		authorityId: string;
-		reportTypeId: string;
+		authorityId: TaxAuthorityId;
+		reportTypeId: ReportTypeId;
 	}): Promise<GeneratedExports> {
 		if (authorityId === this.slovenia.descriptor.authorityId) {
 			return await this.slovenia.generateExports(reportTypeId, ctx);

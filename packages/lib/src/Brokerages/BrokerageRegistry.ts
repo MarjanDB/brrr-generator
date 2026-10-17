@@ -1,9 +1,10 @@
+import type { BrokerageId } from "@brrr/Brokerages/BrokerageIdentifiers";
 import type { IBrokerageProvider } from "@brrr/Brokerages/Interfaces/IBrokerageProvider";
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 
 export type BrokerageFileDetection = {
 	fileName: string;
-	detectedBrokerage: { id: string; name: string } | null;
+	detectedBrokerage: { id: BrokerageId; name: string } | null;
 	// Set when the file looks like a broker's export but can't be read.
 	error: string | null;
 };
@@ -11,7 +12,7 @@ export type BrokerageFileDetection = {
 export class BrokerageRegistry {
 	constructor(private readonly ibkr: IBrokerageProvider) {}
 
-	public listBrokerages(): { id: string; name: string }[] {
+	public listBrokerages(): { id: BrokerageId; name: string }[] {
 		return [{ id: this.ibkr.brokerageId, name: this.ibkr.displayName }];
 	}
 

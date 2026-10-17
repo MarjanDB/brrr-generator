@@ -1,9 +1,10 @@
+import { CountryName } from "@brrr/lib";
 import { NodeInfoProvider } from "@brrr/lib/info/node";
 
 const provider = new NodeInfoProvider();
 
 export default defineEventHandler(async (event) => {
-	const name = getRouterParam(event, "name") ?? "";
+	const name = CountryName.Schema.parse(getRouterParam(event, "name") ?? "");
 	const country = await provider.getCountry(name);
 	if (!country) return null;
 	// Serialize Map to plain object for JSON transport

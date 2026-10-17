@@ -23,6 +23,7 @@ import { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGenerati
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
 import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider";
+import { ReportTypeId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
 
 const { build, config, pipeline } = Scenario;
 
@@ -222,7 +223,7 @@ test("unknown report type id is rejected", async () => {
 	const provider = makeProvider();
 
 	await expect(
-		provider.generateExports("nope", {
+		provider.generateExports(ReportTypeId.Schema.parse("nope"), {
 			taxPayerInfo: Fixtures.taxPayer,
 			reportConfig: config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 			events: testData,

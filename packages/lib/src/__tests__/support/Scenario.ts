@@ -42,6 +42,7 @@ import type {
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type { GeneratedExports } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
 import type { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
+import { ReportTypeId, TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
 import { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
 
 type LotFields = { id: TaxLotStock["id"]; quantity: number; shortLongType: GenericShortLong };
@@ -263,8 +264,8 @@ const pipeline = {
 	): Promise<GeneratedExports> {
 		const container = createContainer(options.info);
 		return await container.get(TaxAuthorityRegistry).generateExports({
-			authorityId: "slovenia",
-			reportTypeId: options.report,
+			authorityId: TaxAuthorityId.SLOVENIA,
+			reportTypeId: ReportTypeId.Schema.parse(options.report),
 			taxPayerInfo: options.taxPayer,
 			reportConfig: config.report(options.year, options.lotMatching),
 			events,

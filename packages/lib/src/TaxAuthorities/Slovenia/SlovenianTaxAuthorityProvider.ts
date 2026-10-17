@@ -15,6 +15,7 @@ import {
 	SlovenianReportTypeId,
 	SlovenianTaxAuthorityReportTypes,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
+import { ReportTypeId, TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
 import { DateTime } from "luxon";
 
 const REPORT_TYPES: {
@@ -41,10 +42,10 @@ const REPORT_TYPES: {
 
 export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider {
 	public readonly descriptor: TaxAuthorityDescriptor = {
-		authorityId: "slovenia",
+		authorityId: TaxAuthorityId.SLOVENIA,
 		displayName: "Slovenia (eDavki)",
 		reportTypes: REPORT_TYPES.map(({ reportTypeId, displayName }) => ({
-			reportTypeId,
+			reportTypeId: ReportTypeId.Schema.parse(reportTypeId),
 			displayName,
 		})),
 	};
@@ -66,7 +67,7 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider {
 	}
 
 	async generateExports(
-		reportTypeId: string,
+		reportTypeId: ReportTypeId,
 		ctx: TaxAuthorityRunContext,
 	): Promise<GeneratedExports> {
 		const entry = REPORT_TYPES.find((type) => type.reportTypeId === reportTypeId);

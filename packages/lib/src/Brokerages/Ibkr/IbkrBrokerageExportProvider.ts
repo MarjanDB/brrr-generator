@@ -1,10 +1,11 @@
+import { BrokerageId } from "@brrr/Brokerages/BrokerageIdentifiers";
 import type { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract";
 import type { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform";
 import type { IBrokerageProvider } from "@brrr/Brokerages/Interfaces/IBrokerageProvider";
 import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 
 export class IbkrBrokerageExportProvider implements IBrokerageProvider {
-	public readonly brokerageId = "ibkr";
+	public readonly brokerageId = BrokerageId.IBKR;
 	public readonly displayName = "Interactive Brokers (Flex Query)";
 
 	constructor(

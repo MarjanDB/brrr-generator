@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { FinancialEvents } from "@brrr/lib";
+import { type FinancialEvents, TaxAuthorityId } from "@brrr/lib";
 import type { Component } from "vue";
+import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
 import SloveniaExportForm from "~/components/export/SloveniaExportForm.vue";
 import { TAX_AUTHORITY_CARDS, type TaxAuthorityCard } from "~/components/export/taxAuthorityCards";
 
@@ -10,17 +11,17 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  generated: [outputs: { xml: string; csv: string; xmlFilename: string; csvFilename: string; authorityId: string; reportTypeId: string }];
+  generated: [outputs: GeneratedOutputs];
 }>();
 
 const { t } = useI18n();
 
-const authorityForms: Record<string, Component> = {
-  slovenia: SloveniaExportForm,
+const authorityForms: Record<TaxAuthorityId, Component> = {
+  [TaxAuthorityId.SLOVENIA]: SloveniaExportForm,
 };
 
-const selectedAuthorityId = ref<string>(
-  TAX_AUTHORITY_CARDS.length === 1 ? (TAX_AUTHORITY_CARDS[0]?.authorityId ?? "") : "",
+const selectedAuthorityId = ref<TaxAuthorityId | null>(
+  TAX_AUTHORITY_CARDS.length === 1 ? (TAX_AUTHORITY_CARDS[0]?.authorityId ?? null) : null,
 );
 
 const selectedCard = computed<TaxAuthorityCard | undefined>(
@@ -28,19 +29,19 @@ const selectedCard = computed<TaxAuthorityCard | undefined>(
 );
 
 const activeForm = computed<Component | undefined>(
-  () => (selectedAuthorityId.value ? authorityForms[selectedAuthorityId.value] : undefined),
+  () => (selectedAuthorityId.value === null ? undefined : authorityForms[selectedAuthorityId.value]),
 );
 
 // Tracks last generated summary for collapsed view
 const lastXmlFilename = ref("");
 
-function onSelect(authorityId: string) {
+function onSelect(authorityId: TaxAuthorityId) {
   if (authorityId !== selectedAuthorityId.value) {
     selectedAuthorityId.value = authorityId;
   }
 }
 
-function onGenerated(outputs: { xml: string; csv: string; xmlFilename: string; csvFilename: string; authorityId: string; reportTypeId: string }) {
+function onGenerated(outputs: GeneratedOutputs) {
   lastXmlFilename.value = outputs.xmlFilename;
   emit("generated", outputs);
 }

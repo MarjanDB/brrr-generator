@@ -1,5 +1,7 @@
+import { TaxAuthorityId } from "@brrr/lib";
+
 export type TaxAuthorityCard = {
-	authorityId: string;
+	authorityId: TaxAuthorityId;
 	name: string;
 	country: string;
 	iconUrl: string;
@@ -7,7 +9,7 @@ export type TaxAuthorityCard = {
 
 export const TAX_AUTHORITY_CARDS: TaxAuthorityCard[] = [
 	{
-		authorityId: "slovenia",
+		authorityId: TaxAuthorityId.SLOVENIA,
 		name: "Finančna uprava Republike Slovenije",
 		country: "Slovenia",
 		iconUrl: "/icons/tax-authorities/edavki.svg",

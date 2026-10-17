@@ -1,7 +1,8 @@
+import type { BrokerageId } from "@brrr/Brokerages/BrokerageIdentifiers";
 import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 
 export interface IBrokerageProvider {
-	readonly brokerageId: string;
+	readonly brokerageId: BrokerageId;
 	readonly displayName: string;
 
 	isThisValidExport(xmlString: string): boolean;
