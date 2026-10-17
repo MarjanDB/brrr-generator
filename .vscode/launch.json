@@ -11,19 +11,10 @@
 			"name": "CLI (launch + debug)",
 			"type": "node",
 			"request": "launch",
-			"runtimeExecutable": "deno",
-			"runtimeArgs": [
-				"run",
-				"--inspect-brk",
-				"--allow-read",
-				"--allow-env",
-				"--allow-write",
-				"--allow-net",
-				"standalone/cli/main.ts"
-			],
+			"runtimeArgs": ["--import", "tsx"],
+			"program": "${workspaceFolder}/standalone/cli/main.ts",
 			"args": ["--year", "2024"],
-			"cwd": "${workspaceFolder}",
-			"attachSimplePort": 9229
+			"cwd": "${workspaceFolder}/standalone/cli"
 		}
 	]
 }

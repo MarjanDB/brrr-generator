@@ -1,14 +1,7 @@
-cache
-.venv
 coverage
-BrokerExports
-GeneratedReports
 
 config/*
-.pytest_cache
-.mypy_cache
-
-__pycache__
+!config/userConfig.example.yml
 
 node_modules
 
