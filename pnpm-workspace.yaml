@@ -12,6 +12,8 @@ packages:
 # Every external dependency version lives here; package.json files reference it as `catalog:`.
 # Strict mode makes `pnpm add` write new dependencies into the catalog and reject versions outside it.
 catalogMode: strict
+# Pin exact versions, like every existing entry, instead of pnpm's default `^` range.
+saveExact: true
 catalog:
   "@biomejs/biome": 2.5.15
   "@iconify-json/mdi": 1.2.3
