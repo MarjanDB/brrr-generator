@@ -18,7 +18,8 @@ for company, country and treaty data, see **infoproviders-lookup-data**.
 | `DOH_DIV` | `div` | Dividends (Dividende) | `ReportGeneration/Div/DivReportGenerator.ts` | none |
 | `D_IFI` | `ifi` | Derivatives (Izvedeni finančni inštrumenti) | `ReportGeneration/Ifi/IfiReportGenerator.ts` | FIFO, or `PROVIDED` |
 
-In the KDVP and IFI generators anything other than `PROVIDED` (including `NONE`) means FIFO. The site and the CLI both send FIFO and a
+`createLotMatchingMethod` (`TaxAuthorities/LotMatchingMethodFactory.ts`) turns anything other than `PROVIDED` (including `NONE`)
+into FIFO. The site and the CLI both send FIFO and a
 report period of 1 January to 1 January of the following year.
 
 ## Flow inside the country
@@ -40,8 +41,8 @@ report period of 1 January to 1 January of the following year.
 - **DIV:** keeps cash transactions inside the period, pairs withholding tax with its dividend (a withholding without a matching dividend
   throws), merges dividends of one ISIN paid on the same day, then fills payer name, address, country and the treaty paragraph from the
   `InfoProvider` using the ISIN. That lookup is best-effort: when it fails, the fields stay blank and the report still generates. Amounts
-  are rounded to 2 decimals and foreign tax is made positive. The XML is filed as `SELF_REPORT` instead of `ORIGINAL` when the report
-  period ended before last year (`isSelfReport`).
+  are rounded to 2 decimals and foreign tax is made positive. The XML is always filed as `ORIGINAL`; `isSelfReport` (the report period
+  ended before last year) only sets DOH_DIV's `SelfReport` flag.
 
 `EDavkiDocumentWorkflowType` lists every workflow code eDavki accepts
 ([help page](https://edavki.durs.si/EdavkiPortal/PersonalPortal/[360253]/Pages/Help/sl/WorkflowType1.htm)).
@@ -76,10 +77,13 @@ replace the file and update the namespace and version in the matching `Xml*.ts`.
 
 ## Tests
 
-`__tests__/`: `TaxAuthorityProvider.test.ts` (all three reports, builds the provider by hand in `makeProvider`), `SloveniaFifo.test.ts`,
-`PaymentInLieuOfDividend.test.ts`, `SloveniaIssues.test.ts` (regressions from real exports), `CsvWithoutNodeBuffer.test.ts` (CSV
-generators without Node's `Buffer`). `makeProvider` gives the dividend generator a `NodeInfoProvider`, which may call Yahoo Finance; in a
-new test prefer a `PredefinedInfoProvider` with the companies and countries it needs.
+`__tests__/`: `GoldenReports.test.ts` (golden XML and CSV for every report in `__snapshots__/golden/`; they pin the output byte for
+byte, so never regenerate them to make a refactor pass), `TaxAuthorityProvider.test.ts` (all three reports, builds the provider by hand
+in `makeProvider`), `PaymentInLieuOfDividend.test.ts`, `SloveniaIssues.test.ts` (regressions from real exports),
+`CsvWithoutNodeBuffer.test.ts` (CSV generators without Node's `Buffer`). `ReportGeneration/Div/__tests__/DivReportGenerator.test.ts` pins
+DIV's sums, same-day merge and rounding, `ReportGeneration/__tests__/Amounts.test.ts` the shared amount helpers, and
+`TaxAuthorities/__tests__/LotMatchingMethodFactory.test.ts` the lot matching choice. Tests give the dividend generator a
+`PredefinedInfoProvider` with the companies and countries they need, so they never call Yahoo Finance.
 
 ## References
 

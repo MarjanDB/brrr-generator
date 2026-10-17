@@ -21,7 +21,7 @@ export files (XML strings)
 ```
 
 The site runs this in the browser (`app/app/components/ibkr/IbkrUploadStep.vue`, `app/app/components/export/SloveniaExportForm.vue`);
-the CLI runs it in Node (`standalone/cli/main.ts`, which calls the IBKR provider and the Slovenian provider directly).
+the CLI runs it in Node (`standalone/cli/main.ts`, through the same two registries).
 
 ## Layers
 
@@ -33,7 +33,7 @@ the CLI runs it in Node (`standalone/cli/main.ts`, which calls the IBKR provider
 | Core model | `Core/Schemas/` | `FinancialEvents` = `FinancialGrouping[]` + `IdentifierRelationshipAny[]`. A `FinancialGrouping` holds one instrument's stock trades, stock tax lots, derivative groupings and cash transactions. The instrument is the grouping's `financialIdentifier`; core events and lots don't repeat it. |
 | Relationships | `Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts` | Merges groupings across `RENAME`, keeping the original events, and rescales across `SPLIT` / `REVERSE_SPLIT` by building new trades and lots through their constructors (`scaleTradeForSplit`, `scaleLotForSplit`) with a `provenance` step recording what they were. Tax authorities call it with the change types they want applied. |
 | Lot matching | `Core/LotMatching/`, `Core/FinancialEvents/FinancialEventsProcessor.ts` | `LotMatchingMethod` implementations (stateless, one `performMatching(trades)`): `FifoLotMatchingMethod`, `ProvidedLotMatchingMethod` (uses the broker's lots). `TaxAuthorityLotMatchingMethod` (`NONE` / `FIFO` / `PROVIDED`) is chosen per report in `TaxAuthorityConfiguration` and turned into a method by `TaxAuthorities/LotMatchingMethodFactory.ts`. `LotMatcher.matchLots` returns `MatchedLot`s whose two `LotLeg`s point at the original trades, with the lot's quantity and its share of the commission. |
-| Tax authority | `TaxAuthorities/<Country>/` | A provider implementing `ITaxAuthorityProvider` turns `FinancialEvents` into report data, XML and CSV; a service exposes a `TaxAuthorityDescriptor` and maps report type IDs (`"kdvp"`) to the provider's report types. |
+| Tax authority | `TaxAuthorities/<Country>/` | A provider implementing `ITaxAuthorityProvider` holds the `TaxAuthorityDescriptor`, maps report type IDs (`"kdvp"`) to its own report types, and turns `FinancialEvents` into XML and CSV through one generator per report type. |
 | Lookups | `InfoProviders/` | See the **infoproviders-lookup-data** skill. |
 | Config | `TaxAuthorities/ConfigurationProvider.ts` | `TaxPayerConfigSchema` / `TaxPayerInfo`, `TaxAuthorityConfiguration` (`fromDate`, `toDate`, `lotMatchingMethod`). |
 
