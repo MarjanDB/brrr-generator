@@ -4,6 +4,13 @@ export enum SlovenianTaxAuthorityReportTypes {
 	D_IFI = "Izvedeni finančni inštrumenti",
 }
 
+// The IDs the site and the CLI use to ask for a report.
+export enum SlovenianReportTypeId {
+	KDVP = "kdvp",
+	DIV = "div",
+	IFI = "ifi",
+}
+
 // https://edavki.durs.si/EdavkiPortal/PersonalPortal/[360253]/Pages/Help/sl/WorkflowType1.htm
 export enum EDavkiDocumentWorkflowType {
 	ORIGINAL = "O",

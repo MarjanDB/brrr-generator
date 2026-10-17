@@ -5,7 +5,6 @@ import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGenerati
 import { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator";
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
 import { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider";
-import { SlovenianTaxAuthorityService } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityService";
 import type { Container } from "inversify";
 
 export function loadSloveniaModule(container: Container): void {
@@ -30,14 +29,6 @@ export function loadSloveniaModule(container: Container): void {
 		.toResolvedValue(
 			(processor: FinancialEventsProcessor) => new IfiReportGenerator(processor),
 			[FinancialEventsProcessor],
-		)
-		.inSingletonScope();
-
-	container
-		.bind(SlovenianTaxAuthorityService)
-		.toResolvedValue(
-			(provider: SlovenianTaxAuthorityProvider) => new SlovenianTaxAuthorityService(provider),
-			[SlovenianTaxAuthorityProvider],
 		)
 		.inSingletonScope();
 
