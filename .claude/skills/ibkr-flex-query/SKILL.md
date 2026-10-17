@@ -66,7 +66,8 @@ Lots have no unique ID and are concatenated, so overlapping exports duplicate lo
 
 - Every IBKR export a test reads is a case in `test-cases/cases/Ibkr/`, read through `TestKit.ibkr` (`@brrr/test-cases`):
   `stockTrade`, `optionTrade`, `dividends`, `paymentInLieuOfDividends`, `duplicatingTrades` (repeated executions that must reach KDVP
-  once), `corporateAction`, `corporateActionsTwoRows` (SMCI's `FI` split rows), and `allFixtures` (all of them together).
+  once), `corporateAction`, `corporateActionsTwoRows` (SMCI's `FI` split rows), `split` (hand-written SMCI trades before and after that
+  split, which must reach KDVP scaled ten times), and `allFixtures` (all of them together except `split`).
 - `__tests__/IbkrExtract.unit.test.ts` parses those exports. `__tests__/IbkrTransform.unit.test.ts` transforms raw rows built with
   `Scenario.build.ibkr` (`tradeStock`, `lotStock`, `cashTransaction`, `corporateAction`, each with every field defaulted).
 - `lib/src/__tests__/Acceptance/Ibkr/` runs each case end to end into the Slovenian reports and compares them with the case's

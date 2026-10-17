@@ -44,6 +44,7 @@ const paymentInLieuOfDividends = testCase("Ibkr/PaymentInLieuOfDividends");
 const duplicatingTrades = testCase("Ibkr/DuplicatingTrades");
 const corporateAction = testCase("Ibkr/CorporateAction");
 const corporateActionsTwoRows = testCase("Ibkr/CorporateActionsTwoRows");
+const split = testCase("Ibkr/Split");
 
 // The test cases: broker exports and the tax authority files expected from them.
 export const TestKit = {
@@ -55,7 +56,9 @@ export const TestKit = {
 		duplicatingTrades,
 		corporateAction,
 		corporateActionsTwoRows,
-		// Every export above at once.
+		// SMCI bought before and after its 10-for-1 split on 2024-09-30, then sold.
+		split,
+		// Every export above at once, except the split.
 		allFixtures: testCase("Ibkr/AllFixtures", [
 			stockTrade,
 			optionTrade,
