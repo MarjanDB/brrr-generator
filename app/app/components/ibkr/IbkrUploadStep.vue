@@ -3,14 +3,13 @@ import {
   BrokerageRegistry,
   createContainer,
   type FinancialEvents,
-  StagingFinancialEvents,
   StagingFinancialGroupingProcessor,
 } from "@brrr/lib";
 import BrokerSupportSection from "~/components/upload/BrokerSupportSection.vue";
 import { BROKER_GUIDES } from "~/components/upload/brokerGuides";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
-const props = defineProps<{
+defineProps<{
   collapsed: boolean;
   fileCount: number;
 }>();

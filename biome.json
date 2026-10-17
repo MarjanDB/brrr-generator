@@ -7,7 +7,8 @@
 			"!**/node_modules/**/*",
 			"!**/coverage/**/*",
 			"!**/.nuxt",
-			"!**/.output"
+			"!**/.output",
+			"!**/*.svg"
 		]
 	},
 	"formatter": {
@@ -17,9 +18,21 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"preset": "recommended"
 		}
 	},
+	"overrides": [
+		{
+			"includes": ["app/app/pages/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"useVueMultiWordComponentNames": "off"
+					}
+				}
+			}
+		}
+	],
 	"assist": {
 		"enabled": true,
 		"actions": {

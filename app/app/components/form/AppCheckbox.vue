@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { CheckboxIndicator, CheckboxRoot } from "reka-ui";
-import { inject, ref } from "vue";
+import { inject, ref, useId } from "vue";
 
 const props = defineProps<{
 	label?: string;
@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const model = defineModel<boolean>({ default: false });
 
+const id = useId();
 const error = ref<string | null>(null);
 
 function runValidation(value = model.value): boolean {
@@ -30,8 +31,9 @@ if (form) {
 
 <template>
 	<div class="flex flex-col gap-1">
-		<label class="flex items-center gap-2 cursor-pointer" :class="{ 'opacity-70 cursor-not-allowed': disabled }">
+		<label :for="id" class="flex items-center gap-2 cursor-pointer" :class="{ 'opacity-70 cursor-not-allowed': disabled }">
 			<CheckboxRoot
+				:id="id"
 				v-model="model"
 				:disabled="disabled"
 				:class="error ? 'checkbox-error' : 'checkbox-base'"

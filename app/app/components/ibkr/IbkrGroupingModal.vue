@@ -18,7 +18,7 @@ const props = defineProps<{
 
 const open = defineModel<boolean>("open", { default: false });
 
-const { t, locale } = useI18n();
+const { locale } = useI18n();
 
 const stockTrades = computed(() => props.groupings.flatMap((g) => g.stockTrades));
 const cashTransactions = computed(() => props.groupings.flatMap((g) => g.cashTransactions));

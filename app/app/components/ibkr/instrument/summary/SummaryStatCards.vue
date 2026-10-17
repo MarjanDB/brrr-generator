@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { InstrumentStats } from "~/composables/useInstrumentStats";
 
