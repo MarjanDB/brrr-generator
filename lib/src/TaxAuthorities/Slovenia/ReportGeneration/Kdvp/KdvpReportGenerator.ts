@@ -23,7 +23,7 @@ import {
 	EDavkiTradeSecurityType,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
 
-const GAIN_MAPPINGS: Record<string, EDavkiTradeReportGainType> = {
+const GAIN_MAPPINGS: Record<GenericTradeReportItemGainType, EDavkiTradeReportGainType> = {
 	[GenericTradeReportItemGainType.BOUGHT]: EDavkiTradeReportGainType.BOUGHT,
 	[GenericTradeReportItemGainType.CAPITAL_INVESTMENT]: EDavkiTradeReportGainType.CAPITAL_INVESTMENT,
 	[GenericTradeReportItemGainType.CAPITAL_RAISE]: EDavkiTradeReportGainType.CAPITAL_RAISE,
@@ -135,7 +135,7 @@ export class KdvpReportGenerator {
 				events: convertedLines,
 			});
 
-			// Counts a trade's whole tax once for every lot it falls into, like the lot clones did.
+			// Counts a trade's whole tax once for every lot it falls into; kept so the reports don't change.
 			const { hasForeignTax, foreignTax: foreignTaxPaid } = foreignTaxOf(
 				legs.map((leg) => leg.trade),
 			);

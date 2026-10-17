@@ -22,7 +22,7 @@ import {
 	EDavkiGenericDerivativeReportItem,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
 
-const GAIN_MAPPINGS: Record<string, EDavkiDerivativeReportGainType> = {
+const GAIN_MAPPINGS: Record<GenericDerivativeReportItemGainType, EDavkiDerivativeReportGainType> = {
 	[GenericDerivativeReportItemGainType.BOUGHT]: EDavkiDerivativeReportGainType.BOUGHT,
 	[GenericDerivativeReportItemGainType.CAPITAL_INVESTMENT]: EDavkiDerivativeReportGainType.OTHER,
 	[GenericDerivativeReportItemGainType.CAPITAL_RAISE]: EDavkiDerivativeReportGainType.OTHER,
@@ -119,7 +119,7 @@ export class IfiReportGenerator {
 					return convertSell(trade, quantity, commission);
 				});
 
-				// Counts a trade's whole tax once for every lot it falls into, like the lot clones did.
+				// Counts a trade's whole tax once for every lot it falls into; kept so the reports don't change.
 				const { hasForeignTax, foreignTax: foreignTaxPaid } = foreignTaxOf(
 					legs.map((leg) => leg.trade),
 				);
