@@ -317,6 +317,38 @@ test("apply split scales trades before effective date and merges into to", () =>
 	expect(step.beforeTradePrice).toEqual(10.0);
 });
 
+test("apply split builds new trades and leaves the originals untouched", () => {
+	const idFrom = new FinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
+	const idTo = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });
+	const bought = makeTrade("t1", 4.0, "2024-09-01");
+	const sold = makeTrade("t2", -2.0, "2024-09-02");
+	const events = new FinancialEvents({
+		groupings: [makeGrouping(idFrom, [bought, sold])],
+		identifierRelationships: [
+			new IdentifierRelationshipSplit({
+				fromIdentifier: idFrom,
+				toIdentifier: idTo,
+				changeType: IdentifierChangeType.SPLIT,
+				effectiveDate: makeDate("2024-10-01"),
+				quantityBefore: 1.0,
+				quantityAfter: 10.0,
+			}),
+		],
+	});
+
+	const [merged] = new ApplyIdentifierRelationshipsService().apply(events, [
+		IdentifierChangeType.SPLIT,
+	]).groupings;
+
+	expect(merged.stockTrades[0]).toBeInstanceOf(TradeEventStockAcquired);
+	expect(merged.stockTrades[1]).toBeInstanceOf(TradeEventStockSold);
+	expect(merged.stockTrades.map((t) => t.exchangedMoney.underlyingQuantity)).toEqual([40, -20]);
+	expect(bought.exchangedMoney.underlyingQuantity).toEqual(4.0);
+	expect(bought.provenance).toEqual([]);
+	expect(sold.exchangedMoney.underlyingQuantity).toEqual(-2.0);
+	expect(sold.provenance).toEqual([]);
+});
+
 test("apply split scales underlying trade price", () => {
 	const idFrom = new FinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
 	const idTo = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });

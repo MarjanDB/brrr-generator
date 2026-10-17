@@ -1,4 +1,9 @@
-import type { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events";
+import { GenericMonetaryExchangeInformation } from "@brrr/Core/Schemas/CommonFormats";
+import {
+	type TradeEventStock,
+	TradeEventStockAcquired,
+	TradeEventStockSold,
+} from "@brrr/Core/Schemas/Events";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
@@ -6,7 +11,7 @@ import {
 	IdentifierChangeType,
 	IdentifierRelationshipSplit,
 } from "@brrr/Core/Schemas/IdentifierRelationship";
-import type { TaxLotStock } from "@brrr/Core/Schemas/Lots";
+import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import {
 	type AnyProvenanceStep,
 	RenameProvenanceStep,
@@ -146,7 +151,7 @@ export class ApplyIdentifierRelationshipsService {
 			) ?? null;
 		if (!fromGrouping) return events;
 
-		const scaledTrades: (TradeEventStockAcquired | TradeEventStockSold)[] = [];
+		const scaledTrades: TradeEventStock[] = [];
 		for (const t of fromGrouping.stockTrades) {
 			if (!(t.date < relationship.effectiveDate)) {
 				scaledTrades.push(t);
@@ -165,18 +170,7 @@ export class ApplyIdentifierRelationshipsService {
 				beforeTradePrice: m.underlyingTradePrice,
 			});
 
-			const newMoney = {
-				...m,
-				underlyingQuantity: m.underlyingQuantity * ratio,
-				underlyingTradePrice: m.underlyingTradePrice * (1 / ratio),
-			};
-
-			scaledTrades.push(
-				t.copy({
-					exchangedMoney: newMoney,
-					provenance: [...t.provenance, step],
-				}),
-			);
+			scaledTrades.push(scaleTradeForSplit(t, ratio, step));
 		}
 
 		const scaledLots: TaxLotStock[] = [];
@@ -191,12 +185,7 @@ export class ApplyIdentifierRelationshipsService {
 					quantityAfter: relationship.quantityAfter,
 					beforeQuantity: lot.quantity,
 				});
-				scaledLots.push(
-					lot.copy({
-						quantity: lot.quantity * ratio,
-						provenance: [...lot.provenance, step],
-					}),
-				);
+				scaledLots.push(scaleLotForSplit(lot, ratio, step));
 			} else {
 				scaledLots.push(lot);
 			}
@@ -211,7 +200,8 @@ export class ApplyIdentifierRelationshipsService {
 			quantityAfter: relationship.quantityAfter,
 		});
 
-		const scaledFrom = fromGrouping.copy({
+		const scaledFrom = new FinancialGrouping({
+			...fromGrouping,
 			stockTrades: scaledTrades,
 			stockTaxLots: scaledLots,
 			provenance: [...fromGrouping.provenance, splitStep],
@@ -274,4 +264,33 @@ export class ApplyIdentifierRelationshipsService {
 			provenance: groupingProvenance,
 		});
 	}
+}
+
+// A split never changes a trade in place: it builds the trade as it reads after the split, with
+// the step recording the quantity and price it had before.
+function scaleTradeForSplit(
+	trade: TradeEventStock,
+	ratio: number,
+	step: SplitProvenanceStep,
+): TradeEventStock {
+	const scaled = {
+		exchangedMoney: new GenericMonetaryExchangeInformation({
+			...trade.exchangedMoney,
+			underlyingQuantity: trade.exchangedMoney.underlyingQuantity * ratio,
+			underlyingTradePrice: trade.exchangedMoney.underlyingTradePrice * (1 / ratio),
+		}),
+		provenance: [...trade.provenance, step],
+	};
+	if (trade instanceof TradeEventStockAcquired) {
+		return new TradeEventStockAcquired({ ...trade, ...scaled });
+	}
+	return new TradeEventStockSold({ ...trade, ...scaled });
+}
+
+function scaleLotForSplit(lot: TaxLotStock, ratio: number, step: SplitProvenanceStep): TaxLotStock {
+	return new TaxLot({
+		...lot,
+		quantity: lot.quantity * ratio,
+		provenance: [...lot.provenance, step],
+	});
 }
