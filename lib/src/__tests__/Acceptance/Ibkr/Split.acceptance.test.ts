@@ -18,25 +18,34 @@ describe("IBKR: SMCI bought before and after its 10-for-1 split in 2024, then so
 			report: SlovenianReportTypeId.KDVP,
 			year: 2024,
 		});
+		const expected = split.expectedReport("slovenia/2024/kdvp-fifo");
 
-		await Scenario.pipeline.expectToMatch(report, split.expectedReport("slovenia/2024/kdvp-fifo"));
+		await expect(report.xml).toMatchFileSnapshot(expected.xmlPath);
+		await expect(report.csv).toMatchFileSnapshot(expected.csvPath);
 	});
 
 	test("the shares bought before the split count ten times over", () => {
 		// The provider applies the split before generating; do the same here.
-		const { groupings } = new ApplyIdentifierRelationshipsService().apply(events, [
+		const splitApplied = new ApplyIdentifierRelationshipsService().apply(events, [
 			IdentifierChangeType.SPLIT,
 		]);
-		const items = new KdvpReportGenerator(Scenario.pipeline.eventsProcessor()).convert(
-			Scenario.config.report(2024),
-			groupings,
-		);
-		const quantities = items.flatMap((item) =>
-			item.items.flatMap((line) => line.events.map((event) => event.quantity)),
-		);
+		const generator = new KdvpReportGenerator(Scenario.pipeline.eventsProcessor());
+		const items = generator.convert(Scenario.config.report(2024), splitApplied.groupings);
+		const kdvpEvents = items.flatMap((item) => item.items.flatMap((line) => line.events));
 
-		// Bought: 3 and 1 before the split (now 30 and 10), then 15 matched as 5 + 10.
-		// Sold: 45 matched as 30 + 10 + 5, then 10.
-		expect(quantities).toEqual([30, 10, 5, 10, -30, -10, -5, -10]);
+		expect(kdvpEvents.length).toEqual(8);
+		// Bought 3 before the split, now 30.
+		expect(kdvpEvents[0].quantity).toEqual(30);
+		// Bought 1 before the split, now 10.
+		expect(kdvpEvents[1].quantity).toEqual(10);
+		// Bought 15 after the split, matched as 5 and 10.
+		expect(kdvpEvents[2].quantity).toEqual(5);
+		expect(kdvpEvents[3].quantity).toEqual(10);
+		// Sold 45, matched as 30, 10 and 5.
+		expect(kdvpEvents[4].quantity).toEqual(-30);
+		expect(kdvpEvents[5].quantity).toEqual(-10);
+		expect(kdvpEvents[6].quantity).toEqual(-5);
+		// Sold 10.
+		expect(kdvpEvents[7].quantity).toEqual(-10);
 	});
 });

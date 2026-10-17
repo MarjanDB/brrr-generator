@@ -55,7 +55,9 @@ test("KDVP lines: the buy and the sale with their quantities", () => {
 	);
 	const events = items.flatMap((item) => item.items.flatMap((line) => line.events));
 
-	expect(events.map((event) => event.quantity)).toEqual([1, -1]);
+	expect(events.length).toEqual(2);
+	expect(events[0].quantity).toEqual(1);
+	expect(events[1].quantity).toEqual(-1);
 });
 
 test("IFI lines: the buy and the sale with their quantities", () => {
@@ -65,7 +67,9 @@ test("IFI lines: the buy and the sale with their quantities", () => {
 	);
 	const rows = items.flatMap((item) => item.items);
 
-	expect(rows.map((row) => row.quantity)).toEqual([1, -1]);
+	expect(rows.length).toEqual(2);
+	expect(rows[0].quantity).toEqual(1);
+	expect(rows[1].quantity).toEqual(-1);
 });
 
 test("DIV lines: the dividend with its withholding tax", async () => {

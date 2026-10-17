@@ -15,22 +15,25 @@ describe("IBKR: RKLB trades in 2024 that the export repeats", () => {
 			report: SlovenianReportTypeId.KDVP,
 			year: 2024,
 		});
+		const expected = duplicatingTrades.expectedReport("slovenia/2024/kdvp-fifo");
 
-		await Scenario.pipeline.expectToMatch(
-			report,
-			duplicatingTrades.expectedReport("slovenia/2024/kdvp-fifo"),
-		);
+		await expect(report.xml).toMatchFileSnapshot(expected.xmlPath);
+		await expect(report.csv).toMatchFileSnapshot(expected.csvPath);
 	});
 
 	test("4 buys and 4 sales, each once", () => {
-		const items = new KdvpReportGenerator(Scenario.pipeline.eventsProcessor()).convert(
-			Scenario.config.report(2024),
-			events.groupings,
-		);
-		const quantities = items.flatMap((item) =>
-			item.items.flatMap((line) => line.events.map((event) => event.quantity)),
-		);
+		const generator = new KdvpReportGenerator(Scenario.pipeline.eventsProcessor());
+		const items = generator.convert(Scenario.config.report(2024), events.groupings);
+		const kdvpEvents = items.flatMap((item) => item.items.flatMap((line) => line.events));
 
-		expect(quantities).toEqual([10, 40, 50, 100, -10, -40, -50, -100]);
+		expect(kdvpEvents.length).toEqual(8);
+		expect(kdvpEvents[0].quantity).toEqual(10);
+		expect(kdvpEvents[1].quantity).toEqual(40);
+		expect(kdvpEvents[2].quantity).toEqual(50);
+		expect(kdvpEvents[3].quantity).toEqual(100);
+		expect(kdvpEvents[4].quantity).toEqual(-10);
+		expect(kdvpEvents[5].quantity).toEqual(-40);
+		expect(kdvpEvents[6].quantity).toEqual(-50);
+		expect(kdvpEvents[7].quantity).toEqual(-100);
 	});
 });

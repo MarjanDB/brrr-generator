@@ -14,7 +14,9 @@ describe("IBKR: a TotalEnergies dividend in 2022 with French withholding tax", (
 			year: 2022,
 			info: Scenario.config.infoProvider(Lookups),
 		});
+		const expected = dividends.expectedReport("slovenia/2022/div");
 
-		await Scenario.pipeline.expectToMatch(report, dividends.expectedReport("slovenia/2022/div"));
+		await expect(report.xml).toMatchFileSnapshot(expected.xmlPath);
+		await expect(report.csv).toMatchFileSnapshot(expected.csvPath);
 	});
 });

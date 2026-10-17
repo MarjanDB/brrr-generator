@@ -13,11 +13,10 @@ describe("IBKR: 5 EDF shares bought on 2022-02-22 and sold on 2022-03-24", () =>
 			report: SlovenianReportTypeId.KDVP,
 			year: 2022,
 		});
+		const expected = stockTrade.expectedReport("slovenia/2022/kdvp-fifo");
 
-		await Scenario.pipeline.expectToMatch(
-			report,
-			stockTrade.expectedReport("slovenia/2022/kdvp-fifo"),
-		);
+		await expect(report.xml).toMatchFileSnapshot(expected.xmlPath);
+		await expect(report.csv).toMatchFileSnapshot(expected.csvPath);
 	});
 
 	test("KDVP 2022, the broker's lots", async () => {
@@ -26,10 +25,9 @@ describe("IBKR: 5 EDF shares bought on 2022-02-22 and sold on 2022-03-24", () =>
 			year: 2022,
 			lotMatching: TaxAuthorityLotMatchingMethod.PROVIDED,
 		});
+		const expected = stockTrade.expectedReport("slovenia/2022/kdvp-provided");
 
-		await Scenario.pipeline.expectToMatch(
-			report,
-			stockTrade.expectedReport("slovenia/2022/kdvp-provided"),
-		);
+		await expect(report.xml).toMatchFileSnapshot(expected.xmlPath);
+		await expect(report.csv).toMatchFileSnapshot(expected.csvPath);
 	});
 });

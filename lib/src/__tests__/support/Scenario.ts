@@ -306,15 +306,6 @@ const pipeline = {
 		});
 	},
 
-	// Pins both files of a report. `vitest -u` rewrites them; review the diff before committing.
-	async expectToMatch(
-		report: GeneratedExports,
-		expected: { xmlPath: string; csvPath: string },
-	): Promise<void> {
-		await expect(report.xml).toMatchFileSnapshot(expected.xmlPath);
-		await expect(report.csv).toMatchFileSnapshot(expected.csvPath);
-	},
-
 	eventsProcessor(): FinancialEventsProcessor {
 		return new FinancialEventsProcessor(new LotMatcher());
 	},

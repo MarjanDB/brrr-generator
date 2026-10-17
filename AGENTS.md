@@ -116,9 +116,13 @@ To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
   `.expectedReport("slovenia/2022/kdvp-fifo")`). Every broker export a test reads lives here, unit tests included. Exports are trimmed and
   anonymised (fake account IDs); never copy anything from `imports/`.
 - **Acceptance tests** sit in `lib/src/__tests__/Acceptance/<Broker>/<Case>.acceptance.test.ts`, one per case with expected files. They
-  run the case through `Scenario.pipeline` and compare with `Scenario.pipeline.expectToMatch`. Expected files pin the output byte for
-  byte: `vitest run acceptance.test -u` rewrites them, so only update them for an intended change, and read the diff. CI never writes
+  run the case through `Scenario.pipeline` and compare each file with its own
+  `await expect(report.xml).toMatchFileSnapshot(expected.xmlPath)` line. Expected files pin the output byte for byte:
+  `vitest run acceptance.test -u` rewrites them, so only update them for an intended change, and read the diff. CI never writes
   them.
+- **Write tests out line by line.** A reader should see what is checked without working anything out: one `expect` per value
+  (`expect(events[0].quantity).toEqual(10)`), each test's data written in the test or right above it, and no loops, `test.each`,
+  helper assertions or `map`/`filter` chains that compute the expectations.
 - **`Scenario`** (`lib/src/__tests__/support/Scenario.ts`) builds everything else a test needs: `Scenario.build.*` for lib's events,
   lots and groupings with defaults (1 unit at 1 EUR, generated ids), their `staging` twins and raw `ibkr` rows; `Scenario.config` for
   the taxpayer, report config and info provider; `Scenario.pipeline` for exports → `FinancialEvents` → reports. Give a test only the

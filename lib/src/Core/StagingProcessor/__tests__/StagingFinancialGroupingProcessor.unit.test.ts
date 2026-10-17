@@ -29,25 +29,35 @@ const simpleStagingStockSold = staging.stockSold({
 	price: 15,
 });
 
-const cash = { identifier: ident, actionId: "ActionID", transactionId: "TransactionID" };
-
-const simpleStagingDividend = staging.dividend({ ...cash, id: "Dividend", amount: 10 });
+const simpleStagingDividend = staging.dividend({
+	id: "Dividend",
+	identifier: ident,
+	actionId: "ActionID",
+	transactionId: "TransactionID",
+	amount: 10,
+});
 
 const simpleStagingDividendWithholdingTax = staging.withholdingTax({
-	...cash,
 	id: "DividendWithholdingTax",
+	identifier: ident,
+	actionId: "ActionID",
+	transactionId: "TransactionID",
 	amount: -5,
 });
 
 const simpleStagingPaymentInLieuOfDividend = staging.paymentInLieu({
-	...cash,
 	id: "PaymentInLieuOfDividend",
+	identifier: ident,
+	actionId: "ActionID",
+	transactionId: "TransactionID",
 	amount: 5,
 });
 
 const simpleStagingPaymentInLieuOfDividendWithholdingTax = staging.paymentInLieuWithholdingTax({
-	...cash,
 	id: "PaymentInLieuOfDividendWithholdingTax",
+	identifier: ident,
+	actionId: "ActionID",
+	transactionId: "TransactionID",
 	amount: -2.5,
 });
 

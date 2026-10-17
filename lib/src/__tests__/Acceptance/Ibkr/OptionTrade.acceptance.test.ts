@@ -12,10 +12,9 @@ describe("IBKR: one AAPL call bought on 2023-12-14 and sold on 2023-12-20", () =
 			report: SlovenianReportTypeId.IFI,
 			year: 2023,
 		});
+		const expected = optionTrade.expectedReport("slovenia/2023/ifi-fifo");
 
-		await Scenario.pipeline.expectToMatch(
-			report,
-			optionTrade.expectedReport("slovenia/2023/ifi-fifo"),
-		);
+		await expect(report.xml).toMatchFileSnapshot(expected.xmlPath);
+		await expect(report.csv).toMatchFileSnapshot(expected.csvPath);
 	});
 });

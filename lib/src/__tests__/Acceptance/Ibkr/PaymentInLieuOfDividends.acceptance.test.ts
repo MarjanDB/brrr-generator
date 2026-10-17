@@ -14,10 +14,9 @@ describe("IBKR: a McDonald's payment in lieu of dividend in 2024 with US withhol
 			year: 2024,
 			info: Scenario.config.infoProvider(Lookups),
 		});
+		const expected = paymentInLieu.expectedReport("slovenia/2024/div");
 
-		await Scenario.pipeline.expectToMatch(
-			report,
-			paymentInLieu.expectedReport("slovenia/2024/div"),
-		);
+		await expect(report.xml).toMatchFileSnapshot(expected.xmlPath);
+		await expect(report.csv).toMatchFileSnapshot(expected.csvPath);
 	});
 });
