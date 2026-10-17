@@ -1,9 +1,7 @@
 import type { GenericCategory } from "@brrr/Core/Schemas/CommonFormats";
 import type {
-	TradeEventDerivativeAcquired,
-	TradeEventDerivativeSold,
-	TradeEventStockAcquired,
-	TradeEventStockSold,
+	TradeEventDerivative,
+	TradeEventStock,
 	TransactionCash,
 } from "@brrr/Core/Schemas/Events";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
@@ -12,14 +10,14 @@ import type { AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance";
 
 type DerivativeGroupingArgs = {
 	financialIdentifier: FinancialIdentifier;
-	derivativeTrades: (TradeEventDerivativeAcquired | TradeEventDerivativeSold)[];
+	derivativeTrades: TradeEventDerivative[];
 	derivativeTaxLots: TaxLotDerivative[];
 	provenance: AnyProvenanceStep[];
 };
 
 export class DerivativeGrouping {
 	public readonly financialIdentifier: FinancialIdentifier;
-	public readonly derivativeTrades: (TradeEventDerivativeAcquired | TradeEventDerivativeSold)[];
+	public readonly derivativeTrades: TradeEventDerivative[];
 	public readonly derivativeTaxLots: TaxLotDerivative[];
 	public readonly provenance: AnyProvenanceStep[];
 
@@ -35,7 +33,7 @@ type FinancialGroupingArgs = {
 	financialIdentifier: FinancialIdentifier;
 	countryOfOrigin: string | null;
 	underlyingCategory: GenericCategory;
-	stockTrades: (TradeEventStockAcquired | TradeEventStockSold)[];
+	stockTrades: TradeEventStock[];
 	stockTaxLots: TaxLotStock[];
 	derivativeGroupings: DerivativeGrouping[];
 	cashTransactions: TransactionCash[];
@@ -46,7 +44,7 @@ export class FinancialGrouping {
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly countryOfOrigin: string | null;
 	public readonly underlyingCategory: GenericCategory;
-	public readonly stockTrades: (TradeEventStockAcquired | TradeEventStockSold)[];
+	public readonly stockTrades: TradeEventStock[];
 	public readonly stockTaxLots: TaxLotStock[];
 	public readonly derivativeGroupings: DerivativeGrouping[];
 	public readonly cashTransactions: TransactionCash[];

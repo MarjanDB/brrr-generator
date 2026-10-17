@@ -214,20 +214,12 @@ export class ApplyIdentifierRelationshipsService {
 					relationship.toIdentifier.sameInstrumentByIsin(g.financialIdentifier),
 			) ?? null;
 
-		let mergedGrouping: FinancialGrouping;
-		if (toGrouping !== null) {
-			mergedGrouping = this.mergeGroupings(
-				relationship.toIdentifier,
-				[scaledFrom, toGrouping],
-				[...scaledFrom.provenance, ...toGrouping.provenance],
-			);
-		} else {
-			mergedGrouping = this.mergeGroupings(
-				relationship.toIdentifier,
-				[scaledFrom],
-				scaledFrom.provenance,
-			);
-		}
+		const sources = toGrouping !== null ? [scaledFrom, toGrouping] : [scaledFrom];
+		const mergedGrouping = this.mergeGroupings(
+			relationship.toIdentifier,
+			sources,
+			sources.flatMap((g) => g.provenance),
+		);
 
 		const other = events.groupings.filter((g) => g !== fromGrouping && g !== toGrouping);
 		return new FinancialEvents({

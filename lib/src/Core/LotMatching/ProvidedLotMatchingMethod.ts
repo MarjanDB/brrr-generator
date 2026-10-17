@@ -49,8 +49,8 @@ export class ProvidedLotMatchingMethod implements LotMatchingMethod {
 
 			processedLots.push({
 				quantity: lot.quantity,
-				acquired: { date: acquiredTrade.date, relation: acquiredTrade },
-				sold: { date: soldTrade.date, relation: soldTrade },
+				acquired: { relation: acquiredTrade },
+				sold: { relation: soldTrade },
 			});
 		}
 

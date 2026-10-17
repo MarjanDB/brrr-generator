@@ -17,5 +17,5 @@ export const zDateTimeFromISOString = z.union([z.string(), z.date()]).transform(
 		ctx.addIssue({ code: "custom", message: `Invalid date value: ${val}` });
 		return z.NEVER;
 	}
-	return dt as ValidDateTime;
+	return dt;
 });

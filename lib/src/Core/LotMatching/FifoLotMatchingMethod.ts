@@ -114,8 +114,8 @@ export class FifoLotMatchingMethod implements LotMatchingMethod {
 
 				createdLots.push({
 					quantity: quantityOfLot,
-					acquired: { date: tracking.buySide.date, relation: tracking.buySide },
-					sold: { date: tracking.sellSide.date, relation: tracking.sellSide },
+					acquired: { relation: tracking.buySide },
+					sold: { relation: tracking.sellSide },
 				});
 				continue;
 			}
@@ -142,11 +142,8 @@ export class FifoLotMatchingMethod implements LotMatchingMethod {
 
 				createdLots.push({
 					quantity: willConsumeQuantity,
-					acquired: {
-						date: earliestEventWaitingForMatch.date,
-						relation: earliestEventWaitingForMatch,
-					},
-					sold: { date: newCandidateEvent.date, relation: newCandidateEvent },
+					acquired: { relation: earliestEventWaitingForMatch },
+					sold: { relation: newCandidateEvent },
 				});
 
 				quantityAvailableFromCandidate = tracking.getRemainingQuantity(

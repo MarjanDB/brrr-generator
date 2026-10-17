@@ -9,8 +9,7 @@ type ProvenanceStepArgs = {
 	effectiveDate: ValidDateTime;
 };
 
-export class RenameProvenanceStep {
-	public readonly kind = "rename" as const;
+abstract class ProvenanceStepBase {
 	public readonly fromIdentifier: FinancialIdentifier;
 	public readonly toIdentifier: FinancialIdentifier;
 	public readonly changeType: IdentifierChangeType;
@@ -24,6 +23,8 @@ export class RenameProvenanceStep {
 	}
 }
 
+export class RenameProvenanceStep extends ProvenanceStepBase {}
+
 type SplitProvenanceStepArgs = ProvenanceStepArgs & {
 	quantityBefore?: number | null;
 	quantityAfter?: number | null;
@@ -31,22 +32,14 @@ type SplitProvenanceStepArgs = ProvenanceStepArgs & {
 	beforeTradePrice?: number | null;
 };
 
-export class SplitProvenanceStep {
-	public readonly kind = "split" as const;
-	public readonly fromIdentifier: FinancialIdentifier;
-	public readonly toIdentifier: FinancialIdentifier;
-	public readonly changeType: IdentifierChangeType;
-	public readonly effectiveDate: ValidDateTime;
+export class SplitProvenanceStep extends ProvenanceStepBase {
 	public readonly quantityBefore?: number | null;
 	public readonly quantityAfter?: number | null;
 	public readonly beforeQuantity?: number | null;
 	public readonly beforeTradePrice?: number | null;
 
 	constructor(args: SplitProvenanceStepArgs) {
-		this.fromIdentifier = args.fromIdentifier;
-		this.toIdentifier = args.toIdentifier;
-		this.changeType = args.changeType;
-		this.effectiveDate = args.effectiveDate;
+		super(args);
 		this.quantityBefore = args.quantityBefore;
 		this.quantityAfter = args.quantityAfter;
 		this.beforeQuantity = args.beforeQuantity;
