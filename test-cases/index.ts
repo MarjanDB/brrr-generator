@@ -6,8 +6,8 @@ const CASES_ROOT = path.join(import.meta.dirname, "cases");
 type ExportFile = { fileName: string; xml: string };
 
 // One case: a folder holding broker exports in input/ and the tax authority files they should
-// produce in expected/<authority>/<year>/. A case may also run on other cases' exports.
-function testCase(folder: string, borrowsInputsFrom: { readInputs(): ExportFile[] }[] = []) {
+// produce in expected/<authority>/<year>/. Each case is self-contained.
+function testCase(folder: string) {
 	const root = path.join(CASES_ROOT, folder);
 	const inputDir = path.join(root, "input");
 	const inputPath = (fileName: string) => path.join(inputDir, fileName);
@@ -16,7 +16,6 @@ function testCase(folder: string, borrowsInputsFrom: { readInputs(): ExportFile[
 		fileName,
 		xml: fs.readFileSync(inputPath(fileName), "utf-8"),
 	});
-	const ownInputs = () => (fs.existsSync(inputDir) ? fs.readdirSync(inputDir).map(readInput) : []);
 
 	return {
 		inputPath,
@@ -27,46 +26,24 @@ function testCase(folder: string, borrowsInputsFrom: { readInputs(): ExportFile[
 			csvPath: expectedPath(`${name}.csv`),
 		}),
 		readInput,
-		// Every export the case runs on, sorted by file name, shaped for
+		// Every export in input/, sorted by file name, shaped for
 		// BrokerageRegistry.loadAndTransformDetected.
-		readInputs: (): ExportFile[] =>
-			[...ownInputs(), ...borrowsInputsFrom.flatMap((other) => other.readInputs())].sort((a, b) =>
-				a.fileName < b.fileName ? -1 : a.fileName > b.fileName ? 1 : 0,
-			),
+		readInputs: (): ExportFile[] => fs.readdirSync(inputDir).sort().map(readInput),
 		readExpected: (relativePath: string) => fs.readFileSync(expectedPath(relativePath), "utf-8"),
 	};
 }
 
-const stockTrade = testCase("Ibkr/StockTrade");
-const optionTrade = testCase("Ibkr/OptionTrade");
-const dividends = testCase("Ibkr/Dividends");
-const paymentInLieuOfDividends = testCase("Ibkr/PaymentInLieuOfDividends");
-const duplicatingTrades = testCase("Ibkr/DuplicatingTrades");
-const corporateAction = testCase("Ibkr/CorporateAction");
-const corporateActionsTwoRows = testCase("Ibkr/CorporateActionsTwoRows");
-const split = testCase("Ibkr/Split");
-
 // The test cases: broker exports and the tax authority files expected from them.
 export const TestKit = {
 	ibkr: {
-		stockTrade,
-		optionTrade,
-		dividends,
-		paymentInLieuOfDividends,
-		duplicatingTrades,
-		corporateAction,
-		corporateActionsTwoRows,
+		stockTrade: testCase("Ibkr/StockTrade"),
+		optionTrade: testCase("Ibkr/OptionTrade"),
+		dividends: testCase("Ibkr/Dividends"),
+		paymentInLieuOfDividends: testCase("Ibkr/PaymentInLieuOfDividends"),
+		duplicatingTrades: testCase("Ibkr/DuplicatingTrades"),
+		corporateAction: testCase("Ibkr/CorporateAction"),
+		corporateActionsTwoRows: testCase("Ibkr/CorporateActionsTwoRows"),
 		// SMCI bought before and after its 10-for-1 split on 2024-09-30, then sold.
-		split,
-		// Every export above at once, except the split.
-		allFixtures: testCase("Ibkr/AllFixtures", [
-			stockTrade,
-			optionTrade,
-			dividends,
-			paymentInLieuOfDividends,
-			duplicatingTrades,
-			corporateAction,
-			corporateActionsTwoRows,
-		]),
+		split: testCase("Ibkr/Split"),
 	},
 };
