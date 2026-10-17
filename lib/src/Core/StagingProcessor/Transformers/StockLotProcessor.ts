@@ -1,7 +1,6 @@
 import { ProcessingUtils } from "@brrr/Core/FinancialEvents/ProcessingUtils";
 import { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import { TradeEventStockAcquired, type TradeEventStockSold } from "@brrr/Core/Schemas/Events";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
@@ -38,7 +37,6 @@ export function processStockLot(
 
 	return new TaxLot({
 		id: input.id,
-		financialIdentifier: FinancialIdentifier.fromStagingIdentifier(input.financialIdentifier),
 		quantity: input.quantity,
 		acquired: matchingBuy,
 		sold: matchingSell,

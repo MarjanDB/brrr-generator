@@ -26,7 +26,6 @@ function makeDate(iso: string): ValidDateTime {
 
 const cashTransactionDividend = new TradeEventCashTransactionDividend({
 	id: "ID",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: makeDate("2023-06-07"),
 	multiplier: 1,
@@ -50,7 +49,6 @@ const cashTransactionDividend = new TradeEventCashTransactionDividend({
 const cashTransactionPaymentInLieuOfDividend = new TradeEventCashTransactionPaymentInLieuOfDividend(
 	{
 		id: "ID",
-		financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 		date: makeDate("2023-06-08"),
 		multiplier: 1,
@@ -74,7 +72,6 @@ const cashTransactionPaymentInLieuOfDividend = new TradeEventCashTransactionPaym
 
 const cashTransactionDividendWithholdingTax = new TradeEventCashTransactionWithholdingTax({
 	id: "ID",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: makeDate("2023-06-07"),
 	multiplier: 1,
@@ -97,7 +94,6 @@ const cashTransactionDividendWithholdingTax = new TradeEventCashTransactionWithh
 const cashTransactionPaymentInLieuOfDividendWithholdingTax =
 	new TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend({
 		id: "ID",
-		financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 		date: makeDate("2023-06-08"),
 		multiplier: 1,

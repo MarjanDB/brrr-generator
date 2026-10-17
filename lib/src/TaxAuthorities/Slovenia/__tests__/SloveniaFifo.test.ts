@@ -73,7 +73,6 @@ const simpleTaxPayer: TaxPayerInfo = {
 
 const stockAcquired = new TradeEventStockAcquired({
 	id: "ID1",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.STOCK,
 	date: makeDate("2023-06-06"),
 	multiplier: 1.0,
@@ -93,7 +92,6 @@ const stockAcquired = new TradeEventStockAcquired({
 
 const stockSold = new TradeEventStockSold({
 	id: "ID2",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.STOCK,
 	date: makeDate("2023-06-07"),
 	multiplier: 1.0,
@@ -112,7 +110,6 @@ const stockSold = new TradeEventStockSold({
 
 const optionBought = new TradeEventDerivativeAcquired({
 	id: "ID1",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	acquiredReason: GenericDerivativeReportItemGainType.BOUGHT,
 	assetClass: GenericAssetClass.OPTION,
 	date: makeDate("2023-06-07"),
@@ -132,7 +129,6 @@ const optionBought = new TradeEventDerivativeAcquired({
 
 const optionSold = new TradeEventDerivativeSold({
 	id: "ID2",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.OPTION,
 	date: makeDate("2023-06-08"),
 	multiplier: 100,

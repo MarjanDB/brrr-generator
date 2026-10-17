@@ -126,12 +126,9 @@ export class KdvpReportGenerator {
 
 			const isTrustFund = isinGrouping.underlyingCategory === GenericCategory.TRUST_FUND;
 
-			const tickerSymbols =
-				allLines.map((line) => line.financialIdentifier.getTicker()).pop() ?? null; // TODO: Maybe something better than just taking the last one?
-
 			const reportItem = new EDavkiTradeReportSecurityLineEvent({
 				isin: isin ?? "",
-				code: tickerSymbols,
+				code: isinGrouping.financialIdentifier.getTicker(),
 				name: null,
 				isFund: isTrustFund,
 				resolution: null,

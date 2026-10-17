@@ -5,7 +5,6 @@ import {
 	TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
 	type TransactionCash,
 } from "@brrr/Core/Schemas/Events";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import {
 	StagingTradeEventCashTransactionDividend,
 	StagingTradeEventCashTransactionPaymentInLieuOfDividends,
@@ -14,10 +13,8 @@ import {
 } from "@brrr/Core/Schemas/Staging/Events";
 
 export function processCashTransaction(input: StagingTransactionCash): TransactionCash {
-	const identifier = FinancialIdentifier.fromStagingIdentifier(input.financialIdentifier);
 	const base = {
 		id: input.id,
-		financialIdentifier: identifier,
 		assetClass: input.assetClass,
 		date: input.date,
 		multiplier: input.multiplier,

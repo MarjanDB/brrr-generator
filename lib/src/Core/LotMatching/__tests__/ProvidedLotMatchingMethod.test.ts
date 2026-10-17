@@ -5,7 +5,6 @@ import {
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
 import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import { DateTime } from "luxon";
@@ -13,8 +12,6 @@ import { DateTime } from "luxon";
 function makeDate(iso: string): ValidDateTime {
 	return DateTime.fromISO(iso) as ValidDateTime;
 }
-
-const identifier = new FinancialIdentifier({ isin: "ISIN", ticker: "TICKER", name: "NAME" });
 
 function makeMonetary(qty: number) {
 	return {
@@ -31,11 +28,9 @@ function makeMonetary(qty: number) {
 
 const simpleLot: TaxLotStock = new TaxLot({
 	id: "ID",
-	financialIdentifier: identifier,
 	quantity: 1,
 	acquired: new TradeEventStockAcquired({
 		id: "ID",
-		financialIdentifier: identifier,
 		assetClass: GenericAssetClass.STOCK,
 		date: makeDate("2023-01-01"),
 		multiplier: 1,
@@ -45,7 +40,6 @@ const simpleLot: TaxLotStock = new TaxLot({
 	}),
 	sold: new TradeEventStockSold({
 		id: "ID2",
-		financialIdentifier: identifier,
 		assetClass: GenericAssetClass.STOCK,
 		date: makeDate("2023-01-02"),
 		multiplier: 1,
@@ -58,11 +52,9 @@ const simpleLot: TaxLotStock = new TaxLot({
 
 const underUtilizedLot: TaxLotStock = new TaxLot({
 	id: "ID",
-	financialIdentifier: identifier,
 	quantity: 1,
 	acquired: new TradeEventStockAcquired({
 		id: "ID",
-		financialIdentifier: identifier,
 		assetClass: GenericAssetClass.STOCK,
 		date: makeDate("2023-01-01"),
 		multiplier: 1,
@@ -72,7 +64,6 @@ const underUtilizedLot: TaxLotStock = new TaxLot({
 	}),
 	sold: new TradeEventStockSold({
 		id: "ID2",
-		financialIdentifier: identifier,
 		assetClass: GenericAssetClass.STOCK,
 		date: makeDate("2023-01-02"),
 		multiplier: 1,

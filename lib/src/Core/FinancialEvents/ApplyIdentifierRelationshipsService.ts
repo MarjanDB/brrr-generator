@@ -1,11 +1,7 @@
-import type {
-	TradeEventStockAcquired,
-	TradeEventStockSold,
-	TransactionCash,
-} from "@brrr/Core/Schemas/Events";
+import type { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
-import { type DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
+import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import {
 	IdentifierChangeType,
 	IdentifierRelationshipSplit,
@@ -256,51 +252,25 @@ export class ApplyIdentifierRelationshipsService {
 		groupingProvenance: AnyProvenanceStep[],
 	): FinancialGrouping {
 		const first = groupings[0];
-		const allStockTrades: (TradeEventStockAcquired | TradeEventStockSold)[] = [];
-		const allStockTaxLots: TaxLotStock[] = [];
-		const allDerivativeGroupings: DerivativeGrouping[] = [];
-		const allCashTransactions: TransactionCash[] = [];
-
-		for (const g of groupings) {
-			for (const t of g.stockTrades) allStockTrades.push(t.copy({ financialIdentifier: properId }));
-			for (const lot of g.stockTaxLots) {
-				allStockTaxLots.push(
-					lot.copy({
-						financialIdentifier: properId,
-						acquired: lot.acquired.copy({ financialIdentifier: properId }),
-						sold: lot.sold.copy({ financialIdentifier: properId }),
-					}),
-				);
-			}
-			for (const dg of g.derivativeGroupings) {
-				allDerivativeGroupings.push(
-					dg.copy({
-						financialIdentifier: properId,
-						derivativeTrades: dg.derivativeTrades.map((t) =>
-							t.copy({ financialIdentifier: properId }),
-						),
-						derivativeTaxLots: dg.derivativeTaxLots.map((lot) =>
-							lot.copy({
-								financialIdentifier: properId,
-								acquired: lot.acquired.copy({ financialIdentifier: properId }),
-								sold: lot.sold.copy({ financialIdentifier: properId }),
-							}),
-						),
-					}),
-				);
-			}
-			for (const c of g.cashTransactions)
-				allCashTransactions.push(c.copy({ financialIdentifier: properId }));
-		}
 
 		return new FinancialGrouping({
 			financialIdentifier: properId,
 			countryOfOrigin: first.countryOfOrigin,
 			underlyingCategory: first.underlyingCategory,
-			stockTrades: allStockTrades,
-			stockTaxLots: allStockTaxLots,
-			derivativeGroupings: allDerivativeGroupings,
-			cashTransactions: allCashTransactions,
+			stockTrades: groupings.flatMap((g) => g.stockTrades),
+			stockTaxLots: groupings.flatMap((g) => g.stockTaxLots),
+			derivativeGroupings: groupings.flatMap((g) =>
+				g.derivativeGroupings.map(
+					(dg) =>
+						new DerivativeGrouping({
+							financialIdentifier: properId,
+							derivativeTrades: dg.derivativeTrades,
+							derivativeTaxLots: dg.derivativeTaxLots,
+							provenance: dg.provenance,
+						}),
+				),
+			),
+			cashTransactions: groupings.flatMap((g) => g.cashTransactions),
 			provenance: groupingProvenance,
 		});
 	}

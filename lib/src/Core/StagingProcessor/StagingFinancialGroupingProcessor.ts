@@ -1,7 +1,3 @@
-import type {
-	TradeEventDerivativeAcquired,
-	TradeEventDerivativeSold,
-} from "@brrr/Core/Schemas/Events";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
@@ -27,15 +23,9 @@ export class StagingFinancialGroupingProcessor {
 	private identifierRelationshipResolution = new IdentifierRelationshipResolution();
 
 	private processAndGroupDerivativeTrades(input: StagingFinancialGrouping): DerivativeGrouping[] {
-		const processedDerivatives = input.derivativeTrades.map(processDerivativeEvent);
-		const allDerivativeTrades = processedDerivatives;
-
 		// Group by financialIdentifier key
-		const tradesByIdKey = new Map<
-			string,
-			(TradeEventDerivativeAcquired | TradeEventDerivativeSold)[]
-		>();
-		for (const trade of allDerivativeTrades) {
+		const tradesByIdKey = new Map<string, typeof input.derivativeTrades>();
+		for (const trade of input.derivativeTrades) {
 			const key = trade.financialIdentifier.toKey();
 			const arr = tradesByIdKey.get(key) ?? [];
 			arr.push(trade);
@@ -44,19 +34,22 @@ export class StagingFinancialGroupingProcessor {
 
 		const lotsByIdKey = new Map<string, typeof input.derivativeTaxLots>();
 		for (const lot of input.derivativeTaxLots) {
-			const key = FinancialIdentifier.fromStagingIdentifier(lot.financialIdentifier).toKey();
+			const key = lot.financialIdentifier.toKey();
 			const arr = lotsByIdKey.get(key) ?? [];
 			arr.push(lot);
 			lotsByIdKey.set(key, arr);
 		}
 
 		const derivativeGroupings: DerivativeGrouping[] = [];
-		for (const [key, trades] of tradesByIdKey) {
+		for (const [key, stagingTrades] of tradesByIdKey) {
+			const trades = stagingTrades.map(processDerivativeEvent);
 			const lots = lotsByIdKey.get(key) ?? [];
 			const processedLots = lots.map((lot) => processDerivativeLot(lot, trades));
 			derivativeGroupings.push(
 				new DerivativeGrouping({
-					financialIdentifier: trades[0].financialIdentifier,
+					financialIdentifier: FinancialIdentifier.fromStagingIdentifier(
+						stagingTrades[0].financialIdentifier,
+					),
 					derivativeTrades: trades,
 					derivativeTaxLots: processedLots,
 					provenance: [],

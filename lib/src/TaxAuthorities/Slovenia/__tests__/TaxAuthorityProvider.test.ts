@@ -78,7 +78,6 @@ const simpleTaxPayer: TaxPayerInfo = {
 
 const stockAcquired = new TradeEventStockAcquired({
 	id: "ID1",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.STOCK,
 	date: makeDate("2023-06-06"),
 	multiplier: 1.0,
@@ -98,7 +97,6 @@ const stockAcquired = new TradeEventStockAcquired({
 
 const stockSold = new TradeEventStockSold({
 	id: "ID2",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.STOCK,
 	date: makeDate("2023-06-07"),
 	multiplier: 1.0,
@@ -117,7 +115,6 @@ const stockSold = new TradeEventStockSold({
 
 const optionBought = new TradeEventDerivativeAcquired({
 	id: "ID1",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	acquiredReason: GenericDerivativeReportItemGainType.BOUGHT,
 	assetClass: GenericAssetClass.OPTION,
 	date: makeDate("2023-06-07"),
@@ -137,7 +134,6 @@ const optionBought = new TradeEventDerivativeAcquired({
 
 const optionSold = new TradeEventDerivativeSold({
 	id: "ID2",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.OPTION,
 	date: makeDate("2023-06-08"),
 	multiplier: 100,
@@ -156,7 +152,6 @@ const optionSold = new TradeEventDerivativeSold({
 
 const cashTransactionDividend = new TradeEventCashTransactionDividend({
 	id: "ID",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: makeDate("2023-06-07"),
 	multiplier: 1,
@@ -179,7 +174,6 @@ const cashTransactionDividend = new TradeEventCashTransactionDividend({
 
 const cashTransactionWithholdingTax = new TradeEventCashTransactionWithholdingTax({
 	id: "ID",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: makeDate("2023-06-07"),
 	multiplier: 1,
@@ -201,7 +195,6 @@ const cashTransactionWithholdingTax = new TradeEventCashTransactionWithholdingTa
 
 const stockLot = new TaxLot({
 	id: "ID1",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN" }),
 	quantity: 1.0,
 	acquired: stockAcquired,
 	sold: stockSold,
@@ -211,7 +204,6 @@ const stockLot = new TaxLot({
 
 const derivativeLot = new TaxLot({
 	id: "ID1",
-	financialIdentifier: new FinancialIdentifier({ isin: "ISIN" }),
 	quantity: 1.0,
 	acquired: optionBought,
 	sold: optionSold,

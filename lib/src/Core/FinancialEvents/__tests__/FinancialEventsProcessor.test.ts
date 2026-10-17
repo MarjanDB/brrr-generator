@@ -37,7 +37,6 @@ function makeMonetary(qty: number, price: number) {
 
 const simpleStockBuy = new TradeEventStockAcquired({
 	id: "StockBought",
-	financialIdentifier: identifier,
 	assetClass: GenericAssetClass.STOCK,
 	date: makeDate("2023-01-01"),
 	multiplier: 1,
@@ -48,7 +47,6 @@ const simpleStockBuy = new TradeEventStockAcquired({
 
 const simpleStockSold = new TradeEventStockSold({
 	id: "StockSold",
-	financialIdentifier: identifier,
 	assetClass: GenericAssetClass.STOCK,
 	date: makeDate("2023-01-02"),
 	multiplier: 1,
@@ -58,7 +56,6 @@ const simpleStockSold = new TradeEventStockSold({
 
 const simpleStockLot = new TaxLot({
 	id: "Lot",
-	financialIdentifier: identifier,
 	quantity: 1,
 	acquired: simpleStockBuy,
 	sold: simpleStockSold,

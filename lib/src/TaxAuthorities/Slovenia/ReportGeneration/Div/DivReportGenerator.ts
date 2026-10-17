@@ -39,6 +39,7 @@ function filterOutCashTransactionsBasedOnDate(
 }
 
 function processEdavkiLineItemsFromCashTransactions(
+	isin: string,
 	dividendLines: (
 		| TradeEventCashTransactionDividend
 		| TradeEventCashTransactionPaymentInLieuOfDividend
@@ -56,7 +57,7 @@ function processEdavkiLineItemsFromCashTransactions(
 		const thisDividendLine = new EDavkiDividendReportLine({
 			dateReceived: dividend.date,
 			taxNumberForDividendPayer: "",
-			dividendPayerIdentificationNumber: dividend.financialIdentifier.getIsin() ?? "",
+			dividendPayerIdentificationNumber: isin,
 			dividendPayerTitle: "",
 			dividendPayerAddress: "",
 			dividendPayerCountryOfOrigin: "",
@@ -220,6 +221,7 @@ export class DivReportGenerator {
 		);
 
 		const processedDividendLines = processEdavkiLineItemsFromCashTransactions(
+			data.financialIdentifier.getIsin() ?? "",
 			dividendLines,
 			withholdingTax,
 		);

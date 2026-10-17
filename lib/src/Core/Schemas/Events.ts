@@ -5,13 +5,11 @@ import type {
 	GenericMonetaryExchangeInformation,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
-import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import type { AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 
 type TradeEventArgs = {
 	id: string;
-	financialIdentifier: FinancialIdentifier;
 	assetClass: GenericAssetClass;
 	date: ValidDateTime;
 	multiplier: number;
@@ -26,7 +24,6 @@ type CashTransactionArgs = TradeEventArgs & {
 
 export class TradeEventStockAcquired {
 	public readonly id: string;
-	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
@@ -36,7 +33,6 @@ export class TradeEventStockAcquired {
 
 	constructor(args: TradeEventArgs & { acquiredReason: GenericTradeReportItemGainType }) {
 		this.id = args.id;
-		this.financialIdentifier = args.financialIdentifier;
 		this.assetClass = args.assetClass;
 		this.date = args.date;
 		this.multiplier = args.multiplier;
@@ -50,7 +46,6 @@ export class TradeEventStockAcquired {
 	): TradeEventStockAcquired {
 		return new TradeEventStockAcquired({
 			id: this.id,
-			financialIdentifier: this.financialIdentifier,
 			assetClass: this.assetClass,
 			date: this.date,
 			multiplier: this.multiplier,
@@ -64,7 +59,6 @@ export class TradeEventStockAcquired {
 
 export class TradeEventStockSold {
 	public readonly id: string;
-	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
@@ -73,7 +67,6 @@ export class TradeEventStockSold {
 
 	constructor(args: TradeEventArgs) {
 		this.id = args.id;
-		this.financialIdentifier = args.financialIdentifier;
 		this.assetClass = args.assetClass;
 		this.date = args.date;
 		this.multiplier = args.multiplier;
@@ -86,7 +79,6 @@ export class TradeEventStockSold {
 	): TradeEventStockSold {
 		return new TradeEventStockSold({
 			id: this.id,
-			financialIdentifier: this.financialIdentifier,
 			assetClass: this.assetClass,
 			date: this.date,
 			multiplier: this.multiplier,
@@ -101,7 +93,6 @@ export type TradeEventStock = TradeEventStockAcquired | TradeEventStockSold;
 
 export class TradeEventDerivativeAcquired {
 	public readonly id: string;
-	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
@@ -111,7 +102,6 @@ export class TradeEventDerivativeAcquired {
 
 	constructor(args: TradeEventArgs & { acquiredReason: GenericDerivativeReportItemGainType }) {
 		this.id = args.id;
-		this.financialIdentifier = args.financialIdentifier;
 		this.assetClass = args.assetClass;
 		this.date = args.date;
 		this.multiplier = args.multiplier;
@@ -125,7 +115,6 @@ export class TradeEventDerivativeAcquired {
 	): TradeEventDerivativeAcquired {
 		return new TradeEventDerivativeAcquired({
 			id: this.id,
-			financialIdentifier: this.financialIdentifier,
 			assetClass: this.assetClass,
 			date: this.date,
 			multiplier: this.multiplier,
@@ -139,7 +128,6 @@ export class TradeEventDerivativeAcquired {
 
 export class TradeEventDerivativeSold {
 	public readonly id: string;
-	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
@@ -148,7 +136,6 @@ export class TradeEventDerivativeSold {
 
 	constructor(args: TradeEventArgs) {
 		this.id = args.id;
-		this.financialIdentifier = args.financialIdentifier;
 		this.assetClass = args.assetClass;
 		this.date = args.date;
 		this.multiplier = args.multiplier;
@@ -161,7 +148,6 @@ export class TradeEventDerivativeSold {
 	): TradeEventDerivativeSold {
 		return new TradeEventDerivativeSold({
 			id: this.id,
-			financialIdentifier: this.financialIdentifier,
 			assetClass: this.assetClass,
 			date: this.date,
 			multiplier: this.multiplier,
@@ -176,7 +162,6 @@ export type TradeEventDerivative = TradeEventDerivativeAcquired | TradeEventDeri
 
 export class TradeEventCashTransactionDividend {
 	public readonly id: string;
-	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
@@ -191,7 +176,6 @@ export class TradeEventCashTransactionDividend {
 		args: CashTransactionArgs & { listingExchange: string; dividendType: GenericDividendType },
 	) {
 		this.id = args.id;
-		this.financialIdentifier = args.financialIdentifier;
 		this.assetClass = args.assetClass;
 		this.date = args.date;
 		this.multiplier = args.multiplier;
@@ -208,7 +192,6 @@ export class TradeEventCashTransactionDividend {
 	): TradeEventCashTransactionDividend {
 		return new TradeEventCashTransactionDividend({
 			id: this.id,
-			financialIdentifier: this.financialIdentifier,
 			assetClass: this.assetClass,
 			date: this.date,
 			multiplier: this.multiplier,
@@ -225,7 +208,6 @@ export class TradeEventCashTransactionDividend {
 
 export class TradeEventCashTransactionPaymentInLieuOfDividend {
 	public readonly id: string;
-	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
@@ -240,7 +222,6 @@ export class TradeEventCashTransactionPaymentInLieuOfDividend {
 		args: CashTransactionArgs & { listingExchange: string; dividendType: GenericDividendType },
 	) {
 		this.id = args.id;
-		this.financialIdentifier = args.financialIdentifier;
 		this.assetClass = args.assetClass;
 		this.date = args.date;
 		this.multiplier = args.multiplier;
@@ -259,7 +240,6 @@ export class TradeEventCashTransactionPaymentInLieuOfDividend {
 	): TradeEventCashTransactionPaymentInLieuOfDividend {
 		return new TradeEventCashTransactionPaymentInLieuOfDividend({
 			id: this.id,
-			financialIdentifier: this.financialIdentifier,
 			assetClass: this.assetClass,
 			date: this.date,
 			multiplier: this.multiplier,
@@ -276,7 +256,6 @@ export class TradeEventCashTransactionPaymentInLieuOfDividend {
 
 export class TradeEventCashTransactionWithholdingTax {
 	public readonly id: string;
-	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
@@ -288,7 +267,6 @@ export class TradeEventCashTransactionWithholdingTax {
 
 	constructor(args: CashTransactionArgs & { listingExchange: string }) {
 		this.id = args.id;
-		this.financialIdentifier = args.financialIdentifier;
 		this.assetClass = args.assetClass;
 		this.date = args.date;
 		this.multiplier = args.multiplier;
@@ -304,7 +282,6 @@ export class TradeEventCashTransactionWithholdingTax {
 	): TradeEventCashTransactionWithholdingTax {
 		return new TradeEventCashTransactionWithholdingTax({
 			id: this.id,
-			financialIdentifier: this.financialIdentifier,
 			assetClass: this.assetClass,
 			date: this.date,
 			multiplier: this.multiplier,
@@ -320,7 +297,6 @@ export class TradeEventCashTransactionWithholdingTax {
 
 export class TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend {
 	public readonly id: string;
-	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
@@ -332,7 +308,6 @@ export class TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend {
 
 	constructor(args: CashTransactionArgs & { listingExchange: string }) {
 		this.id = args.id;
-		this.financialIdentifier = args.financialIdentifier;
 		this.assetClass = args.assetClass;
 		this.date = args.date;
 		this.multiplier = args.multiplier;
@@ -352,7 +327,6 @@ export class TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend {
 	): TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend {
 		return new TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend({
 			id: this.id,
-			financialIdentifier: this.financialIdentifier,
 			assetClass: this.assetClass,
 			date: this.date,
 			multiplier: this.multiplier,

@@ -77,7 +77,6 @@ export class LotMatcher {
 				const lotId = lotWithEvents.lot.acquired.relation.id;
 				return new TaxLot<TradeEvent, TradeEvent>({
 					id: lotId,
-					financialIdentifier: lotWithEvents.acquiredTrade.financialIdentifier,
 					quantity: lotWithEvents.lot.quantity,
 					acquired: lotWithEvents.acquiredTrade,
 					sold: lotWithEvents.soldTrade,

@@ -4,7 +4,6 @@ import {
 	TradeEventDerivativeAcquired,
 	type TradeEventDerivativeSold,
 } from "@brrr/Core/Schemas/Events";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { TaxLot, type TaxLotDerivative } from "@brrr/Core/Schemas/Lots";
 import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
@@ -39,7 +38,6 @@ export function processDerivativeLot(
 
 	return new TaxLot({
 		id: input.id,
-		financialIdentifier: FinancialIdentifier.fromStagingIdentifier(input.financialIdentifier),
 		quantity: input.quantity,
 		acquired: matchingBuy,
 		sold: matchingSell,

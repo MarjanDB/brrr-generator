@@ -1,5 +1,4 @@
 import { TradeEventDerivativeAcquired, TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import {
 	type StagingTradeEventDerivative,
 	StagingTradeEventDerivativeAcquired,
@@ -9,11 +8,9 @@ import {
 export function processDerivativeEvent(
 	input: StagingTradeEventDerivative,
 ): TradeEventDerivativeAcquired | TradeEventDerivativeSold {
-	const identifier = FinancialIdentifier.fromStagingIdentifier(input.financialIdentifier);
 	if (input instanceof StagingTradeEventDerivativeAcquired) {
 		return new TradeEventDerivativeAcquired({
 			id: input.id,
-			financialIdentifier: identifier,
 			assetClass: input.assetClass,
 			date: input.date,
 			multiplier: input.multiplier,
@@ -24,7 +21,6 @@ export function processDerivativeEvent(
 	}
 	return new TradeEventDerivativeSold({
 		id: input.id,
-		financialIdentifier: identifier,
 		assetClass: input.assetClass,
 		date: input.date,
 		multiplier: input.multiplier,
