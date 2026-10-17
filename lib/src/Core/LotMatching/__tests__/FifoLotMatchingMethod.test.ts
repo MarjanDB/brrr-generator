@@ -1,5 +1,6 @@
 import { FifoLotMatchingMethod } from "@brrr/Core/LotMatching/FifoLotMatchingMethod";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
+import { zDateTimeFromISOString } from "@brrr/Utils/DateTime";
 import { DateTime } from "luxon";
 
 function makeDate(iso: string) {
@@ -181,4 +182,17 @@ test("complex partial sells", () => {
 	expect(lots[1].quantity).toEqual(0.5);
 	expect(lots[1].acquired.relation).toEqual(complexCasePartialSells.Buy);
 	expect(lots[1].sold.relation).toEqual(complexCasePartialSells.Sell2);
+});
+
+// Shorts aren't supported: a short covered in several fills makes a lot whose acquired side is
+// the sell. Matching must fail rather than hand that lot to a report.
+test("a short position covered in several fills throws", () => {
+	const method = new FifoLotMatchingMethod();
+	const events: Trade[] = [
+		{ id: "S1", quantity: -10, date: zDateTimeFromISOString.parse("2023-01-01") },
+		{ id: "B1", quantity: 5, date: zDateTimeFromISOString.parse("2023-01-02") },
+		{ id: "B2", quantity: 5, date: zDateTimeFromISOString.parse("2023-01-03") },
+	];
+
+	expect(() => method.performMatching(events)).toThrow("Tracker for event (S1) does not exist");
 });
