@@ -1,3 +1,4 @@
+import { makeDate } from "@brrr/__tests__/support/Builders";
 import { readFixture } from "@brrr/__tests__/support/Fixtures";
 import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract";
 import { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider";
@@ -9,8 +10,6 @@ import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/S
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
 
 test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantities", () => {
 	const xmlContent = readFixture("TaxAuthorities/Slovenia/__tests__/DuplicatingTrades.xml");
@@ -27,8 +26,8 @@ test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantities", 
 	const financialEvents = groupingProcessor.processStagingFinancialEvents(stagingEvents);
 
 	const reportConfig: TaxAuthorityConfiguration = {
-		fromDate: DateTime.fromISO("2024-01-01") as ValidDateTime,
-		toDate: DateTime.fromISO("2025-01-01") as ValidDateTime,
+		fromDate: makeDate("2024-01-01"),
+		toDate: makeDate("2025-01-01"),
 		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 	};
 

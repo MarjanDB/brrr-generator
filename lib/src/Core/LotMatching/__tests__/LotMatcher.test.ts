@@ -1,3 +1,4 @@
+import { makeMoney } from "@brrr/__tests__/support/Builders";
 import { FifoLotMatchingMethod } from "@brrr/Core/LotMatching/FifoLotMatchingMethod";
 import type { Lot } from "@brrr/Core/LotMatching/Lot";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
@@ -5,7 +6,7 @@ import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
 import {
 	GenericAssetClass,
-	GenericMonetaryExchangeInformation,
+	type GenericMonetaryExchangeInformation,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
 import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events";
@@ -21,16 +22,7 @@ class FakeLotMatchingMethod implements LotMatchingMethod {
 }
 
 function money(quantity: number, commission: number): GenericMonetaryExchangeInformation {
-	return new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: quantity,
-		underlyingTradePrice: 1,
-		commissionCurrency: "EUR",
-		commissionTotal: commission,
-		taxCurrency: "EUR",
-		taxTotal: 0,
-		fxRateToBase: 1,
-	});
+	return makeMoney({ underlyingQuantity: quantity, commissionTotal: commission });
 }
 
 test("provided method is called with the converted trades", () => {

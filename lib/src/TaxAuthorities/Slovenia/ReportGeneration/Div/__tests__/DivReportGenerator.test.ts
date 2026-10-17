@@ -1,8 +1,9 @@
+import { makeMoney } from "@brrr/__tests__/support/Builders";
 import {
 	GenericAssetClass,
 	GenericCategory,
 	GenericDividendType,
-	GenericMonetaryExchangeInformation,
+	type GenericMonetaryExchangeInformation,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
 	TradeEventCashTransactionDividend,
@@ -28,12 +29,10 @@ const config: TaxAuthorityConfiguration = {
 };
 
 function money(amount: number, taxTotal = 0): GenericMonetaryExchangeInformation {
-	return new GenericMonetaryExchangeInformation({
+	return makeMoney({
 		underlyingCurrency: "USD",
-		underlyingQuantity: 1,
 		underlyingTradePrice: amount,
 		commissionCurrency: "USD",
-		commissionTotal: 0,
 		taxCurrency: "USD",
 		taxTotal,
 		fxRateToBase: 0.5,

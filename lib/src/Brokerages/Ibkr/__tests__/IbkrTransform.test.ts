@@ -1,3 +1,4 @@
+import { makeDate } from "@brrr/__tests__/support/Builders";
 import type {
 	CorporateAction,
 	LotStock,
@@ -26,14 +27,8 @@ import {
 } from "@brrr/Core/Schemas/Staging/Events";
 import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
 
 const service = new IbkrTransformService();
-
-function makeDate(iso: string): ValidDateTime {
-	return DateTime.fromISO(iso) as ValidDateTime;
-}
 
 function makeEmptySegmented(
 	overrides: Partial<ConstructorParameters<typeof SegmentedTrades>[0]>,

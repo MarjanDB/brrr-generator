@@ -1,17 +1,16 @@
+import { makeDate } from "@brrr/__tests__/support/Builders";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
 import { TradeAssociationTracker } from "@brrr/Core/LotMatching/TradeAssociationTracker";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
 
 const simpleBuyTrade: Trade = {
 	id: "ID",
 	quantity: 1,
-	date: DateTime.fromISO("2023-01-01") as ValidDateTime,
+	date: makeDate("2023-01-01"),
 };
 const simpleSoldTrade: Trade = {
 	id: "ID2",
 	quantity: -1,
-	date: DateTime.fromISO("2023-01-01") as ValidDateTime,
+	date: makeDate("2023-01-01"),
 };
 
 test("retrieval of tracker for simple acquired trade", () => {

@@ -1,7 +1,5 @@
-import {
-	GenericAssetClass,
-	GenericMonetaryExchangeInformation,
-} from "@brrr/Core/Schemas/CommonFormats";
+import { makeMoney } from "@brrr/__tests__/support/Builders";
+import { GenericAssetClass } from "@brrr/Core/Schemas/CommonFormats";
 import { TradeEventStockSold } from "@brrr/Core/Schemas/Events";
 import {
 	foreignTaxOf,
@@ -16,12 +14,11 @@ function tradeWithTax(taxTotal: number): TradeEventStockSold {
 		assetClass: GenericAssetClass.STOCK,
 		date: zDateTimeFromISOString.parse("2024-01-02"),
 		multiplier: 1,
-		exchangedMoney: new GenericMonetaryExchangeInformation({
+		exchangedMoney: makeMoney({
 			underlyingCurrency: "USD",
 			underlyingQuantity: -1,
 			underlyingTradePrice: 10,
 			commissionCurrency: "USD",
-			commissionTotal: 0,
 			taxCurrency: "USD",
 			taxTotal,
 			fxRateToBase: 0.9,

@@ -1,3 +1,4 @@
+import { makeDate, makeMoney } from "@brrr/__tests__/support/Builders";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
@@ -6,7 +7,6 @@ import {
 	GenericCategory,
 	GenericDerivativeReportItemGainType,
 	GenericDividendType,
-	GenericMonetaryExchangeInformation,
 	GenericShortLong,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
@@ -36,12 +36,6 @@ import { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGenerati
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
 import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
-
-function makeDate(iso: string): ValidDateTime {
-	return DateTime.fromISO(iso) as ValidDateTime;
-}
 
 function makeProvider(
 	_taxPayerInfo: TaxPayerInfo,
@@ -81,16 +75,7 @@ const stockAcquired = new TradeEventStockAcquired({
 	assetClass: GenericAssetClass.STOCK,
 	date: makeDate("2023-06-06"),
 	multiplier: 1.0,
-	exchangedMoney: new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: 1.0,
-		underlyingTradePrice: 1.0,
-		commissionCurrency: "EUR",
-		commissionTotal: 0.0,
-		taxCurrency: "EUR",
-		taxTotal: 0.0,
-		fxRateToBase: 1,
-	}),
+	exchangedMoney: makeMoney({}),
 	acquiredReason: GenericTradeReportItemGainType.BOUGHT,
 	provenance: [],
 });
@@ -100,16 +85,7 @@ const stockSold = new TradeEventStockSold({
 	assetClass: GenericAssetClass.STOCK,
 	date: makeDate("2023-06-07"),
 	multiplier: 1.0,
-	exchangedMoney: new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: -1.0,
-		underlyingTradePrice: 1.0,
-		commissionCurrency: "EUR",
-		commissionTotal: 0.0,
-		taxCurrency: "EUR",
-		taxTotal: 0.0,
-		fxRateToBase: 1,
-	}),
+	exchangedMoney: makeMoney({ underlyingQuantity: -1.0 }),
 	provenance: [],
 });
 
@@ -119,16 +95,7 @@ const optionBought = new TradeEventDerivativeAcquired({
 	assetClass: GenericAssetClass.OPTION,
 	date: makeDate("2023-06-07"),
 	multiplier: 100,
-	exchangedMoney: new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: 1.0,
-		underlyingTradePrice: 1.0,
-		commissionCurrency: "EUR",
-		commissionTotal: 0.0,
-		taxCurrency: "EUR",
-		taxTotal: 0.0,
-		fxRateToBase: 1,
-	}),
+	exchangedMoney: makeMoney({}),
 	provenance: [],
 });
 
@@ -137,16 +104,7 @@ const optionSold = new TradeEventDerivativeSold({
 	assetClass: GenericAssetClass.OPTION,
 	date: makeDate("2023-06-08"),
 	multiplier: 100,
-	exchangedMoney: new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: -1.0,
-		underlyingTradePrice: 1.5,
-		commissionCurrency: "EUR",
-		commissionTotal: 0.0,
-		taxCurrency: "EUR",
-		taxTotal: 0.0,
-		fxRateToBase: 1,
-	}),
+	exchangedMoney: makeMoney({ underlyingQuantity: -1.0, underlyingTradePrice: 1.5 }),
 	provenance: [],
 });
 
@@ -155,16 +113,7 @@ const cashTransactionDividend = new TradeEventCashTransactionDividend({
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: makeDate("2023-06-07"),
 	multiplier: 1,
-	exchangedMoney: new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: 1.0,
-		underlyingTradePrice: 10.0,
-		commissionCurrency: "EUR",
-		commissionTotal: 0.0,
-		taxCurrency: "EUR",
-		taxTotal: 0.0,
-		fxRateToBase: 0.5,
-	}),
+	exchangedMoney: makeMoney({ underlyingTradePrice: 10.0, fxRateToBase: 0.5 }),
 	actionId: "DivAction",
 	transactionId: "TranId1",
 	listingExchange: "EXH",
@@ -177,16 +126,7 @@ const cashTransactionWithholdingTax = new TradeEventCashTransactionWithholdingTa
 	assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
 	date: makeDate("2023-06-07"),
 	multiplier: 1,
-	exchangedMoney: new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: 1.0,
-		underlyingTradePrice: -5.0,
-		commissionCurrency: "EUR",
-		commissionTotal: 0.0,
-		taxCurrency: "EUR",
-		taxTotal: 0.0,
-		fxRateToBase: 0.5,
-	}),
+	exchangedMoney: makeMoney({ underlyingTradePrice: -5.0, fxRateToBase: 0.5 }),
 	actionId: "DivAction",
 	transactionId: "TranId1",
 	listingExchange: "EXH",

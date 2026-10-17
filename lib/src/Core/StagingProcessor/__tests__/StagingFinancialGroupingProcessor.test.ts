@@ -1,9 +1,9 @@
+import { makeDate, makeMoney } from "@brrr/__tests__/support/Builders";
 import {
 	GenericAssetClass,
 	GenericCategory,
 	GenericDerivativeReportItemGainType,
 	GenericDividendType,
-	GenericMonetaryExchangeInformation,
 	GenericShortLong,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
@@ -29,26 +29,11 @@ import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinanc
 import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
-
-function makeDate(iso: string): ValidDateTime {
-	return DateTime.fromISO(iso) as ValidDateTime;
-}
 
 const ident = new StagingFinancialIdentifier({ isin: "US123", ticker: "AAPL", name: "AAPL" });
 
 function makeMonetary(qty: number, price: number) {
-	return new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: qty,
-		underlyingTradePrice: price,
-		commissionCurrency: "EUR",
-		commissionTotal: 0,
-		taxCurrency: "EUR",
-		taxTotal: 0,
-		fxRateToBase: 1,
-	});
+	return makeMoney({ underlyingQuantity: qty, underlyingTradePrice: price });
 }
 
 const simpleStagingStockBuy = new StagingTradeEventStockAcquired({

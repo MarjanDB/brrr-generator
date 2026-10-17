@@ -1,53 +1,49 @@
+import { makeDate } from "@brrr/__tests__/support/Builders";
 import { FifoLotMatchingMethod } from "@brrr/Core/LotMatching/FifoLotMatchingMethod";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
 import { zDateTimeFromISOString } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
-
-function makeDate(iso: string) {
-	return DateTime.fromISO(iso);
-}
 
 const simpleCaseNoProfit = {
-	Buy: { id: "ID", quantity: 1, date: makeDate("2023-01-01") } as Trade,
-	Sell: { id: "ID2", quantity: -1, date: makeDate("2023-01-02") } as Trade,
+	Buy: { id: "ID", quantity: 1, date: makeDate("2023-01-01") },
+	Sell: { id: "ID2", quantity: -1, date: makeDate("2023-01-02") },
 };
 
 const simpleCaseWithMultipleSellEvents = {
-	Buy: { id: "ID", quantity: 2, date: makeDate("2023-01-01") } as Trade,
-	Sell: { id: "ID2", quantity: -1, date: makeDate("2023-01-02") } as Trade,
-	Sell2: { id: "ID3", quantity: -1, date: makeDate("2023-01-03") } as Trade,
+	Buy: { id: "ID", quantity: 2, date: makeDate("2023-01-01") },
+	Sell: { id: "ID2", quantity: -1, date: makeDate("2023-01-02") },
+	Sell2: { id: "ID3", quantity: -1, date: makeDate("2023-01-03") },
 };
 
 const simpleCaseWithMultipleBuyEvents = {
-	Buy: { id: "ID", quantity: 1, date: makeDate("2023-01-01") } as Trade,
-	Buy2: { id: "ID2", quantity: 1, date: makeDate("2023-01-02") } as Trade,
-	Sell: { id: "ID3", quantity: -2, date: makeDate("2023-01-02") } as Trade,
+	Buy: { id: "ID", quantity: 1, date: makeDate("2023-01-01") },
+	Buy2: { id: "ID2", quantity: 1, date: makeDate("2023-01-02") },
+	Sell: { id: "ID3", quantity: -2, date: makeDate("2023-01-02") },
 };
 
 const simpleCaseWithBuySellBuySellEvents = {
-	Buy1: { id: "ID", quantity: 1, date: makeDate("2023-01-01") } as Trade,
-	Sell1: { id: "ID2", quantity: -1, date: makeDate("2023-01-02") } as Trade,
-	Buy2: { id: "ID3", quantity: 1, date: makeDate("2023-01-03") } as Trade,
-	Sell2: { id: "ID4", quantity: -1, date: makeDate("2023-01-04") } as Trade,
+	Buy1: { id: "ID", quantity: 1, date: makeDate("2023-01-01") },
+	Sell1: { id: "ID2", quantity: -1, date: makeDate("2023-01-02") },
+	Buy2: { id: "ID3", quantity: 1, date: makeDate("2023-01-03") },
+	Sell2: { id: "ID4", quantity: -1, date: makeDate("2023-01-04") },
 };
 
 const complexCaseOverlappingEvents = {
-	Buy1: { id: "ID1", quantity: 2, date: makeDate("2023-01-01") } as Trade,
-	Sell1: { id: "ID2", quantity: -1, date: makeDate("2023-01-02") } as Trade,
-	Buy2: { id: "ID3", quantity: 1, date: makeDate("2023-01-03") } as Trade,
-	Sell2: { id: "ID4", quantity: -2, date: makeDate("2023-01-04") } as Trade,
+	Buy1: { id: "ID1", quantity: 2, date: makeDate("2023-01-01") },
+	Sell1: { id: "ID2", quantity: -1, date: makeDate("2023-01-02") },
+	Buy2: { id: "ID3", quantity: 1, date: makeDate("2023-01-03") },
+	Sell2: { id: "ID4", quantity: -2, date: makeDate("2023-01-04") },
 };
 
 const complexCasePartialBuys = {
-	Buy1: { id: "ID1", quantity: 0.5, date: makeDate("2023-01-01") } as Trade,
-	Buy2: { id: "ID2", quantity: 0.5, date: makeDate("2023-01-02") } as Trade,
-	Sell: { id: "ID3", quantity: -1, date: makeDate("2023-01-03") } as Trade,
+	Buy1: { id: "ID1", quantity: 0.5, date: makeDate("2023-01-01") },
+	Buy2: { id: "ID2", quantity: 0.5, date: makeDate("2023-01-02") },
+	Sell: { id: "ID3", quantity: -1, date: makeDate("2023-01-03") },
 };
 
 const complexCasePartialSells = {
-	Buy: { id: "ID1", quantity: 1, date: makeDate("2023-01-01") } as Trade,
-	Sell1: { id: "ID2", quantity: -0.5, date: makeDate("2023-01-02") } as Trade,
-	Sell2: { id: "ID3", quantity: -0.5, date: makeDate("2023-01-03") } as Trade,
+	Buy: { id: "ID1", quantity: 1, date: makeDate("2023-01-01") },
+	Sell1: { id: "ID2", quantity: -0.5, date: makeDate("2023-01-02") },
+	Sell2: { id: "ID3", quantity: -0.5, date: makeDate("2023-01-03") },
 };
 
 test("simple single lot generation", () => {

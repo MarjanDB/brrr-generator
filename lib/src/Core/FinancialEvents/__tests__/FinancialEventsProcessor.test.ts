@@ -1,10 +1,10 @@
+import { makeDate, makeMoney } from "@brrr/__tests__/support/Builders";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod";
 import {
 	GenericAssetClass,
 	GenericCategory,
-	GenericMonetaryExchangeInformation,
 	GenericShortLong,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
@@ -12,26 +12,11 @@ import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import { TaxLot } from "@brrr/Core/Schemas/Lots";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
-
-function makeDate(iso: string): ValidDateTime {
-	return DateTime.fromISO(iso) as ValidDateTime;
-}
 
 const identifier = new FinancialIdentifier({ isin: "US123", ticker: "AAPL", name: "AAPL" });
 
 function makeMonetary(qty: number, price: number) {
-	return new GenericMonetaryExchangeInformation({
-		underlyingCurrency: "EUR",
-		underlyingQuantity: qty,
-		underlyingTradePrice: price,
-		commissionCurrency: "EUR",
-		commissionTotal: 0,
-		taxCurrency: "EUR",
-		taxTotal: 0,
-		fxRateToBase: 1,
-	});
+	return makeMoney({ underlyingQuantity: qty, underlyingTradePrice: price });
 }
 
 const simpleStockBuy = new TradeEventStockAcquired({

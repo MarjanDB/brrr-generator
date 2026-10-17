@@ -1,8 +1,8 @@
+import { makeDate, makeMoney } from "@brrr/__tests__/support/Builders";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
 import {
 	GenericAssetClass,
 	GenericCategory,
-	GenericMonetaryExchangeInformation,
 	GenericShortLong,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
@@ -16,23 +16,14 @@ import {
 	IdentifierRelationshipSplit,
 } from "@brrr/Core/Schemas/IdentifierRelationship";
 import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
-
-function makeDate(iso: string): ValidDateTime {
-	return DateTime.fromISO(iso) as ValidDateTime;
-}
 
 function makeMonetary(qty: number, price = 10.0) {
-	return new GenericMonetaryExchangeInformation({
+	return makeMoney({
 		underlyingCurrency: "USD",
 		underlyingQuantity: qty,
 		underlyingTradePrice: price,
 		commissionCurrency: "USD",
-		commissionTotal: 0,
 		taxCurrency: "USD",
-		taxTotal: 0,
-		fxRateToBase: 1,
 	});
 }
 

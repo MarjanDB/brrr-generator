@@ -1,3 +1,4 @@
+import { makeDate } from "@brrr/__tests__/support/Builders";
 import {
 	StagingIdentifierChangeType,
 	StagingIdentifierRelationship,
@@ -9,12 +10,6 @@ import {
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
-
-function makeDate(iso: string): ValidDateTime {
-	return DateTime.fromISO(iso) as ValidDateTime;
-}
 
 test("two partials same key produce one full relationship", () => {
 	const fromId = new StagingFinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old Inc" });
