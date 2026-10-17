@@ -33,14 +33,13 @@ export {
 	type TaxPayerInfo,
 	TaxPayerType,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
-export type { TaxAuthorityDescriptor } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
+export type {
+	GeneratedExports,
+	TaxAuthorityDescriptor,
+} from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
 export { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 export { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider";
-export { SlovenianTaxAuthorityService } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityService";
-export {
-	type GeneratedExports,
-	TaxAuthorityRegistry,
-} from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
+export { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
 
 // Utils
 export { zDateTimeFromISOString } from "@brrr/Utils/DateTime";

@@ -197,10 +197,11 @@ test("SloveniaFifo - testKdvpSimpleXml - 1 purchase and 1 sale in XML", async ()
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const xml = await provider.generateExportForTaxAuthority(
-		SlovenianTaxAuthorityReportTypes.DOH_KDVP,
-		{ taxPayerInfo: simpleTaxPayer, reportConfig: config, events: testData },
-	);
+	const { xml } = await provider.generate(SlovenianTaxAuthorityReportTypes.DOH_KDVP, {
+		taxPayerInfo: simpleTaxPayer,
+		reportConfig: config,
+		events: testData,
+	});
 
 	const purchaseCount = (xml.match(/<Purchase>/g) ?? []).length;
 	const saleCount = (xml.match(/<Sale>/g) ?? []).length;
@@ -234,7 +235,7 @@ test("SloveniaFifo - testIfiSimpleXml - 1 purchase and 1 sale in XML", async () 
 	};
 
 	const provider = makeProvider(simpleTaxPayer, config);
-	const xml = await provider.generateExportForTaxAuthority(SlovenianTaxAuthorityReportTypes.D_IFI, {
+	const { xml } = await provider.generate(SlovenianTaxAuthorityReportTypes.D_IFI, {
 		taxPayerInfo: simpleTaxPayer,
 		reportConfig: config,
 		events: testData,

@@ -3,13 +3,14 @@ import type {
 	TaxAuthorityConfiguration,
 	TaxPayerInfo,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
-import type { TaxAuthorityDescriptor } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
-import type { SlovenianTaxAuthorityService } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityService";
-
-export type GeneratedExports = { xml: string; csv: string };
+import type {
+	GeneratedExports,
+	TaxAuthorityDescriptor,
+} from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
+import type { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider";
 
 export class TaxAuthorityRegistry {
-	constructor(private readonly slovenia: SlovenianTaxAuthorityService) {}
+	constructor(private readonly slovenia: SlovenianTaxAuthorityProvider) {}
 
 	public listAuthorities(): TaxAuthorityDescriptor[] {
 		return [this.slovenia.descriptor];
@@ -23,8 +24,7 @@ export class TaxAuthorityRegistry {
 		events: FinancialEvents;
 	}): Promise<GeneratedExports> {
 		if (args.authorityId === this.slovenia.descriptor.authorityId) {
-			return await this.slovenia.generateExports({
-				reportTypeId: args.reportTypeId,
+			return await this.slovenia.generateExports(args.reportTypeId, {
 				taxPayerInfo: args.taxPayerInfo,
 				reportConfig: args.reportConfig,
 				events: args.events,

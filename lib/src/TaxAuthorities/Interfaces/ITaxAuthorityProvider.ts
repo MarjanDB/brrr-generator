@@ -16,15 +16,10 @@ export type TaxAuthorityDescriptor = {
 	reportTypes: { reportTypeId: string; displayName: string }[];
 };
 
-export interface ITaxAuthorityProvider<TReportType, TReportData> {
+export type GeneratedExports = { xml: string; csv: string };
+
+export interface ITaxAuthorityProvider {
 	readonly descriptor: TaxAuthorityDescriptor;
 
-	generateReportData(reportType: TReportType, ctx: TaxAuthorityRunContext): Promise<TReportData[]>;
-
-	generateExportForTaxAuthority(
-		reportType: TReportType,
-		ctx: TaxAuthorityRunContext,
-	): Promise<string>;
-
-	generateSpreadsheetExport(reportType: TReportType, ctx: TaxAuthorityRunContext): Promise<string>;
+	generateExports(reportTypeId: string, ctx: TaxAuthorityRunContext): Promise<GeneratedExports>;
 }

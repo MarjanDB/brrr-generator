@@ -110,12 +110,7 @@ async function main() {
 			console.error(`No output file mapping for report type: ${reportType}`);
 			process.exit(1);
 		}
-		const xmlOutput = await provider.generateExportForTaxAuthority(reportType, {
-			taxPayerInfo,
-			reportConfig,
-			events: financialEvents,
-		});
-		const csvOutput = await provider.generateSpreadsheetExport(reportType, {
+		const { xml: xmlOutput, csv: csvOutput } = await provider.generate(reportType, {
 			taxPayerInfo,
 			reportConfig,
 			events: financialEvents,
