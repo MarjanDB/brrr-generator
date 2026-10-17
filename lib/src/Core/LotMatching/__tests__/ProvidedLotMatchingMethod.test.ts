@@ -85,40 +85,36 @@ test("simple single lot generation", () => {
 	expect(lots[0].sold.relation.date).toEqual(simpleLot.sold.date);
 });
 
-test("simple single lot and trade generation", () => {
-	const method = new ProvidedLotMatchingMethod([simpleLot]);
-	const lots = method.performMatching([]);
-	const trades = method.generateTradesFromLotsWithTracking(lots);
-
-	expect(trades.length).toEqual(2);
-	expect(trades[0].id).toEqual(simpleLot.acquired.id);
-	expect(trades[1].id).toEqual(simpleLot.sold.id);
-	expect(trades[0].quantity).toEqual(simpleLot.quantity);
-	expect(trades[1].quantity).toEqual(-simpleLot.quantity);
-});
-
-test("under-utilized lot and trade generation", () => {
+test("under-utilized lot generation", () => {
 	const method = new ProvidedLotMatchingMethod([underUtilizedLot]);
 	const lots = method.performMatching([]);
-	expect(lots.length).toEqual(1);
 
-	const trades = method.generateTradesFromLotsWithTracking(lots);
-	expect(trades.length).toEqual(2);
-	expect(trades[0].id).toEqual(underUtilizedLot.acquired.id);
-	expect(trades[1].id).toEqual(underUtilizedLot.sold.id);
-	expect(trades[0].quantity).toEqual(underUtilizedLot.quantity);
-	expect(trades[1].quantity).toEqual(-underUtilizedLot.quantity);
+	expect(lots.length).toEqual(1);
+	expect(lots[0].quantity).toEqual(underUtilizedLot.quantity);
+	expect(lots[0].acquired.relation.id).toEqual(underUtilizedLot.acquired.id);
+	expect(lots[0].sold.relation.id).toEqual(underUtilizedLot.sold.id);
 });
 
-test("fully utilized trades from under-utilized lots", () => {
+test("two lots can share the same trades up to their quantity", () => {
 	const method = new ProvidedLotMatchingMethod([underUtilizedLot, underUtilizedLot]);
 	const lots = method.performMatching([]);
-	expect(lots.length).toEqual(2);
 
-	const trades = method.generateTradesFromLotsWithTracking(lots);
-	expect(trades.length).toEqual(2);
-	expect(trades[0].id).toEqual(underUtilizedLot.acquired.id);
-	expect(trades[1].id).toEqual(underUtilizedLot.sold.id);
-	expect(trades[0].quantity).toEqual(underUtilizedLot.acquired.exchangedMoney.underlyingQuantity);
-	expect(trades[1].quantity).toEqual(underUtilizedLot.sold.exchangedMoney.underlyingQuantity);
+	expect(lots.length).toEqual(2);
+	expect(lots.map((lot) => lot.quantity)).toEqual([1, 1]);
+});
+
+test("lots that use more than a trade's quantity throw", () => {
+	const method = new ProvidedLotMatchingMethod([
+		underUtilizedLot,
+		underUtilizedLot,
+		underUtilizedLot,
+	]);
+
+	expect(() => method.performMatching([])).toThrow(Error);
+});
+
+test("matching twice with the same method gives the same lots", () => {
+	const method = new ProvidedLotMatchingMethod([underUtilizedLot, underUtilizedLot]);
+
+	expect(method.performMatching([])).toEqual(method.performMatching([]));
 });

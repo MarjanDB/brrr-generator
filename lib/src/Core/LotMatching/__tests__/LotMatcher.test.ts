@@ -9,36 +9,16 @@ import {
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
 import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events";
-import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import { zDateTimeFromISOString } from "@brrr/Utils/DateTime";
-import { DateTime } from "luxon";
 
 class FakeLotMatchingMethod implements LotMatchingMethod {
-	performMatchingCalled = false;
-	generateTradesCalled = false;
+	receivedTrades: Trade[] | null = null;
 
-	performMatching(_events: Trade[]): Lot[] {
-		this.performMatchingCalled = true;
-		return [];
-	}
-
-	generateTradesFromLotsWithTracking(_lots: Lot[]): Trade[] {
-		this.generateTradesCalled = true;
+	performMatching(trades: Trade[]): Lot[] {
+		this.receivedTrades = trades;
 		return [];
 	}
 }
-
-test("provided method is called", () => {
-	const fakeMethod = new FakeLotMatchingMethod();
-	const lotMatcher = new LotMatcher();
-
-	lotMatcher.matchLotsWithTrades(fakeMethod, [
-		{ id: "ID", quantity: 1, date: DateTime.fromISO("2023-01-01") as ValidDateTime },
-	]);
-
-	expect(fakeMethod.performMatchingCalled).toEqual(true);
-	expect(fakeMethod.generateTradesCalled).toEqual(true);
-});
 
 function money(quantity: number, commission: number): GenericMonetaryExchangeInformation {
 	return new GenericMonetaryExchangeInformation({
@@ -52,6 +32,26 @@ function money(quantity: number, commission: number): GenericMonetaryExchangeInf
 		fxRateToBase: 1,
 	});
 }
+
+test("provided method is called with the converted trades", () => {
+	const fakeMethod = new FakeLotMatchingMethod();
+	const lotMatcher = new LotMatcher();
+	const date = zDateTimeFromISOString.parse("2023-01-01");
+	const event = new TradeEventStockAcquired({
+		id: "ID",
+		assetClass: GenericAssetClass.STOCK,
+		date,
+		multiplier: 1,
+		exchangedMoney: money(1, 0),
+		provenance: [],
+		acquiredReason: GenericTradeReportItemGainType.BOUGHT,
+	});
+
+	const lots = lotMatcher.matchLots(fakeMethod, [event]);
+
+	expect(fakeMethod.receivedTrades).toEqual([{ id: "ID", quantity: 1, date }]);
+	expect(lots).toEqual([]);
+});
 
 test("a matched lot's legs point at the original trades and cover the lot's quantity", () => {
 	const bought = new TradeEventStockAcquired({
