@@ -4,12 +4,12 @@ import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Configuratio
 import { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import { TestKit } from "@brrr/test-cases";
 
-const optionTrade = TestKit.ibkr.optionTrade;
+// What eDavki receives in D-IFI (derivatives) for each input.
+describe("Slovenia, D-IFI", () => {
+	test("one AAPL call bought and sold in December 2023 (IBKR), FIFO", async () => {
+		const optionTrade = TestKit.ibkr.optionTrade;
+		const { events } = Scenario.pipeline.run(optionTrade.readInputs());
 
-describe("IBKR: one AAPL call bought on 2023-12-14 and sold on 2023-12-20", () => {
-	const { events } = Scenario.pipeline.run(optionTrade.readInputs());
-
-	test("IFI, FIFO", async () => {
 		const report = await Scenario.pipeline.generate(events, {
 			report: SlovenianReportTypeId.IFI,
 			year: optionTrade.year,

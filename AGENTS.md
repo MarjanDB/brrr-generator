@@ -106,7 +106,7 @@ Every test file names its kind:
 | ---------------------- | -------------------------------------------------------------------------------------- |
 | `.unit.test.ts`        | One class or function, with at most its own small collaborators                        |
 | `.integration.test.ts` | Several lib classes wired together: the container, or a provider with its generators   |
-| `.acceptance.test.ts`  | A test case's exports through the whole pipeline, compared with its expected files     |
+| `.acceptance.test.ts`  | An input reached the tax authority correctly: the form it gets equals the expected one |
 
 To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
 
@@ -118,11 +118,12 @@ To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
   `stockTrade.expected.slovenia.kdvpFifo.xmlPath`. On import the registry fails if a case's declared files and its folder differ,
   so adding a file means declaring it. Every broker export a test reads lives here, unit tests included. Exports are trimmed and
   anonymised (fake account IDs); never copy anything from `imports/`.
-- **Acceptance tests** sit in `lib/src/__tests__/Acceptance/<Broker>/<Case>.acceptance.test.ts`, one per case with expected files. They
-  run the case through `Scenario.pipeline` and compare each file with its own
-  `await expect(report.xml).toMatchFileSnapshot(expected.xmlPath)` line. Expected files pin the output byte for byte:
-  `vitest run acceptance.test -u` rewrites them, so only update them for an intended change, and read the diff. CI never writes
-  them.
+- **Acceptance tests** are about the tax authority: did this input reach it correctly? They sit with the authority, one file per
+  form (`lib/src/TaxAuthorities/Slovenia/__tests__/Acceptance/{Kdvp,Ifi,Div}.acceptance.test.ts`), with one self-contained test
+  per input case, titled by what the authority must see. Each runs the case through the public `Scenario.pipeline` only, and
+  judges only the generated form: its own `await expect(report.xml).toMatchFileSnapshot(...)` and CSV lines. No calls into lib's
+  internals. Expected files pin the output byte for byte: `vitest run acceptance.test -u` rewrites them, so only update them for
+  an intended change, and read the diff. CI never writes them.
 - **Write tests out line by line.** A reader should see what is checked without working anything out: one `expect` per value
   (`expect(events[0].quantity).toEqual(10)`), each test's data written in the test or right above it, and no loops, `test.each`,
   helper assertions or `map`/`filter` chains that compute the expectations.

@@ -73,7 +73,7 @@ Lots have no unique ID and are concatenated, so overlapping exports duplicate lo
 - `__tests__/IbkrExtract.unit.test.ts` parses those exports. `__tests__/IbkrTransform.unit.test.ts` transforms raw rows built with
   the named fixtures in `Fixtures.ibkr` (`stockTradeBuy`, `stockLotClosed`, `dividend`, `smciSplitOldRow`; variants spread one and
   list what they change), handed to the transform with `Scenario.build.ibkr.segmentedTrades`, which takes all six row lists.
-- `lib/src/__tests__/Acceptance/Ibkr/` runs each case end to end into the Slovenian reports and compares them with the case's
+- `lib/src/TaxAuthorities/Slovenia/__tests__/Acceptance/` runs each case end to end into the Slovenian forms and compares them with the case's
   `expected/` files.
 - Fixtures are trimmed, anonymised Flex Query output: keep the real attribute names and value formats, and never paste a real account's
   export.
