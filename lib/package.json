@@ -21,20 +21,20 @@
 		"build": "tsdown"
 	},
 	"dependencies": {
-		"csv-stringify": "6.9.0",
-		"fast-xml-parser": "5.11.2",
-		"inversify": "8.2.3",
-		"luxon": "3.7.2",
-		"yahoo-finance2": "4.0.4",
-		"zod": "4.6.7"
+		"csv-stringify": "catalog:",
+		"fast-xml-parser": "catalog:",
+		"inversify": "catalog:",
+		"luxon": "catalog:",
+		"yahoo-finance2": "catalog:",
+		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@types/luxon": "3.7.6",
-		"@types/node": "24.19.2",
-		"tsdown": "0.23.1",
-		"typescript": "6.0.3",
-		"vite": "8.3.4",
-		"@vitest/coverage-v8": "5.0.5",
-		"vitest": "5.0.5"
+		"@types/luxon": "catalog:",
+		"@types/node": "catalog:",
+		"tsdown": "catalog:",
+		"typescript": "catalog:",
+		"vite": "catalog:",
+		"@vitest/coverage-v8": "catalog:",
+		"vitest": "catalog:"
 	}
 }

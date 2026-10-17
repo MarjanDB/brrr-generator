@@ -12,25 +12,25 @@
 	},
 	"dependencies": {
 		"@brrr/lib": "workspace:*",
-		"@iconify-json/mdi": "1.2.3",
-		"@nuxtjs/i18n": "10.6.0",
-		"@nuxtjs/seo": "5.3.16",
-		"@posthog/nuxt": "1.7.91",
-		"@vueuse/core": "15.0.0",
-		"@vueuse/nuxt": "15.0.0",
-		"chart.js": "4.5.1",
-		"luxon": "3.7.2",
-		"nuxt": "4.5.2",
-		"reka-ui": "2.11.0",
-		"vue": "3.5.44",
-		"vue-router": "5.4.0",
-		"zod": "4.6.7",
-		"@takumi-rs/core": "2.16.2"
+		"@iconify-json/mdi": "catalog:",
+		"@nuxtjs/i18n": "catalog:",
+		"@nuxtjs/seo": "catalog:",
+		"@posthog/nuxt": "catalog:",
+		"@vueuse/core": "catalog:",
+		"@vueuse/nuxt": "catalog:",
+		"chart.js": "catalog:",
+		"luxon": "catalog:",
+		"nuxt": "catalog:",
+		"reka-ui": "catalog:",
+		"vue": "catalog:",
+		"vue-router": "catalog:",
+		"zod": "catalog:",
+		"@takumi-rs/core": "catalog:"
 	},
 	"devDependencies": {
-		"@types/luxon": "3.7.6",
-		"@unocss/nuxt": "66.11.0",
-		"unocss": "66.11.0",
-		"vue-tsc": "3.3.13"
+		"@types/luxon": "catalog:",
+		"@unocss/nuxt": "catalog:",
+		"unocss": "catalog:",
+		"vue-tsc": "catalog:"
 	}
 }
