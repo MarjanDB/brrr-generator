@@ -1,25 +1,11 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
-import type { TradeEventStockSold } from "@brrr/Core/Schemas/Events";
 import {
 	foreignTaxOf,
 	round,
 	toOriginalCurrency,
 } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Amounts";
 
-function tradeWithTax(taxTotal: number): TradeEventStockSold {
-	return Scenario.build.stockSold({
-		id: `T${taxTotal}`,
-		date: "2024-01-02",
-		price: 10,
-		money: {
-			underlyingCurrency: "USD",
-			commissionCurrency: "USD",
-			taxCurrency: "USD",
-			taxTotal,
-			fxRateToBase: 0.9,
-		},
-	});
-}
+const { build } = Scenario;
 
 test("round applies Math.round to the scaled value, so halves go up", () => {
 	expect(round(2.5, 0)).toEqual(3);
@@ -46,12 +32,20 @@ test("foreignTaxOf reports no foreign tax for no trades", () => {
 });
 
 test("foreignTaxOf sums the trades' taxes", () => {
-	expect(foreignTaxOf([tradeWithTax(1.5), tradeWithTax(2)])).toEqual({
+	expect(
+		foreignTaxOf([
+			build.stockSold({ money: { taxTotal: 1.5 } }),
+			build.stockSold({ money: { taxTotal: 2 } }),
+		]),
+	).toEqual({
 		hasForeignTax: true,
 		foreignTax: 3.5,
 	});
 });
 
 test("foreignTaxOf treats a non-positive total as no foreign tax", () => {
-	expect(foreignTaxOf([tradeWithTax(-1)])).toEqual({ hasForeignTax: false, foreignTax: null });
+	expect(foreignTaxOf([build.stockSold({ money: { taxTotal: -1 } })])).toEqual({
+		hasForeignTax: false,
+		foreignTax: null,
+	});
 });

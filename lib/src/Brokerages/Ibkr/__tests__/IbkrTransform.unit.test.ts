@@ -4,7 +4,6 @@ import {
 	CashTransactionType,
 	OpenCloseIndicator,
 } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
-import { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades";
 import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform";
 import {
 	StagingTradeEventCashTransactionDividend,
@@ -18,20 +17,6 @@ import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/Id
 const { ibkr } = Scenario.build;
 
 const service = new IbkrTransformService();
-
-function makeEmptySegmented(
-	overrides: Partial<ConstructorParameters<typeof SegmentedTrades>[0]>,
-): SegmentedTrades {
-	return new SegmentedTrades({
-		cashTransactions: [],
-		corporateActions: [],
-		stockTrades: [],
-		stockLots: [],
-		derivativeTrades: [],
-		derivativeLots: [],
-		...overrides,
-	});
-}
 
 const simpleTradeBuy = ibkr.tradeStock();
 
@@ -81,7 +66,7 @@ const corporateActionNew = ibkr.corporateAction({
 
 test("transform: single stock trade buy", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
-		makeEmptySegmented({ stockTrades: [simpleTradeBuy] }),
+		ibkr.segmentedTrades({ stockTrades: [simpleTradeBuy] }),
 	);
 	expect(result.groupings.length).toEqual(1);
 	expect(result.groupings[0].financialIdentifier.isin).toEqual("US21212112");
@@ -91,7 +76,7 @@ test("transform: single stock trade buy", () => {
 
 test("transform: single stock trade sell", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
-		makeEmptySegmented({ stockTrades: [simpleTradeSell] }),
+		ibkr.segmentedTrades({ stockTrades: [simpleTradeSell] }),
 	);
 	expect(result.groupings.length).toEqual(1);
 	expect(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity).toEqual(-2);
@@ -99,7 +84,7 @@ test("transform: single stock trade sell", () => {
 
 test("transform: single stock lot", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
-		makeEmptySegmented({ stockLots: [simpleStockLot] }),
+		ibkr.segmentedTrades({ stockLots: [simpleStockLot] }),
 	);
 	expect(result.groupings.length).toEqual(1);
 	expect(result.groupings[0].financialIdentifier.isin).toEqual("US21212112");
@@ -108,7 +93,7 @@ test("transform: single stock lot", () => {
 
 test("transform: single dividend", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
-		makeEmptySegmented({ cashTransactions: [dividend] }),
+		ibkr.segmentedTrades({ cashTransactions: [dividend] }),
 	);
 	expect(result.groupings.length).toEqual(1);
 	expect(result.groupings[0].financialIdentifier.isin).toEqual("FR0000120271");
@@ -123,7 +108,7 @@ test("transform: single dividend", () => {
 
 test("transform: single payment in lieu of dividend", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
-		makeEmptySegmented({ cashTransactions: [paymentInLieuOfDividend] }),
+		ibkr.segmentedTrades({ cashTransactions: [paymentInLieuOfDividend] }),
 	);
 	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(
 		StagingTradeEventCashTransactionPaymentInLieuOfDividends,
@@ -135,7 +120,7 @@ test("transform: single payment in lieu of dividend", () => {
 
 test("transform: single withholding tax", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
-		makeEmptySegmented({ cashTransactions: [withholdingTaxForDividend] }),
+		ibkr.segmentedTrades({ cashTransactions: [withholdingTaxForDividend] }),
 	);
 	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(
 		StagingTradeEventCashTransactionWithholdingTax,
@@ -147,7 +132,7 @@ test("transform: single withholding tax", () => {
 
 test("transform: withholding tax for payment in lieu", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
-		makeEmptySegmented({ cashTransactions: [withholdingTaxForPaymentInLieu] }),
+		ibkr.segmentedTrades({ cashTransactions: [withholdingTaxForPaymentInLieu] }),
 	);
 	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(
 		StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends,
@@ -156,7 +141,7 @@ test("transform: withholding tax for payment in lieu", () => {
 
 test("transform: corporate actions produce partial relationships only", () => {
 	const result = service.convertSegmentedTradesToStagingEvents(
-		makeEmptySegmented({ corporateActions: [corporateActionOld, corporateActionNew] }),
+		ibkr.segmentedTrades({ corporateActions: [corporateActionOld, corporateActionNew] }),
 	);
 	expect(result.identifierRelationships.relationships.length).toEqual(0);
 	expect(result.identifierRelationships.partialRelationships.length).toEqual(2);
@@ -181,7 +166,7 @@ test("transform: corporate actions produce partial relationships only", () => {
 
 test("transform: resolve partials produces full relationship", () => {
 	const staging = service.convertSegmentedTradesToStagingEvents(
-		makeEmptySegmented({ corporateActions: [corporateActionOld, corporateActionNew] }),
+		ibkr.segmentedTrades({ corporateActions: [corporateActionOld, corporateActionNew] }),
 	);
 	const resolved =
 		new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(
@@ -200,7 +185,7 @@ test("transform: resolve partials produces full relationship", () => {
 });
 
 test("transform: no corporate actions produces no partials", () => {
-	const result = service.convertSegmentedTradesToStagingEvents(makeEmptySegmented({}));
+	const result = service.convertSegmentedTradesToStagingEvents(ibkr.segmentedTrades());
 	expect(result.identifierRelationships.relationships.length).toEqual(0);
 	expect(result.identifierRelationships.partialRelationships.length).toEqual(0);
 });

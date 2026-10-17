@@ -3,18 +3,19 @@ import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMat
 
 const { build } = Scenario;
 
-// A lot of `quantity` over a buy and a sale of `tradeQuantity` each.
-function lot(quantity: number, tradeQuantity: number) {
-	return build.stockTaxLot({
-		id: "ID",
-		quantity,
-		acquired: build.stockBought({ id: "ID", date: "2023-01-01", quantity: tradeQuantity }),
-		sold: build.stockSold({ id: "ID2", date: "2023-01-02", quantity: -tradeQuantity }),
-	});
-}
+const simpleLot = build.stockTaxLot({
+	id: "ID",
+	acquired: build.stockBought({ id: "ID", date: "2023-01-01" }),
+	sold: build.stockSold({ id: "ID2", date: "2023-01-02" }),
+});
 
-const simpleLot = lot(1, 1);
-const underUtilizedLot = lot(1, 2);
+// A lot of 1 over a buy and a sale of 2 each.
+const underUtilizedLot = build.stockTaxLot({
+	id: "ID",
+	quantity: 1,
+	acquired: build.stockBought({ id: "ID", date: "2023-01-01", quantity: 2 }),
+	sold: build.stockSold({ id: "ID2", date: "2023-01-02", quantity: -2 }),
+});
 
 test("simple single lot generation", () => {
 	const method = new ProvidedLotMatchingMethod([simpleLot]);

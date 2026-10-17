@@ -1,6 +1,4 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
-import type { MoneyFields } from "@brrr/__tests__/support/Values";
-import type { TradeEventCashTransactionDividend, TransactionCash } from "@brrr/Core/Schemas/Events";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
@@ -9,59 +7,41 @@ import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGenerati
 const { build } = Scenario;
 
 const config = Scenario.config.report(2023, TaxAuthorityLotMatchingMethod.NONE);
+const identifier = new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" });
 
 // Paid in USD at 0.5 EUR per USD.
-function usd(taxTotal = 0): MoneyFields {
-	return {
-		underlyingCurrency: "USD",
-		commissionCurrency: "USD",
-		taxCurrency: "USD",
-		taxTotal,
-		fxRateToBase: 0.5,
-	};
-}
-
-type ActionId = TradeEventCashTransactionDividend["actionId"];
-
-function dividend(actionId: ActionId, date: string, amount: number, taxTotal = 0) {
-	return build.dividend({
-		id: `${actionId}-${amount}`,
-		actionId,
-		date,
-		amount,
-		money: usd(taxTotal),
-	});
-}
-
-function withholding(actionId: ActionId, date: string, amount: number) {
-	return build.withholdingTax({
-		id: `${actionId}-${amount}`,
-		actionId,
-		date,
-		amount,
-		money: usd(),
-	});
-}
-
-function grouping(cashTransactions: TransactionCash[]) {
-	return build.grouping({
-		identifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
-		cashTransactions,
-	});
-}
+const usd = {
+	underlyingCurrency: "USD",
+	commissionCurrency: "USD",
+	taxCurrency: "USD",
+	fxRateToBase: 0.5,
+};
 
 test("dividends add up per action, then per day, and are rounded at the end", async () => {
 	const lines = await new DivReportGenerator(new PredefinedInfoProvider()).convert(config, [
-		grouping([
-			// Action A pays twice. Only its first payment's own tax counts; the withholdings add to it.
-			dividend("A", "2023-06-07", 10, 0.5),
-			dividend("A", "2023-06-07", 2.5, 0.7),
-			withholding("A", "2023-06-07", -1.5),
-			withholding("A", "2023-06-07", -0.25),
-			// Action B is paid on the same day, so it joins A's line.
-			dividend("B", "2023-06-07", 1),
-			dividend("C", "2023-06-08", 4.444),
-		]),
+		build.grouping({
+			identifier,
+			cashTransactions: [
+				// Action A pays twice. Only its first payment's own tax counts; the withholdings add to it.
+				build.dividend({
+					actionId: "A",
+					date: "2023-06-07",
+					amount: 10,
+					money: { ...usd, taxTotal: 0.5 },
+				}),
+				build.dividend({
+					actionId: "A",
+					date: "2023-06-07",
+					amount: 2.5,
+					money: { ...usd, taxTotal: 0.7 },
+				}),
+				build.withholdingTax({ actionId: "A", date: "2023-06-07", amount: -1.5, money: usd }),
+				build.withholdingTax({ actionId: "A", date: "2023-06-07", amount: -0.25, money: usd }),
+				// Action B is paid on the same day, so it joins A's line.
+				build.dividend({ actionId: "B", date: "2023-06-07", amount: 1, money: usd }),
+				build.dividend({ actionId: "C", date: "2023-06-08", amount: 4.444, money: usd }),
+			],
+		}),
 	]);
 
 	expect(
@@ -99,7 +79,13 @@ test("dividends add up per action, then per day, and are rounded at the end", as
 test("a withholding without a dividend of the same action is rejected", async () => {
 	await expect(
 		new DivReportGenerator(new PredefinedInfoProvider()).convert(config, [
-			grouping([dividend("A", "2023-06-07", 10), withholding("B", "2023-06-07", -1.5)]),
+			build.grouping({
+				identifier,
+				cashTransactions: [
+					build.dividend({ actionId: "A", date: "2023-06-07", amount: 10, money: usd }),
+					build.withholdingTax({ actionId: "B", date: "2023-06-07", amount: -1.5, money: usd }),
+				],
+			}),
 		]),
 	).rejects.toThrow("Edge case where Withholding Tax has no matching Dividend Cash Transaction");
 });

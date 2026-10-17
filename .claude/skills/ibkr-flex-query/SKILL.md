@@ -70,7 +70,8 @@ Lots have no unique ID and are concatenated, so overlapping exports duplicate lo
   split, which must reach KDVP scaled ten times). Each case is self-contained: a scenario that combines several exports is a case of
   its own, with its own copies.
 - `__tests__/IbkrExtract.unit.test.ts` parses those exports. `__tests__/IbkrTransform.unit.test.ts` transforms raw rows built with
-  `Scenario.build.ibkr` (`tradeStock`, `lotStock`, `cashTransaction`, `corporateAction`, each with every field defaulted).
+  `Scenario.build.ibkr` (`tradeStock`, `lotStock`, `cashTransaction`, `corporateAction`, each with every field defaulted, and
+  `segmentedTrades` to hand them to the transform).
 - `lib/src/__tests__/Acceptance/Ibkr/` runs each case end to end into the Slovenian reports and compares them with the case's
   `expected/` files.
 - Fixtures are trimmed, anonymised Flex Query output: keep the real attribute names and value formats, and never paste a real account's

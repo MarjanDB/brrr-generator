@@ -1,10 +1,6 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
-import {
-	type TradeEventStock,
-	TradeEventStockAcquired,
-	TradeEventStockSold,
-} from "@brrr/Core/Schemas/Events";
+import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import {
@@ -12,36 +8,9 @@ import {
 	IdentifierRelationship,
 	IdentifierRelationshipSplit,
 } from "@brrr/Core/Schemas/IdentifierRelationship";
-import type { TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import { SplitProvenanceStep } from "@brrr/Core/Schemas/Provenance";
 
 const { build } = Scenario;
-
-function makeBought(
-	id: TradeEventStockAcquired["id"],
-	quantity: number,
-	date: string,
-	price = 10.0,
-): TradeEventStockAcquired {
-	return build.stockBought({ id, quantity, date, price });
-}
-
-function makeSold(
-	id: TradeEventStockSold["id"],
-	quantity: number,
-	date: string,
-	price = 10.0,
-): TradeEventStockSold {
-	return build.stockSold({ id, quantity, date, price });
-}
-
-function makeGrouping(
-	identifier: FinancialIdentifier,
-	stockTrades: TradeEventStock[],
-	stockTaxLots: TaxLotStock[] = [],
-) {
-	return build.grouping({ identifier, countryOfOrigin: "US", stockTrades, stockTaxLots });
-}
 
 // === RENAME TESTS ===
 
@@ -50,8 +19,14 @@ test("two groupings with rename produce one merged grouping", () => {
 	const idB = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New Co" });
 	const events = new FinancialEvents({
 		groupings: [
-			makeGrouping(idA, [makeBought("t1", 1.0, "2024-01-01")]),
-			makeGrouping(idB, [makeSold("t2", -1.0, "2024-02-01")]),
+			build.grouping({
+				identifier: idA,
+				stockTrades: [build.stockBought({ id: "t1", quantity: 1.0, date: "2024-01-01" })],
+			}),
+			build.grouping({
+				identifier: idB,
+				stockTrades: [build.stockSold({ id: "t2", quantity: -1.0, date: "2024-02-01" })],
+			}),
 		],
 		identifierRelationships: [
 			new IdentifierRelationship({
@@ -77,10 +52,13 @@ test("two groupings with rename produce one merged grouping", () => {
 test("a rename merge keeps the original trades", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old Co" });
 	const idB = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New Co" });
-	const bought = makeBought("t1", 1.0, "2024-01-01");
-	const sold = makeSold("t2", -1.0, "2024-02-01");
+	const bought = build.stockBought({ id: "t1", quantity: 1.0, date: "2024-01-01" });
+	const sold = build.stockSold({ id: "t2", quantity: -1.0, date: "2024-02-01" });
 	const events = new FinancialEvents({
-		groupings: [makeGrouping(idA, [bought]), makeGrouping(idB, [sold])],
+		groupings: [
+			build.grouping({ identifier: idA, stockTrades: [bought] }),
+			build.grouping({ identifier: idB, stockTrades: [sold] }),
+		],
 		identifierRelationships: [
 			new IdentifierRelationship({
 				fromIdentifier: idA,
@@ -102,7 +80,7 @@ test("a rename merge keeps the original trades", () => {
 test("empty relationships leaves groupings unchanged", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "A", name: "A" });
 	const events = new FinancialEvents({
-		groupings: [makeGrouping(idA, [])],
+		groupings: [build.grouping({ identifier: idA })],
 		identifierRelationships: [],
 	});
 	const service = new ApplyIdentifierRelationshipsService();
@@ -115,7 +93,7 @@ test("no rename in change types leaves unchanged", () => {
 	const idA = new FinancialIdentifier({ isin: "US111", ticker: "A", name: "A" });
 	const idB = new FinancialIdentifier({ isin: "US222", ticker: "B", name: "B" });
 	const events = new FinancialEvents({
-		groupings: [makeGrouping(idA, [])],
+		groupings: [build.grouping({ identifier: idA })],
 		identifierRelationships: [
 			new IdentifierRelationship({
 				fromIdentifier: idA,
@@ -137,9 +115,15 @@ test("chain A to B to C produces one grouping with C", () => {
 	const idC = new FinancialIdentifier({ isin: "US333", ticker: "C", name: "C" });
 	const events = new FinancialEvents({
 		groupings: [
-			makeGrouping(idA, [makeBought("t1", 1.0, "2024-01-01")]),
-			makeGrouping(idB, [makeBought("t2", 1.0, "2024-02-01")]),
-			makeGrouping(idC, []),
+			build.grouping({
+				identifier: idA,
+				stockTrades: [build.stockBought({ id: "t1", quantity: 1.0, date: "2024-01-01" })],
+			}),
+			build.grouping({
+				identifier: idB,
+				stockTrades: [build.stockBought({ id: "t2", quantity: 1.0, date: "2024-02-01" })],
+			}),
+			build.grouping({ identifier: idC }),
 		],
 		identifierRelationships: [
 			new IdentifierRelationship({
@@ -187,8 +171,14 @@ test("sink grouping with different instance merges into one", () => {
 	});
 	const events = new FinancialEvents({
 		groupings: [
-			makeGrouping(idOld, [makeBought("t1", 10.0, "2024-01-01")]),
-			makeGrouping(idNewInGrouping, [makeSold("t2", -5.0, "2024-07-01")]),
+			build.grouping({
+				identifier: idOld,
+				stockTrades: [build.stockBought({ id: "t1", quantity: 10.0, date: "2024-01-01" })],
+			}),
+			build.grouping({
+				identifier: idNewInGrouping,
+				stockTrades: [build.stockSold({ id: "t2", quantity: -5.0, date: "2024-07-01" })],
+			}),
 		],
 		identifierRelationships: [
 			new IdentifierRelationship({
@@ -224,7 +214,12 @@ test("same ISIN different ticker matches rename chain", () => {
 		name: null,
 	});
 	const events = new FinancialEvents({
-		groupings: [makeGrouping(idInGrouping, [makeBought("t1", 5.0, "2024-01-01")])],
+		groupings: [
+			build.grouping({
+				identifier: idInGrouping,
+				stockTrades: [build.stockBought({ id: "t1", quantity: 5.0, date: "2024-01-01" })],
+			}),
+		],
 		identifierRelationships: [
 			new IdentifierRelationship({
 				fromIdentifier: idOldInRel,
@@ -255,7 +250,14 @@ test("apply split scales trades before effective date and merges into to", () =>
 		quantityAfter: 40.0,
 	});
 	const events = new FinancialEvents({
-		groupings: [makeGrouping(idFrom, [makeBought("t1", 4.0, "2024-09-01")])],
+		groupings: [
+			build.grouping({
+				identifier: idFrom,
+				stockTrades: [
+					build.stockBought({ id: "t1", quantity: 4.0, date: "2024-09-01", price: 10.0 }),
+				],
+			}),
+		],
 		identifierRelationships: [rel],
 	});
 	const service = new ApplyIdentifierRelationshipsService();
@@ -280,10 +282,10 @@ test("apply split scales trades before effective date and merges into to", () =>
 test("apply split builds new trades and leaves the originals untouched", () => {
 	const idFrom = new FinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
 	const idTo = new FinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });
-	const bought = makeBought("t1", 4.0, "2024-09-01");
-	const sold = makeSold("t2", -2.0, "2024-09-02");
+	const bought = build.stockBought({ id: "t1", quantity: 4.0, date: "2024-09-01" });
+	const sold = build.stockSold({ id: "t2", quantity: -2.0, date: "2024-09-02" });
 	const events = new FinancialEvents({
-		groupings: [makeGrouping(idFrom, [bought, sold])],
+		groupings: [build.grouping({ identifier: idFrom, stockTrades: [bought, sold] })],
 		identifierRelationships: [
 			new IdentifierRelationshipSplit({
 				fromIdentifier: idFrom,
@@ -321,7 +323,14 @@ test("apply split scales underlying trade price", () => {
 		quantityAfter: 10.0,
 	});
 	const events = new FinancialEvents({
-		groupings: [makeGrouping(idFrom, [makeBought("t1", 1.0, "2024-09-01", 100.0)])],
+		groupings: [
+			build.grouping({
+				identifier: idFrom,
+				stockTrades: [
+					build.stockBought({ id: "t1", quantity: 1.0, date: "2024-09-01", price: 100.0 }),
+				],
+			}),
+		],
 		identifierRelationships: [rel],
 	});
 	const service = new ApplyIdentifierRelationshipsService();
@@ -344,7 +353,12 @@ test("apply split does not scale trades on or after effective date", () => {
 		quantityAfter: 10.0,
 	});
 	const events = new FinancialEvents({
-		groupings: [makeGrouping(idFrom, [makeBought("t1", 5.0, "2024-10-15")])],
+		groupings: [
+			build.grouping({
+				identifier: idFrom,
+				stockTrades: [build.stockBought({ id: "t1", quantity: 5.0, date: "2024-10-15" })],
+			}),
+		],
 		identifierRelationships: [rel],
 	});
 	const service = new ApplyIdentifierRelationshipsService();
@@ -370,7 +384,7 @@ test("apply split scales lots before effective date", () => {
 		sold: build.stockSold({ id: "sold", date: "2024-09-15", quantity: -2.0, price: 10.0 }),
 	});
 	const events = new FinancialEvents({
-		groupings: [makeGrouping(idFrom, [], [lot])],
+		groupings: [build.grouping({ identifier: idFrom, stockTaxLots: [lot] })],
 		identifierRelationships: [rel],
 	});
 	const service = new ApplyIdentifierRelationshipsService();
@@ -396,7 +410,14 @@ test("apply reverse split scales by ratio", () => {
 		quantityAfter: 1.0,
 	});
 	const events = new FinancialEvents({
-		groupings: [makeGrouping(idFrom, [makeBought("t1", 10.0, "2024-09-01")])],
+		groupings: [
+			build.grouping({
+				identifier: idFrom,
+				stockTrades: [
+					build.stockBought({ id: "t1", quantity: 10.0, date: "2024-09-01", price: 10.0 }),
+				],
+			}),
+		],
 		identifierRelationships: [rel],
 	});
 	const service = new ApplyIdentifierRelationshipsService();
@@ -420,8 +441,14 @@ test("apply split merges from into existing to grouping", () => {
 	});
 	const events = new FinancialEvents({
 		groupings: [
-			makeGrouping(idFrom, [makeBought("t1", 1.0, "2024-09-01")]),
-			makeGrouping(idTo, [makeBought("t2", 5.0, "2024-10-15")]),
+			build.grouping({
+				identifier: idFrom,
+				stockTrades: [build.stockBought({ id: "t1", quantity: 1.0, date: "2024-09-01" })],
+			}),
+			build.grouping({
+				identifier: idTo,
+				stockTrades: [build.stockBought({ id: "t2", quantity: 5.0, date: "2024-10-15" })],
+			}),
 		],
 		identifierRelationships: [rel],
 	});

@@ -122,7 +122,9 @@ To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
 - **`Scenario`** (`lib/src/__tests__/support/Scenario.ts`) builds everything else a test needs: `Scenario.build.*` for lib's events,
   lots and groupings with defaults (1 unit at 1 EUR, generated ids), their `staging` twins and raw `ibkr` rows; `Scenario.config` for
   the taxpayer, report config and info provider; `Scenario.pipeline` for exports → `FinancialEvents` → reports. Give a test only the
-  values it is about. `support/Setup.ts` pins Luxon's zone and clock for every test.
+  values it is about, and call `Scenario` directly: no local wrapper functions around it, and every buy, sale and lot built with its
+  exact type (`stockBought`, `stockSold`, `stockTaxLot`, …). A local helper is only for wiring that isn't test data, such as a
+  provider built with collaborators the test spies on. `support/Setup.ts` pins Luxon's zone and clock for every test.
 - **A test case or a unit test?** A case for a real-shaped export turned into whole reports: regressions from users' exports and
   anything that crosses layers. A unit test with `Scenario` for one rule in one class, where hand-built input states the rule more
   clearly than an export.

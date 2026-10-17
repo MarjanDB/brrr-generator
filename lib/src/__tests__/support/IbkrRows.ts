@@ -15,6 +15,7 @@ import {
 	type TransactionCash,
 	TransactionType,
 } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
+import { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades";
 
 // A buy of 2 TEST at 15 EUR on 2023-01-01.
 const tradeStock: TradeStock = {
@@ -191,4 +192,17 @@ export const IbkrRows = {
 		...corporateAction,
 		...overrides,
 	}),
+
+	// What the extract step hands the transform step; every row list not given is empty.
+	segmentedTrades: (
+		rows: Partial<ConstructorParameters<typeof SegmentedTrades>[0]> = {},
+	): SegmentedTrades =>
+		new SegmentedTrades({
+			cashTransactions: rows.cashTransactions ?? [],
+			corporateActions: rows.corporateActions ?? [],
+			stockTrades: rows.stockTrades ?? [],
+			stockLots: rows.stockLots ?? [],
+			derivativeTrades: rows.derivativeTrades ?? [],
+			derivativeLots: rows.derivativeLots ?? [],
+		}),
 };
