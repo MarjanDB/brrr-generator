@@ -1,3 +1,4 @@
+import type { IbkrTransactionId } from "@brrr/Brokerages/Ibkr/Schemas/IbkrIdentifiers";
 import {
 	AssetClass,
 	CorporateAction,
@@ -82,9 +83,11 @@ export class IbkrExtractService {
 		});
 	}
 
-	private deduplicateByTransactionID<T extends { transactionID: string }>(lists: T[][]): T[] {
+	private deduplicateByTransactionID<T extends { transactionID: IbkrTransactionId }>(
+		lists: T[][],
+	): T[] {
 		const all = lists.flat();
-		const map = new Map<string, T>();
+		const map = new Map<IbkrTransactionId, T>();
 		for (const item of all) {
 			map.set(item.transactionID, item);
 		}

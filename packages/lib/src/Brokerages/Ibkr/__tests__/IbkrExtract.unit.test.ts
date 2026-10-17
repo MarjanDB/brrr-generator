@@ -1,4 +1,5 @@
 import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract";
+import { IbkrActionId, IbkrIsin } from "@brrr/Brokerages/Ibkr/Schemas/IbkrIdentifiers";
 import { BuyOrSell, CashTransactionType } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
 import { TestKit } from "@brrr/test-cases";
 
@@ -100,10 +101,10 @@ test("corporate actions two rows: extracts two actions with same actionID", () =
 	expect(segmented.corporateActions.length).toEqual(2);
 	const actionIds = new Set(segmented.corporateActions.map((ca) => ca.actionID));
 	expect(actionIds.size).toEqual(1);
-	expect(actionIds.has("141913764")).toEqual(true);
+	expect(actionIds.has(IbkrActionId.Schema.parse("141913764"))).toEqual(true);
 	const isins = new Set(segmented.corporateActions.map((ca) => ca.isin));
-	expect(isins.has("US86800U1043")).toEqual(true);
-	expect(isins.has("US86800U3023")).toEqual(true);
+	expect(isins.has(IbkrIsin.Schema.parse("US86800U1043"))).toEqual(true);
+	expect(isins.has(IbkrIsin.Schema.parse("US86800U3023"))).toEqual(true);
 });
 
 test("cash transactions dividends: returns 2 transactions", () => {

@@ -1,6 +1,11 @@
 import { Fixtures } from "@brrr/__tests__/support/Fixtures";
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import {
+	IbkrIsin,
+	IbkrSymbol,
+	IbkrTransactionId,
+} from "@brrr/Brokerages/Ibkr/Schemas/IbkrIdentifiers";
+import {
 	BuyOrSell,
 	CashTransactionType,
 	type CorporateAction,
@@ -34,7 +39,7 @@ const simpleTradeSell: TradeStock = {
 	netCashInBase: 33,
 	openCloseIndicator: OpenCloseIndicator.CLOSE,
 	buyOrSell: BuyOrSell.SELL,
-	transactionID: "ID2",
+	transactionID: IbkrTransactionId.Schema.parse("ID2"),
 };
 
 const simpleStockLot = Fixtures.ibkr.stockLotClosed;
@@ -46,7 +51,7 @@ const withholdingTaxForDividend: TransactionCash = {
 	description: "TTE(FR0000120271) CASH DIVIDEND USD 0.66 PER SHARE - FR TAX",
 	amount: -0.66,
 	type: CashTransactionType.WITHHOLDING_TAX,
-	transactionID: "323614082",
+	transactionID: IbkrTransactionId.Schema.parse("323614082"),
 };
 
 const paymentInLieuOfDividend: TransactionCash = {
@@ -60,18 +65,18 @@ const withholdingTaxForPaymentInLieu: TransactionCash = {
 	description: "TTE(FR0000120271) PAYMENT IN LIEU OF DIVIDEND - FR TAX",
 	amount: -0.66,
 	type: CashTransactionType.WITHHOLDING_TAX,
-	transactionID: "323614082",
+	transactionID: IbkrTransactionId.Schema.parse("323614082"),
 };
 
 const corporateActionOld = Fixtures.ibkr.smciSplitOldRow;
 
 const corporateActionNew: CorporateAction = {
 	...Fixtures.ibkr.smciSplitOldRow,
-	symbol: "SMCI",
-	isin: "US86800U3023",
+	symbol: IbkrSymbol.Schema.parse("SMCI"),
+	isin: IbkrIsin.Schema.parse("US86800U3023"),
 	securityID: "US86800U3023",
 	quantity: 40.0,
-	transactionID: "3131760429",
+	transactionID: IbkrTransactionId.Schema.parse("3131760429"),
 };
 
 test("transform: single stock trade buy", () => {
