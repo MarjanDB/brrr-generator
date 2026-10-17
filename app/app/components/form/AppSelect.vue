@@ -9,7 +9,7 @@ import {
 	SelectTrigger,
 	SelectViewport,
 } from "reka-ui";
-import { computed, inject, ref } from "vue";
+import { computed, inject, ref, useId } from "vue";
 
 export interface SelectOption {
 	value: string;
@@ -34,6 +34,7 @@ const selectedLabel = computed(
 	() => props.options.find((o) => o.value === model.value)?.label ?? null,
 );
 
+const id = useId();
 const error = ref<string | null>(null);
 const touched = ref(false);
 
@@ -59,9 +60,10 @@ if (form) {
 
 <template>
 	<div class="flex flex-col gap-1">
-		<label v-if="label" class="text-label">{{ label }}</label>
+		<label v-if="label" :for="id" class="text-label">{{ label }}</label>
 		<SelectRoot v-model="model" :disabled="disabled" @update:model-value="onChange">
 			<SelectTrigger
+				:id="id"
 				:class="[
 					error ? 'input-md-error' : 'input-md',
 					'w-full flex items-center justify-between gap-2',

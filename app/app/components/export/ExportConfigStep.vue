@@ -4,7 +4,7 @@ import type { Component } from "vue";
 import SloveniaExportForm from "~/components/export/SloveniaExportForm.vue";
 import { TAX_AUTHORITY_CARDS, type TaxAuthorityCard } from "~/components/export/taxAuthorityCards";
 
-const props = defineProps<{
+defineProps<{
   financialEvents: FinancialEvents;
   collapsed: boolean;
 }>();

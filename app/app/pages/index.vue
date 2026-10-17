@@ -82,6 +82,7 @@ function onRestart() {
     <div class="flex items-center justify-between gap-3 flex-wrap">
       <div class="flex items-center justify-between gap-3">
         <h1 class="text-h1">{{ t('app_title') }}</h1>
+        <!-- biome-ignore lint/a11y/useAnchorContent: icon-only link, named by its aria-label -->
         <a
           href="https://github.com/MarjanDB/brrr-generator"
           target="_blank"

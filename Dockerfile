@@ -1,6 +1,6 @@
 # Build arguments
-ARG NODE_VERSION=22-alpine3.22
-ARG PNPM_VERSION=10.32.1
+ARG NODE_VERSION=24-alpine3.24
+ARG PNPM_VERSION=11.28.6
 ARG WORKDIR_PATH=/opt/app
 
 # Base stage

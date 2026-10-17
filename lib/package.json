@@ -3,14 +3,13 @@
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
-	"packageManager": "pnpm@10.28.2",
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
+			"types": "./dist/index.d.mts",
 			"default": "./dist/index.mjs"
 		},
 		"./info/node": {
-			"types": "./dist/InfoProviders/Node/NodeInfoProvider.d.ts",
+			"types": "./dist/InfoProviders/Node/NodeInfoProvider.d.mts",
 			"default": "./dist/InfoProviders/Node/NodeInfoProvider.mjs"
 		}
 	},
@@ -22,20 +21,20 @@
 		"build": "tsdown"
 	},
 	"dependencies": {
-		"csv-stringify": "6.7.0",
-		"fast-xml-parser": "5.5.9",
-		"inversify": "7.11.0",
-		"luxon": "3.7.2",
-		"yahoo-finance2": "3.14.0",
-		"zod": "4.4.3"
+		"csv-stringify": "catalog:",
+		"fast-xml-parser": "catalog:",
+		"inversify": "catalog:",
+		"luxon": "catalog:",
+		"yahoo-finance2": "catalog:",
+		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@types/luxon": "3.7.1",
-		"@types/node": "25.7.0",
-		"tsdown": "0.21.10",
-		"typescript": "5.9.3",
-		"vite-tsconfig-paths": "6.1.1",
-		"@vitest/coverage-v8": "4.1.6",
-		"vitest": "4.1.6"
+		"@types/luxon": "catalog:",
+		"@types/node": "catalog:",
+		"tsdown": "catalog:",
+		"typescript": "catalog:",
+		"vite": "catalog:",
+		"@vitest/coverage-v8": "catalog:",
+		"vitest": "catalog:"
 	}
 }

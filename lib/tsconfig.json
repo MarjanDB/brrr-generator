@@ -9,7 +9,6 @@
 		"declaration": true,
 		"declarationMap": true,
 		"types": ["vitest/globals"],
-		"baseUrl": ".",
 		"paths": {
 			"@brrr/*": ["./src/*"]
 		}

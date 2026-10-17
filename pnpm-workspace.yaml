@@ -1,6 +1,73 @@
 hoist: true
+# Nuxt resolves modules that other modules depend on (e.g. @nuxtjs/robots from @nuxtjs/seo) only from
+# its modulesDir, which reaches them through the hoisted node_modules/.pnpm/node_modules. With the
+# global virtual store Nuxt lives outside the project and can't see that directory.
+enableGlobalVirtualStore: false
 
 packages:
   - lib
   - standalone/cli
   - app
+
+# Every external dependency version lives here; package.json files reference it as `catalog:`.
+# Strict mode makes `pnpm add` write new dependencies into the catalog and reject versions outside it.
+catalogMode: strict
+# Pin exact versions, like every existing entry, instead of pnpm's default `^` range.
+saveExact: true
+catalog:
+  "@biomejs/biome": 2.5.15
+  "@iconify-json/mdi": 1.2.3
+  "@nuxtjs/i18n": 10.6.0
+  "@nuxtjs/seo": 5.3.16
+  "@posthog/nuxt": 1.7.91
+  "@takumi-rs/core": 2.16.2
+  "@types/luxon": 3.7.6
+  "@types/node": 24.19.2
+  "@unocss/nuxt": 66.11.0
+  "@vitest/coverage-v8": 5.0.5
+  "@vueuse/core": 15.0.0
+  "@vueuse/nuxt": 15.0.0
+  chart.js: 4.5.1
+  commander: 15.0.0
+  csv-stringify: 6.9.0
+  fast-xml-parser: 5.11.2
+  inversify: 8.2.3
+  js-yaml: 5.5.0
+  luxon: 3.7.2
+  nuxt: 4.5.2
+  reka-ui: 2.11.0
+  tsdown: 0.23.1
+  tsx: 4.23.15
+  typescript: 6.0.3
+  unocss: 66.11.0
+  vite: 8.3.4
+  vitest: 5.0.5
+  vue: 3.5.44
+  vue-router: 5.4.0
+  vue-tsc: 3.3.13
+  yahoo-finance2: 4.0.4
+  zod: 4.6.7
+
+# Supply-chain hardening. pnpm 11 turns most of these on by default; they are spelled out so they
+# don't silently change with a pnpm upgrade, and trustPolicy is off by default.
+
+# Refuse versions published less than a day ago; most compromised releases are pulled within hours.
+minimumReleaseAge: 1440
+
+# Fail when a version is published with weaker trust evidence (no provenance / trusted publisher)
+# than earlier versions of the same package: the usual sign of a stolen publish token.
+trustPolicy: no-downgrade
+# Only check releases from the last 30 days. Publish times come from the registry and can't be
+# backdated, so a takeover release is always checked; older releases that predate provenance (e.g.
+# semver@6.3.1, which Babel 7 still pulls in) are let through.
+trustPolicyIgnoreAfter: 43200
+
+# Transitive dependencies may only resolve from the registry, never from git URLs or tarballs.
+blockExoticSubdeps: true
+
+allowBuilds:
+  "@posthog/cli": false
+  core-js: false
+  esbuild: false
+  protobufjs: false
+  vue-demi: false

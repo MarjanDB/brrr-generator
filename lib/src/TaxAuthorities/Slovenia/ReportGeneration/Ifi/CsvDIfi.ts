@@ -2,7 +2,7 @@ import {
 	EDavkiDerivativeReportSecurityLineGenericEventBought,
 	type EDavkiGenericDerivativeReportItem,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
-import { stringify } from "csv-stringify/sync";
+import { stringify } from "csv-stringify/browser/esm/sync";
 
 export function generateCsvReport(convertedTrades: EDavkiGenericDerivativeReportItem[]): string {
 	if (convertedTrades.length === 0) {

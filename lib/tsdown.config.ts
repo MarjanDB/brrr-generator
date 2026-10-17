@@ -1,7 +1,7 @@
 import path from "node:path";
 import { defineConfig } from "tsdown";
 
-const tsconfigPath = path.resolve(import.meta.url, "tsconfig.json");
+const tsconfigPath = path.resolve(import.meta.dirname, "tsconfig.json");
 
 export default defineConfig({
 	entry: "src/**/*.ts",
@@ -13,7 +13,4 @@ export default defineConfig({
 	sourcemap: "inline",
 	target: "esnext",
 	tsconfig: tsconfigPath,
-	deps: {
-		skipNodeModulesBundle: true,
-	},
 });

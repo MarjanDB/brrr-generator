@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, ref } from "vue";
+import { inject, ref, useId } from "vue";
 
 const props = defineProps<{
 	label?: string;
@@ -11,6 +11,7 @@ const props = defineProps<{
 
 const model = defineModel<FileList | null>({ default: null });
 
+const id = useId();
 const error = ref<string | null>(null);
 const touched = ref(false);
 
@@ -39,8 +40,9 @@ if (form) {
 
 <template>
 	<div class="flex flex-col gap-1">
-		<label v-if="label" class="text-label">{{ label }}</label>
+		<label v-if="label" :for="id" class="text-label">{{ label }}</label>
 		<input
+			:id="id"
 			type="file"
 			:accept="accept"
 			:multiple="multiple"

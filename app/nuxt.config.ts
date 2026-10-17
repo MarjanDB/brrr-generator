@@ -9,23 +9,14 @@ export default defineNuxtConfig({
 	devtools: { enabled: config.NODE_ENV === "development" },
 
 	vite: {
-		optimizeDeps: {
-			include: ["buffer"],
+		build: {
+			// The whole wizard is one page, so its chunk carries chart.js and the tax engine (~691 kB);
+			// the entry carries PostHog and i18n (~541 kB). Kept just above the page chunk so growth
+			// still warns.
+			chunkSizeWarningLimit: 700,
 		},
-		define: {
-			global: "globalThis",
-		},
-		plugins: [
-			{
-				name: "inject-buffer",
-				transform(code, id) {
-					if (id.includes("csv-stringify") && code.includes("Buffer")) {
-						return `import { Buffer } from 'buffer';\n${code}`;
-					}
-				},
-			},
-		],
 	},
+
 	components: [{ path: "~/components", pathPrefix: false }],
 
 	modules: [
@@ -67,6 +58,10 @@ export default defineNuxtConfig({
 	},
 
 	ogImage: {
+		zeroRuntime: true,
+	},
+
+	sitemap: {
 		zeroRuntime: true,
 	},
 
