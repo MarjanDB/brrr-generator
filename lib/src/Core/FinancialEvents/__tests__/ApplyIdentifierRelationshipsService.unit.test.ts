@@ -1,75 +1,34 @@
-import { makeDate, makeMoney } from "@brrr/__tests__/support/Builders";
+import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
 import {
-	GenericAssetClass,
-	GenericCategory,
-	GenericShortLong,
-	GenericTradeReportItemGainType,
-} from "@brrr/Core/Schemas/CommonFormats";
-import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events";
+	type TradeEventBase,
+	type TradeEventStock,
+	TradeEventStockAcquired,
+	TradeEventStockSold,
+} from "@brrr/Core/Schemas/Events";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
-import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import {
 	IdentifierChangeType,
 	IdentifierRelationship,
 	IdentifierRelationshipSplit,
 } from "@brrr/Core/Schemas/IdentifierRelationship";
-import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
+import type { TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import { SplitProvenanceStep } from "@brrr/Core/Schemas/Provenance";
 
-function makeMonetary(qty: number, price = 10.0) {
-	return makeMoney({
-		underlyingCurrency: "USD",
-		underlyingQuantity: qty,
-		underlyingTradePrice: price,
-		commissionCurrency: "USD",
-		taxCurrency: "USD",
-	});
-}
+const { build } = Scenario;
 
-function makeTrade(
-	id: string,
-	qty: number,
-	dateStr: string,
-	price = 10.0,
-): TradeEventStockAcquired | TradeEventStockSold {
-	if (qty > 0) {
-		return new TradeEventStockAcquired({
-			id,
-			assetClass: GenericAssetClass.STOCK,
-			date: makeDate(dateStr),
-			multiplier: 1,
-			exchangedMoney: makeMonetary(qty, price),
-			acquiredReason: GenericTradeReportItemGainType.BOUGHT,
-			provenance: [],
-		});
-	}
-	return new TradeEventStockSold({
-		id,
-		assetClass: GenericAssetClass.STOCK,
-		date: makeDate(dateStr),
-		multiplier: 1,
-		exchangedMoney: makeMonetary(qty, price),
-		provenance: [],
-	});
+// A buy for a positive quantity, a sale for a negative one.
+function makeTrade(id: TradeEventBase["id"], quantity: number, date: string, price = 10.0) {
+	return build.stockTrade({ id, quantity, date, price });
 }
 
 function makeGrouping(
 	identifier: FinancialIdentifier,
-	stockTrades: (TradeEventStockAcquired | TradeEventStockSold)[],
+	stockTrades: TradeEventStock[],
 	stockTaxLots: TaxLotStock[] = [],
-): FinancialGrouping {
-	return new FinancialGrouping({
-		financialIdentifier: identifier,
-		countryOfOrigin: "US",
-		underlyingCategory: GenericCategory.REGULAR,
-		stockTrades,
-		stockTaxLots,
-		derivativeGroupings: [],
-		cashTransactions: [],
-		provenance: [],
-	});
+) {
+	return build.grouping({ identifier, countryOfOrigin: "US", stockTrades, stockTaxLots });
 }
 
 // === RENAME TESTS ===
@@ -87,7 +46,7 @@ test("two groupings with rename produce one merged grouping", () => {
 				fromIdentifier: idA,
 				toIdentifier: idB,
 				changeType: IdentifierChangeType.RENAME,
-				effectiveDate: makeDate("2024-06-01"),
+				effectiveDate: build.date("2024-06-01"),
 			}),
 		],
 	});
@@ -115,7 +74,7 @@ test("a rename merge keeps the original trades", () => {
 				fromIdentifier: idA,
 				toIdentifier: idB,
 				changeType: IdentifierChangeType.RENAME,
-				effectiveDate: makeDate("2024-06-01"),
+				effectiveDate: build.date("2024-06-01"),
 			}),
 		],
 	});
@@ -150,7 +109,7 @@ test("no rename in change types leaves unchanged", () => {
 				fromIdentifier: idA,
 				toIdentifier: idB,
 				changeType: IdentifierChangeType.RENAME,
-				effectiveDate: makeDate("2024-01-01"),
+				effectiveDate: build.date("2024-01-01"),
 			}),
 		],
 	});
@@ -175,13 +134,13 @@ test("chain A to B to C produces one grouping with C", () => {
 				fromIdentifier: idA,
 				toIdentifier: idB,
 				changeType: IdentifierChangeType.RENAME,
-				effectiveDate: makeDate("2024-01-01"),
+				effectiveDate: build.date("2024-01-01"),
 			}),
 			new IdentifierRelationship({
 				fromIdentifier: idB,
 				toIdentifier: idC,
 				changeType: IdentifierChangeType.RENAME,
-				effectiveDate: makeDate("2024-02-01"),
+				effectiveDate: build.date("2024-02-01"),
 			}),
 		],
 	});
@@ -224,7 +183,7 @@ test("sink grouping with different instance merges into one", () => {
 				fromIdentifier: idOld,
 				toIdentifier: idNewInRel,
 				changeType: IdentifierChangeType.RENAME,
-				effectiveDate: makeDate("2024-06-01"),
+				effectiveDate: build.date("2024-06-01"),
 			}),
 		],
 	});
@@ -259,7 +218,7 @@ test("same ISIN different ticker matches rename chain", () => {
 				fromIdentifier: idOldInRel,
 				toIdentifier: idNew,
 				changeType: IdentifierChangeType.RENAME,
-				effectiveDate: makeDate("2024-06-01"),
+				effectiveDate: build.date("2024-06-01"),
 			}),
 		],
 	});
@@ -279,7 +238,7 @@ test("apply split scales trades before effective date and merges into to", () =>
 		fromIdentifier: idFrom,
 		toIdentifier: idTo,
 		changeType: IdentifierChangeType.SPLIT,
-		effectiveDate: makeDate("2024-10-01"),
+		effectiveDate: build.date("2024-10-01"),
 		quantityBefore: 4.0,
 		quantityAfter: 40.0,
 	});
@@ -318,7 +277,7 @@ test("apply split builds new trades and leaves the originals untouched", () => {
 				fromIdentifier: idFrom,
 				toIdentifier: idTo,
 				changeType: IdentifierChangeType.SPLIT,
-				effectiveDate: makeDate("2024-10-01"),
+				effectiveDate: build.date("2024-10-01"),
 				quantityBefore: 1.0,
 				quantityAfter: 10.0,
 			}),
@@ -345,7 +304,7 @@ test("apply split scales underlying trade price", () => {
 		fromIdentifier: idFrom,
 		toIdentifier: idTo,
 		changeType: IdentifierChangeType.SPLIT,
-		effectiveDate: makeDate("2024-10-01"),
+		effectiveDate: build.date("2024-10-01"),
 		quantityBefore: 1.0,
 		quantityAfter: 10.0,
 	});
@@ -368,7 +327,7 @@ test("apply split does not scale trades on or after effective date", () => {
 		fromIdentifier: idFrom,
 		toIdentifier: idTo,
 		changeType: IdentifierChangeType.SPLIT,
-		effectiveDate: makeDate("2024-10-01"),
+		effectiveDate: build.date("2024-10-01"),
 		quantityBefore: 1.0,
 		quantityAfter: 10.0,
 	});
@@ -389,34 +348,14 @@ test("apply split scales lots before effective date", () => {
 		fromIdentifier: idFrom,
 		toIdentifier: idTo,
 		changeType: IdentifierChangeType.SPLIT,
-		effectiveDate: makeDate("2024-10-01"),
+		effectiveDate: build.date("2024-10-01"),
 		quantityBefore: 2.0,
 		quantityAfter: 20.0,
 	});
-	const acquired = new TradeEventStockAcquired({
-		id: "acq",
-		assetClass: GenericAssetClass.STOCK,
-		date: makeDate("2024-09-01"),
-		multiplier: 1,
-		exchangedMoney: makeMonetary(2.0, 10.0),
-		acquiredReason: GenericTradeReportItemGainType.BOUGHT,
-		provenance: [],
-	});
-	const sold = new TradeEventStockSold({
-		id: "sold",
-		assetClass: GenericAssetClass.STOCK,
-		date: makeDate("2024-09-15"),
-		multiplier: 1,
-		exchangedMoney: makeMonetary(-2.0, 10.0),
-		provenance: [],
-	});
-	const lot = new TaxLot({
+	const lot = build.taxLot({
 		id: "lot1",
-		quantity: 2.0,
-		acquired,
-		sold,
-		shortLongType: GenericShortLong.LONG,
-		provenance: [],
+		acquired: build.stockBought({ id: "acq", date: "2024-09-01", quantity: 2.0, price: 10.0 }),
+		sold: build.stockSold({ id: "sold", date: "2024-09-15", quantity: -2.0, price: 10.0 }),
 	});
 	const events = new FinancialEvents({
 		groupings: [makeGrouping(idFrom, [], [lot])],
@@ -440,7 +379,7 @@ test("apply reverse split scales by ratio", () => {
 		fromIdentifier: idFrom,
 		toIdentifier: idTo,
 		changeType: IdentifierChangeType.REVERSE_SPLIT,
-		effectiveDate: makeDate("2024-10-01"),
+		effectiveDate: build.date("2024-10-01"),
 		quantityBefore: 10.0,
 		quantityAfter: 1.0,
 	});
@@ -463,7 +402,7 @@ test("apply split merges from into existing to grouping", () => {
 		fromIdentifier: idFrom,
 		toIdentifier: idTo,
 		changeType: IdentifierChangeType.SPLIT,
-		effectiveDate: makeDate("2024-10-01"),
+		effectiveDate: build.date("2024-10-01"),
 		quantityBefore: 1.0,
 		quantityAfter: 10.0,
 	});

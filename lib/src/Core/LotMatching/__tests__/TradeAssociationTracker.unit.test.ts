@@ -1,16 +1,16 @@
-import { makeDate } from "@brrr/__tests__/support/Builders";
+import { Scenario } from "@brrr/__tests__/support/Scenario";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
 import { TradeAssociationTracker } from "@brrr/Core/LotMatching/TradeAssociationTracker";
 
 const simpleBuyTrade: Trade = {
 	id: "ID",
 	quantity: 1,
-	date: makeDate("2023-01-01"),
+	date: Scenario.build.date("2023-01-01"),
 };
 const simpleSoldTrade: Trade = {
 	id: "ID2",
 	quantity: -1,
-	date: makeDate("2023-01-01"),
+	date: Scenario.build.date("2023-01-01"),
 };
 
 test("retrieval of tracker for simple acquired trade", () => {

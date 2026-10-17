@@ -1,92 +1,52 @@
-import { makeMoney } from "@brrr/__tests__/support/Builders";
-import {
-	GenericAssetClass,
-	GenericCategory,
-	GenericDividendType,
-	type GenericMonetaryExchangeInformation,
-} from "@brrr/Core/Schemas/CommonFormats";
-import {
-	TradeEventCashTransactionDividend,
-	TradeEventCashTransactionWithholdingTax,
-	type TransactionCash,
-} from "@brrr/Core/Schemas/Events";
+import { Scenario } from "@brrr/__tests__/support/Scenario";
+import type { MoneyFields } from "@brrr/__tests__/support/Values";
+import type { TradeEventCashTransactionDividend, TransactionCash } from "@brrr/Core/Schemas/Events";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
-import { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
-import {
-	type TaxAuthorityConfiguration,
-	TaxAuthorityLotMatchingMethod,
-} from "@brrr/TaxAuthorities/ConfigurationProvider";
+import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";
-import { zDateTimeFromISOString } from "@brrr/Utils/DateTime";
 
-const identifier = new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" });
+const { build } = Scenario;
 
-const config: TaxAuthorityConfiguration = {
-	fromDate: zDateTimeFromISOString.parse("2023-01-01"),
-	toDate: zDateTimeFromISOString.parse("2024-01-01"),
-	lotMatchingMethod: TaxAuthorityLotMatchingMethod.NONE,
-};
+const config = Scenario.config.report(2023, TaxAuthorityLotMatchingMethod.NONE);
 
-function money(amount: number, taxTotal = 0): GenericMonetaryExchangeInformation {
-	return makeMoney({
+// Paid in USD at 0.5 EUR per USD.
+function usd(taxTotal = 0): MoneyFields {
+	return {
 		underlyingCurrency: "USD",
-		underlyingTradePrice: amount,
 		commissionCurrency: "USD",
 		taxCurrency: "USD",
 		taxTotal,
 		fxRateToBase: 0.5,
-	});
+	};
 }
 
-function dividend(
-	actionId: string,
-	date: string,
-	amount: number,
-	taxTotal = 0,
-): TradeEventCashTransactionDividend {
-	return new TradeEventCashTransactionDividend({
+type ActionId = TradeEventCashTransactionDividend["actionId"];
+
+function dividend(actionId: ActionId, date: string, amount: number, taxTotal = 0) {
+	return build.dividend({
 		id: `${actionId}-${amount}`,
-		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-		date: zDateTimeFromISOString.parse(date),
-		multiplier: 1,
-		exchangedMoney: money(amount, taxTotal),
 		actionId,
-		transactionId: `${actionId}-${amount}`,
-		listingExchange: "EXH",
-		dividendType: GenericDividendType.ORDINARY,
-		provenance: [],
+		date,
+		amount,
+		money: usd(taxTotal),
 	});
 }
 
-function withholding(
-	actionId: string,
-	date: string,
-	amount: number,
-): TradeEventCashTransactionWithholdingTax {
-	return new TradeEventCashTransactionWithholdingTax({
+function withholding(actionId: ActionId, date: string, amount: number) {
+	return build.withholdingTax({
 		id: `${actionId}-${amount}`,
-		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
-		date: zDateTimeFromISOString.parse(date),
-		multiplier: 1,
-		exchangedMoney: money(amount),
 		actionId,
-		transactionId: `${actionId}-${amount}`,
-		listingExchange: "EXH",
-		provenance: [],
+		date,
+		amount,
+		money: usd(),
 	});
 }
 
-function grouping(cashTransactions: TransactionCash[]): FinancialGrouping {
-	return new FinancialGrouping({
-		financialIdentifier: identifier,
-		countryOfOrigin: null,
-		underlyingCategory: GenericCategory.REGULAR,
-		stockTrades: [],
-		stockTaxLots: [],
-		derivativeGroupings: [],
+function grouping(cashTransactions: TransactionCash[]) {
+	return build.grouping({
+		identifier: new FinancialIdentifier({ isin: "ISIN", ticker: "Ticker", name: "Name" }),
 		cashTransactions,
-		provenance: [],
 	});
 }
 

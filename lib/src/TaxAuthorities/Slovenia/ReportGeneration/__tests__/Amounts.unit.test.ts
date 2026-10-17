@@ -1,29 +1,23 @@
-import { makeMoney } from "@brrr/__tests__/support/Builders";
-import { GenericAssetClass } from "@brrr/Core/Schemas/CommonFormats";
-import { TradeEventStockSold } from "@brrr/Core/Schemas/Events";
+import { Scenario } from "@brrr/__tests__/support/Scenario";
+import type { TradeEventStockSold } from "@brrr/Core/Schemas/Events";
 import {
 	foreignTaxOf,
 	round,
 	toOriginalCurrency,
 } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Amounts";
-import { zDateTimeFromISOString } from "@brrr/Utils/DateTime";
 
 function tradeWithTax(taxTotal: number): TradeEventStockSold {
-	return new TradeEventStockSold({
+	return Scenario.build.stockSold({
 		id: `T${taxTotal}`,
-		assetClass: GenericAssetClass.STOCK,
-		date: zDateTimeFromISOString.parse("2024-01-02"),
-		multiplier: 1,
-		exchangedMoney: makeMoney({
+		date: "2024-01-02",
+		price: 10,
+		money: {
 			underlyingCurrency: "USD",
-			underlyingQuantity: -1,
-			underlyingTradePrice: 10,
 			commissionCurrency: "USD",
 			taxCurrency: "USD",
 			taxTotal,
 			fxRateToBase: 0.9,
-		}),
-		provenance: [],
+		},
 	});
 }
 

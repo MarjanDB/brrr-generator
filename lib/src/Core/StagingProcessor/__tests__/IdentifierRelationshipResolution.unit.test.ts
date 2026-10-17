@@ -1,4 +1,4 @@
-import { makeDate } from "@brrr/__tests__/support/Builders";
+import { Scenario } from "@brrr/__tests__/support/Scenario";
 import {
 	StagingIdentifierChangeType,
 	StagingIdentifierRelationship,
@@ -20,14 +20,14 @@ test("two partials same key produce one full relationship", () => {
 			toIdentifier: null,
 			correlationKey: "action-1",
 			changeType: StagingIdentifierChangeType.SPLIT,
-			effectiveDate: makeDate("2024-10-01"),
+			effectiveDate: Scenario.build.date("2024-10-01"),
 		}),
 		new StagingIdentifierRelationshipPartial({
 			fromIdentifier: null,
 			toIdentifier: toId,
 			correlationKey: "action-1",
 			changeType: StagingIdentifierChangeType.SPLIT,
-			effectiveDate: makeDate("2024-10-01"),
+			effectiveDate: Scenario.build.date("2024-10-01"),
 		}),
 	];
 	const result = new IdentifierRelationshipResolution().mergePartialIdentifierRelationships(
@@ -57,7 +57,7 @@ test("partials with quantity produce full with quantityBefore/quantityAfter", ()
 			toIdentifier: null,
 			correlationKey: "action-1",
 			changeType: StagingIdentifierChangeType.SPLIT,
-			effectiveDate: makeDate("2024-09-30"),
+			effectiveDate: Scenario.build.date("2024-09-30"),
 			quantity: 4.0,
 		}),
 		new StagingIdentifierRelationshipPartialWithQuantity({
@@ -65,7 +65,7 @@ test("partials with quantity produce full with quantityBefore/quantityAfter", ()
 			toIdentifier: toId,
 			correlationKey: "action-1",
 			changeType: StagingIdentifierChangeType.SPLIT,
-			effectiveDate: makeDate("2024-09-30"),
+			effectiveDate: Scenario.build.date("2024-09-30"),
 			quantity: 40.0,
 		}),
 	];
@@ -90,7 +90,7 @@ test("reverse split inferred when quantity after less than before", () => {
 			toIdentifier: null,
 			correlationKey: "rev-1",
 			changeType: StagingIdentifierChangeType.SPLIT,
-			effectiveDate: makeDate("2024-10-01"),
+			effectiveDate: Scenario.build.date("2024-10-01"),
 			quantity: 10.0,
 		}),
 		new StagingIdentifierRelationshipPartialWithQuantity({
@@ -98,7 +98,7 @@ test("reverse split inferred when quantity after less than before", () => {
 			toIdentifier: toId,
 			correlationKey: "rev-1",
 			changeType: StagingIdentifierChangeType.SPLIT,
-			effectiveDate: makeDate("2024-10-01"),
+			effectiveDate: Scenario.build.date("2024-10-01"),
 			quantity: 1.0,
 		}),
 	];
@@ -122,7 +122,7 @@ test("only from partial produces no full relationship", () => {
 			toIdentifier: null,
 			correlationKey: "action-1",
 			changeType: StagingIdentifierChangeType.RENAME,
-			effectiveDate: makeDate("2024-01-01"),
+			effectiveDate: Scenario.build.date("2024-01-01"),
 		}),
 	];
 	const result = new IdentifierRelationshipResolution().mergePartialIdentifierRelationships(
