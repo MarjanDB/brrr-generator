@@ -84,7 +84,10 @@ async function main() {
 	const configRaw = parseYaml(await fs.readFile(CONFIG_FILE, "utf-8"));
 	const configParsed = TaxPayerConfigSchema.safeParse(configRaw);
 	if (!configParsed.success) {
-		console.error("Invalid userConfig.yml:", configParsed.error.format());
+		console.error("Invalid userConfig.yml:");
+		for (const issue of configParsed.error.issues) {
+			console.error(`  ${issue.path.map(String).join(".")}: ${issue.message}`);
+		}
 		process.exit(1);
 	}
 	const taxPayerInfo = configParsed.data;
