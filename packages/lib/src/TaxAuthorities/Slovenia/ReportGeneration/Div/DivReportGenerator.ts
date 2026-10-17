@@ -17,6 +17,12 @@ import { round, toOriginalCurrency } from "@brrr/TaxAuthorities/Slovenia/ReportG
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/CsvDohDiv";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/XmlDohDiv";
 import {
+	EDavkiCountryCode,
+	EDavkiDividendTrackingId,
+	EDavkiPayerIdentificationNumber,
+	EDavkiTaxNumber,
+} from "@brrr/TaxAuthorities/Slovenia/Schemas/EDavkiIdentifiers";
+import {
 	EDavkiDividendReportLine,
 	EDavkiDividendType,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
@@ -44,7 +50,7 @@ type Withholding =
 type DividendTotals = {
 	dateReceived: ValidDateTime;
 	dividendType: EDavkiDividendType;
-	tracking: string;
+	tracking: EDavkiDividendTrackingId;
 	dividendAmount: number;
 	dividendAmountInOriginalCurrency: number;
 	foreignTaxPaid: number;
@@ -54,7 +60,7 @@ type DividendTotals = {
 type Payer = {
 	title: string;
 	address: string;
-	countryOfOrigin: string;
+	countryOfOrigin: EDavkiCountryCode;
 	taxReliefParagraph: string | null;
 };
 
@@ -105,7 +111,7 @@ function totalsPerAction(dividends: Dividend[], withholdings: Withholding[]): Di
 		return {
 			dateReceived: first.date,
 			dividendType: DIVIDEND_TYPE_MAPPINGS[first.dividendType] ?? EDavkiDividendType.UNKNOWN,
-			tracking: actionId,
+			tracking: EDavkiDividendTrackingId.FromCashActionId(actionId),
 			dividendAmount: sum(action.dividends.map(amountOf)),
 			dividendAmountInOriginalCurrency: sum(
 				action.dividends.map((dividend) => inOriginalCurrency(dividend, amountOf(dividend))),
@@ -140,7 +146,9 @@ function mergeDividendsReceivedOnSameDay(totals: DividendTotals[]): DividendTota
 	return [...sameDay.values()].map((entries) => ({
 		dateReceived: entries[0].dateReceived,
 		dividendType: entries[0].dividendType,
-		tracking: entries.map((entry) => entry.tracking).join("-"),
+		tracking: EDavkiDividendTrackingId.Schema.parse(
+			entries.map((entry) => entry.tracking).join("-"),
+		),
 		dividendAmount: entries.reduce((total, entry) => total + entry.dividendAmount, 0),
 		dividendAmountInOriginalCurrency: entries.reduce(
 			(total, entry) => total + entry.dividendAmountInOriginalCurrency,
@@ -202,8 +210,8 @@ export class DivReportGenerator {
 			(entry) =>
 				new EDavkiDividendReportLine({
 					dateReceived: entry.dateReceived,
-					taxNumberForDividendPayer: "",
-					dividendPayerIdentificationNumber: isin,
+					taxNumberForDividendPayer: EDavkiTaxNumber.Schema.parse(""),
+					dividendPayerIdentificationNumber: EDavkiPayerIdentificationNumber.FromIsin(isin),
 					dividendPayerTitle: payer.title,
 					dividendPayerAddress: payer.address,
 					dividendPayerCountryOfOrigin: payer.countryOfOrigin,
@@ -225,7 +233,7 @@ export class DivReportGenerator {
 	private async lookUpPayer(isin: Isin): Promise<Payer> {
 		let title = "";
 		let address = "";
-		let countryOfOrigin = "";
+		let countryOfOrigin = EDavkiCountryCode.Schema.parse("");
 		let taxReliefParagraph: string | null = null;
 
 		try {
@@ -233,7 +241,9 @@ export class DivReportGenerator {
 
 			if (responsibleCompany !== null) {
 				title = responsibleCompany.longName;
-				countryOfOrigin = responsibleCompany.location.shortCodeCountry2;
+				countryOfOrigin = EDavkiCountryCode.FromCountryCode(
+					responsibleCompany.location.shortCodeCountry2,
+				);
 				address = `${responsibleCompany.location.address1}, ${responsibleCompany.location.city}`;
 
 				const relevantCountry = await this.infoProvider.getCountry(

@@ -2,6 +2,12 @@ import { generateCsvReport as generateDivCsv } from "@brrr/TaxAuthorities/Sloven
 import { generateCsvReport as generateIfiCsv } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/CsvDIfi";
 import { generateCsvReport as generateKdvpCsv } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/CsvDohKdvp";
 import {
+	EDavkiCountryCode,
+	EDavkiDividendTrackingId,
+	EDavkiPayerIdentificationNumber,
+	EDavkiTaxNumber,
+} from "@brrr/TaxAuthorities/Slovenia/Schemas/EDavkiIdentifiers";
+import {
 	EDavkiDividendReportLine,
 	EDavkiDividendType,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
@@ -22,14 +28,15 @@ describe("CSV report generation without Node's Buffer", () => {
 		const csv = generateDivCsv([
 			new EDavkiDividendReportLine({
 				dateReceived: DateTime.fromISO("2025-03-14"),
-				taxNumberForDividendPayer: "123",
-				dividendPayerIdentificationNumber: "US0378331005",
+				taxNumberForDividendPayer: EDavkiTaxNumber.Schema.parse("123"),
+				dividendPayerIdentificationNumber:
+					EDavkiPayerIdentificationNumber.Schema.parse("US0378331005"),
 				dividendPayerTitle: "Apple, Inc.",
 				dividendPayerAddress: null,
-				dividendPayerCountryOfOrigin: "US",
+				dividendPayerCountryOfOrigin: EDavkiCountryCode.Schema.parse("US"),
 				dividendType: EDavkiDividendType.ORDINARY,
-				countryOfOrigin: "US",
-				dividendIdentifierForTracking: "AAPL-2025-03-14",
+				countryOfOrigin: EDavkiCountryCode.Schema.parse("US"),
+				dividendIdentifierForTracking: EDavkiDividendTrackingId.Schema.parse("AAPL-2025-03-14"),
 				taxReliefParagraphInInternationalTreaty: null,
 				dividendAmount: 1.5,
 				dividendAmountInOriginalCurrency: 1.62,
