@@ -17,23 +17,22 @@ for company, country and treaty data, see **infoproviders-lookup-data**.
 | `DOH_KDVP` | `kdvp` | Shares (Vrednostni papirji) | `ReportGeneration/Kdvp/KdvpReportGenerator.ts` | FIFO, or the broker's lots with `PROVIDED` |
 | `DOH_DIV` | `div` | Dividends (Dividende) | `ReportGeneration/Div/DivReportGenerator.ts` | none |
 | `D_IFI` | `ifi` | Derivatives (Izvedeni finančni inštrumenti) | `ReportGeneration/Ifi/IfiReportGenerator.ts` | FIFO, or `PROVIDED` |
-| `DOH_OBR` | — | Interest (Obresti) | not implemented (XSD only) | — |
 
 In the KDVP and IFI generators anything other than `PROVIDED` (including `NONE`) means FIFO. The site and the CLI both send FIFO and a
 report period of 1 January to 1 January of the following year.
 
 ## Flow inside the country
 
-- `SlovenianTaxAuthorityService` holds the `TaxAuthorityDescriptor` (`authorityId: "slovenia"`), maps the ID to the enum, and returns
-  `{ xml, csv }`.
-- `SlovenianTaxAuthorityProvider` (`ITaxAuthorityProvider`) applies `RENAME`, `SPLIT` and `REVERSE_SPLIT` relationships first, then
-  calls the generator's `convert` → report lines, and `toXml` / `toCsv`.
+- `SlovenianTaxAuthorityProvider` (`ITaxAuthorityProvider`) holds the `TaxAuthorityDescriptor` (`authorityId: "slovenia"`) and the
+  `REPORT_TYPES` table mapping IDs (`SlovenianReportTypeId`) to the enum. `generate` applies `RENAME`, `SPLIT` and `REVERSE_SPLIT`
+  relationships, calls the generator's `convert` once → report lines, and renders them with `toXml` and `toCsv` into `{ xml, csv }`.
+- Shared amount helpers (`round`, `toOriginalCurrency`, `foreignTaxOf`) are in `ReportGeneration/Amounts.ts`.
 - Each generator keeps the pure pieces in `Xml*.ts` (built with fast-xml-parser's `XMLBuilder`) and `Csv*.ts` (built with
   `csv-stringify/browser/esm/sync`, never the Node build). Report line classes are in `Schemas/Schemas.ts`.
 
 ## Per-report rules
 
-- **KDVP:** `FinancialEventsProcessor.process` lot-matches each grouping and keeps only the trades of lots closed inside the report
+- **KDVP:** `FinancialEventsProcessor.stockTradesClosedInPeriod` lot-matches each grouping and keeps only the trades of lots closed inside the report
   period, so earlier buys of shares sold this year appear too. Lines carry trade prices and commissions in the base currency plus the
   original currency. Core gain types map to eDavki ones through `GAIN_MAPPINGS`. The XML is always filed as `ORIGINAL`.
 - **IFI:** the same lot matching per derivative grouping (one per option contract), mapped through its own `GAIN_MAPPINGS`, sorted by

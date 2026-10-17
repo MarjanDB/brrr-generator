@@ -51,7 +51,7 @@ Treaty references come from the
 
 ## Not this skill
 
-`Failed processing stock lot … found no match` and `LookupError: Failed to match stock lot` come from
-`Core/StagingProcessor/Transformers/StockLotProcessor.ts`: a broker lot whose buy (by transaction ID) or sell (by date) isn't among the
+`LookupError: Failed to match stock lot` comes from
+`Core/StagingProcessor/StagingToCore.ts`: a broker lot whose buy (by transaction ID) or sell (by date) isn't among the
 grouping's trades. That is missing or partial export history, or an identifier mismatch between trade and lot, not lookup data. Check
 that the uploaded exports cover the whole account history, then the **ibkr-flex-query** transform.
