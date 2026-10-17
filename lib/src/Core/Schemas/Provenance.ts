@@ -1,4 +1,3 @@
-import type { GenericMonetaryExchangeInformation } from "@brrr/Core/Schemas/CommonFormats";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import type { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
@@ -47,7 +46,6 @@ export class SplitProvenanceStep {
 	public readonly quantityAfter?: number | null;
 	public readonly beforeQuantity?: number | null;
 	public readonly beforeTradePrice?: number | null;
-	public readonly beforeExchangedMoney?: GenericMonetaryExchangeInformation | null;
 
 	constructor(
 		args: ProvenanceStepArgs & {
@@ -55,7 +53,6 @@ export class SplitProvenanceStep {
 			quantityAfter?: number | null;
 			beforeQuantity?: number | null;
 			beforeTradePrice?: number | null;
-			beforeExchangedMoney?: GenericMonetaryExchangeInformation | null;
 		},
 	) {
 		this.fromIdentifier = args.fromIdentifier;
@@ -66,7 +63,6 @@ export class SplitProvenanceStep {
 		this.quantityAfter = args.quantityAfter;
 		this.beforeQuantity = args.beforeQuantity;
 		this.beforeTradePrice = args.beforeTradePrice;
-		this.beforeExchangedMoney = args.beforeExchangedMoney;
 	}
 
 	copy(
@@ -81,7 +77,6 @@ export class SplitProvenanceStep {
 			quantityAfter: this.quantityAfter,
 			beforeQuantity: this.beforeQuantity,
 			beforeTradePrice: this.beforeTradePrice,
-			beforeExchangedMoney: this.beforeExchangedMoney,
 			...overrides,
 		});
 	}

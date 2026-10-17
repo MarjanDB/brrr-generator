@@ -59,7 +59,7 @@ export class LotMatcher {
 		const tradeMappings = new Map<string, Trade>();
 
 		for (const event of events) {
-			const convertedEvent = this._convertTradeEvent(event);
+			const convertedEvent = this.convertTradeEvent(event);
 			tradeEventMappings.set(event.id, event);
 			tradeMappings.set(convertedEvent.id, convertedEvent);
 		}
@@ -69,7 +69,7 @@ export class LotMatcher {
 		const generatedLots = matchingDetails.lots;
 
 		const generatedLotsWithTradeEvents = generatedLots.map((lot) =>
-			this._generateTradeEventBasedOnLot(lot, tradeEventMappings),
+			this.generateTradeEventBasedOnLot(lot, tradeEventMappings),
 		);
 
 		const convertedLots: TaxLot<TradeEvent, TradeEvent>[] = generatedLotsWithTradeEvents.map(
@@ -94,11 +94,11 @@ export class LotMatcher {
 		return new GenericLotMatchingDetails(convertedLots, allTradesTakenFromLots);
 	}
 
-	private _convertTradeEvent(event: TradeEvent): Trade {
+	private convertTradeEvent(event: TradeEvent): Trade {
 		return { id: event.id, quantity: event.exchangedMoney.underlyingQuantity, date: event.date };
 	}
 
-	private _generateTradeEventBasedOnLot(
+	private generateTradeEventBasedOnLot(
 		lot: Lot,
 		tradeEventMappings: Map<string, TradeEvent>,
 	): GeneratedLotWithTradeEvents {

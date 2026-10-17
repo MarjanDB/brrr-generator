@@ -12,10 +12,10 @@ import { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades";
 import { XMLParser } from "fast-xml-parser";
 
 export class IbkrExtractService {
-	private readonly _parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "" });
+	private readonly xmlParser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "" });
 
 	public extractFromXML(xmlString: string): SegmentedTrades {
-		const doc = FlexQueryResponseSchema.parse(this._parser.parse(xmlString));
+		const doc = FlexQueryResponseSchema.parse(this.xmlParser.parse(xmlString));
 		const statements = doc.FlexQueryResponse.FlexStatements.FlexStatement;
 
 		if (statements.length === 0) {
@@ -67,22 +67,22 @@ export class IbkrExtractService {
 
 	public mergeTrades(trades: SegmentedTrades[]): SegmentedTrades {
 		return new SegmentedTrades({
-			stockTrades: this._deduplicateByTransactionID<TradeStock>(trades.map((t) => t.stockTrades)),
+			stockTrades: this.deduplicateByTransactionID<TradeStock>(trades.map((t) => t.stockTrades)),
 			stockLots: trades.flatMap((t) => t.stockLots), // lots cannot be deduplicated, as there is no unique identifier
-			derivativeTrades: this._deduplicateByTransactionID<TradeDerivative>(
+			derivativeTrades: this.deduplicateByTransactionID<TradeDerivative>(
 				trades.map((t) => t.derivativeTrades),
 			),
 			derivativeLots: trades.flatMap((t) => t.derivativeLots), // lots cannot be deduplicated, as there is no unique identifier
-			cashTransactions: this._deduplicateByTransactionID<TransactionCash>(
+			cashTransactions: this.deduplicateByTransactionID<TransactionCash>(
 				trades.map((t) => t.cashTransactions),
 			),
-			corporateActions: this._deduplicateByTransactionID<CorporateAction>(
+			corporateActions: this.deduplicateByTransactionID<CorporateAction>(
 				trades.map((t) => t.corporateActions),
 			),
 		});
 	}
 
-	private _deduplicateByTransactionID<T extends { transactionID: string }>(lists: T[][]): T[] {
+	private deduplicateByTransactionID<T extends { transactionID: string }>(lists: T[][]): T[] {
 		const all = lists.flat();
 		const map = new Map<string, T>();
 		for (const item of all) {

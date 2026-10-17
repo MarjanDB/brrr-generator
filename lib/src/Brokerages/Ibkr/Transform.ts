@@ -55,11 +55,11 @@ export class IbkrTransformService {
 			a.isin.localeCompare(b.isin),
 		);
 
-		const stockTradeEvents = this._convertStockTradesToEvents(stockTrades);
-		const stockLotEvents = this._convertStockLotsToEvents(stockLots);
-		const cashTransactionEvents = this._convertToCashTransactions(cashTransactions);
-		const derivativeTradeEvents = this._convertDerivativeTradesToEvents(derivativeTrades);
-		const derivativeLotEvents = this._convertDerivativeLotsToEvents(derivativeLots);
+		const stockTradeEvents = this.convertStockTradesToEvents(stockTrades);
+		const stockLotEvents = this.convertStockLotsToEvents(stockLots);
+		const cashTransactionEvents = this.convertToCashTransactions(cashTransactions);
+		const derivativeTradeEvents = this.convertDerivativeTradesToEvents(derivativeTrades);
+		const derivativeLotEvents = this.convertDerivativeLotsToEvents(derivativeLots);
 
 		const groupByIdentifier = <T extends AnyEvent>(
 			items: T[],
@@ -119,9 +119,7 @@ export class IbkrTransformService {
 			);
 		}
 
-		const partials = this._convertCorporateActionsToPartialRelationships(
-			segmented.corporateActions,
-		);
+		const partials = this.convertCorporateActionsToPartialRelationships(segmented.corporateActions);
 		const identifierRelationships = new StagingIdentifierRelationships({
 			relationships: [],
 			partialRelationships: partials,
@@ -130,7 +128,7 @@ export class IbkrTransformService {
 		return new StagingFinancialEvents({ groupings, identifierRelationships });
 	}
 
-	private _convertToCashTransactions(cashTransactions: TransactionCash[]) {
+	private convertToCashTransactions(cashTransactions: TransactionCash[]) {
 		return cashTransactions.map((transaction) => {
 			const descLower = transaction.description.toLowerCase();
 			const isOrdinaryDividend = descLower.includes("ordinary dividend");
@@ -190,7 +188,7 @@ export class IbkrTransformService {
 		});
 	}
 
-	private _convertStockTradesToEvents(trades: TradeStock[]) {
+	private convertStockTradesToEvents(trades: TradeStock[]) {
 		return trades.map((trade) => {
 			const financialIdentifier = new StagingFinancialIdentifier({
 				isin: trade.isin,
@@ -225,7 +223,7 @@ export class IbkrTransformService {
 		});
 	}
 
-	private _convertStockLotsToEvents(lots: LotStock[]): StagingTaxLot[] {
+	private convertStockLotsToEvents(lots: LotStock[]): StagingTaxLot[] {
 		return lots.map(
 			(lot) =>
 				new StagingTaxLot({
@@ -242,7 +240,7 @@ export class IbkrTransformService {
 		);
 	}
 
-	private _convertDerivativeTradesToEvents(trades: TradeDerivative[]) {
+	private convertDerivativeTradesToEvents(trades: TradeDerivative[]) {
 		return trades.map((trade) => {
 			const financialIdentifier = new StagingFinancialIdentifier({
 				isin: trade.underlyingSecurityID,
@@ -278,7 +276,7 @@ export class IbkrTransformService {
 		});
 	}
 
-	private _convertDerivativeLotsToEvents(lots: LotDerivative[]): StagingTaxLot[] {
+	private convertDerivativeLotsToEvents(lots: LotDerivative[]): StagingTaxLot[] {
 		return lots.map(
 			(lot) =>
 				new StagingTaxLot({
@@ -296,7 +294,7 @@ export class IbkrTransformService {
 		);
 	}
 
-	private _convertCorporateActionsToPartialRelationships(
+	private convertCorporateActionsToPartialRelationships(
 		corporateActions: CorporateAction[],
 	): StagingIdentifierRelationshipPartialAny[] {
 		const partials: StagingIdentifierRelationshipPartialAny[] = [];

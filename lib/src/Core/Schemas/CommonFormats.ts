@@ -15,17 +15,6 @@ export enum GenericShortLong {
 	LONG = "LONG",
 }
 
-// Names here are just guesses, since I don't know what these correspond to in English
-export enum GenericTradeReportItemType {
-	STOCK = "STOCK",
-	OPTION = "OPTION",
-	STOCK_SHORT = "STOCK_SHORT",
-	STOCK_CONTRACT = "STOCK_CONTRACT",
-	STOCK_CONTRACT_SHORT = "STOCK_CONTRACT_SHORT",
-	COMPANY_SHARE = "COMPANY_SHARE",
-	PLVPZOK = "PLVPZOK",
-}
-
 export enum GenericTradeReportItemGainType {
 	CAPITAL_INVESTMENT = "CAPITAL_INVESTMENT",
 	BOUGHT = "BOUGHT",
@@ -36,19 +25,6 @@ export enum GenericTradeReportItemGainType {
 	GIFT = "GIFT",
 	OTHER = "OTHER",
 	RIGHT_TO_NEWLY_ISSUED_STOCK = "RIGHT_TO_NEWLY_ISSUED_STOCK",
-}
-
-export enum GenericDerivativeReportItemType {
-	DERIVATIVE = "DERIVATIVE",
-	DERIVATIVE_SHORT = "DERIVATIVE_SHORT",
-}
-
-export enum GenericDerivativeReportAssetClassType {
-	FUTURES_CONTRACT = "FUTURES_CONTRACT",
-	CONTRACT_FOR_DIFFERENCE = "CFD",
-	OPTION = "OPTION",
-	CERTIFICATE = "CERTIFICATE",
-	OTHER = "OTHER",
 }
 
 export enum GenericDerivativeReportItemGainType {

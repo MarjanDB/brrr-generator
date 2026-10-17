@@ -54,7 +54,7 @@ export class SlovenianTaxAuthorityProvider
 		return reportEndPeriod < lastYear;
 	}
 
-	private _applyRelationships(events: FinancialEvents) {
+	private applyRelationships(events: FinancialEvents) {
 		return this.applyIdentifierRelationshipsService.apply(events, [
 			IdentifierChangeType.RENAME,
 			IdentifierChangeType.SPLIT,
@@ -66,7 +66,7 @@ export class SlovenianTaxAuthorityProvider
 		reportType: SlovenianTaxAuthorityReportTypes,
 		ctx: TaxAuthorityRunContext,
 	): Promise<SlovenianReportItem[]> {
-		const data = this._applyRelationships(ctx.events);
+		const data = this.applyRelationships(ctx.events);
 
 		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_KDVP) {
 			return this.kdvpGenerator.convert(ctx.reportConfig, data);
@@ -87,7 +87,7 @@ export class SlovenianTaxAuthorityProvider
 		reportType: SlovenianTaxAuthorityReportTypes,
 		ctx: TaxAuthorityRunContext,
 	): Promise<string> {
-		const data = this._applyRelationships(ctx.events);
+		const data = this.applyRelationships(ctx.events);
 
 		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_KDVP) {
 			return this.kdvpGenerator.toXml(
@@ -122,7 +122,7 @@ export class SlovenianTaxAuthorityProvider
 		reportType: SlovenianTaxAuthorityReportTypes,
 		ctx: TaxAuthorityRunContext,
 	): Promise<string> {
-		const data = this._applyRelationships(ctx.events);
+		const data = this.applyRelationships(ctx.events);
 
 		if (reportType === SlovenianTaxAuthorityReportTypes.DOH_KDVP) {
 			return this.kdvpGenerator.toCsv(this.kdvpGenerator.convert(ctx.reportConfig, data));

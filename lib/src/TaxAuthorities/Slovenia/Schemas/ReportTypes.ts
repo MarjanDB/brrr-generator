@@ -2,7 +2,6 @@ export enum SlovenianTaxAuthorityReportTypes {
 	DOH_DIV = "Dividende",
 	DOH_KDVP = "Vrednostni papirji",
 	D_IFI = "Izvedeni finančni inštrumenti",
-	DOH_OBR = "Obresti",
 }
 
 // https://edavki.durs.si/EdavkiPortal/PersonalPortal/[360253]/Pages/Help/sl/WorkflowType1.htm

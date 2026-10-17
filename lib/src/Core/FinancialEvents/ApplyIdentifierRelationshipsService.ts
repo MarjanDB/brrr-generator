@@ -37,7 +37,7 @@ export class ApplyIdentifierRelationshipsService {
 		let current = events;
 
 		if (changeTypesToApply.includes(IdentifierChangeType.RENAME)) {
-			current = this._applyRename(current);
+			current = this.applyRename(current);
 		}
 
 		const relsForSplits = current.identifierRelationships.filter(
@@ -48,13 +48,13 @@ export class ApplyIdentifierRelationshipsService {
 		for (const rel of [...relsForSplits].sort(
 			(a, b) => a.effectiveDate.toMillis() - b.effectiveDate.toMillis(),
 		)) {
-			current = this._applySplitOrReverseSplit(current, rel);
+			current = this.applySplitOrReverseSplit(current, rel);
 		}
 
 		return current;
 	}
 
-	private _applyRename(events: FinancialEvents): FinancialEvents {
+	private applyRename(events: FinancialEvents): FinancialEvents {
 		const rels = events.identifierRelationships.filter(
 			(r) => r.changeType === IdentifierChangeType.RENAME,
 		);
@@ -62,20 +62,20 @@ export class ApplyIdentifierRelationshipsService {
 
 		const pairs = rels.map((r) => [r.fromIdentifier, r.toIdentifier] as const);
 
-		const _sink = (identifier: FinancialIdentifier): FinancialIdentifier => {
+		const resolveSink = (identifier: FinancialIdentifier): FinancialIdentifier => {
 			for (const [fromId, toId] of pairs) {
-				if (fromId.isTheSameAs(identifier)) return _sink(toId);
+				if (fromId.isTheSameAs(identifier)) return resolveSink(toId);
 			}
 			return identifier;
 		};
 
 		const idToSink = new Map<FinancialIdentifier, FinancialIdentifier>();
 		for (const r of rels) {
-			idToSink.set(r.fromIdentifier, _sink(r.fromIdentifier));
-			idToSink.set(r.toIdentifier, _sink(r.toIdentifier));
+			idToSink.set(r.fromIdentifier, resolveSink(r.fromIdentifier));
+			idToSink.set(r.toIdentifier, resolveSink(r.toIdentifier));
 		}
 
-		const _getSink = (identifier: FinancialIdentifier): FinancialIdentifier | null => {
+		const findSink = (identifier: FinancialIdentifier): FinancialIdentifier | null => {
 			for (const [node, sink] of idToSink) {
 				if (node.sameInstrumentByIsin(identifier) || sink.sameInstrumentByIsin(identifier)) {
 					return sink;
@@ -88,7 +88,7 @@ export class ApplyIdentifierRelationshipsService {
 		const bySink = new Map<string, { sink: FinancialIdentifier; groupings: FinancialGrouping[] }>();
 
 		for (const g of events.groupings) {
-			const sink = _getSink(g.financialIdentifier);
+			const sink = findSink(g.financialIdentifier);
 			if (sink === null) {
 				notAffected.push(g);
 			} else {
@@ -105,7 +105,7 @@ export class ApplyIdentifierRelationshipsService {
 		// Build provenance per sink
 		const sinkToProvenance = new Map<string, AnyProvenanceStep[]>();
 		for (const r of rels) {
-			const sink = _sink(r.toIdentifier);
+			const sink = resolveSink(r.toIdentifier);
 			const key = sink.toKey();
 			const step = new RenameProvenanceStep({
 				fromIdentifier: r.fromIdentifier,
@@ -128,7 +128,7 @@ export class ApplyIdentifierRelationshipsService {
 		}
 
 		const merged = [...bySink.values()].map(({ sink, groupings }) =>
-			this._mergeGroupings(sink, groupings, sinkToProvenance.get(sink.toKey()) ?? []),
+			this.mergeGroupings(sink, groupings, sinkToProvenance.get(sink.toKey()) ?? []),
 		);
 
 		return new FinancialEvents({
@@ -137,7 +137,7 @@ export class ApplyIdentifierRelationshipsService {
 		});
 	}
 
-	private _applySplitOrReverseSplit(
+	private applySplitOrReverseSplit(
 		events: FinancialEvents,
 		relationship: IdentifierRelationshipSplit,
 	): FinancialEvents {
@@ -167,7 +167,6 @@ export class ApplyIdentifierRelationshipsService {
 				quantityAfter: m.underlyingQuantity * ratio,
 				beforeQuantity: m.underlyingQuantity,
 				beforeTradePrice: m.underlyingTradePrice,
-				beforeExchangedMoney: m,
 			});
 
 			const newMoney = {
@@ -231,13 +230,13 @@ export class ApplyIdentifierRelationshipsService {
 
 		let mergedGrouping: FinancialGrouping;
 		if (toGrouping !== null) {
-			mergedGrouping = this._mergeGroupings(
+			mergedGrouping = this.mergeGroupings(
 				relationship.toIdentifier,
 				[scaledFrom, toGrouping],
 				[...scaledFrom.provenance, ...toGrouping.provenance],
 			);
 		} else {
-			mergedGrouping = this._mergeGroupings(
+			mergedGrouping = this.mergeGroupings(
 				relationship.toIdentifier,
 				[scaledFrom],
 				scaledFrom.provenance,
@@ -251,7 +250,7 @@ export class ApplyIdentifierRelationshipsService {
 		});
 	}
 
-	private _mergeGroupings(
+	private mergeGroupings(
 		properId: FinancialIdentifier,
 		groupings: FinancialGrouping[],
 		groupingProvenance: AnyProvenanceStep[],

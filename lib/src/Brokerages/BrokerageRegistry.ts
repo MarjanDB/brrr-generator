@@ -13,7 +13,7 @@ export class BrokerageRegistry {
 		return [{ id: this.ibkr.brokerageId, name: this.ibkr.displayName }];
 	}
 
-	private _detectOne(file: { fileName: string; xml: string }): BrokerageFileDetection {
+	private detectOne(file: { fileName: string; xml: string }): BrokerageFileDetection {
 		const isIbkr = this.ibkr.isThisValidExport(file.xml);
 		if (!isIbkr) {
 			return { fileName: file.fileName, detectedBrokerage: null };
@@ -26,10 +26,10 @@ export class BrokerageRegistry {
 	}
 
 	public detect(files: { fileName: string; xml: string }[]): BrokerageFileDetection[] {
-		return files.map((f) => this._detectOne(f));
+		return files.map((f) => this.detectOne(f));
 	}
 
-	private _pickIbkrXmlStrings(
+	private pickIbkrXmlStrings(
 		files: { fileName: string; xml: string }[],
 		detections: BrokerageFileDetection[],
 	): string[] {
@@ -49,7 +49,7 @@ export class BrokerageRegistry {
 	} {
 		const detections = this.detect(files);
 
-		const ibkrXmlStrings = this._pickIbkrXmlStrings(files, detections);
+		const ibkrXmlStrings = this.pickIbkrXmlStrings(files, detections);
 		const ibkrStaging =
 			ibkrXmlStrings.length > 0 ? this.ibkr.loadAndTransform(ibkrXmlStrings) : null;
 
