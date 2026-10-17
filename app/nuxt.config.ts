@@ -8,6 +8,15 @@ export default defineNuxtConfig({
 
 	devtools: { enabled: config.NODE_ENV === "development" },
 
+	vite: {
+		build: {
+			// The whole wizard is one page, so its chunk carries chart.js and the tax engine (~691 kB);
+			// the entry carries PostHog and i18n (~541 kB). Kept just above the page chunk so growth
+			// still warns.
+			chunkSizeWarningLimit: 700,
+		},
+	},
+
 	components: [{ path: "~/components", pathPrefix: false }],
 
 	modules: [
