@@ -1,26 +1,23 @@
-import { readFixture } from "@brrr/__tests__/support/Fixtures";
 import { BrokerageRegistry } from "@brrr/Brokerages/BrokerageRegistry";
 import { createContainer } from "@brrr/container";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
+import { TestKit } from "@brrr/test-cases";
 
-const DIVIDENDS = "Brokerages/Ibkr/__tests__/Cases/SimpleCashTransactionOfDividends.xml";
+const dividendsXml = TestKit.ibkr.dividends.readInput("SimpleCashTransactionOfDividends.xml").xml;
 
 function registry(): BrokerageRegistry {
 	return createContainer(new PredefinedInfoProvider()).get(BrokerageRegistry);
 }
 
 test("a valid export is detected without an error", () => {
-	const [detection] = registry().detect([{ fileName: "ok.xml", xml: readFixture(DIVIDENDS) }]);
+	const [detection] = registry().detect([{ fileName: "ok.xml", xml: dividendsXml }]);
 
 	expect(detection.detectedBrokerage?.id).toEqual("ibkr");
 	expect(detection.error).toBeNull();
 });
 
 test("a Flex Query that fails to parse carries the parse error", () => {
-	const damaged = readFixture(DIVIDENDS).replace(
-		'type="Dividends"',
-		'type="Broker Interest Received"',
-	);
+	const damaged = dividendsXml.replace('type="Dividends"', 'type="Broker Interest Received"');
 
 	const [detection] = registry().detect([{ fileName: "damaged.xml", xml: damaged }]);
 
