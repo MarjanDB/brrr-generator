@@ -27,7 +27,7 @@ const GAIN_MAPPINGS: Record<string, EDavkiDerivativeReportGainType> = {
 	[GenericDerivativeReportItemGainType.CAPITAL_RAISE]: EDavkiDerivativeReportGainType.OTHER,
 	[GenericDerivativeReportItemGainType.CAPITAL_ASSET]: EDavkiDerivativeReportGainType.OTHER,
 	[GenericDerivativeReportItemGainType.CAPITALIZATION_CHANGE]: EDavkiDerivativeReportGainType.OTHER,
-	[GenericDerivativeReportItemGainType.INHERITENCE]: EDavkiDerivativeReportGainType.INHERITENCE,
+	[GenericDerivativeReportItemGainType.INHERITANCE]: EDavkiDerivativeReportGainType.INHERITANCE,
 	[GenericDerivativeReportItemGainType.GIFT]: EDavkiDerivativeReportGainType.GIFT,
 	[GenericDerivativeReportItemGainType.OTHER]: EDavkiDerivativeReportGainType.OTHER,
 };
@@ -53,9 +53,9 @@ function convertBuy(
 			line.exchangedMoney.underlyingTradePrice *
 			line.multiplier *
 			(1 / line.exchangedMoney.fxRateToBase),
-		commissions: line.exchangedMoney.comissionTotal,
+		commissions: line.exchangedMoney.commissionTotal,
 		commissionsInOriginalCurrency:
-			line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+			line.exchangedMoney.commissionTotal * (1 / line.exchangedMoney.fxRateToBase),
 		leveraged: false,
 	});
 }
@@ -80,9 +80,9 @@ function convertSell(
 			line.exchangedMoney.underlyingTradePrice *
 			line.multiplier *
 			(1 / line.exchangedMoney.fxRateToBase),
-		commissions: line.exchangedMoney.comissionTotal,
+		commissions: line.exchangedMoney.commissionTotal,
 		commissionsInOriginalCurrency:
-			line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+			line.exchangedMoney.commissionTotal * (1 / line.exchangedMoney.fxRateToBase),
 		leveraged: false,
 	});
 }

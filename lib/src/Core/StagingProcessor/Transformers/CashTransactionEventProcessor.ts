@@ -21,7 +21,7 @@ export function processCashTransaction(input: StagingTransactionCash): Transacti
 		assetClass: input.assetClass,
 		date: input.date,
 		multiplier: input.multiplier,
-		exchangedMoney: { ...input.exchangedMoney },
+		exchangedMoney: input.exchangedMoney,
 		actionId: input.actionId,
 		transactionId: input.transactionId,
 		provenance: [] as never[],

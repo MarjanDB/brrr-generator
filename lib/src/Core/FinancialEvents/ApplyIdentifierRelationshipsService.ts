@@ -169,11 +169,10 @@ export class ApplyIdentifierRelationshipsService {
 				beforeTradePrice: m.underlyingTradePrice,
 			});
 
-			const newMoney = {
-				...m,
+			const newMoney = m.copy({
 				underlyingQuantity: m.underlyingQuantity * ratio,
 				underlyingTradePrice: m.underlyingTradePrice * (1 / ratio),
-			};
+			});
 
 			scaledTrades.push(
 				t.copy({

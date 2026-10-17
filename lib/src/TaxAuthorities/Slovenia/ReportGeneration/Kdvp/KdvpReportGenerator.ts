@@ -29,7 +29,7 @@ const GAIN_MAPPINGS: Record<string, EDavkiTradeReportGainType> = {
 	[GenericTradeReportItemGainType.CAPITAL_ASSET]: EDavkiTradeReportGainType.CAPITAL_ASSET_RAISE,
 	[GenericTradeReportItemGainType.CAPITALIZATION_CHANGE]:
 		EDavkiTradeReportGainType.CAPITALIZATION_CHANGE,
-	[GenericTradeReportItemGainType.INHERITENCE]: EDavkiTradeReportGainType.INHERITENCE,
+	[GenericTradeReportItemGainType.INHERITANCE]: EDavkiTradeReportGainType.INHERITANCE,
 	[GenericTradeReportItemGainType.GIFT]: EDavkiTradeReportGainType.GIFT,
 	[GenericTradeReportItemGainType.OTHER]: EDavkiTradeReportGainType.OTHER,
 	[GenericTradeReportItemGainType.RIGHT_TO_NEWLY_ISSUED_STOCK]: EDavkiTradeReportGainType.OTHER,
@@ -50,9 +50,9 @@ function convertStockBuy(
 			line.exchangedMoney.underlyingQuantity *
 			line.exchangedMoney.underlyingTradePrice *
 			(1 / line.exchangedMoney.fxRateToBase),
-		commissions: line.exchangedMoney.comissionTotal,
+		commissions: line.exchangedMoney.commissionTotal,
 		commissionsInOriginalCurrency:
-			line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+			line.exchangedMoney.commissionTotal * (1 / line.exchangedMoney.fxRateToBase),
 		inheritanceAndGiftTaxPaid: null,
 		baseTaxReduction: null,
 	});
@@ -72,9 +72,9 @@ function convertStockSell(
 			line.exchangedMoney.underlyingQuantity *
 			line.exchangedMoney.underlyingTradePrice *
 			(1 / line.exchangedMoney.fxRateToBase),
-		commissions: line.exchangedMoney.comissionTotal,
+		commissions: line.exchangedMoney.commissionTotal,
 		commissionsInOriginalCurrency:
-			line.exchangedMoney.comissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+			line.exchangedMoney.commissionTotal * (1 / line.exchangedMoney.fxRateToBase),
 		satisfiesTaxBasisReduction: false, // TODO: Wash sale handling
 	});
 }

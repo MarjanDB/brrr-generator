@@ -115,25 +115,23 @@ export class LotMatcher {
 		const lotQuantity = lot.quantity;
 
 		const clonedAcquiredTrade: TradeEvent = underlyingAcquiredTrade.copy({
-			exchangedMoney: {
-				...underlyingAcquiredTrade.exchangedMoney,
+			exchangedMoney: underlyingAcquiredTrade.exchangedMoney.copy({
 				underlyingQuantity: lotQuantity,
-				comissionTotal:
+				commissionTotal:
 					(1 / underlyingAcquiredTrade.exchangedMoney.underlyingQuantity) *
 					lotQuantity *
-					underlyingAcquiredTrade.exchangedMoney.comissionTotal,
-			},
+					underlyingAcquiredTrade.exchangedMoney.commissionTotal,
+			}),
 		});
 
 		const clonedSoldTrade: TradeEvent = underlyingSoldTrade.copy({
-			exchangedMoney: {
-				...underlyingSoldTrade.exchangedMoney,
+			exchangedMoney: underlyingSoldTrade.exchangedMoney.copy({
 				underlyingQuantity: -lotQuantity,
-				comissionTotal:
+				commissionTotal:
 					(1 / underlyingSoldTrade.exchangedMoney.underlyingQuantity) *
 					-lotQuantity *
-					underlyingSoldTrade.exchangedMoney.comissionTotal,
-			},
+					underlyingSoldTrade.exchangedMoney.commissionTotal,
+			}),
 		});
 
 		return { lot, acquiredTrade: clonedAcquiredTrade, soldTrade: clonedSoldTrade };
