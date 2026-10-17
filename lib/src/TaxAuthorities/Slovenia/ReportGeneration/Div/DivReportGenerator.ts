@@ -84,11 +84,20 @@ function processEdavkiLineItemsFromCashTransactions(
 			continue;
 		}
 
-		existing.dividendAmount +=
-			dividend.exchangedMoney.underlyingQuantity * dividend.exchangedMoney.underlyingTradePrice;
-		existing.dividendAmountInOriginalCurrency += toOriginalCurrency(
-			dividend.exchangedMoney.underlyingQuantity * dividend.exchangedMoney.underlyingTradePrice,
-			dividend.exchangedMoney.fxRateToBase,
+		actionToDividendMapping.set(
+			actionId,
+			existing.copy({
+				dividendAmount:
+					existing.dividendAmount +
+					dividend.exchangedMoney.underlyingQuantity * dividend.exchangedMoney.underlyingTradePrice,
+				dividendAmountInOriginalCurrency:
+					existing.dividendAmountInOriginalCurrency +
+					toOriginalCurrency(
+						dividend.exchangedMoney.underlyingQuantity *
+							dividend.exchangedMoney.underlyingTradePrice,
+						dividend.exchangedMoney.fxRateToBase,
+					),
+			}),
 		);
 	}
 
@@ -99,13 +108,21 @@ function processEdavkiLineItemsFromCashTransactions(
 			throw new Error("Edge case where Withholding Tax has no matching Dividend Cash Transaction");
 		}
 
-		entry.foreignTaxPaid +=
-			withheldTax.exchangedMoney.underlyingQuantity *
-			withheldTax.exchangedMoney.underlyingTradePrice;
-		entry.foreignTaxPaidInOriginalCurrency += toOriginalCurrency(
-			withheldTax.exchangedMoney.underlyingQuantity *
-				withheldTax.exchangedMoney.underlyingTradePrice,
-			withheldTax.exchangedMoney.fxRateToBase,
+		actionToDividendMapping.set(
+			actionId,
+			entry.copy({
+				foreignTaxPaid:
+					entry.foreignTaxPaid +
+					withheldTax.exchangedMoney.underlyingQuantity *
+						withheldTax.exchangedMoney.underlyingTradePrice,
+				foreignTaxPaidInOriginalCurrency:
+					entry.foreignTaxPaidInOriginalCurrency +
+					toOriginalCurrency(
+						withheldTax.exchangedMoney.underlyingQuantity *
+							withheldTax.exchangedMoney.underlyingTradePrice,
+						withheldTax.exchangedMoney.fxRateToBase,
+					),
+			}),
 		);
 	}
 
@@ -262,26 +279,22 @@ export class DivReportGenerator {
 			// Silently fail — company/country lookup is best-effort
 		}
 
-		for (const dividendLine of lines) {
-			dividendLine.dividendAmount = round(dividendLine.dividendAmount, 2);
-			dividendLine.dividendAmountInOriginalCurrency = round(
-				dividendLine.dividendAmountInOriginalCurrency,
-				2,
-			);
-			dividendLine.foreignTaxPaid = round(Math.abs(dividendLine.foreignTaxPaid), 2);
-			dividendLine.foreignTaxPaidInOriginalCurrency = round(
-				Math.abs(dividendLine.foreignTaxPaidInOriginalCurrency),
-				2,
-			);
-			dividendLine.dividendPayerTitle = dividendPayerTitle;
-			dividendLine.dividendPayerCountryOfOrigin = dividendPayerCountryOfOrigin;
-			dividendLine.countryOfOrigin = countryOfOrigin;
-			dividendLine.dividendPayerAddress = dividendPayerAddress;
-			dividendLine.taxReliefParagraphInInternationalTreaty =
-				taxReliefParagraphInInternationalTreaty;
-		}
-
-		return lines;
+		return lines.map((dividendLine) =>
+			dividendLine.copy({
+				dividendAmount: round(dividendLine.dividendAmount, 2),
+				dividendAmountInOriginalCurrency: round(dividendLine.dividendAmountInOriginalCurrency, 2),
+				foreignTaxPaid: round(Math.abs(dividendLine.foreignTaxPaid), 2),
+				foreignTaxPaidInOriginalCurrency: round(
+					Math.abs(dividendLine.foreignTaxPaidInOriginalCurrency),
+					2,
+				),
+				dividendPayerTitle,
+				dividendPayerCountryOfOrigin,
+				countryOfOrigin,
+				dividendPayerAddress,
+				taxReliefParagraphInInternationalTreaty,
+			}),
+		);
 	}
 
 	toXml(

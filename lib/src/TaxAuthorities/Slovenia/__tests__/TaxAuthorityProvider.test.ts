@@ -35,6 +35,10 @@ import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGenerati
 import { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator";
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
 import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
+import {
+	EDavkiDividendReportLine,
+	EDavkiDividendType,
+} from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
 import { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import { DateTime } from "luxon";
@@ -465,4 +469,30 @@ test("unknown report type id is rejected", async () => {
 			events: testData,
 		}),
 	).rejects.toThrow("Unsupported report type 'nope' for tax authority: slovenia");
+});
+
+test("report lines are immutable models", () => {
+	const line = new EDavkiDividendReportLine({
+		dateReceived: makeDate("2023-06-07"),
+		taxNumberForDividendPayer: "",
+		dividendPayerIdentificationNumber: "ISIN",
+		dividendPayerTitle: "",
+		dividendPayerAddress: null,
+		dividendPayerCountryOfOrigin: "",
+		dividendType: EDavkiDividendType.ORDINARY,
+		countryOfOrigin: "",
+		dividendIdentifierForTracking: "DivAction",
+		taxReliefParagraphInInternationalTreaty: null,
+		dividendAmount: 10,
+		dividendAmountInOriginalCurrency: 20,
+		foreignTaxPaid: 5,
+		foreignTaxPaidInOriginalCurrency: 10,
+	});
+
+	const copied = line.copy({ dividendAmount: 1 });
+
+	expect(copied).toBeInstanceOf(EDavkiDividendReportLine);
+	expect(copied.dividendAmount).toEqual(1);
+	expect(copied.dividendAmountInOriginalCurrency).toEqual(20);
+	expect(line.dividendAmount).toEqual(10);
 });

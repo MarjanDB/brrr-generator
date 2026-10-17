@@ -1,3 +1,4 @@
+import { Model } from "@brrr/Utils/Model";
 import type { DateTime } from "luxon";
 
 // https://www.racunovodstvo.net/zakonodaja/zdoh/90-clen
@@ -11,38 +12,41 @@ export enum EDavkiDividendType {
 	BONUS = "6",
 }
 
-export class EDavkiDividendReportLine {
-	public dateReceived: DateTime;
-	public taxNumberForDividendPayer: string;
-	public dividendPayerIdentificationNumber: string;
-	public dividendPayerTitle: string;
-	public dividendPayerAddress: string | null;
-	public dividendPayerCountryOfOrigin: string;
-	public dividendType: EDavkiDividendType;
-	public countryOfOrigin: string;
-	public dividendIdentifierForTracking: string;
-	public taxReliefParagraphInInternationalTreaty: string | null;
-	public dividendAmount: number;
-	public dividendAmountInOriginalCurrency: number;
-	public foreignTaxPaid: number;
-	public foreignTaxPaidInOriginalCurrency: number;
+type EDavkiDividendReportLineArgs = {
+	dateReceived: DateTime;
+	taxNumberForDividendPayer: string;
+	dividendPayerIdentificationNumber: string;
+	dividendPayerTitle: string;
+	dividendPayerAddress: string | null;
+	dividendPayerCountryOfOrigin: string;
+	dividendType: EDavkiDividendType;
+	countryOfOrigin: string;
+	dividendIdentifierForTracking: string;
+	taxReliefParagraphInInternationalTreaty: string | null;
+	dividendAmount: number;
+	dividendAmountInOriginalCurrency: number;
+	foreignTaxPaid: number;
+	foreignTaxPaidInOriginalCurrency: number;
+};
 
-	constructor(args: {
-		dateReceived: DateTime;
-		taxNumberForDividendPayer: string;
-		dividendPayerIdentificationNumber: string;
-		dividendPayerTitle: string;
-		dividendPayerAddress: string | null;
-		dividendPayerCountryOfOrigin: string;
-		dividendType: EDavkiDividendType;
-		countryOfOrigin: string;
-		dividendIdentifierForTracking: string;
-		taxReliefParagraphInInternationalTreaty: string | null;
-		dividendAmount: number;
-		dividendAmountInOriginalCurrency: number;
-		foreignTaxPaid: number;
-		foreignTaxPaidInOriginalCurrency: number;
-	}) {
+export class EDavkiDividendReportLine extends Model<EDavkiDividendReportLineArgs> {
+	public readonly dateReceived: DateTime;
+	public readonly taxNumberForDividendPayer: string;
+	public readonly dividendPayerIdentificationNumber: string;
+	public readonly dividendPayerTitle: string;
+	public readonly dividendPayerAddress: string | null;
+	public readonly dividendPayerCountryOfOrigin: string;
+	public readonly dividendType: EDavkiDividendType;
+	public readonly countryOfOrigin: string;
+	public readonly dividendIdentifierForTracking: string;
+	public readonly taxReliefParagraphInInternationalTreaty: string | null;
+	public readonly dividendAmount: number;
+	public readonly dividendAmountInOriginalCurrency: number;
+	public readonly foreignTaxPaid: number;
+	public readonly foreignTaxPaidInOriginalCurrency: number;
+
+	constructor(args: EDavkiDividendReportLineArgs) {
+		super();
 		this.dateReceived = args.dateReceived;
 		this.taxNumberForDividendPayer = args.taxNumberForDividendPayer;
 		this.dividendPayerIdentificationNumber = args.dividendPayerIdentificationNumber;
