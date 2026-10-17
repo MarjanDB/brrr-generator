@@ -253,8 +253,8 @@ test("transform: single stock trade buy", () => {
 		makeEmptySegmented({ stockTrades: [simpleTradeBuy] }),
 	);
 	expect(result.groupings.length).toEqual(1);
-	expect(result.groupings[0].financialIdentifier.getIsin()).toEqual("US21212112");
-	expect(result.groupings[0].stockTrades[0].financialIdentifier.getIsin()).toEqual("US21212112");
+	expect(result.groupings[0].financialIdentifier.isin).toEqual("US21212112");
+	expect(result.groupings[0].stockTrades[0].financialIdentifier.isin).toEqual("US21212112");
 	expect(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity).toEqual(2);
 });
 
@@ -271,8 +271,8 @@ test("transform: single stock lot", () => {
 		makeEmptySegmented({ stockLots: [simpleStockLot] }),
 	);
 	expect(result.groupings.length).toEqual(1);
-	expect(result.groupings[0].financialIdentifier.getIsin()).toEqual("US21212112");
-	expect(result.groupings[0].stockTaxLots[0].financialIdentifier.getIsin()).toEqual("US21212112");
+	expect(result.groupings[0].financialIdentifier.isin).toEqual("US21212112");
+	expect(result.groupings[0].stockTaxLots[0].financialIdentifier.isin).toEqual("US21212112");
 });
 
 test("transform: single dividend", () => {
@@ -280,7 +280,7 @@ test("transform: single dividend", () => {
 		makeEmptySegmented({ cashTransactions: [dividend] }),
 	);
 	expect(result.groupings.length).toEqual(1);
-	expect(result.groupings[0].financialIdentifier.getIsin()).toEqual("FR0000120271");
+	expect(result.groupings[0].financialIdentifier.isin).toEqual("FR0000120271");
 	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(
 		StagingTradeEventCashTransactionDividend,
 	);
@@ -342,9 +342,9 @@ test("transform: corporate actions produce partial relationships only", () => {
 		(p) => p.toIdentifier !== null && p.fromIdentifier === null,
 	)!;
 	// biome-ignore lint/style/noNonNullAssertion: find predicate guarantees fromIdentifier is non-null
-	expect(fromPartial.fromIdentifier!.getIsin()).toEqual("US86800U1043");
+	expect(fromPartial.fromIdentifier!.isin).toEqual("US86800U1043");
 	// biome-ignore lint/style/noNonNullAssertion: find predicate guarantees toIdentifier is non-null
-	expect(toPartial.toIdentifier!.getIsin()).toEqual("US86800U3023");
+	expect(toPartial.toIdentifier!.isin).toEqual("US86800U3023");
 	expect(fromPartial.changeType).toEqual(StagingIdentifierChangeType.SPLIT);
 });
 
@@ -357,10 +357,10 @@ test("transform: resolve partials produces full relationship", () => {
 			staging,
 		);
 	expect(resolved.identifierRelationships.relationships.length).toEqual(1);
-	expect(resolved.identifierRelationships.relationships[0].fromIdentifier.getIsin()).toEqual(
+	expect(resolved.identifierRelationships.relationships[0].fromIdentifier.isin).toEqual(
 		"US86800U1043",
 	);
-	expect(resolved.identifierRelationships.relationships[0].toIdentifier.getIsin()).toEqual(
+	expect(resolved.identifierRelationships.relationships[0].toIdentifier.isin).toEqual(
 		"US86800U3023",
 	);
 	expect(resolved.identifierRelationships.relationships[0].changeType).toEqual(

@@ -56,7 +56,7 @@ function processEdavkiLineItemsFromCashTransactions(
 		const thisDividendLine = new EDavkiDividendReportLine({
 			dateReceived: dividend.date,
 			taxNumberForDividendPayer: "",
-			dividendPayerIdentificationNumber: dividend.financialIdentifier.getIsin() ?? "",
+			dividendPayerIdentificationNumber: dividend.financialIdentifier.isin ?? "",
 			dividendPayerTitle: "",
 			dividendPayerAddress: "",
 			dividendPayerCountryOfOrigin: "",

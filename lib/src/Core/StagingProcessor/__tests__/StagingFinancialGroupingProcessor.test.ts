@@ -286,9 +286,9 @@ test("processStagingFinancialEvents returns FinancialEvents with converted relat
 		}),
 	);
 	expect(result.groupings.length).toEqual(1);
-	expect(result.groupings[0].financialIdentifier.getIsin()).toEqual("US111");
+	expect(result.groupings[0].financialIdentifier.isin).toEqual("US111");
 	expect(result.identifierRelationships.length).toEqual(1);
-	expect(result.identifierRelationships[0].fromIdentifier.getIsin()).toEqual("US111");
-	expect(result.identifierRelationships[0].toIdentifier.getIsin()).toEqual("US222");
+	expect(result.identifierRelationships[0].fromIdentifier.isin).toEqual("US111");
+	expect(result.identifierRelationships[0].toIdentifier.isin).toEqual("US222");
 	expect(result.identifierRelationships[0].changeType).toEqual(IdentifierChangeType.RENAME);
 });
