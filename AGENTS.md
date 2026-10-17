@@ -1,124 +1,190 @@
-## Goal
+# BRRR Generator — Agent Guidelines
 
-This is a TypeScript project (running on Deno) for generating tax reports given activity statements from a stock broker.
+## Project overview
 
-## Context
+Generates tax authority import forms from broker export files. Today that means Interactive Brokers Flex Query XML in, Slovenian eDavki
+forms out: **DOH_KDVP** (shares), **DOH_DIV** (dividends) and **D_IFI** (derivatives), each as the XML eDavki imports plus a CSV for
+checking it. The site runs at https://taxesgobrrr.com.
 
-The project uses Deno for runtime and tooling. Entrypoints are Deno Jupyter notebooks in the `notebooks/` directory and a Nuxt 3 web app in
-`app/`. We use PascalCase for types and classes; methods and functions use camelCase. Module system: ES modules with explicit `.ts` imports.
-No dependency injection framework — use constructor injection or plain factory functions. Imports are only allowed at the top of the file.
-Project configuration is in `deno.json` (workspace config + tasks).
+pnpm workspace with three packages:
 
-### Type conventions
+- **`lib/`** (`@brrr/lib`) — the tax engine: broker parsing, lot matching, report generation. Platform-neutral, because the site runs it
+  in the browser.
+- **`app/`** (`@brrr/app`) — Nuxt 4 site. Reports are generated client-side; the server only answers company and country lookups
+  (`app/server/api/`).
+- **`standalone/cli/`** (`@brrr/cli`) — reads `imports/*.xml` and `config/userConfig.yml`, writes reports to `exports/`.
 
-- **`type`** for data structures (records, unions, domain objects). This is the default — use it for anything that was a Python
-  `@dataclass`.
-- **`class`** for stateful objects with methods and encapsulated logic (e.g. `FinancialIdentifier`, processors, providers).
-- **`interface`** only for OOP contracts (abstract method signatures that classes must implement). Do not use `interface` for plain data
-  shapes.
-- **`enum`** for named constant sets. This is the TypeScript equivalent of Python `class Foo(Enum)`. Prefer `enum` over `as const` objects
-  or string union types for values that were Python enums.
-- **`luxon`** for all date/time operations (`DateTime`, `Duration`). Do not use `Date`, `Temporal`, or `date-fns`.
+`imports/`, `exports/` and `config/` hold personal financial data and are gitignored (except `config/userConfig.example.yml`). Never commit
+anything from them.
 
-## Design
+## Package manager
 
-The project is structured as a monorepo workspace with a core `lib/` library, Deno Jupyter notebooks, and a client-side Nuxt web app.
-General architecture of the project consists of:
+pnpm 11, pinned in the root `package.json` (`packageManager`). Always use `pnpm`.
 
-- Importing and parsing broker activity statements,
-- converting them into a broker-neutral format known by this project,
-- processing and annotating with company-relevant information,
-- and passing the result to tax authority implementations that define lot matching and other country-specific rules.
+| Command                                        | What it does                                           |
+| ---------------------------------------------- | ------------------------------------------------------ |
+| `pnpm lint` / `pnpm lint:fix`                  | Biome check / check and fix, whole repo                |
+| `pnpm --filter @brrr/lib test`                 | Vitest, lib                                            |
+| `pnpm --filter @brrr/lib typecheck`            | `tsc --noEmit`, lib                                    |
+| `pnpm --filter @brrr/lib build`                | tsdown, lib → `lib/dist/`                              |
+| `pnpm --filter @brrr/app typecheck`            | `nuxt typecheck`                                       |
+| `pnpm --filter @brrr/app build`                | Nuxt build                                             |
+| `pnpm --filter @brrr/cli exec tsc --noEmit`    | Typecheck the CLI                                      |
+| `pnpm dev`                                     | Nuxt dev server                                        |
+| `pnpm cli --year 2025 [--report kdvp,div,ifi]` | Generate reports from `imports/` (calls Yahoo Finance) |
 
-### Pipeline and data flow
+**The app and the CLI import `@brrr/lib` from `lib/dist/`.** After changing `lib/`, run `pnpm --filter @brrr/lib build` before
+typechecking or running either of them, or they keep seeing the old code.
 
-1. **Input:** Broker activity XML files in `imports/`. Currently only **IBKR Flex Query** XML is supported.
-2. **Broker layer:** A brokerage provider (e.g. `IbkrBrokerageExportProvider`) discovers files, loads each into **CommonBrokerageEvents**
-   (broker-specific; for IBKR this is `SegmentedTrades`), merges them, then transforms to **StagingFinancialEvents** (groupings—one per
-   financial identifier—and identifier relationship partials). Staging identifiers use **strict equality** (exact match on ISIN, Ticker,
-   Name), so related instruments (e.g. after an ISIN change) remain in separate groupings; relationship logic handles "same company" later.
-3. **Staging → core:** **StagingFinancialGroupingProcessor** takes **StagingFinancialEvents** (groupings + staging relationships), resolves
-   partial relationships, and returns **FinancialEvents** (core **FinancialGrouping**s plus core **IdentifierRelationships**). Each
-   StagingFinancialGrouping becomes a **FinancialGrouping** (processed events and lot-matched lots).
-4. **Output:** A **TaxAuthorityProvider** accepts **FinancialEvents** (groupings + identifier relationships) and report configuration. The
-   provider applies identifier relationships (e.g. RENAME via **ApplyIdentifierRelationshipsService**) internally, then produces XML (and
-   optionally CSV) in `exports/`. Lot matching runs on the applied groupings.
+Dependency versions live in the `catalog:` of `pnpm-workspace.yaml`, pinned exactly. Read the **bumping-dependencies** skill before adding,
+removing or updating any dependency.
 
-Flow: **imports → broker Extract/Transform → StagingFinancialEvents → StagingFinancialGroupingProcessor → FinancialEvents →
-TaxAuthorityProvider (applies relationships, then generates report) → exports.**
+## Checks
 
-### Key types and layers
+Run these for what you touched before calling a change done, and report failures with their output:
 
-- **CommonBrokerageEvents** – Broker-specific container: cash transactions, corporate actions, stock trades/lots, derivative trades/lots.
-  Each broker uses its own concrete type (e.g. IBKR: `SegmentedTrades`).
-- **StagingFinancialGrouping** – Broker-agnostic staging model per financial identifier (staging events and lots). Output of broker
-  Transform; input to StagingFinancialGroupingProcessor.
-- **FinancialEvents** – Core container: `groupings` (array of **FinancialGrouping**) and `identifierRelationships`. Output of
-  StagingFinancialGroupingProcessor; input to ApplyIdentifierRelationshipsService.
-- **FinancialGrouping** – Core domain model (processed events, lot-matched lots). Tax authority providers receive **FinancialEvents** and
-  apply identifier relationships to obtain groupings for report generation.
-- **IdentifierRelationship** – Directed, typed relationship between financial identifiers (e.g. `fromIdentifier` changed to `toIdentifier`;
-  types: `RENAME`, `SPLIT`, `REVERSE_SPLIT`). Carried in FinancialEvents; the tax authority provider uses
-  **ApplyIdentifierRelationshipsService** to bake selected types (e.g. RENAME) into merged groupings before generating reports.
-- **Staging** = raw broker-agnostic representation; **Core FinancialEvents** = processed, lot-matched representation used for tax report
-  generation.
+- Anything: `pnpm lint:fix`
+- `lib/`: `pnpm --filter @brrr/lib test` and `pnpm --filter @brrr/lib typecheck`
+- `app/`: build lib, then `pnpm --filter @brrr/app typecheck`
+- `standalone/cli/`: build lib, then `pnpm --filter @brrr/cli exec tsc --noEmit`
 
-### Directory and config conventions
+## Architecture
 
-- **`lib/`** – Core reusable library. Must have zero DOM dependencies and no Deno-specific APIs (to enable use from the Nuxt client-side
-  app).
-- **`notebooks/`** – Deno Jupyter notebook entry points (`.ipynb` with Deno TypeScript kernel).
-- **`app/`** – Nuxt 3 web app (client-side only). Thin wrappers around `lib/`.
-- **`imports/`** – Broker export XML files (e.g. Flex Query). Gitignored. Notebooks read from here.
-- **`exports/`** – Generated tax reports (XML and CSV). Gitignored.
-- **`config/`** – Gitignored; must contain **`userConfig`** (format defined by tax authority). No sample file is committed.
-- **`deno.json`** – Workspace configuration and task definitions (`deno task`).
+imports → broker provider (extract + transform) → **StagingFinancialEvents** → **StagingFinancialGroupingProcessor** →
+**FinancialEvents** → tax authority provider (applies identifier relationships, lot matching, report generation) → XML + CSV
 
-### Notebooks
+- `lib/src/Brokerages/` — one folder per broker; turns export files into broker-neutral staging events.
+- `lib/src/Core/` — broker- and country-neutral: schemas, staging → core processing, lot matching (NONE / FIFO / PROVIDED).
+- `lib/src/TaxAuthorities/` — one folder per country; turns core events into that country's forms.
+- `lib/src/InfoProviders/` — company and country lookups (`InfoProvider`); the Node implementation and its JSON data sit in `Node/`.
 
-All notebooks share the same pattern: load broker exports from `imports/`, merge, transform to broker-agnostic format, run
-**StagingFinancialGroupingProcessor** (get **FinancialEvents**), then pass **FinancialEvents** to the tax authority provider for a specific
-report type and date range. The provider applies identifier relationships (e.g. RENAME) internally. Only the report type and configuration
-(e.g. lot matching, date range) differ per notebook.
+The **pipeline-and-structure** skill has the details and the steps for adding a broker, tax authority or report type.
 
-- **dividends** – Dividend report; typically uses NONE for lot matching.
-- **stock trades** – Security/share report; typically uses FIFO.
-- **derivative trades** – Derivatives report; typically uses FIFO.
+## Code conventions
 
-### Lot matching
+### TypeScript
 
-Report configuration supports **NONE**, **FIFO**, and **PROVIDED** lot matching methods. Which method is used depends on the report type and
-tax authority rules.
+- PascalCase for types, classes, enums, Vue components and `lib/src/` folders; camelCase for functions, methods and variables.
+- Imports go at the top of the file. Inside `lib/` import through the `@brrr/*` alias (`@brrr/Core/Schemas/Events`), not relative paths.
+- Domain models are classes with `public readonly` fields, one args-object constructor and a `copy(overrides)` that returns a new
+  instance (see `Core/Schemas/`). Don't mutate them.
+- Data from outside (XML rows, config files, env) is parsed with zod 4 (`import { z } from "zod/v4"`): a const holding `{ Schema }` and a
+  same-named type `z.output<typeof X.Schema>` (see `Brokerages/Ibkr/Schemas/IbkrSchemas.ts`).
+- `type` for plain data shapes. `interface` only for contracts a class implements (`IBrokerageProvider`, `ITaxAuthorityProvider`,
+  `InfoProvider`).
+- `enum` for fixed sets of values, not string-literal unions or `as const` objects.
+- Identifiers in new code (ISINs, transaction IDs, report type IDs, …) get a nominal type, `Nominal<string, "Isin">` from
+  `@brrr/Utils/NominalType`, rather than a bare `string`.
+- Dates and times use luxon. Models hold `ValidDateTime` (`DateTime<true>`); parse input with `zDateTimeFromISOString`
+  (`@brrr/Utils/DateTime`). No `Date`.
+- Dependency injection is Inversify without decorators: each area has a `*Module.ts` that binds classes with
+  `toResolvedValue(factory, [dependencies])` in singleton scope, and `createContainer(infoProvider)` in `lib/src/container.ts` loads them
+  all. Anything the app or CLI needs is exported from `lib/src/index.ts`.
+- `lib/` stays platform-neutral: no DOM, and no Node built-ins (`fs`, `Buffer`, …) outside `InfoProviders/Node/`, which is exported
+  separately as `@brrr/lib/info/node`. Dependencies used by the report code need a browser build (e.g. `csv-stringify/browser/esm/sync`);
+  `CsvWithoutNodeBuffer.test.ts` guards the CSV generators.
+- Biome formats and lints everything, `.vue` included: tabs, line width 100.
 
-### "Failed processing stock lot"
+### App
 
-These messages come from **StagingFinancialGroupingProcessor** when a stock lot cannot be matched to trades (e.g. missing or invalid
-ISIN/ticker). Fixes often involve **InfoProviders** lookup data: `lib/infoProviders/missingISINLookup.json`, `missingCompaniesLookup.json`,
-or the company/ISIN resolution used in the staging→core pipeline.
+Read the **web-app** skill before changing `app/`. Every user-facing string goes through i18n and needs both `en.json` and `sl.json`.
 
-### Dependency injection and entrypoints
+### Tests
 
-There is no DI framework. Dependencies are wired via constructor injection or factory functions. Notebooks instantiate the broker provider
-and config by hand, then use **StagingFinancialGroupingProcessor** and the tax authority provider with explicit dependencies. The Nuxt app
-does the same through utility wrappers in `app/utils/`.
+Vitest with globals (`describe`, `it`, `expect`, `vi` need no import). Tests sit in `__tests__/` next to the code they cover, as
+`*.test.ts`; XML fixtures go in `__tests__/Cases/`. A change in behaviour gets a test that fails before it and passes after.
 
-### Testing and tooling
+## Skills
 
-- **Tests:** `deno test` (built-in). Test files match `*.test.ts`. Tests live next to code in **`Tests/`** directories (e.g.
-  `lib/brokerages/ibkr/Tests/`, `lib/taxAuthorities/slovenia/Tests/`, `lib/core/.../Tests/`) and often use XML or other fixtures.
-- **Tasks:** `deno task test`, `deno task fmt`, `deno task lint`, `deno task type-check`.
-- **`deno.json`:** TypeScript strict mode enabled. `deno fmt` for formatting; `deno lint` for linting. No external format/lint tools needed.
+Project skills live in `.claude/skills/`:
 
-### Adding new behaviour
+- **pipeline-and-structure** — where code goes; adding a broker, tax authority or report type.
+- **ibkr-flex-query** — the IBKR Flex Query XML, its schemas and fixtures.
+- **slovenian-tax-edavki** — eDavki forms, taxpayer fields, XSDs, Slovenian report rules.
+- **infoproviders-lookup-data** — company/country/treaty lookups and their JSON fallbacks.
+- **web-app** — the Nuxt wizard, components, i18n, styling, server routes.
+- **bumping-dependencies** — the pnpm catalog and supply-chain rules.
 
-- **New report type** – Implement or extend the tax authority provider and its report generation (XML/CSV) for that report.
-- **New broker** – Add a provider under `lib/brokerages/` implementing **CommonBrokerageExportProvider** (see
-  `resources/docs/brokerage-development/translations/README.en.md`).
-- **New tax authority (country)** – Add a provider under `lib/taxAuthorities/` implementing the abstract TaxAuthorityProvider interface.
+The docs under `resources/docs/` predate the TypeScript rewrite (they describe notebooks and the Python layout). Trust the code and the
+skills over them.
 
-### Docs
+# Core Behavior Guidelines
 
-- **Usage:** `resources/docs/usage-examples/translations/README.en.md`
-- **Broker implementation:** `resources/docs/brokerage-development/translations/README.en.md`
-- **Architecture:** `ARCHITECTURE.md`
-- **Migration from Python:** `MIGRATION.md`
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+
+## 1. Think Before Coding
+
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+## 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+## 5. Investigate Before Editing
+
+**For any bug or non-trivial change, diagnose before touching code.**
+
+Before making any edits, investigate the issue and respond with:
+1. The exact root cause with `file:line` references.
+2. Two alternative fix locations, and which is better and why.
+3. Any state I should log to confirm the hypothesis.
+
+Then wait for my go-ahead before editing. Do not jump to a plausible-but-wrong root cause and burn iterations.
+
+## 6. Restate Requests as a Checklist
+
+**For multi-part requests, enumerate before implementing and verify after.**
+
+Before starting, restate the request as a numbered checklist of discrete deliverables.
+
+After implementation, walk through each item and confirm coverage with `file:line` evidence. Do not declare done until every checklist item has been verified this way.

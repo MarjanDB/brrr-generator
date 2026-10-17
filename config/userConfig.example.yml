@@ -2,7 +2,7 @@ taxNumber: davcna
 taxpayerType: FO
 name: ime priimek
 address1: naslov
-address2: 
+address2:
 city: mesto
 postNumber: postna
 postName: posta
@@ -11,7 +11,7 @@ birthDate: 2024-01-01
 maticnaStevilka: maticna
 invalidskoPodjetje: false
 resident: true
-activityCode: 
-activityName: 
-countryID: 
-countryName: 
+activityCode: ""
+activityName: ""
+countryId: SI
+countryName: Slovenija

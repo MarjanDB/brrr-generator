@@ -1,0 +1,88 @@
+---
+name: slovenian-tax-edavki
+description: Slovenian eDavki reports (DOH_KDVP, DOH_DIV, D_IFI; DOH_OBR not implemented) and how lib generates them — report generators, XML/CSV output, XSDs, taxpayer fields, workflow types, dividend and treaty handling. Use when changing anything under lib/src/TaxAuthorities/Slovenia, the Slovenian export form on the site, the CLI's report options, or userConfig.yml.
+---
+
+# Slovenian tax reports (eDavki)
+
+Lives in `lib/src/TaxAuthorities/Slovenia/`. For how a tax authority plugs into the pipeline, see the **pipeline-and-structure** skill;
+for company, country and treaty data, see **infoproviders-lookup-data**.
+
+## Report types
+
+`SlovenianTaxAuthorityReportTypes` in `Schemas/ReportTypes.ts`:
+
+| Enum | ID (site, CLI, registry) | Covers | Generator | Lot matching |
+| --- | --- | --- | --- | --- |
+| `DOH_KDVP` | `kdvp` | Shares (Vrednostni papirji) | `ReportGeneration/Kdvp/KdvpReportGenerator.ts` | FIFO, or the broker's lots with `PROVIDED` |
+| `DOH_DIV` | `div` | Dividends (Dividende) | `ReportGeneration/Div/DivReportGenerator.ts` | none |
+| `D_IFI` | `ifi` | Derivatives (Izvedeni finančni inštrumenti) | `ReportGeneration/Ifi/IfiReportGenerator.ts` | FIFO, or `PROVIDED` |
+| `DOH_OBR` | — | Interest (Obresti) | not implemented (XSD only) | — |
+
+In the KDVP and IFI generators anything other than `PROVIDED` (including `NONE`) means FIFO. The site and the CLI both send FIFO and a
+report period of 1 January to 1 January of the following year.
+
+## Flow inside the country
+
+- `SlovenianTaxAuthorityService` holds the `TaxAuthorityDescriptor` (`authorityId: "slovenia"`), maps the ID to the enum, and returns
+  `{ xml, csv }`.
+- `SlovenianTaxAuthorityProvider` (`ITaxAuthorityProvider`) applies `RENAME`, `SPLIT` and `REVERSE_SPLIT` relationships first, then
+  calls the generator's `convert` → report lines, and `toXml` / `toCsv`.
+- Each generator keeps the pure pieces in `Xml*.ts` (built with fast-xml-parser's `XMLBuilder`) and `Csv*.ts` (built with
+  `csv-stringify/browser/esm/sync`, never the Node build). Report line classes are in `Schemas/Schemas.ts`.
+
+## Per-report rules
+
+- **KDVP:** `FinancialEventsProcessor.process` lot-matches each grouping and keeps only the trades of lots closed inside the report
+  period, so earlier buys of shares sold this year appear too. Lines carry trade prices and commissions in the base currency plus the
+  original currency. Core gain types map to eDavki ones through `GAIN_MAPPINGS`. The XML is always filed as `ORIGINAL`.
+- **IFI:** the same lot matching per derivative grouping (one per option contract), mapped through its own `GAIN_MAPPINGS`, sorted by
+  name.
+- **DIV:** keeps cash transactions inside the period, pairs withholding tax with its dividend (a withholding without a matching dividend
+  throws), merges dividends of one ISIN paid on the same day, then fills payer name, address, country and the treaty paragraph from the
+  `InfoProvider` using the ISIN. That lookup is best-effort: when it fails, the fields stay blank and the report still generates. Amounts
+  are rounded to 2 decimals and foreign tax is made positive. The XML is filed as `SELF_REPORT` instead of `ORIGINAL` when the report
+  period ended before last year (`isSelfReport`).
+
+`EDavkiDocumentWorkflowType` lists every workflow code eDavki accepts
+([help page](https://edavki.durs.si/EdavkiPortal/PersonalPortal/[360253]/Pages/Help/sl/WorkflowType1.htm)).
+
+## Taxpayer fields
+
+`TaxPayerConfigSchema` in `lib/src/TaxAuthorities/ConfigurationProvider.ts`: `taxNumber`, `taxpayerType` (`FO` natural person, `PO` legal
+entity, `SP` sole trader), `name`, `address1`, `address2` (nullable), `city`, `postNumber`, `postName`, `municipalityName`, `birthDate`,
+`maticnaStevilka`, `invalidskoPodjetje`, `resident`, `activityCode`, `activityName`, `countryId`, `countryName`.
+
+- The CLI reads `config/userConfig.yml` (template: `config/userConfig.example.yml`) with js-yaml and validates it with this schema.
+  Keep the example in step with the schema.
+- The site's `app/app/components/export/SloveniaExportForm.vue` asks for tax number, name, address, city, post number and name, and
+  country, and fills the rest with fixed defaults (`FO`, resident, empty strings).
+
+## Output
+
+| Report | XML | CSV |
+| --- | --- | --- |
+| KDVP | `Doh_KDVP.xml` | `export-trades.csv` |
+| DIV | `Doh_Div.xml` | `export-dividends.csv` |
+| IFI | `D_Ifi.xml` | `export-derivatives.csv` |
+
+The same names appear in `standalone/cli/main.ts` (`OUTPUT_FILES`) and `SloveniaExportForm.vue` (`FILENAMES`). The site's upload
+instructions for eDavki are in `app/app/components/download/taxAuthorityGuides.ts`.
+
+## XSDs
+
+`XmlSchemas/`: `Doh_KDVP_9.xsd`, `Doh_Div_3.xsd`, `D_IFI_4.xsd`, `Doh_Obr_2.xsd`, `EDP-Common-1.xsd`. When FURS publishes a new version,
+replace the file and update the namespace and version in the matching `Xml*.ts`. `.vscode/settings.json` maps generated XML in
+`exports/` to these files for validation in the editor.
+
+## Tests
+
+`__tests__/`: `TaxAuthorityProvider.test.ts` (all three reports, builds the provider by hand in `makeProvider`), `SloveniaFifo.test.ts`,
+`PaymentInLieuOfDividend.test.ts`, `SloveniaIssues.test.ts` (regressions from real exports), `CsvWithoutNodeBuffer.test.ts` (CSV
+generators without Node's `Buffer`). `makeProvider` gives the dividend generator a `NodeInfoProvider`, which may call Yahoo Finance; in a
+new test prefer a `PredefinedInfoProvider` with the companies and countries it needs.
+
+## References
+
+- [MF list of double-taxation treaties](https://www.gov.si/drzavni-organi/ministrstva/ministrstvo-za-finance/o-ministrstvu/direktorat-za-sistem-davcnih-carinskih-in-drugih-javnih-prihodkov/seznam-veljavnih-konvencij-o-izogibanju-dvojnega-obdavcevanja-dohodka-in-premozenja/)
+- [FURS international taxation](https://www.fu.gov.si/davki_in_druge_dajatve/podrocja/mednarodno_obdavcenje/#c78)
