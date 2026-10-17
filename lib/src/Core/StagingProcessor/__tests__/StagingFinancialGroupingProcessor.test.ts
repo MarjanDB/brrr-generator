@@ -27,6 +27,7 @@ import {
 import { StagingTaxLot, StagingTaxLotMatchingDetails } from "@brrr/Core/Schemas/Staging/Lots";
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
+import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import { DateTime } from "luxon";
@@ -175,7 +176,7 @@ function makeGrouping(
 }
 
 test("simple stock lot matching", () => {
-	const processor = new StagingFinancialGroupingProcessor();
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const groupings = [
 		makeGrouping({
 			stockTrades: [simpleStagingStockBuy, simpleStagingStockSold],
@@ -191,7 +192,7 @@ test("simple stock lot matching", () => {
 });
 
 test("partial stock lot matching throws", () => {
-	const processor = new StagingFinancialGroupingProcessor();
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const groupings = [
 		makeGrouping({
 			stockTrades: [simpleStagingStockBuy],
@@ -202,7 +203,7 @@ test("partial stock lot matching throws", () => {
 });
 
 test("throws when a stock lot has no sold date", () => {
-	const processor = new StagingFinancialGroupingProcessor();
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const lotWithoutSoldDate = new StagingTaxLot({
 		id: "Lot",
 		financialIdentifier: ident,
@@ -224,7 +225,7 @@ test("throws when a stock lot has no sold date", () => {
 });
 
 test("simple derivative lot matching", () => {
-	const processor = new StagingFinancialGroupingProcessor();
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const groupings = [
 		makeGrouping({
 			derivativeTrades: [simpleStagingDerivativeBuy, simpleStagingDerivativeSold],
@@ -249,7 +250,7 @@ test("simple derivative lot matching", () => {
 });
 
 test("dividend with withholding tax", () => {
-	const processor = new StagingFinancialGroupingProcessor();
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const groupings = [
 		makeGrouping({
 			cashTransactions: [simpleStagingDividend, simpleStagingDividendWithholdingTax],
@@ -266,7 +267,7 @@ test("dividend with withholding tax", () => {
 });
 
 test("payment in lieu of dividend with withholding tax", () => {
-	const processor = new StagingFinancialGroupingProcessor();
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const groupings = [
 		makeGrouping({
 			cashTransactions: [
@@ -300,7 +301,7 @@ test("processStagingFinancialEvents returns FinancialEvents with converted relat
 		relationships: [stagingRel],
 		partialRelationships: [],
 	});
-	const processor = new StagingFinancialGroupingProcessor();
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
 	const result = processor.processStagingFinancialEvents(
 		new StagingFinancialEvents({
 			groupings: [makeGrouping({ financialIdentifier: stagingIdA })],

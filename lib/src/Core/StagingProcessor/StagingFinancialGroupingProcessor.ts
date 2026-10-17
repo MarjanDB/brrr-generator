@@ -4,13 +4,16 @@ import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Groupi
 import {
 	IdentifierChangeType,
 	IdentifierRelationship,
+	type IdentifierRelationshipAny,
 	IdentifierRelationshipSplit,
 } from "@brrr/Core/Schemas/IdentifierRelationship";
 import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping";
-import type { StagingIdentifierRelationshipSplit } from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
-import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
+import {
+	StagingIdentifierChangeType,
+	StagingIdentifierRelationshipSplit,
+} from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
 import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
-import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
+import type { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
 import {
 	toCoreCashTransaction,
 	toCoreDerivativeLot,
@@ -21,11 +24,22 @@ import {
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import { DateTime } from "luxon";
 
+const CHANGE_TYPES: Record<
+	Exclude<StagingIdentifierChangeType, StagingIdentifierChangeType.UNKNOWN>,
+	IdentifierChangeType
+> = {
+	[StagingIdentifierChangeType.RENAME]: IdentifierChangeType.RENAME,
+	[StagingIdentifierChangeType.SPLIT]: IdentifierChangeType.SPLIT,
+	[StagingIdentifierChangeType.REVERSE_SPLIT]: IdentifierChangeType.REVERSE_SPLIT,
+};
+
+// Used when a broker gives a relationship no effective date.
+const UNKNOWN_EFFECTIVE_DATE = DateTime.fromMillis(0) as ValidDateTime;
+
 export class StagingFinancialGroupingProcessor {
-	private identifierRelationshipResolution = new IdentifierRelationshipResolution();
+	constructor(private readonly relationshipResolution: IdentifierRelationshipResolution) {}
 
 	private processAndGroupDerivativeTrades(input: StagingFinancialGrouping): DerivativeGrouping[] {
-		// Group by financialIdentifier key
 		const tradesByIdKey = new Map<string, typeof input.derivativeTrades>();
 		for (const trade of input.derivativeTrades) {
 			const key = trade.financialIdentifier.toKey();
@@ -46,14 +60,13 @@ export class StagingFinancialGroupingProcessor {
 		for (const [key, stagingTrades] of tradesByIdKey) {
 			const trades = stagingTrades.map(toCoreDerivativeTrade);
 			const lots = lotsByIdKey.get(key) ?? [];
-			const processedLots = lots.map((lot) => toCoreDerivativeLot(lot, trades));
 			derivativeGroupings.push(
 				new DerivativeGrouping({
 					financialIdentifier: FinancialIdentifier.fromStagingIdentifier(
 						stagingTrades[0].financialIdentifier,
 					),
 					derivativeTrades: trades,
-					derivativeTaxLots: processedLots,
+					derivativeTaxLots: lots.map((lot) => toCoreDerivativeLot(lot, trades)),
 					provenance: [],
 				}),
 			);
@@ -62,23 +75,16 @@ export class StagingFinancialGroupingProcessor {
 	}
 
 	process(input: StagingFinancialGrouping): FinancialGrouping {
-		const processedTrades = input.stockTrades.map(toCoreStockTrade);
-		const allTrades = processedTrades;
-
-		const processedStockLots = input.stockTaxLots.map((lot) => toCoreStockLot(lot, allTrades));
-
-		const derivativeGroupings = this.processAndGroupDerivativeTrades(input);
-
-		const processedCashTransactions = input.cashTransactions.map(toCoreCashTransaction);
+		const stockTrades = input.stockTrades.map(toCoreStockTrade);
 
 		return new FinancialGrouping({
 			financialIdentifier: FinancialIdentifier.fromStagingIdentifier(input.financialIdentifier),
 			countryOfOrigin: input.countryOfOrigin,
 			underlyingCategory: input.underlyingCategory,
-			stockTrades: allTrades,
-			stockTaxLots: processedStockLots,
-			derivativeGroupings,
-			cashTransactions: processedCashTransactions,
+			stockTrades,
+			stockTaxLots: input.stockTaxLots.map((lot) => toCoreStockLot(lot, stockTrades)),
+			derivativeGroupings: this.processAndGroupDerivativeTrades(input),
+			cashTransactions: input.cashTransactions.map(toCoreCashTransaction),
 			provenance: [],
 		});
 	}
@@ -89,41 +95,29 @@ export class StagingFinancialGroupingProcessor {
 
 	processStagingFinancialEvents(events: StagingFinancialEvents): FinancialEvents {
 		const resolved =
-			this.identifierRelationshipResolution.resolveStagingFinancialEventsPartialRelationships(
-				events,
-			);
+			this.relationshipResolution.resolveStagingFinancialEventsPartialRelationships(events);
 		const processedGroupings = this.generateGenericGroupings(resolved.groupings);
 
-		const coreRels: FinancialEvents["identifierRelationships"] = [];
+		const coreRels: IdentifierRelationshipAny[] = [];
 		for (const r of resolved.identifierRelationships.relationships) {
 			if (r.changeType === StagingIdentifierChangeType.UNKNOWN) continue;
-			const effectiveDate = r.effectiveDate ?? (DateTime.fromMillis(0) as ValidDateTime);
-			const fromId = FinancialIdentifier.fromStagingIdentifier(r.fromIdentifier);
-			const toId = FinancialIdentifier.fromStagingIdentifier(r.toIdentifier);
-			const changeType = IdentifierChangeType[r.changeType as keyof typeof IdentifierChangeType];
+			const fields = {
+				fromIdentifier: FinancialIdentifier.fromStagingIdentifier(r.fromIdentifier),
+				toIdentifier: FinancialIdentifier.fromStagingIdentifier(r.toIdentifier),
+				changeType: CHANGE_TYPES[r.changeType],
+				effectiveDate: r.effectiveDate ?? UNKNOWN_EFFECTIVE_DATE,
+			};
 
-			// Check if it's a split relationship (has quantityBefore/quantityAfter)
-			const rSplit = r as StagingIdentifierRelationshipSplit;
-			if (rSplit.quantityBefore !== undefined && rSplit.quantityAfter !== undefined) {
+			if (r instanceof StagingIdentifierRelationshipSplit) {
 				coreRels.push(
 					new IdentifierRelationshipSplit({
-						fromIdentifier: fromId,
-						toIdentifier: toId,
-						changeType,
-						effectiveDate,
-						quantityBefore: rSplit.quantityBefore,
-						quantityAfter: rSplit.quantityAfter,
+						...fields,
+						quantityBefore: r.quantityBefore,
+						quantityAfter: r.quantityAfter,
 					}),
 				);
 			} else {
-				coreRels.push(
-					new IdentifierRelationship({
-						fromIdentifier: fromId,
-						toIdentifier: toId,
-						changeType,
-						effectiveDate,
-					}),
-				);
+				coreRels.push(new IdentifierRelationship(fields));
 			}
 		}
 

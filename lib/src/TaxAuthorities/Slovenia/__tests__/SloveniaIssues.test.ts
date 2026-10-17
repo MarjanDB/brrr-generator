@@ -4,6 +4,7 @@ import { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerage
 import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
+import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
@@ -20,7 +21,9 @@ test("SloveniaIssues - testDuplicatingTrades - 8 rows with correct quantities", 
 	);
 	const stagingEvents = ibkrProvider.loadAndTransform([xmlContent]);
 
-	const groupingProcessor = new StagingFinancialGroupingProcessor();
+	const groupingProcessor = new StagingFinancialGroupingProcessor(
+		new IdentifierRelationshipResolution(),
+	);
 	const financialEvents = groupingProcessor.processStagingFinancialEvents(stagingEvents);
 
 	const reportConfig: TaxAuthorityConfiguration = {

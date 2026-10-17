@@ -4,8 +4,9 @@ import {
 	type StagingIdentifierRelationshipAny,
 	type StagingIdentifierRelationshipPartialAny,
 	StagingIdentifierRelationshipSplit,
+	StagingIdentifierRelationships,
 } from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
-import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
+import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 
 export class IdentifierRelationshipResolution {
 	mergePartialIdentifierRelationships(
@@ -76,12 +77,12 @@ export class IdentifierRelationshipResolution {
 			events.identifierRelationships.partialRelationships,
 		);
 		const allRelationships = [...events.identifierRelationships.relationships, ...merged];
-		return {
+		return new StagingFinancialEvents({
 			groupings: events.groupings,
-			identifierRelationships: {
+			identifierRelationships: new StagingIdentifierRelationships({
 				relationships: allRelationships,
 				partialRelationships: events.identifierRelationships.partialRelationships,
-			},
-		};
+			}),
+		});
 	}
 }
