@@ -1,5 +1,5 @@
 import type { EDavkiDividendReportLine } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
-import { stringify } from "csv-stringify/sync";
+import { stringify } from "csv-stringify/browser/esm/sync";
 
 export function generateCsvReport(divLines: EDavkiDividendReportLine[]): string {
 	const rows = divLines.map((data) => ({

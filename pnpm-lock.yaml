@@ -38,9 +38,6 @@ importers:
       '@vueuse/nuxt':
         specifier: 15.0.0
         version: 15.0.0(d89c20a47c150e64266d16e55f2ec3ef)
-      buffer:
-        specifier: 6.0.3
-        version: 6.0.3
       chart.js:
         specifier: 4.5.1
         version: 4.5.1

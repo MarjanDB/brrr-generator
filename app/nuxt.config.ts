@@ -8,24 +8,6 @@ export default defineNuxtConfig({
 
 	devtools: { enabled: config.NODE_ENV === "development" },
 
-	vite: {
-		optimizeDeps: {
-			include: ["buffer"],
-		},
-		define: {
-			global: "globalThis",
-		},
-		plugins: [
-			{
-				name: "inject-buffer",
-				transform(code, id) {
-					if (id.includes("csv-stringify") && code.includes("Buffer")) {
-						return `import { Buffer } from 'buffer';\n${code}`;
-					}
-				},
-			},
-		],
-	},
 	components: [{ path: "~/components", pathPrefix: false }],
 
 	modules: [
