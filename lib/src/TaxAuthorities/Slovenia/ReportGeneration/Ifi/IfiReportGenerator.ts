@@ -7,6 +7,10 @@ import {
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { createLotMatchingMethod } from "@brrr/TaxAuthorities/LotMatchingMethodFactory";
+import {
+	foreignTaxOf,
+	toOriginalCurrency,
+} from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Amounts";
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/CsvDIfi";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/XmlDIfi";
 import {
@@ -39,18 +43,20 @@ function convertBuy(
 		gainType: GAIN_MAPPINGS[trade.acquiredReason] ?? EDavkiDerivativeReportGainType.OTHER,
 		quantity: quantity,
 		pricePerUnit: trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
-		pricePerUnitInOriginalCurrency:
-			trade.exchangedMoney.underlyingTradePrice *
-			trade.multiplier *
-			(1 / trade.exchangedMoney.fxRateToBase),
+		pricePerUnitInOriginalCurrency: toOriginalCurrency(
+			trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+			trade.exchangedMoney.fxRateToBase,
+		),
 		totalPrice: quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
-		totalPriceInOriginalCurrency:
-			quantity *
-			trade.exchangedMoney.underlyingTradePrice *
-			trade.multiplier *
-			(1 / trade.exchangedMoney.fxRateToBase),
+		totalPriceInOriginalCurrency: toOriginalCurrency(
+			quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+			trade.exchangedMoney.fxRateToBase,
+		),
 		commissions: commission,
-		commissionsInOriginalCurrency: commission * (1 / trade.exchangedMoney.fxRateToBase),
+		commissionsInOriginalCurrency: toOriginalCurrency(
+			commission,
+			trade.exchangedMoney.fxRateToBase,
+		),
 		leveraged: false,
 	});
 }
@@ -64,18 +70,20 @@ function convertSell(
 		soldOn: trade.date,
 		quantity: quantity,
 		pricePerUnit: trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
-		pricePerUnitInOriginalCurrency:
-			trade.exchangedMoney.underlyingTradePrice *
-			trade.multiplier *
-			(1 / trade.exchangedMoney.fxRateToBase),
+		pricePerUnitInOriginalCurrency: toOriginalCurrency(
+			trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+			trade.exchangedMoney.fxRateToBase,
+		),
 		totalPrice: quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
-		totalPriceInOriginalCurrency:
-			quantity *
-			trade.exchangedMoney.underlyingTradePrice *
-			trade.multiplier *
-			(1 / trade.exchangedMoney.fxRateToBase),
+		totalPriceInOriginalCurrency: toOriginalCurrency(
+			quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+			trade.exchangedMoney.fxRateToBase,
+		),
 		commissions: commission,
-		commissionsInOriginalCurrency: commission * (1 / trade.exchangedMoney.fxRateToBase),
+		commissionsInOriginalCurrency: toOriginalCurrency(
+			commission,
+			trade.exchangedMoney.fxRateToBase,
+		),
 		leveraged: false,
 	});
 }
@@ -112,16 +120,9 @@ export class IfiReportGenerator {
 				});
 
 				// Counts a trade's whole tax once for every lot it falls into, like the lot clones did.
-				const foreignTaxPaidSum = legs.reduce(
-					(sum, leg) => sum + (leg.trade.exchangedMoney.taxTotal ?? 0),
-					0,
+				const { hasForeignTax, foreignTax: foreignTaxPaid } = foreignTaxOf(
+					legs.map((leg) => leg.trade),
 				);
-				let foreignTaxPaid: number | null = foreignTaxPaidSum;
-				let hasForeignTax = true;
-				if (foreignTaxPaidSum <= 0) {
-					foreignTaxPaid = null;
-					hasForeignTax = false;
-				}
 
 				const isinEntry = new EDavkiGenericDerivativeReportItem({
 					inventoryListType: EDavkiDerivativeSecurityType.OPTION_OR_CERTIFICATE,
