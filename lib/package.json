@@ -29,6 +29,7 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
+		"@brrr/test-cases": "workspace:*",
 		"@types/luxon": "catalog:",
 		"@types/node": "catalog:",
 		"tsdown": "catalog:",

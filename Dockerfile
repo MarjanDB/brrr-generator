@@ -23,6 +23,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY lib/package.json ./lib/
 COPY app/package.json ./app/
 COPY standalone/cli/package.json ./standalone/cli/
+COPY test-cases/package.json ./test-cases/
 
 # Install all dependencies
 RUN pnpm install --frozen-lockfile

@@ -1,3 +1,0 @@
-Ticker,BoughtOn,GainType,Quantity,PricePerUnit,PricePerUnitInOriginalCurrency,TotalPrice,TotalPriceInOriginalCurrency,Commissions,CommissionsInOriginalCurrency,InheritanceAndGiftTaxPaid,BaseTaxReduction,SoldOn,SatisfiesTaxBasisReduction,ISIN,HasForeignTax,ForeignTax,ForeignTaxCountryID,ForeignTaxCountryName
-EDF,2022-02-22T20:11:01.000+01:00,B,5,8.02,8.02,40.099999999999994,40.099999999999994,-3,-3,,,,,FR0010242511,false,,,
-EDF,,,-5,8.554,8.554,-42.77,-42.77,-1.25,-1.25,,,2022-03-24T16:06:00.000+01:00,false,FR0010242511,false,,,

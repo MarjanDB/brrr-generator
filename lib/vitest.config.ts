@@ -11,8 +11,7 @@ export default defineConfig({
 		include: ["src/**/*.test.ts"],
 		globals: true,
 		watch: false,
-		// Tests build fixture paths from this absolute root (see src/__tests__/support/Fixtures.ts).
-		provide: { srcRoot: path.resolve(import.meta.dirname, "src") },
+		setupFiles: [path.resolve(import.meta.dirname, "src/__tests__/support/Setup.ts")],
 		coverage: {
 			provider: "v8",
 			reporter: ["json-summary", "json"],

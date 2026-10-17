@@ -6,13 +6,15 @@ Generates tax authority import forms from broker export files. Today that means 
 forms out: **DOH_KDVP** (shares), **DOH_DIV** (dividends) and **D_IFI** (derivatives), each as the XML eDavki imports plus a CSV for
 checking it. The site runs at https://taxesgobrrr.com.
 
-pnpm workspace with three packages:
+pnpm workspace with four packages:
 
 - **`lib/`** (`@brrr/lib`) — the tax engine: broker parsing, lot matching, report generation. Platform-neutral, because the site runs it
   in the browser.
 - **`app/`** (`@brrr/app`) — Nuxt 4 site. Reports are generated client-side; the server only answers company and country lookups
   (`app/server/api/`).
 - **`standalone/cli/`** (`@brrr/cli`) — reads `imports/*.xml` and `config/userConfig.yml`, writes reports to `exports/`.
+- **`test-cases/`** (`@brrr/test-cases`) — the test cases: anonymised broker exports and the tax authority files expected from them.
+  Data and file access only; lib's tests consume it (see Tests).
 
 `imports/`, `exports/` and `config/` hold personal financial data and are gitignored (except `config/userConfig.example.yml`). Never commit
 anything from them.
@@ -24,12 +26,13 @@ pnpm 11, pinned in the root `package.json` (`packageManager`). Always use `pnpm`
 | Command                                        | What it does                                           |
 | ---------------------------------------------- | ------------------------------------------------------ |
 | `pnpm lint` / `pnpm lint:fix`                  | Biome check / check and fix, whole repo                |
-| `pnpm --filter @brrr/lib test`                 | Vitest, lib                                            |
+| `pnpm --filter @brrr/lib test`                 | Vitest, lib (unit, integration and acceptance tests)   |
 | `pnpm --filter @brrr/lib typecheck`            | `tsc --noEmit`, lib                                    |
 | `pnpm --filter @brrr/lib build`                | tsdown, lib → `lib/dist/`                              |
 | `pnpm --filter @brrr/app typecheck`            | `nuxt typecheck`                                       |
 | `pnpm --filter @brrr/app build`                | Nuxt build                                             |
 | `pnpm --filter @brrr/cli exec tsc --noEmit`    | Typecheck the CLI                                      |
+| `pnpm --filter @brrr/test-cases typecheck`     | Typecheck the test cases package                       |
 | `pnpm dev`                                     | Nuxt dev server                                        |
 | `pnpm cli --year 2025 [--report kdvp,div,ifi]` | Generate reports from `imports/` (calls Yahoo Finance) |
 
@@ -47,6 +50,7 @@ Run these for what you touched before calling a change done, and report failures
 - `lib/`: `pnpm --filter @brrr/lib test` and `pnpm --filter @brrr/lib typecheck`
 - `app/`: build lib, then `pnpm --filter @brrr/app typecheck`
 - `standalone/cli/`: build lib, then `pnpm --filter @brrr/cli exec tsc --noEmit`
+- `test-cases/`: `pnpm --filter @brrr/test-cases typecheck` and `pnpm --filter @brrr/lib test`
 
 ## Architecture
 
@@ -84,7 +88,7 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
   all. Anything the app or CLI needs is exported from `lib/src/index.ts`.
 - `lib/` stays platform-neutral: no DOM, and no Node built-ins (`fs`, `Buffer`, …) outside `InfoProviders/Node/`, which is exported
   separately as `@brrr/lib/info/node`. Dependencies used by the report code need a browser build (e.g. `csv-stringify/browser/esm/sync`);
-  `CsvWithoutNodeBuffer.test.ts` guards the CSV generators.
+  `CsvWithoutNodeBuffer.unit.test.ts` guards the CSV generators.
 - Biome formats and lints everything, `.vue` included: tabs, line width 100.
 
 ### App
@@ -93,8 +97,52 @@ Read the **web-app** skill before changing `app/`. Every user-facing string goes
 
 ### Tests
 
-Vitest with globals (`describe`, `it`, `expect`, `vi` need no import). Tests sit in `__tests__/` next to the code they cover, as
-`*.test.ts`; XML fixtures go in `__tests__/Cases/`. A change in behaviour gets a test that fails before it and passes after.
+Vitest with globals (`describe`, `it`, `expect`, `vi` need no import). Tests sit in `__tests__/` next to the code they cover. A change in
+behaviour gets a test that fails before it and passes after.
+
+Every test file names its kind:
+
+| Suffix                 | What it tests                                                                          |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| `.unit.test.ts`        | One class or function, with at most its own small collaborators                        |
+| `.integration.test.ts` | Several lib classes wired together: the container, or a provider with its generators   |
+| `.acceptance.test.ts`  | An input reached the tax authority correctly: the form it gets equals the expected one |
+
+To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
+
+- **Test cases** live in `test-cases/cases/<Broker>/<Case>/`: broker exports in `input/`, the files they should produce in
+  `expected/<authority>/<report>[-<lotMatching>].{xml,csv}` (DIV ignores lot matching, so its files carry no suffix). A case covers
+  one year. Each case is declared once in the registry `TestKit` (`test-cases/index.ts`, the package's only export): its `year`,
+  its named `inputs` and its named `expected` reports. Tests reach them as typed properties, never path strings:
+  `stockTrade.year`, `stockTrade.inputs.simpleStockTrade.read()`, `stockTrade.readInputs()`,
+  `stockTrade.expected.slovenia.kdvpFifo.xmlPath`. On import the registry fails if a case's declared files and its folder differ,
+  so adding a file means declaring it. Every broker export a test reads lives here, unit tests included. Exports are trimmed and
+  anonymised (fake account IDs); never copy anything from `imports/`.
+- **Acceptance tests** are about the tax authority: did this input reach it correctly? They sit with the authority, one file per
+  form (`lib/src/TaxAuthorities/Slovenia/__tests__/Acceptance/{Kdvp,Ifi,Div}.acceptance.test.ts`), with one self-contained test
+  per input case, titled by what the authority must see. Each runs the case through the public `Scenario.pipeline` only, and
+  judges only the generated form: its own `await expect(report.xml).toMatchFileSnapshot(...)` and CSV lines. No calls into lib's
+  internals. Expected files pin the output byte for byte: `vitest run acceptance.test -u` rewrites them, so only update them for
+  an intended change, and read the diff. CI never writes them.
+- **Write tests out line by line.** A reader should see what is checked without working anything out: one `expect` per value
+  (`expect(events[0].quantity).toEqual(10)`), each test's data written in the test or right above it, and no loops, `test.each`,
+  helper assertions or `map`/`filter` chains that compute the expectations.
+- **`Scenario`** (`lib/src/__tests__/support/Scenario.ts`) builds lib's objects and runs the pipeline, and it **invents no values**:
+  - `Scenario.build.*` (events, lots, groupings, their `staging` twins, `ibkr.segmentedTrades`) fixes only what a builder's name
+    says. `stockBought` is a STOCK bought with multiplier 1, `optionSold` an OPTION sold, and everything built has no provenance yet.
+    Every other value (id, date, quantity, price, currency, commission, tax, fx rate, lot quantity, long/short, every grouping
+    list, even an empty one) is required, so the test shows the exact scenario.
+  - `Scenario.config.report(year, lotMatching)` and `.infoProvider(lookups)`.
+  - `Scenario.pipeline.run(files)` and `.generate(events, { report, year, lotMatching, taxPayer, info })`, all arguments required.
+- **`Fixtures`** (`lib/src/__tests__/support/Fixtures.ts`) holds named test data that tests look up on purpose: `taxPayer` (the
+  one the expected files were generated for), `lookups` (company and country data), and IBKR sample rows (`ibkr.stockTradeBuy`, …).
+  A test that needs a variant spreads a fixture and lists what it changes.
+- Call `Scenario` and `Fixtures` directly: no local wrapper functions around them, and every buy, sale and lot built with its exact
+  type. A local helper is only for wiring that isn't test data, such as a provider built with collaborators the test spies on.
+  `support/Setup.ts` pins Luxon's zone and clock for every test.
+- **A test case or a unit test?** A case for a real-shaped export turned into whole reports: regressions from users' exports and
+  anything that crosses layers. A unit test with `Scenario` for one rule in one class, where hand-built input states the rule more
+  clearly than an export.
 
 ## Skills
 

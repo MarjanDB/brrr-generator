@@ -1,18 +1,258 @@
-import fs from "node:fs";
-import path from "node:path";
-import { inject } from "vitest";
+import { Values } from "@brrr/__tests__/support/Values";
+import {
+	AssetClass,
+	BuyOrSell,
+	CashTransactionType,
+	Codes,
+	type CorporateAction,
+	LevelOfDetail,
+	type LotStock,
+	OpenCloseIndicator,
+	OrderType,
+	SecurityIDType,
+	SubCategory,
+	type TradeStock,
+	type TransactionCash,
+	TransactionType,
+} from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
+import { type CompanyInfo, type Country, TreatyType } from "@brrr/InfoProviders/InfoProvider";
+import { type TaxPayerInfo, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider";
 
-declare module "vitest" {
-	interface ProvidedContext {
-		srcRoot: string;
-	}
-}
+// The taxpayer every expected report file was generated for.
+const taxPayer: TaxPayerInfo = {
+	taxNumber: "12345678",
+	taxpayerType: TaxPayerType.PHYSICAL_SUBJECT,
+	name: "Ime Priimek",
+	address1: "Naslov 1",
+	address2: null,
+	city: "Ljubljana",
+	postNumber: "1000",
+	postName: "Ljubljana",
+	municipalityName: "Ljubljana",
+	birthDate: Values.date("1990-01-01"),
+	maticnaStevilka: "1234567",
+	invalidskoPodjetje: false,
+	resident: true,
+	activityCode: "",
+	activityName: "",
+	countryId: "SI",
+	countryName: "Slovenija",
+};
 
-// Absolute path of a file under lib/src, e.g. "Brokerages/Ibkr/__tests__/Cases/SimpleStockTrade.xml".
-export function fixturePath(pathFromSrc: string): string {
-	return path.join(inject("srcRoot"), pathFromSrc);
-}
+// The company and country lookups the IBKR dividend cases' expected files were generated with.
+const lookups: { companies: Record<string, CompanyInfo>; countries: Record<string, Country> } = {
+	companies: {
+		FR0000120271: {
+			shortName: "TotalEnergies",
+			longName: "TotalEnergies SE",
+			location: {
+				country: "France",
+				address1: "2 Place Jean Millier",
+				address2: null,
+				zipCode: "92400",
+				city: "Courbevoie",
+				state: null,
+				shortCodeCountry2: "FR",
+			},
+		},
+		US5801351017: {
+			shortName: "McDonald's",
+			longName: "McDonald's Corporation",
+			location: {
+				country: "United States",
+				address1: "110 North Carpenter Street",
+				address2: null,
+				zipCode: "60607",
+				city: "Chicago",
+				state: "IL",
+				shortCodeCountry2: "US",
+			},
+		},
+	},
+	countries: {
+		France: {
+			name: "France",
+			shortCode2: "FR",
+			treaties: new Map([[TreatyType.TaxRelief, "Article 10"]]),
+		},
+		"United States": {
+			name: "United States",
+			shortCode2: "US",
+			treaties: new Map([[TreatyType.TaxRelief, "Article 10"]]),
+		},
+	},
+};
 
-export function readFixture(pathFromSrc: string): string {
-	return fs.readFileSync(fixturePath(pathFromSrc), "utf-8");
-}
+// A buy of 2 TEST at 15 EUR on 2023-01-01.
+const ibkrStockTradeBuy: TradeStock = {
+	clientAccountID: "test",
+	currency: "EUR",
+	fxRateToBase: 1,
+	assetClass: AssetClass.STOCK,
+	subCategory: SubCategory.COMMON,
+	symbol: "TEST",
+	description: "",
+	conid: "conid",
+	securityID: "securityid",
+	securityIDType: SecurityIDType.ISIN,
+	cusip: "cusip",
+	isin: "US21212112",
+	figi: "FIGI2121312",
+	listingExchange: "NYSE",
+	reportDate: Values.date("2023-01-01"),
+	dateTime: Values.date("2023-01-01T13:00:15"),
+	tradeDate: Values.date("2023-01-01"),
+	transactionType: TransactionType.EXCHANGE_TRADE,
+	exchange: "EXCHA",
+	quantity: 2,
+	tradePrice: 15,
+	tradeMoney: 30,
+	proceeds: 1,
+	taxes: 0,
+	ibCommission: 2,
+	ibCommissionCurrency: "EUR",
+	netCash: -33,
+	netCashInBase: -33,
+	closePrice: 15,
+	openCloseIndicator: OpenCloseIndicator.OPEN,
+	notesAndCodes: [Codes.OPENING_TRADE],
+	costBasis: 33,
+	fifoProfitAndLossRealized: 0,
+	capitalGainsProfitAndLoss: 0,
+	forexProfitAndLoss: 0,
+	marketToMarketProfitAndLoss: 0,
+	buyOrSell: BuyOrSell.BUY,
+	transactionID: "ID",
+	orderTime: Values.date("2023-01-01T13:00:02"),
+	levelOfDetail: LevelOfDetail.EXECUTION,
+	changeInPrice: 0,
+	changeInQuantity: 2,
+	orderType: OrderType.LIMIT,
+	accruedInt: 0,
+};
+
+// The closed lot of that buy, sold on 2023-01-05.
+const ibkrStockLotClosed: LotStock = {
+	clientAccountID: "test",
+	currency: "EUR",
+	fxRateToBase: 1,
+	assetClass: AssetClass.STOCK,
+	subCategory: SubCategory.COMMON,
+	symbol: "TEST",
+	description: "",
+	conid: "conid",
+	securityID: "securityid",
+	securityIDType: SecurityIDType.ISIN,
+	cusip: "cusip",
+	isin: "US21212112",
+	figi: "FIGI2121312",
+	listingExchange: "NYSE",
+	multiplier: 1,
+	reportDate: Values.date("2023-01-05"),
+	dateTime: Values.date("2023-01-05T13:00:15"),
+	tradeDate: Values.date("2023-01-05"),
+	exchange: "EXCHA",
+	quantity: 2,
+	tradePrice: 15,
+	openCloseIndicator: OpenCloseIndicator.CLOSE,
+	notesAndCodes: [Codes.CLOSING_TRADE],
+	costBasis: 33,
+	fifoProfitAndLossRealized: 5,
+	capitalGainsProfitAndLoss: 5,
+	forexProfitAndLoss: 0,
+	buyOrSell: BuyOrSell.SELL,
+	transactionID: "ID",
+	openDateTime: Values.date("2023-01-01T13:00:15"),
+	holdingPeriodDateTime: Values.date("2023-01-01T13:00:15"),
+	levelOfDetail: LevelOfDetail.CLOSED_LOT,
+};
+
+// A TotalEnergies dividend of 2.64 USD.
+const ibkrDividend: TransactionCash = {
+	clientAccountID: "FakeAccount",
+	currency: "USD",
+	fxRateToBase: 1.2,
+	assetClass: AssetClass.CASH,
+	subCategory: SubCategory.COMMON,
+	symbol: "TTE",
+	description: "TTE(FR0000120271) CASH DIVIDEND USD 0.66 PER SHARE (Ordinary Dividend)",
+	conid: "29612193",
+	securityID: "FR0000120271",
+	securityIDType: SecurityIDType.ISIN,
+	cusip: null,
+	isin: "FR0000120271",
+	figi: null,
+	listingExchange: "SBF",
+	dateTime: Values.date("2023-01-01T02:00:00"),
+	settleDate: Values.date("2023-01-01"),
+	amount: 2.64,
+	type: CashTransactionType.DIVIDEND,
+	code: null,
+	transactionID: "269176073",
+	reportDate: Values.date("2023-01-01"),
+	actionID: "102869793",
+};
+
+// The old-ISIN row of SMCI's 10-for-1 split on 2024-09-30.
+const ibkrSmciSplitOldRow: CorporateAction = {
+	clientAccountID: "U1",
+	accountAlias: null,
+	model: null,
+	currency: "USD",
+	fxRateToBase: 0.90354,
+	assetClass: AssetClass.STOCK,
+	subCategory: SubCategory.COMMON,
+	symbol: "SMCI.OLD",
+	description: "SMCI SPLIT",
+	conid: "43261373",
+	securityID: "US86800U1043",
+	securityIDType: SecurityIDType.ISIN,
+	cusip: "86800U104",
+	isin: "US86800U1043",
+	figi: null,
+	listingExchange: "NASDAQ",
+	underlyingConid: null,
+	underlyingSymbol: null,
+	underlyingSecurityID: null,
+	underlyingListingExchange: null,
+	multiplier: 1.0,
+	strike: null,
+	expiry: null,
+	putOrCall: null,
+	principalAdjustFactor: null,
+	reportDate: Values.date("2024-10-01"),
+	dateTime: Values.date("2024-09-30T20:25:00"),
+	actionDescription: "SPLIT",
+	amount: 0.0,
+	proceeds: 0.0,
+	value: 0.0,
+	quantity: -4.0,
+	fifoProfitAndLossRealized: 0.0,
+	capitalGainsProfitAndLoss: 0.0,
+	forexProfitAndLoss: 0.0,
+	marketToMarketProfitAndLoss: 0.0,
+	notesAndCodes: [],
+	type: "FI",
+	transactionID: "3131760419",
+	actionID: "141913764",
+	levelOfDetail: LevelOfDetail.DETAIL,
+	serialNumber: null,
+	deliveryType: null,
+	commodityType: null,
+	fineness: 0.0,
+	weight: 0.0,
+};
+
+// Named test data, looked up on purpose. Nothing here fills in values a test didn't ask for.
+export const Fixtures = {
+	taxPayer,
+	lookups,
+	// Raw IBKR Flex Query rows, the way the extract step parses them. A test that needs a variant
+	// spreads one and lists what it changes.
+	ibkr: {
+		stockTradeBuy: ibkrStockTradeBuy,
+		stockLotClosed: ibkrStockLotClosed,
+		dividend: ibkrDividend,
+		smciSplitOldRow: ibkrSmciSplitOldRow,
+	},
+};

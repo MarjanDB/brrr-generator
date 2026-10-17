@@ -64,9 +64,16 @@ Lots have no unique ID and are concatenated, so overlapping exports duplicate lo
 
 ## Tests and fixtures
 
-- `__tests__/IbkrExtract.test.ts` and `__tests__/IbkrTransform.test.ts` read fixtures from `__tests__/Cases/`: `SimpleStockTrade.xml`,
-  `SimpleOptionTrade.xml`, `SimpleCashTransactionOfDividends.xml`, `SimpleCashTransactionOfPaymentInLieuOfDividends.xml`,
-  `SimpleCorporateAction.xml`, `CorporateActionsTwoRows.xml`.
-- `lib/src/TaxAuthorities/Slovenia/__tests__/DuplicatingTrades.xml` (used by `SloveniaIssues.test.ts`) runs a real-shaped export end to end into a FIFO-matched KDVP report.
+- Every IBKR export a test reads is a case in `test-cases/cases/Ibkr/`, read through `TestKit.ibkr` (`@brrr/test-cases`):
+  `stockTrade`, `optionTrade`, `dividends`, `paymentInLieuOfDividends`, `duplicatingTrades` (repeated executions that must reach KDVP
+  once), `corporateAction`, `corporateActionsTwoRows` (SMCI's `FI` split rows), `split` (hand-written SMCI trades before and after that
+  split, which must reach KDVP scaled ten times). Each case is self-contained: a scenario that combines several exports is a case of
+  its own, with its own copies. A case is declared once in the registry in `test-cases/index.ts` (year, named inputs, named
+  expected reports) and read through typed properties such as `TestKit.ibkr.stockTrade.inputs.simpleStockTrade.read()`.
+- `__tests__/IbkrExtract.unit.test.ts` parses those exports. `__tests__/IbkrTransform.unit.test.ts` transforms raw rows built with
+  the named fixtures in `Fixtures.ibkr` (`stockTradeBuy`, `stockLotClosed`, `dividend`, `smciSplitOldRow`; variants spread one and
+  list what they change), handed to the transform with `Scenario.build.ibkr.segmentedTrades`, which takes all six row lists.
+- `lib/src/TaxAuthorities/Slovenia/__tests__/Acceptance/` runs each case end to end into the Slovenian forms and compares them with the case's
+  `expected/` files.
 - Fixtures are trimmed, anonymised Flex Query output: keep the real attribute names and value formats, and never paste a real account's
   export.
