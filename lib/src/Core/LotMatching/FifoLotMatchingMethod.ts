@@ -172,6 +172,14 @@ export class FifoLotMatchingMethod implements LotMatchingMethod {
 			}
 		}
 
+		// Every lot must run from a tracked buy to a tracked sell. A short covered in several fills
+		// produces a lot whose acquired side is the sell; the tracker lookup throws for it, so it
+		// never reaches a report.
+		for (const lot of createdLots) {
+			tracker.getAcquiredTradeTracker(lot.acquired.relation);
+			tracker.getSoldTradeTracker(lot.sold.relation);
+		}
+
 		return createdLots;
 	}
 }
