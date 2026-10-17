@@ -30,8 +30,8 @@ const rows = computed<InstrumentRow[]>(() => {
   const noIsin: InstrumentRow[] = [];
 
   for (const g of props.financialEvents.groupings) {
-    const isin = g.financialIdentifier.getIsin();
-    const name = g.financialIdentifier.getTicker() ?? g.financialIdentifier.getName() ?? isin ?? "—";
+    const isin = g.financialIdentifier.isin;
+    const name = g.financialIdentifier.ticker ?? g.financialIdentifier.name ?? isin ?? "—";
     const stockTrades = g.stockTrades.length;
     const dividends = g.cashTransactions.filter((tx) => tx instanceof TradeEventCashTransactionDividend).length;
     const derivatives = g.derivativeGroupings.reduce((s, dg) => s + dg.derivativeTrades.length, 0);

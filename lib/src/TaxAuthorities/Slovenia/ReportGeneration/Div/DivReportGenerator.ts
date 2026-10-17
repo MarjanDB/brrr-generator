@@ -221,7 +221,7 @@ export class DivReportGenerator {
 		);
 
 		const processedDividendLines = processEdavkiLineItemsFromCashTransactions(
-			data.financialIdentifier.getIsin() ?? "",
+			data.financialIdentifier.isin ?? "",
 			dividendLines,
 			withholdingTax,
 		);

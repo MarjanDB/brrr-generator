@@ -146,9 +146,9 @@ export class IfiReportGenerator {
 				const isinEntry = new EDavkiGenericDerivativeReportItem({
 					inventoryListType: EDavkiDerivativeSecurityType.OPTION_OR_CERTIFICATE,
 					itemType: EDavkiDerivativeReportItemType.DERIVATIVE,
-					code: derivativeGrouping.financialIdentifier.getTicker(),
-					isin: derivativeGrouping.financialIdentifier.getIsin(),
-					name: derivativeGrouping.financialIdentifier.getName(),
+					code: derivativeGrouping.financialIdentifier.ticker,
+					isin: derivativeGrouping.financialIdentifier.isin,
+					name: derivativeGrouping.financialIdentifier.name,
 					hasForeignTax,
 					foreignTax: foreignTaxPaid,
 					ftCountryId: null,

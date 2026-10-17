@@ -1,54 +1,30 @@
 import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
 
 export class FinancialIdentifier {
-	private _isin: string | null;
-	private _ticker: string | null;
-	private _name: string | null;
+	public readonly isin: string | null;
+	public readonly ticker: string | null;
+	public readonly name: string | null;
 
 	constructor(params: { isin?: string | null; ticker?: string | null; name?: string | null } = {}) {
-		this._isin = params.isin ?? null;
-		this._ticker = params.ticker ?? null;
-		this._name = params.name ?? null;
-		if (this._isin === null && this._ticker === null && this._name === null) {
+		this.isin = params.isin ?? null;
+		this.ticker = params.ticker ?? null;
+		this.name = params.name ?? null;
+		if (this.isin === null && this.ticker === null && this.name === null) {
 			throw new Error("At least one of isin, ticker, or name must be provided");
 		}
-	}
-
-	setIsin(isin: string | null): void {
-		this._isin = isin;
-	}
-
-	setTicker(ticker: string | null): void {
-		this._ticker = ticker;
-	}
-
-	setName(name: string | null): void {
-		this._name = name;
-	}
-
-	getIsin(): string | null {
-		return this._isin;
-	}
-
-	getTicker(): string | null {
-		return this._ticker;
-	}
-
-	getName(): string | null {
-		return this._name;
 	}
 
 	// While ISIN and the Ticker are enough for identifying a company ticker, it is not enough
 	// to identify a specific traded instrument (options with different strike prices / expiration dates).
 	// Use isTheSameAs for strict matching where ISIN + ticker are both needed.
 	isTheSameAs(other: FinancialIdentifier): boolean {
-		const hasIsin = this._isin !== null && other._isin !== null;
-		const hasTicker = this._ticker !== null && other._ticker !== null;
-		const hasName = this._name !== null && other._name !== null;
+		const hasIsin = this.isin !== null && other.isin !== null;
+		const hasTicker = this.ticker !== null && other.ticker !== null;
+		const hasName = this.name !== null && other.name !== null;
 
-		const sameIsin = hasIsin && this._isin === other._isin;
-		const sameTicker = hasTicker && this._ticker === other._ticker;
-		const sameName = hasName && this._name === other._name;
+		const sameIsin = hasIsin && this.isin === other.isin;
+		const sameTicker = hasTicker && this.ticker === other.ticker;
+		const sameName = hasName && this.name === other.name;
 
 		const isinEquality = sameIsin && !hasTicker && !hasName;
 		const tickerEquality = sameIsin && sameTicker && !hasName;
@@ -61,42 +37,23 @@ export class FinancialIdentifier {
 	// where only ISIN identifies the instrument (e.g. ticker may differ: RKLB.OLD vs RKLB).
 	// Not for options/distinct instruments where ISIN + ticker are both needed.
 	sameInstrumentByIsin(other: FinancialIdentifier): boolean {
-		return this._isin !== null && other._isin !== null && this._isin === other._isin;
+		return this.isin !== null && other.isin !== null && this.isin === other.isin;
 	}
 
-	equals(other: FinancialIdentifier): boolean {
-		return this.isTheSameAs(other);
-	}
-
-	/** String key for use as Map key (replaces Python __hash__) */
+	// Map key: identifiers with the same ISIN, ticker and name share a key.
 	toKey(): string {
-		return `${this._isin ?? ""}|${this._ticker ?? ""}|${this._name ?? ""}`;
+		return `${this.isin ?? ""}|${this.ticker ?? ""}|${this.name ?? ""}`;
 	}
 
 	static fromStagingIdentifier(identifier: StagingFinancialIdentifier): FinancialIdentifier {
 		return new FinancialIdentifier({
-			isin: identifier.getIsin(),
-			ticker: identifier.getTicker(),
-			name: identifier.getName(),
+			isin: identifier.isin,
+			ticker: identifier.ticker,
+			name: identifier.name,
 		});
 	}
 
 	toString(): string {
-		return `FinancialIdentifier(ISIN: ${this._isin}, Ticker: ${this._ticker}, Name: ${this._name})`;
-	}
-
-	compareTo(other: FinancialIdentifier): number {
-		const selfValues = [this._isin, this._ticker, this._name];
-		const otherValues = [other._isin, other._ticker, other._name];
-
-		for (let i = 0; i < selfValues.length; i++) {
-			const sv = selfValues[i];
-			const ov = otherValues[i];
-			if (sv !== null && ov !== null) {
-				if (sv < ov) return -1;
-				if (sv > ov) return 1;
-			}
-		}
-		return 0;
+		return `FinancialIdentifier(ISIN: ${this.isin}, Ticker: ${this.ticker}, Name: ${this.name})`;
 	}
 }

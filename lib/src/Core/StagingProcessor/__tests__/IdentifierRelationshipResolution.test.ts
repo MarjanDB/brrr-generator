@@ -39,8 +39,8 @@ test("two partials same key produce one full relationship", () => {
 		partials,
 	);
 	expect(result.length).toEqual(1);
-	expect(result[0].fromIdentifier.getIsin()).toEqual("US111");
-	expect(result[0].toIdentifier.getIsin()).toEqual("US222");
+	expect(result[0].fromIdentifier.isin).toEqual("US111");
+	expect(result[0].toIdentifier.isin).toEqual("US222");
 	expect(result[0].changeType).toEqual(StagingIdentifierChangeType.SPLIT);
 	expect(result[0].effectiveDate !== null).toEqual(true);
 });
@@ -159,6 +159,6 @@ test("preserves existing full relationships", () => {
 			events,
 		);
 	expect(result.identifierRelationships.relationships.length).toEqual(1);
-	expect(result.identifierRelationships.relationships[0].fromIdentifier.getIsin()).toEqual("US111");
+	expect(result.identifierRelationships.relationships[0].fromIdentifier.isin).toEqual("US111");
 	expect(result.identifierRelationships.partialRelationships.length).toEqual(0);
 });

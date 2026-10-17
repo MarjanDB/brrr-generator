@@ -93,7 +93,7 @@ export class KdvpReportGenerator {
 		const periodEnd = config.toDate;
 
 		for (const isinGrouping of groupings) {
-			const isin = isinGrouping.financialIdentifier.getIsin(); // TODO: Security line has 3 possible identifiers, not just isin
+			const isin = isinGrouping.financialIdentifier.isin; // TODO: Security line has 3 possible identifiers, not just isin
 
 			const lotMatchingConfiguration: LotMatchingConfiguration = {
 				fromDate: periodStart,
@@ -130,7 +130,7 @@ export class KdvpReportGenerator {
 
 			const reportItem = new EDavkiTradeReportSecurityLineEvent({
 				isin: isin ?? "",
-				code: isinGrouping.financialIdentifier.getTicker(),
+				code: isinGrouping.financialIdentifier.ticker,
 				name: null,
 				isFund: isTrustFund,
 				resolution: null,

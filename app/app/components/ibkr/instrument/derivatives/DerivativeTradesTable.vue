@@ -24,7 +24,7 @@ function formatAmount(amount: number, currency: string) {
   <div class="flex flex-col gap-4">
     <div v-for="(dg, di) in derivativeGroupings" :key="di" class="flex flex-col gap-1.5">
       <div class="text-xs font-medium app-text-muted">
-        {{ dg.financialIdentifier.getTicker() ?? dg.financialIdentifier.getName() ?? dg.financialIdentifier.getIsin() ?? "—" }}
+        {{ dg.financialIdentifier.ticker ?? dg.financialIdentifier.name ?? dg.financialIdentifier.isin ?? "—" }}
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
