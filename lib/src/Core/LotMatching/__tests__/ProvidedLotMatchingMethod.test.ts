@@ -1,6 +1,7 @@
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod";
 import {
 	GenericAssetClass,
+	GenericMonetaryExchangeInformation,
 	GenericShortLong,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
@@ -13,17 +14,17 @@ function makeDate(iso: string): ValidDateTime {
 	return DateTime.fromISO(iso) as ValidDateTime;
 }
 
-function makeMonetary(qty: number) {
-	return {
+function makeMonetary(qty: number): GenericMonetaryExchangeInformation {
+	return new GenericMonetaryExchangeInformation({
 		underlyingCurrency: "EUR",
 		underlyingQuantity: qty,
 		underlyingTradePrice: 1,
-		comissionCurrency: "EUR",
-		comissionTotal: 0,
+		commissionCurrency: "EUR",
+		commissionTotal: 0,
 		taxCurrency: "EUR",
 		taxTotal: 0,
 		fxRateToBase: 1,
-	};
+	});
 }
 
 const simpleLot: TaxLotStock = new TaxLot({

@@ -55,7 +55,7 @@ export class LotMatcher {
 			commission:
 				(1 / trade.exchangedMoney.underlyingQuantity) *
 				quantity *
-				trade.exchangedMoney.comissionTotal,
+				trade.exchangedMoney.commissionTotal,
 		};
 	}
 }

@@ -75,7 +75,7 @@ export enum EDavkiTradeReportGainType {
 	CAPITAL_RAISE = "C",
 	CAPITAL_ASSET_RAISE = "D",
 	CAPITALIZATION_CHANGE = "E",
-	INHERITENCE = "F",
+	INHERITANCE = "F",
 	GIFT = "G",
 	OTHER = "H",
 }
@@ -244,7 +244,7 @@ export enum EDavkiDerivativeSecurityTypeName {
 
 export enum EDavkiDerivativeReportGainType {
 	BOUGHT = "A",
-	INHERITENCE = "B",
+	INHERITANCE = "B",
 	GIFT = "C",
 	OTHER = "D",
 }

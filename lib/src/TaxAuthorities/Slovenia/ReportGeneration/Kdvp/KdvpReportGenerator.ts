@@ -29,7 +29,7 @@ const GAIN_MAPPINGS: Record<string, EDavkiTradeReportGainType> = {
 	[GenericTradeReportItemGainType.CAPITAL_ASSET]: EDavkiTradeReportGainType.CAPITAL_ASSET_RAISE,
 	[GenericTradeReportItemGainType.CAPITALIZATION_CHANGE]:
 		EDavkiTradeReportGainType.CAPITALIZATION_CHANGE,
-	[GenericTradeReportItemGainType.INHERITENCE]: EDavkiTradeReportGainType.INHERITENCE,
+	[GenericTradeReportItemGainType.INHERITANCE]: EDavkiTradeReportGainType.INHERITANCE,
 	[GenericTradeReportItemGainType.GIFT]: EDavkiTradeReportGainType.GIFT,
 	[GenericTradeReportItemGainType.OTHER]: EDavkiTradeReportGainType.OTHER,
 	[GenericTradeReportItemGainType.RIGHT_TO_NEWLY_ISSUED_STOCK]: EDavkiTradeReportGainType.OTHER,
