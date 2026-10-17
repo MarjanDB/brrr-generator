@@ -9,6 +9,7 @@ import type {
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import type { TaxLotDerivative, TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import type { AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance";
+import { Model } from "@brrr/Utils/Model";
 
 type DerivativeGroupingArgs = {
 	financialIdentifier: FinancialIdentifier;
@@ -17,27 +18,18 @@ type DerivativeGroupingArgs = {
 	provenance: AnyProvenanceStep[];
 };
 
-export class DerivativeGrouping {
+export class DerivativeGrouping extends Model<DerivativeGroupingArgs> {
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly derivativeTrades: (TradeEventDerivativeAcquired | TradeEventDerivativeSold)[];
 	public readonly derivativeTaxLots: TaxLotDerivative[];
 	public readonly provenance: AnyProvenanceStep[];
 
 	constructor(args: DerivativeGroupingArgs) {
+		super();
 		this.financialIdentifier = args.financialIdentifier;
 		this.derivativeTrades = args.derivativeTrades;
 		this.derivativeTaxLots = args.derivativeTaxLots;
 		this.provenance = args.provenance;
-	}
-
-	copy(overrides: Partial<DerivativeGroupingArgs>): DerivativeGrouping {
-		return new DerivativeGrouping({
-			financialIdentifier: this.financialIdentifier,
-			derivativeTrades: this.derivativeTrades,
-			derivativeTaxLots: this.derivativeTaxLots,
-			provenance: this.provenance,
-			...overrides,
-		});
 	}
 }
 
@@ -52,7 +44,7 @@ type FinancialGroupingArgs = {
 	provenance: AnyProvenanceStep[];
 };
 
-export class FinancialGrouping {
+export class FinancialGrouping extends Model<FinancialGroupingArgs> {
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly countryOfOrigin: string | null;
 	public readonly underlyingCategory: GenericCategory;
@@ -63,6 +55,7 @@ export class FinancialGrouping {
 	public readonly provenance: AnyProvenanceStep[];
 
 	constructor(args: FinancialGroupingArgs) {
+		super();
 		this.financialIdentifier = args.financialIdentifier;
 		this.countryOfOrigin = args.countryOfOrigin;
 		this.underlyingCategory = args.underlyingCategory;
@@ -71,20 +64,6 @@ export class FinancialGrouping {
 		this.derivativeGroupings = args.derivativeGroupings;
 		this.cashTransactions = args.cashTransactions;
 		this.provenance = args.provenance;
-	}
-
-	copy(overrides: Partial<FinancialGroupingArgs>): FinancialGrouping {
-		return new FinancialGrouping({
-			financialIdentifier: this.financialIdentifier,
-			countryOfOrigin: this.countryOfOrigin,
-			underlyingCategory: this.underlyingCategory,
-			stockTrades: this.stockTrades,
-			stockTaxLots: this.stockTaxLots,
-			derivativeGroupings: this.derivativeGroupings,
-			cashTransactions: this.cashTransactions,
-			provenance: this.provenance,
-			...overrides,
-		});
 	}
 }
 

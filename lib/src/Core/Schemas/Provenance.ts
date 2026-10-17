@@ -1,6 +1,7 @@
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import type { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
+import { Model } from "@brrr/Utils/Model";
 
 type ProvenanceStepArgs = {
 	fromIdentifier: FinancialIdentifier;
@@ -9,7 +10,7 @@ type ProvenanceStepArgs = {
 	effectiveDate: ValidDateTime;
 };
 
-export class RenameProvenanceStep {
+export class RenameProvenanceStep extends Model<ProvenanceStepArgs> {
 	public readonly kind = "rename" as const;
 	public readonly fromIdentifier: FinancialIdentifier;
 	public readonly toIdentifier: FinancialIdentifier;
@@ -17,26 +18,22 @@ export class RenameProvenanceStep {
 	public readonly effectiveDate: ValidDateTime;
 
 	constructor(args: ProvenanceStepArgs) {
+		super();
 		this.fromIdentifier = args.fromIdentifier;
 		this.toIdentifier = args.toIdentifier;
 		this.changeType = args.changeType;
 		this.effectiveDate = args.effectiveDate;
 	}
-
-	copy(
-		overrides: Partial<ConstructorParameters<typeof RenameProvenanceStep>[0]>,
-	): RenameProvenanceStep {
-		return new RenameProvenanceStep({
-			fromIdentifier: this.fromIdentifier,
-			toIdentifier: this.toIdentifier,
-			changeType: this.changeType,
-			effectiveDate: this.effectiveDate,
-			...overrides,
-		});
-	}
 }
 
-export class SplitProvenanceStep {
+type SplitProvenanceStepArgs = ProvenanceStepArgs & {
+	quantityBefore?: number | null;
+	quantityAfter?: number | null;
+	beforeQuantity?: number | null;
+	beforeTradePrice?: number | null;
+};
+
+export class SplitProvenanceStep extends Model<SplitProvenanceStepArgs> {
 	public readonly kind = "split" as const;
 	public readonly fromIdentifier: FinancialIdentifier;
 	public readonly toIdentifier: FinancialIdentifier;
@@ -47,14 +44,8 @@ export class SplitProvenanceStep {
 	public readonly beforeQuantity?: number | null;
 	public readonly beforeTradePrice?: number | null;
 
-	constructor(
-		args: ProvenanceStepArgs & {
-			quantityBefore?: number | null;
-			quantityAfter?: number | null;
-			beforeQuantity?: number | null;
-			beforeTradePrice?: number | null;
-		},
-	) {
+	constructor(args: SplitProvenanceStepArgs) {
+		super();
 		this.fromIdentifier = args.fromIdentifier;
 		this.toIdentifier = args.toIdentifier;
 		this.changeType = args.changeType;
@@ -63,22 +54,6 @@ export class SplitProvenanceStep {
 		this.quantityAfter = args.quantityAfter;
 		this.beforeQuantity = args.beforeQuantity;
 		this.beforeTradePrice = args.beforeTradePrice;
-	}
-
-	copy(
-		overrides: Partial<ConstructorParameters<typeof SplitProvenanceStep>[0]>,
-	): SplitProvenanceStep {
-		return new SplitProvenanceStep({
-			fromIdentifier: this.fromIdentifier,
-			toIdentifier: this.toIdentifier,
-			changeType: this.changeType,
-			effectiveDate: this.effectiveDate,
-			quantityBefore: this.quantityBefore,
-			quantityAfter: this.quantityAfter,
-			beforeQuantity: this.beforeQuantity,
-			beforeTradePrice: this.beforeTradePrice,
-			...overrides,
-		});
 	}
 }
 

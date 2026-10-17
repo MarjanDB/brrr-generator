@@ -7,6 +7,7 @@ import type {
 } from "@brrr/Core/Schemas/Events";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import type { AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance";
+import { Model } from "@brrr/Utils/Model";
 
 type TaxLotArgs<A, S> = {
 	id: string;
@@ -18,7 +19,7 @@ type TaxLotArgs<A, S> = {
 	provenance: AnyProvenanceStep[];
 };
 
-export class TaxLot<A, S> {
+export class TaxLot<A, S> extends Model<TaxLotArgs<A, S>> {
 	public readonly id: string;
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly quantity: number;
@@ -28,6 +29,7 @@ export class TaxLot<A, S> {
 	public readonly provenance: AnyProvenanceStep[];
 
 	constructor(args: TaxLotArgs<A, S>) {
+		super();
 		this.id = args.id;
 		this.financialIdentifier = args.financialIdentifier;
 		this.quantity = args.quantity;
@@ -35,19 +37,6 @@ export class TaxLot<A, S> {
 		this.sold = args.sold;
 		this.shortLongType = args.shortLongType;
 		this.provenance = args.provenance;
-	}
-
-	copy(overrides: Partial<TaxLotArgs<A, S>>): TaxLot<A, S> {
-		return new TaxLot<A, S>({
-			id: this.id,
-			financialIdentifier: this.financialIdentifier,
-			quantity: this.quantity,
-			acquired: this.acquired,
-			sold: this.sold,
-			shortLongType: this.shortLongType,
-			provenance: this.provenance,
-			...overrides,
-		});
 	}
 }
 
