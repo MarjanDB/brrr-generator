@@ -5,7 +5,7 @@ const { build } = Scenario;
 
 // A lot of `quantity` over a buy and a sale of `tradeQuantity` each.
 function lot(quantity: number, tradeQuantity: number) {
-	return build.taxLot({
+	return build.stockTaxLot({
 		id: "ID",
 		quantity,
 		acquired: build.stockBought({ id: "ID", date: "2023-01-01", quantity: tradeQuantity }),

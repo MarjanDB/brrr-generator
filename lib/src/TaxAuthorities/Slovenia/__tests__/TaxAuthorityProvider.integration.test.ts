@@ -34,11 +34,11 @@ const optionSold = build.derivativeSold({ date: "2023-06-08", multiplier: 100, p
 const testData = build.events([
 	build.grouping({
 		stockTrades: [stockBought, stockSold],
-		stockTaxLots: [build.taxLot({ acquired: stockBought, sold: stockSold })],
+		stockTaxLots: [build.stockTaxLot({ acquired: stockBought, sold: stockSold })],
 		derivativeGroupings: [
 			build.derivativeGrouping({
 				trades: [optionBought, optionSold],
-				taxLots: [build.taxLot({ acquired: optionBought, sold: optionSold })],
+				taxLots: [build.derivativeTaxLot({ acquired: optionBought, sold: optionSold })],
 			}),
 		],
 		cashTransactions: [

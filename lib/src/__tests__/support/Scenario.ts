@@ -13,7 +13,6 @@ import {
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
-	type TradeEventBase,
 	TradeEventCashTransactionDividend,
 	TradeEventCashTransactionPaymentInLieuOfDividend,
 	TradeEventCashTransactionWithholdingTax,
@@ -58,6 +57,20 @@ function tradeFields(options: TradeOptions & WithProvenance, prefix: string, qua
 	};
 }
 
+type LotOptions = { id?: TaxLotStock["id"]; quantity?: number } & WithProvenance;
+
+function lotFields(
+	options: LotOptions,
+	acquired: TradeEventStockAcquired | TradeEventDerivativeAcquired,
+) {
+	return {
+		id: options.id ?? Values.nextId("lot"),
+		quantity: options.quantity ?? acquired.exchangedMoney.underlyingQuantity,
+		shortLongType: GenericShortLong.LONG,
+		provenance: options.provenance ?? [],
+	};
+}
+
 function cashFields(options: CashOptions & WithProvenance, prefix: string, amount: number) {
 	return {
 		...Values.cashFields(options, prefix),
@@ -86,11 +99,6 @@ const build = {
 
 	stockBought,
 	stockSold,
-
-	// A buy for a positive quantity, a sale for a negative one.
-	stockTrade(options: TradeOptions & WithProvenance & { quantity: number }): TradeEventStock {
-		return options.quantity > 0 ? stockBought(options) : stockSold(options);
-	},
 
 	derivativeBought(options: TradeOptions & WithProvenance = {}): TradeEventDerivativeAcquired {
 		return new TradeEventDerivativeAcquired({
@@ -137,17 +145,28 @@ const build = {
 		);
 	},
 
-	// The quantity defaults to the acquired trade's.
-	taxLot<A extends TradeEventBase, S extends TradeEventBase>(
-		options: { id?: TaxLotStock["id"]; acquired: A; sold: S; quantity?: number } & WithProvenance,
-	): TaxLot<A, S> {
+	// The quantity defaults to the bought trade's.
+	stockTaxLot(
+		options: LotOptions & { acquired: TradeEventStockAcquired; sold: TradeEventStockSold },
+	): TaxLotStock {
 		return new TaxLot({
-			id: options.id ?? Values.nextId("lot"),
-			quantity: options.quantity ?? options.acquired.exchangedMoney.underlyingQuantity,
+			...lotFields(options, options.acquired),
 			acquired: options.acquired,
 			sold: options.sold,
-			shortLongType: GenericShortLong.LONG,
-			provenance: options.provenance ?? [],
+		});
+	},
+
+	// The quantity defaults to the bought trade's.
+	derivativeTaxLot(
+		options: LotOptions & {
+			acquired: TradeEventDerivativeAcquired;
+			sold: TradeEventDerivativeSold;
+		},
+	): TaxLotDerivative {
+		return new TaxLot({
+			...lotFields(options, options.acquired),
+			acquired: options.acquired,
+			sold: options.sold,
 		});
 	},
 

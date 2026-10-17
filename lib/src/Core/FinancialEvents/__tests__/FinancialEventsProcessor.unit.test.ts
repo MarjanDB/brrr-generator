@@ -12,7 +12,7 @@ const grouping = build.grouping({
 	identifier,
 	countryOfOrigin: "US",
 	stockTrades: [stockBought, stockSold],
-	stockTaxLots: [build.taxLot({ id: "Lot", acquired: stockBought, sold: stockSold })],
+	stockTaxLots: [build.stockTaxLot({ id: "Lot", acquired: stockBought, sold: stockSold })],
 });
 
 test("single stock lot matching", () => {
