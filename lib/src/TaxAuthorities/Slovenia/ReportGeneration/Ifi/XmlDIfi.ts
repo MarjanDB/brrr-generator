@@ -1,4 +1,5 @@
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import { round } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Amounts";
 import {
 	EDavkiDerivativeReportItemType,
 	EDavkiDerivativeReportSecurityLineGenericEventBought,
@@ -7,11 +8,6 @@ import {
 	type EDavkiGenericDerivativeReportItem,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
 import { XMLBuilder } from "fast-xml-parser";
-
-function round(value: number, decimals: number): number {
-	const factor = 10 ** decimals;
-	return Math.round(value * factor) / factor;
-}
 
 export function generateXmlReport(
 	reportConfig: TaxAuthorityConfiguration,

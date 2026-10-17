@@ -12,6 +12,7 @@ import type {
 	TaxAuthorityConfiguration,
 	TaxPayerInfo,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import { round, toOriginalCurrency } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Amounts";
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/CsvDohDiv";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/XmlDohDiv";
 import {
@@ -66,13 +67,15 @@ function processEdavkiLineItemsFromCashTransactions(
 			taxReliefParagraphInInternationalTreaty: "",
 			dividendAmount:
 				dividend.exchangedMoney.underlyingQuantity * dividend.exchangedMoney.underlyingTradePrice,
-			dividendAmountInOriginalCurrency:
-				dividend.exchangedMoney.underlyingQuantity *
-				dividend.exchangedMoney.underlyingTradePrice *
-				(1 / dividend.exchangedMoney.fxRateToBase),
+			dividendAmountInOriginalCurrency: toOriginalCurrency(
+				dividend.exchangedMoney.underlyingQuantity * dividend.exchangedMoney.underlyingTradePrice,
+				dividend.exchangedMoney.fxRateToBase,
+			),
 			foreignTaxPaid: dividend.exchangedMoney.taxTotal,
-			foreignTaxPaidInOriginalCurrency:
-				dividend.exchangedMoney.taxTotal * (1 / dividend.exchangedMoney.fxRateToBase),
+			foreignTaxPaidInOriginalCurrency: toOriginalCurrency(
+				dividend.exchangedMoney.taxTotal,
+				dividend.exchangedMoney.fxRateToBase,
+			),
 		});
 
 		const existing = actionToDividendMapping.get(actionId);
@@ -83,10 +86,10 @@ function processEdavkiLineItemsFromCashTransactions(
 
 		existing.dividendAmount +=
 			dividend.exchangedMoney.underlyingQuantity * dividend.exchangedMoney.underlyingTradePrice;
-		existing.dividendAmountInOriginalCurrency +=
-			dividend.exchangedMoney.underlyingQuantity *
-			dividend.exchangedMoney.underlyingTradePrice *
-			(1 / dividend.exchangedMoney.fxRateToBase);
+		existing.dividendAmountInOriginalCurrency += toOriginalCurrency(
+			dividend.exchangedMoney.underlyingQuantity * dividend.exchangedMoney.underlyingTradePrice,
+			dividend.exchangedMoney.fxRateToBase,
+		);
 	}
 
 	for (const withheldTax of withholdingLines) {
@@ -99,10 +102,11 @@ function processEdavkiLineItemsFromCashTransactions(
 		entry.foreignTaxPaid +=
 			withheldTax.exchangedMoney.underlyingQuantity *
 			withheldTax.exchangedMoney.underlyingTradePrice;
-		entry.foreignTaxPaidInOriginalCurrency +=
+		entry.foreignTaxPaidInOriginalCurrency += toOriginalCurrency(
 			withheldTax.exchangedMoney.underlyingQuantity *
-			withheldTax.exchangedMoney.underlyingTradePrice *
-			(1 / withheldTax.exchangedMoney.fxRateToBase);
+				withheldTax.exchangedMoney.underlyingTradePrice,
+			withheldTax.exchangedMoney.fxRateToBase,
+		);
 	}
 
 	return [...actionToDividendMapping.values()];
@@ -168,11 +172,6 @@ function mergeDividendsReceivedOnSameDayForSingleIsin(
 	}
 
 	return mergedDividends;
-}
-
-function round(value: number, decimals: number): number {
-	const factor = 10 ** decimals;
-	return Math.round(value * factor) / factor;
 }
 
 export class DivReportGenerator {

@@ -1,0 +1,64 @@
+import {
+	GenericAssetClass,
+	GenericMonetaryExchangeInformation,
+} from "@brrr/Core/Schemas/CommonFormats";
+import { TradeEventStockSold } from "@brrr/Core/Schemas/Events";
+import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
+import {
+	foreignTaxOf,
+	round,
+	toOriginalCurrency,
+} from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Amounts";
+import { zDateTimeFromISOString } from "@brrr/Utils/DateTime";
+
+function tradeWithTax(taxTotal: number): TradeEventStockSold {
+	return new TradeEventStockSold({
+		id: `T${taxTotal}`,
+		financialIdentifier: new FinancialIdentifier({ isin: "US0000000001" }),
+		assetClass: GenericAssetClass.STOCK,
+		date: zDateTimeFromISOString.parse("2024-01-02"),
+		multiplier: 1,
+		exchangedMoney: new GenericMonetaryExchangeInformation({
+			underlyingCurrency: "USD",
+			underlyingQuantity: -1,
+			underlyingTradePrice: 10,
+			commissionCurrency: "USD",
+			commissionTotal: 0,
+			taxCurrency: "USD",
+			taxTotal,
+			fxRateToBase: 0.9,
+		}),
+		provenance: [],
+	});
+}
+
+test("round rounds half away like Math.round on the scaled value", () => {
+	expect(round(2.675, 2)).toEqual(Math.round(2.675 * 100) / 100);
+	expect(round(1.234565, 5)).toEqual(Math.round(1.234565 * 100000) / 100000);
+});
+
+test("toOriginalCurrency divides by the rate to base", () => {
+	expect(toOriginalCurrency(10, 0.5)).toEqual(20);
+});
+
+test("toOriginalCurrency multiplies by the inverse rate, matching the reports' arithmetic", () => {
+	const amount = 123.45;
+	const fxRateToBase = 0.90969;
+
+	expect(toOriginalCurrency(amount, fxRateToBase)).toEqual(amount * (1 / fxRateToBase));
+});
+
+test("foreignTaxOf reports no foreign tax for no trades", () => {
+	expect(foreignTaxOf([])).toEqual({ hasForeignTax: false, foreignTax: null });
+});
+
+test("foreignTaxOf sums the trades' taxes", () => {
+	expect(foreignTaxOf([tradeWithTax(1.5), tradeWithTax(2)])).toEqual({
+		hasForeignTax: true,
+		foreignTax: 3.5,
+	});
+});
+
+test("foreignTaxOf treats a non-positive total as no foreign tax", () => {
+	expect(foreignTaxOf([tradeWithTax(-1)])).toEqual({ hasForeignTax: false, foreignTax: null });
+});

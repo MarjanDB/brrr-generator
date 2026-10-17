@@ -7,6 +7,10 @@ import type {
 	TaxPayerInfo,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { createLotMatchingMethod } from "@brrr/TaxAuthorities/LotMatchingMethodFactory";
+import {
+	foreignTaxOf,
+	toOriginalCurrency,
+} from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Amounts";
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/CsvDohKdvp";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/XmlDohKdvp";
 import type { EDavkiDocumentWorkflowType } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
@@ -40,16 +44,20 @@ function convertStockBuy(
 		gainType: GAIN_MAPPINGS[line.acquiredReason] ?? EDavkiTradeReportGainType.OTHER,
 		quantity: line.exchangedMoney.underlyingQuantity,
 		pricePerUnit: line.exchangedMoney.underlyingTradePrice,
-		pricePerUnitInOriginalCurrency:
-			line.exchangedMoney.underlyingTradePrice * (1 / line.exchangedMoney.fxRateToBase),
+		pricePerUnitInOriginalCurrency: toOriginalCurrency(
+			line.exchangedMoney.underlyingTradePrice,
+			line.exchangedMoney.fxRateToBase,
+		),
 		totalPrice: line.exchangedMoney.underlyingQuantity * line.exchangedMoney.underlyingTradePrice,
-		totalPriceInOriginalCurrency:
-			line.exchangedMoney.underlyingQuantity *
-			line.exchangedMoney.underlyingTradePrice *
-			(1 / line.exchangedMoney.fxRateToBase),
+		totalPriceInOriginalCurrency: toOriginalCurrency(
+			line.exchangedMoney.underlyingQuantity * line.exchangedMoney.underlyingTradePrice,
+			line.exchangedMoney.fxRateToBase,
+		),
 		commissions: line.exchangedMoney.commissionTotal,
-		commissionsInOriginalCurrency:
-			line.exchangedMoney.commissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+		commissionsInOriginalCurrency: toOriginalCurrency(
+			line.exchangedMoney.commissionTotal,
+			line.exchangedMoney.fxRateToBase,
+		),
 		inheritanceAndGiftTaxPaid: null,
 		baseTaxReduction: null,
 	});
@@ -62,16 +70,20 @@ function convertStockSell(
 		soldOn: line.date,
 		quantity: line.exchangedMoney.underlyingQuantity,
 		pricePerUnit: line.exchangedMoney.underlyingTradePrice,
-		pricePerUnitInOriginalCurrency:
-			line.exchangedMoney.underlyingTradePrice * (1 / line.exchangedMoney.fxRateToBase),
+		pricePerUnitInOriginalCurrency: toOriginalCurrency(
+			line.exchangedMoney.underlyingTradePrice,
+			line.exchangedMoney.fxRateToBase,
+		),
 		totalPrice: line.exchangedMoney.underlyingQuantity * line.exchangedMoney.underlyingTradePrice,
-		totalPriceInOriginalCurrency:
-			line.exchangedMoney.underlyingQuantity *
-			line.exchangedMoney.underlyingTradePrice *
-			(1 / line.exchangedMoney.fxRateToBase),
+		totalPriceInOriginalCurrency: toOriginalCurrency(
+			line.exchangedMoney.underlyingQuantity * line.exchangedMoney.underlyingTradePrice,
+			line.exchangedMoney.fxRateToBase,
+		),
 		commissions: line.exchangedMoney.commissionTotal,
-		commissionsInOriginalCurrency:
-			line.exchangedMoney.commissionTotal * (1 / line.exchangedMoney.fxRateToBase),
+		commissionsInOriginalCurrency: toOriginalCurrency(
+			line.exchangedMoney.commissionTotal,
+			line.exchangedMoney.fxRateToBase,
+		),
 		satisfiesTaxBasisReduction: false, // TODO: Wash sale handling
 	});
 }
@@ -121,16 +133,7 @@ export class KdvpReportGenerator {
 				events: convertedLines,
 			});
 
-			const foreignTaxPaidSum = allLines.reduce(
-				(sum, e) => sum + (e.exchangedMoney.taxTotal ?? 0),
-				0,
-			);
-			let foreignTaxPaid: number | null = foreignTaxPaidSum;
-			let hasForeignTax = true;
-			if (foreignTaxPaidSum <= 0) {
-				foreignTaxPaid = null;
-				hasForeignTax = false;
-			}
+			const { hasForeignTax, foreignTax: foreignTaxPaid } = foreignTaxOf(allLines);
 
 			const isinEntry = new EDavkiGenericTradeReportItem({
 				itemId: null,
