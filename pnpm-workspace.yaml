@@ -5,10 +5,10 @@ hoist: true
 enableGlobalVirtualStore: false
 
 packages:
-  - lib
-  - standalone/cli
-  - app
-  - test-cases
+  - packages/lib
+  - packages/cli
+  - packages/app
+  - packages/test-cases
 
 # Every external dependency version lives here; package.json files reference it as `catalog:`.
 # Strict mode makes `pnpm add` write new dependencies into the catalog and reject versions outside it.

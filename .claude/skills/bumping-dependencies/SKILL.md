@@ -44,9 +44,9 @@ After `pnpm install`:
 For a major version, read its changelog or migration guide before bumping. Breaks this repo has already hit:
 
 - TypeScript 6: `baseUrl` is deprecated (`paths` are relative to the tsconfig), and `types` defaults to `[]`, so Node types need
-  `"types": ["node"]` (`standalone/cli/tsconfig.json`).
+  `"types": ["node"]` (`packages/cli/tsconfig.json`).
 - tsdown: output is `.mjs` / `.d.mts` (lib's `exports` point there); externalising dependencies is the default.
-- Vite 8: `resolve.tsconfigPaths: true` replaces `vite-tsconfig-paths` (`lib/vitest.config.ts`).
+- Vite 8: `resolve.tsconfigPaths: true` replaces `vite-tsconfig-paths` (`packages/lib/vitest.config.ts`).
 - js-yaml 5: the core schema leaves unquoted dates as strings, which `zDateTimeFromISOString` accepts.
 - csv-stringify: the default (Node) build needs `Buffer`; lib imports `csv-stringify/browser/esm/sync`.
 - Biome majors add lint rules (Vue and a11y last time): fix the findings, or scope an override in `biome.json` with a reason.

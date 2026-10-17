@@ -1,11 +1,11 @@
 ---
 name: infoproviders-lookup-data
-description: Company, country and treaty lookups (InfoProvider, PredefinedInfoProvider, NodeInfoProvider, the site's ApiInfoProvider) and the JSON fallback files in lib/src/InfoProviders/Node. Use when a dividend report has a blank or wrong payer name, address, country or treaty paragraph, when Yahoo Finance can't resolve an ISIN, or when adding fallback data.
+description: Company, country and treaty lookups (InfoProvider, PredefinedInfoProvider, NodeInfoProvider, the site's ApiInfoProvider) and the JSON fallback files in packages/lib/src/InfoProviders/Node. Use when a dividend report has a blank or wrong payer name, address, country or treaty paragraph, when Yahoo Finance can't resolve an ISIN, or when adding fallback data.
 ---
 
 # InfoProviders and lookup data
 
-Lives in `lib/src/InfoProviders/`. Today only the Slovenian dividend report (`DivReportGenerator`) uses it, to fill in the dividend
+Lives in `packages/lib/src/InfoProviders/`. Today only the Slovenian dividend report (`DivReportGenerator`) uses it, to fill in the dividend
 payer's name, address, country and treaty paragraph from the ISIN.
 
 ## Providers
@@ -15,7 +15,7 @@ payer's name, address, country and treaty paragraph from the ISIN.
 | `InfoProvider` | `InfoProvider.ts` | The interface: `getCompanyInfo(isin)`, `getCountry(name)`, plus add/update/remove/list overrides. `InfoProvider.Token` is its Inversify key. Also defines `CompanyInfo`, `CompanyLocationInfo`, `Country` and `TreatyType`. |
 | `PredefinedInfoProvider` | `PredefinedInfoProvider.ts` | In-memory maps only. Use it in tests, filled with exactly the data the test needs. |
 | `NodeInfoProvider` | `Node/NodeInfoProvider.ts`, exported as `@brrr/lib/info/node` | The real lookup, Node-only (uses `yahoo-finance2`). Used by the CLI and by the site's server routes. |
-| `ApiInfoProvider` | `app/app/utils/ApiInfoProvider.ts` | The browser side: asks `/api/isin/[isin]` and `/api/country/[name]` (`app/server/api/`, which run `NodeInfoProvider`) and caches the answers. |
+| `ApiInfoProvider` | `packages/app/app/utils/ApiInfoProvider.ts` | The browser side: asks `/api/isin/[isin]` and `/api/country/[name]` (`packages/app/server/api/`, which run `NodeInfoProvider`) and caches the answers. |
 
 `createContainer(infoProvider)` takes whichever one the caller needs.
 
@@ -36,7 +36,7 @@ Whenever the company's country can't be resolved, the result is `null`, and the 
 2. `specialCountryMappings.json`, then the built-in `ISO_COUNTRY_NAME_TO_ALPHA2` table in `NodeInfoProvider.ts`, for the 2-letter code.
 3. `internationalTreaties.json` → `treaties.taxRelief[code]` becomes `TreatyType.TaxRelief`.
 
-## JSON files (`lib/src/InfoProviders/Node/`)
+## JSON files (`packages/lib/src/InfoProviders/Node/`)
 
 | File | Shape | Add an entry when |
 | --- | --- | --- |
@@ -45,7 +45,7 @@ Whenever the company's country can't be resolved, the result is `null`, and the 
 | `specialCountryMappings.json` | country name as Yahoo or the company data spells it → ISO alpha-2 code | A country name isn't in the ISO table (or is spelled differently) |
 | `internationalTreaties.json` | `{ "treaties": { "taxRelief": { "<alpha-2>": "<Uradni list reference, paragraph and article>" } } }`, e.g. `"US": "10/01, 2b odstavek 10. člena"` | Slovenia has a double-taxation treaty with that country that grants dividend tax relief |
 
-The JSON is bundled into `lib/dist`, so after editing it rebuild lib (`pnpm --filter @brrr/lib build`) before trying the CLI or the site.
+The JSON is bundled into `packages/lib/dist`, so after editing it rebuild lib (`pnpm --filter @brrr/lib build`) before trying the CLI or the site.
 Treaty references come from the
 [MF list of treaties](https://www.gov.si/drzavni-organi/ministrstva/ministrstvo-za-finance/o-ministrstvu/direktorat-za-sistem-davcnih-carinskih-in-drugih-javnih-prihodkov/seznam-veljavnih-konvencij-o-izogibanju-dvojnega-obdavcevanja-dohodka-in-premozenja/).
 

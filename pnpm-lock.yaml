@@ -111,7 +111,7 @@ importers:
         specifier: 'catalog:'
         version: 2.5.15
 
-  app:
+  packages/app:
     dependencies:
       '@brrr/lib':
         specifier: workspace:*
@@ -172,7 +172,29 @@ importers:
         specifier: 'catalog:'
         version: 3.3.13(typescript@6.0.3)
 
-  lib:
+  packages/cli:
+    dependencies:
+      '@brrr/lib':
+        specifier: workspace:*
+        version: link:../lib
+      commander:
+        specifier: 'catalog:'
+        version: 15.0.0
+      js-yaml:
+        specifier: 'catalog:'
+        version: 5.5.0
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.15
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/lib:
     dependencies:
       csv-stringify:
         specifier: 'catalog:'
@@ -218,29 +240,7 @@ importers:
         specifier: 'catalog:'
         version: 5.0.5(@opentelemetry/api@1.9.1)(@types/node@24.19.2)(@vitest/coverage-v8@5.0.5)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
 
-  standalone/cli:
-    dependencies:
-      '@brrr/lib':
-        specifier: workspace:*
-        version: link:../../lib
-      commander:
-        specifier: 'catalog:'
-        version: 15.0.0
-      js-yaml:
-        specifier: 'catalog:'
-        version: 5.5.0
-    devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 24.19.2
-      tsx:
-        specifier: 'catalog:'
-        version: 4.23.15
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
-
-  test-cases:
+  packages/test-cases:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

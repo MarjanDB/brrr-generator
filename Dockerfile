@@ -20,17 +20,17 @@ WORKDIR ${WORKDIR_PATH}
 
 # Copy workspace config and all package manifests
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY lib/package.json ./lib/
-COPY app/package.json ./app/
-COPY standalone/cli/package.json ./standalone/cli/
-COPY test-cases/package.json ./test-cases/
+COPY packages/lib/package.json ./packages/lib/
+COPY packages/app/package.json ./packages/app/
+COPY packages/cli/package.json ./packages/cli/
+COPY packages/test-cases/package.json ./packages/test-cases/
 
 # Install all dependencies
 RUN pnpm install --frozen-lockfile
 
 # Copy source
-COPY lib/ ./lib/
-COPY app/ ./app/
+COPY packages/lib/ ./packages/lib/
+COPY packages/app/ ./packages/app/
 
 # Build stage
 FROM base AS builder
@@ -51,7 +51,7 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
 # Copy only the Nuxt output (self-contained, no node_modules needed)
-COPY --from=builder --chown=nodejs:nodejs ${WORKDIR_PATH}/app/.output ./
+COPY --from=builder --chown=nodejs:nodejs ${WORKDIR_PATH}/packages/app/.output ./
 
 USER nodejs
 
