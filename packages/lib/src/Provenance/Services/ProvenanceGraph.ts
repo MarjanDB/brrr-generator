@@ -1,6 +1,7 @@
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import type { DropReason } from "@brrr/Provenance/Models/DropReason";
 import type { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import type { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
 import { ProvenanceDrop } from "@brrr/Provenance/Models/ProvenanceDrop";
 import { ProvenanceEdge } from "@brrr/Provenance/Models/ProvenanceEdge";
 import {
@@ -80,13 +81,13 @@ export class ProvenanceGraph implements IProvenanceRecorder {
 		subject: object,
 		reason: DropReason,
 		by: ProvenanceStage,
-		detail: string | null,
+		detail: ProvenanceDetail | null,
 	): void {
 		this.assertOpen();
 		this.ownDrops.push(new ProvenanceDrop({ node: this.nodeOf(subject), reason, by, detail }));
 	}
 
-	public warn(subject: object, by: ProvenanceStage, detail: string): void {
+	public warn(subject: object, by: ProvenanceStage, detail: ProvenanceDetail): void {
 		this.assertOpen();
 		this.ownWarnings.push(new ProvenanceWarning({ node: this.nodeOf(subject), by, detail }));
 	}

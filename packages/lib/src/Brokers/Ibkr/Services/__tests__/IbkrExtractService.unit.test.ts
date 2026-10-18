@@ -4,6 +4,8 @@ import { IbkrActionId, IbkrIsin } from "@brrr/Brokers/Ibkr/Schemas/IbkrIdentifie
 import { IbkrExtractService } from "@brrr/Brokers/Ibkr/Services/IbkrExtractService";
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
+import { ProvenanceDetailValue } from "@brrr/Provenance/Models/ProvenanceDetailValue";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
 import { ProvenanceGraph } from "@brrr/Provenance/Services/ProvenanceGraph";
@@ -206,7 +208,8 @@ test("a row of an asset class lib doesn't support is dropped", () => {
 	expect(drops).toHaveLength(1);
 	expect(drops[0].node.label).toEqual("Trade 241234985 · EDF");
 	expect(drops[0].reason).toEqual(DropReason.NOT_SUPPORTED);
-	expect(drops[0].detail).toEqual("asset class FUT");
+	expect(drops[0].detail?.kind).toEqual(ProvenanceDetailKind.ASSET_CLASS_NOT_SUPPORTED);
+	expect(drops[0].detail?.values[ProvenanceDetailValue.ASSET_CLASS]).toEqual("FUT");
 });
 
 test("a file that fails to parse records none of its rows", () => {

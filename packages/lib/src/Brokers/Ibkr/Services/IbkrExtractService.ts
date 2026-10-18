@@ -12,6 +12,9 @@ import type { ImportFile } from "@brrr/Brokers/Models/ImportFile";
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
+import { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
+import { ProvenanceDetailValue } from "@brrr/Provenance/Models/ProvenanceDetailValue";
 import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 import { XMLParser } from "fast-xml-parser";
@@ -27,7 +30,7 @@ type RowOutcome = {
 	row: RawRow;
 	schemaName: string;
 	record: { transactionID: IbkrTransactionId } | null;
-	dropDetail: string | null;
+	dropDetail: ProvenanceDetail | null;
 };
 
 export class IbkrExtractService {
@@ -166,7 +169,10 @@ export class IbkrExtractService {
 			row,
 			schemaName: "",
 			record: null,
-			dropDetail: `asset class ${String(row.assetCategory)}`,
+			dropDetail: new ProvenanceDetail({
+				kind: ProvenanceDetailKind.ASSET_CLASS_NOT_SUPPORTED,
+				values: { [ProvenanceDetailValue.ASSET_CLASS]: String(row.assetCategory) },
+			}),
 		};
 	}
 

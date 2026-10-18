@@ -1,5 +1,8 @@
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
+import { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
+import { ProvenanceDetailValue } from "@brrr/Provenance/Models/ProvenanceDetailValue";
 import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
@@ -89,14 +92,23 @@ test("drop records the node, the reason, who dropped it and why", () => {
 	const row = {};
 	graph.node(row, ProvenanceNodeKind.ROW, "Trade 1003", {});
 
-	graph.drop(row, DropReason.NOT_SUPPORTED, stage, "asset class FUT");
+	graph.drop(
+		row,
+		DropReason.NOT_SUPPORTED,
+		stage,
+		new ProvenanceDetail({
+			kind: ProvenanceDetailKind.ASSET_CLASS_NOT_SUPPORTED,
+			values: { [ProvenanceDetailValue.ASSET_CLASS]: "FUT" },
+		}),
+	);
 
 	const drops = graph.drops();
 	expect(drops).toHaveLength(1);
 	expect(drops[0].node).toBe(graph.nodeOf(row));
 	expect(drops[0].reason).toEqual(DropReason.NOT_SUPPORTED);
 	expect(drops[0].by).toEqual("Test");
-	expect(drops[0].detail).toEqual("asset class FUT");
+	expect(drops[0].detail?.kind).toEqual(ProvenanceDetailKind.ASSET_CLASS_NOT_SUPPORTED);
+	expect(drops[0].detail?.values[ProvenanceDetailValue.ASSET_CLASS]).toEqual("FUT");
 });
 
 test("warn records a warning on the node", () => {
@@ -104,13 +116,21 @@ test("warn records a warning on the node", () => {
 	const line = {};
 	graph.node(line, ProvenanceNodeKind.REPORT_LINE, "DIV line", {});
 
-	graph.warn(line, stage, "company lookup failed");
+	graph.warn(
+		line,
+		stage,
+		new ProvenanceDetail({
+			kind: ProvenanceDetailKind.COMPANY_LOOKUP_FAILED,
+			values: { [ProvenanceDetailValue.ERROR]: "offline" },
+		}),
+	);
 
 	const warnings = graph.warnings();
 	expect(warnings).toHaveLength(1);
 	expect(warnings[0].node).toBe(graph.nodeOf(line));
 	expect(warnings[0].by).toEqual("Test");
-	expect(warnings[0].detail).toEqual("company lookup failed");
+	expect(warnings[0].detail.kind).toEqual(ProvenanceDetailKind.COMPANY_LOOKUP_FAILED);
+	expect(warnings[0].detail.values[ProvenanceDetailValue.ERROR]).toEqual("offline");
 });
 
 test("the null recorder accepts anything without recording", () => {
@@ -120,7 +140,11 @@ test("the null recorder accepts anything without recording", () => {
 	recorder.node(never, ProvenanceNodeKind.ROW, "Trade 1001", {});
 	recorder.derive([{}], never, ProvenanceChange.PARSED, stage, null);
 	recorder.drop({}, DropReason.NOT_SUPPORTED, stage, null);
-	recorder.warn({}, stage, "nothing");
+	recorder.warn(
+		{},
+		stage,
+		new ProvenanceDetail({ kind: ProvenanceDetailKind.FORM_IGNORES_BROKER_LOTS, values: {} }),
+	);
 
 	expect(recorder).toBeInstanceOf(NullProvenanceRecorder);
 });
