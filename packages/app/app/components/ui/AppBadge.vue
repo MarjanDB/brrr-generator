@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { BadgeVariant } from "~/components/ui/BadgeVariant";
-import { ColorIntent } from "~/utils/ColorIntent";
+import { BadgeVariant, ColorIntent } from "~/types/ui";
 
 const props = withDefaults(defineProps<{
 	color?: ColorIntent;

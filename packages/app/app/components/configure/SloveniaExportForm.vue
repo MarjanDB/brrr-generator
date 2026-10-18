@@ -9,7 +9,7 @@ import {
 	TaxpayerConfigSchema,
 	zDateTimeFromISOString,
 } from "@brrr/lib";
-import type { GeneratedOutputs } from "~/components/download/generatedOutputs";
+import type { GeneratedOutputs } from "~/types/generatedOutputs";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
 const props = defineProps<{

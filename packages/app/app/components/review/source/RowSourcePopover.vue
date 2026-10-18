@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from "reka-ui";
-import type { ImportSources } from "~/review/ImportSources";
-import type { RowSourceKind } from "~/review/RowSourceKind";
-import { allAttributesOf, keyAttributesOf } from "~/review/rowAttributes";
+import type { RowSourceKind } from "~/types/importSources";
 
 // Mounted only while the popover is open, so a long table walks the graph only for the row asked about.
 const props = defineProps<{
-  sources: ImportSources;
   subject: object;
   kind: RowSourceKind;
 }>();
 
 const { t } = useI18n();
+const sources = useImportSources();
 
-const rows = computed(() => props.sources.of(props.subject));
+const rows = computed(() => sources.of(props.subject));
 const keys = computed(() => keyAttributesOf(rows.value.row.row, props.kind));
 const all = computed(() => allAttributesOf(rows.value.row.row));
 </script>

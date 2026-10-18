@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ImportResult } from "@brrr/lib";
-import type { GeneratedOutputs } from "~/components/download/generatedOutputs";
+import type { GeneratedOutputs } from "~/types/generatedOutputs";
 
 const { locale, setLocale, locales, t } = useI18n();
 

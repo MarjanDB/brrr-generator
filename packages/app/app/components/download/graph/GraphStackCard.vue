@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { PlacedNode } from "~/download/graph/PlacedNode";
-import { CardState } from "~/download/graph/view/CardState";
-import { nodeLookOf } from "~/download/graph/view/nodeLook";
-import { nodeTextOf, nodeValueOf } from "~/download/graph/view/nodeValueOf";
+import { CardState, type PlacedNode } from "~/types/provenanceGraph";
 
 const props = defineProps<{
 	placed: PlacedNode;
 	state: CardState;
-	locale: string;
 }>();
 
 const emit = defineEmits<{
@@ -16,11 +12,11 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const { translate } = useSentences();
+const { nodeText } = useGraphText();
 
 const node = computed(() => props.placed.layoutNode.node);
 const look = computed(() => nodeLookOf(node.value));
-const text = computed(() => nodeTextOf(nodeValueOf(node.value, props.locale), translate));
+const text = computed(() => nodeText(node.value));
 
 // UnoCSS only sees class strings written out in full.
 const stateClasses: Record<CardState, string> = {

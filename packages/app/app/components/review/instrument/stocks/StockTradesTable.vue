@@ -2,15 +2,13 @@
 import type { FinancialGrouping } from "@brrr/lib";
 import { TradeEventStockAcquired } from "@brrr/lib";
 import { useI18n } from 'vue-i18n';
-import type { ImportSources } from "~/review/ImportSources";
-import { RowSourceKind } from "~/review/RowSourceKind";
+import { RowSourceKind } from "~/types/importSources";
 
 type StockTrade = FinancialGrouping["stockTrades"][number];
 
 defineProps<{
   trades: StockTrade[];
   baseCurrency: string;
-  sources: ImportSources;
 }>();
 
 const { t } = useI18n();
@@ -55,7 +53,7 @@ function formatAmount(amount: number, currency: string) {
             {{ formatAmount(trade.exchangedMoney.quantity * trade.exchangedMoney.priceInBase, baseCurrency) }}
           </td>
           <td class="py-1 pl-2 text-right sticky right-0 bg-page">
-            <RowSourceButton :sources="sources" :subject="trade" :kind="RowSourceKind.TRADE" />
+            <RowSourceButton :subject="trade" :kind="RowSourceKind.TRADE" />
           </td>
         </tr>
       </tbody>

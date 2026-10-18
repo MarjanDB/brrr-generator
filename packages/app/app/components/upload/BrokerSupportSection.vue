@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import type { BrokerGuide } from "~/utils/brokerGuides";
 import GuideModal from "../guide/GuideModal.vue";
-import type { BrokerGuide } from "./brokerGuides";
 
 defineProps<{
   brokers: BrokerGuide[];

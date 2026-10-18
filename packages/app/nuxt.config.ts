@@ -1,12 +1,9 @@
-import { APP_CONFIG } from "./util/env.config";
-
-const config = APP_CONFIG.resolve();
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
 	compatibilityDate: "2025-07-15",
 
-	devtools: { enabled: config.NODE_ENV === "development" },
+	// Devtools only ever start under `nuxt dev`; enabling them explicitly shows their floating button.
+	devtools: { enabled: true },
 
 	vite: {
 		build: {

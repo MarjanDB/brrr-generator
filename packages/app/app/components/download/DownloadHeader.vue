@@ -2,16 +2,13 @@
 import { type ReportProvenance, SlovenianReportTypeId } from "@brrr/lib";
 import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from "reka-ui";
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import type { GeneratedOutputs } from "~/components/download/generatedOutputs";
-import type { TaxAuthorityGuide } from "~/components/download/taxAuthorityGuides";
 import AppBadge from "~/components/ui/AppBadge.vue";
 import AppButton from "~/components/ui/AppButton.vue";
 import AppTooltip from "~/components/ui/AppTooltip.vue";
-import type { PanelSections } from "~/download/panel/PanelSections";
-import { warningItemsOf } from "~/download/panel/warningItems";
-import { dropSentence } from "~/download/sentences/dropSentence";
-import { warningSentence } from "~/download/sentences/warningSentence";
-import { ColorIntent } from "~/utils/ColorIntent";
+import type { GeneratedOutputs } from "~/types/generatedOutputs";
+import type { PanelSections } from "~/types/instrumentPanel";
+import { ColorIntent } from "~/types/ui";
+import type { TaxAuthorityGuide } from "~/utils/taxAuthorityGuides";
 
 const props = defineProps<{
 	outputs: GeneratedOutputs;
@@ -26,7 +23,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const { translate, format } = useSentences();
+const { dropSentence, warningSentence } = useProvenanceText();
 
 const warningItems = computed(() => warningItemsOf(props.sections));
 
@@ -106,7 +103,7 @@ onUnmounted(revokeUrls);
                 class="rounded-sm bg-warning-soft text-warning-ink px-2 py-1 text-sm"
               >
                 <span class="mr-1.5 rounded-sm bg-surface px-1 font-mono text-xs text-ink-muted">{{ item.subject.label }}</span>
-                {{ dropSentence(item.drop, translate, format) }}
+                {{ dropSentence(item.drop) }}
               </li>
             </ul>
           </PopoverContent>
@@ -143,7 +140,7 @@ onUnmounted(revokeUrls);
                 class="rounded-sm bg-warning-soft text-warning-ink px-2 py-1 text-sm"
               >
                 <span class="mr-1.5 rounded-sm bg-surface px-1 font-mono text-xs text-ink-muted">{{ item.title }}</span>
-                {{ warningSentence(item.warning, translate, format) }}
+                {{ warningSentence(item.warning) }}
               </li>
             </ul>
           </PopoverContent>

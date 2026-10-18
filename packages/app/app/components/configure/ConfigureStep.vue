@@ -2,8 +2,8 @@
 import { type ImportResult, TaxAuthorityId } from "@brrr/lib";
 import type { Component } from "vue";
 import SloveniaExportForm from "~/components/configure/SloveniaExportForm.vue";
-import { TAX_AUTHORITY_CARDS, type TaxAuthorityCard } from "~/components/configure/taxAuthorityCards";
-import type { GeneratedOutputs } from "~/components/download/generatedOutputs";
+import type { GeneratedOutputs } from "~/types/generatedOutputs";
+import type { TaxAuthorityCard } from "~/utils/taxAuthorityCards";
 
 defineProps<{
   imported: ImportResult;

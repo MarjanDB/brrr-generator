@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ReportInstrumentKind } from "@brrr/lib";
+import type { ProvenanceWalker, ReportInstrumentKind } from "@brrr/lib";
 import { useElementSize, useEventListener } from "@vueuse/core";
 import { computed, useTemplateRef } from "vue";
 import GraphEdges from "~/components/download/graph/GraphEdges.vue";
@@ -7,18 +7,7 @@ import GraphNodeCard from "~/components/download/graph/GraphNodeCard.vue";
 import GraphPairCard from "~/components/download/graph/GraphPairCard.vue";
 import GraphPopover from "~/components/download/graph/GraphPopover.vue";
 import GraphStackCard from "~/components/download/graph/GraphStackCard.vue";
-import type { GraphChain } from "~/download/graph/GraphChain";
-import { GraphLane } from "~/download/graph/GraphLane";
-import type { GraphLayout } from "~/download/graph/GraphLayout";
-import type { GraphLayoutEdge } from "~/download/graph/GraphLayoutEdge";
-import type { GraphLayoutNode } from "~/download/graph/GraphLayoutNode";
-import { defaultGraphMetrics } from "~/download/graph/GraphMetrics";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
-import type { GraphPlacement } from "~/download/graph/GraphPlacement";
-import { CardState } from "~/download/graph/view/CardState";
-import { headingKeys, laneLabelKeys } from "~/download/graph/view/headingKeys";
-import type { PairSide } from "~/download/graph/view/PairSide";
-import type { PopoverContent } from "~/download/graph/view/PopoverContent";
+import { CardState, type GraphChain, GraphLane, type GraphLayout, type GraphLayoutEdge, type GraphLayoutNode, type GraphNode, GraphNodeKind, type GraphPlacement, type PairSide } from "~/types/provenanceGraph";
 
 const props = defineProps<{
 	layout: GraphLayout;
@@ -27,10 +16,10 @@ const props = defineProps<{
 	instrumentKind: ReportInstrumentKind;
 	lotMatchingMethodKey: string;
 	locale: string;
-	// The open popover and the node it hangs on; both null when none is open.
-	popover: PopoverContent | null;
-	popoverAnchor: GraphLayoutNode | null;
+	// The open popover: the node it is about and the drawn node it hangs on; both null when none is open.
+	popover: { node: GraphNode; anchor: GraphLayoutNode } | null;
 	formName: string;
+	walker: ProvenanceWalker;
 }>();
 
 const emit = defineEmits<{
@@ -43,6 +32,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const { popoverOf } = useGraphText();
 
 // A wide graph shrinks to fit, but not below this: past it the canvas scrolls sideways.
 const minimumScale = 0.6;
@@ -76,7 +66,10 @@ function stateOf(node: GraphLayoutNode): CardState {
 }
 
 const anchor = computed(() =>
-	props.popoverAnchor === null ? null : props.placement.placedNodeOf(props.popoverAnchor),
+	props.popover === null ? null : placedNodeOf(props.placement, props.popover.anchor),
+);
+const popoverText = computed(() =>
+	props.popover === null ? null : popoverOf(props.popover.node, props.walker, props.formName),
 );
 
 // UnoCSS only sees class strings written out in full: a band is tinted by what its lane holds.
@@ -151,7 +144,6 @@ const headings = computed(() =>
           v-if="placed.layoutNode.node.kind === GraphNodeKind.STACK"
           :placed="placed"
           :state="stateOf(placed.layoutNode)"
-          :locale="locale"
           @spread="emit('spread', placed.layoutNode)"
         />
         <GraphPairCard
@@ -167,7 +159,6 @@ const headings = computed(() =>
           v-else
           :placed="placed"
           :state="stateOf(placed.layoutNode)"
-          :locale="locale"
           @activate="emit('activateNode', placed.layoutNode)"
           @refocus="emit('refocusNode', placed.layoutNode)"
         />
@@ -175,14 +166,14 @@ const headings = computed(() =>
     </div>
 
     <GraphPopover
-      v-if="popover !== null && anchor !== null"
-      :content="popover"
+      v-if="popover !== null && popoverText !== null && anchor !== null"
+      :node="popover.node"
+      :content="popoverText"
       :anchor="anchor"
       :scale="scale"
       :shift="shift"
       :canvas-width="wrapperWidth"
       :canvas-height="wrapperHeight"
-      :form-name="formName"
     />
   </div>
 </template>

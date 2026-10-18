@@ -17,6 +17,7 @@
 		"@nuxtjs/i18n": "catalog:",
 		"@nuxtjs/seo": "catalog:",
 		"@posthog/nuxt": "catalog:",
+		"@takumi-rs/core": "catalog:",
 		"@vueuse/core": "catalog:",
 		"@vueuse/nuxt": "catalog:",
 		"chart.js": "catalog:",
@@ -25,13 +26,15 @@
 		"reka-ui": "catalog:",
 		"vue": "catalog:",
 		"vue-router": "catalog:",
-		"zod": "catalog:",
-		"@takumi-rs/core": "catalog:"
+		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@brrr/test-cases": "workspace:*",
+		"@nuxt/test-utils": "catalog:",
 		"@types/luxon": "catalog:",
 		"@unocss/nuxt": "catalog:",
+		"@vue/test-utils": "catalog:",
+		"happy-dom": "catalog:",
 		"unocss": "catalog:",
 		"vitest": "catalog:",
 		"vue-tsc": "catalog:"

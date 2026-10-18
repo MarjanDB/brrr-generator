@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { createContainer, type ImportResult, ReportPipeline } from "@brrr/lib";
 import BrokerSupportSection from "~/components/upload/BrokerSupportSection.vue";
-import { BROKER_GUIDES } from "~/components/upload/brokerGuides";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
 defineProps<{

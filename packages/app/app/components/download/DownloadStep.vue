@@ -1,33 +1,17 @@
 <script setup lang="ts">
 import {
-	ProvenanceField,
-	type ProvenanceNode,
 	ProvenanceReportReader,
 	ProvenanceWalker,
 	type ReportInstrument,
 } from "@brrr/lib";
-import { DateTime } from "luxon";
 import { computed, shallowRef, watch } from "vue";
 import DownloadHeader from "~/components/download/DownloadHeader.vue";
 import FocusFacts from "~/components/download/FocusFacts.vue";
-import type { GeneratedOutputs } from "~/components/download/generatedOutputs";
 import InstrumentHeader from "~/components/download/InstrumentHeader.vue";
 import InstrumentPanel from "~/components/download/InstrumentPanel.vue";
 import InstrumentTimeline from "~/components/download/InstrumentTimeline.vue";
-import { findTaxAuthorityGuide } from "~/components/download/taxAuthorityGuides";
 import GuideModal from "~/components/guide/GuideModal.vue";
-import { fieldOf } from "~/download/fields";
-import { leftOutOf, warningsOf } from "~/download/focusItems";
-import { FocusState } from "~/download/graph/FocusState";
-import { GraphIndex } from "~/download/graph/GraphIndex";
-import { chipsOf } from "~/download/labels/instrumentLabels";
-import { buildPanel } from "~/download/panel/buildPanel";
-import { defaultFocus } from "~/download/panel/defaultFocus";
-import { findEntry } from "~/download/panel/findEntry";
-import { firstEntry } from "~/download/panel/firstEntry";
-import { buildTimeline } from "~/download/timeline/buildTimeline";
-import { markKeys } from "~/download/timeline/markKeys";
-import type { TimelineMark } from "~/download/timeline/TimelineMark";
+import type { GeneratedOutputs } from "~/types/generatedOutputs";
 
 const props = defineProps<{
 	outputs: GeneratedOutputs;
@@ -44,75 +28,51 @@ const guide = computed(() =>
 	findTaxAuthorityGuide(props.outputs.authorityId, props.outputs.reportTypeId),
 );
 
-// The report is read once. The graph index is held for the graph view.
+// The report is read once.
 const reading = computed(() => new ProvenanceReportReader().read(props.outputs.provenance));
 const walker = computed(() => new ProvenanceWalker(props.outputs.provenance));
-const index = computed(() => new GraphIndex(props.outputs.provenance, reading.value));
 const sections = computed(() => buildPanel(reading.value));
 
+const focus = provideGraphFocus();
 const selected = shallowRef<ReportInstrument | null>(
 	firstEntry(sections.value)?.instrument ?? null,
 );
-const focusState = shallowRef<FocusState | null>(
-	selected.value === null ? null : FocusState.start(defaultFocus(selected.value)),
-);
+if (selected.value !== null) {
+	focus.start(defaultFocus(selected.value));
+}
 
 function select(instrument: ReportInstrument) {
 	selected.value = instrument;
-	focusState.value = FocusState.start(defaultFocus(instrument));
-}
-
-function focus(node: ProvenanceNode) {
-	focusState.value = focusState.value?.refocus(node) ?? null;
+	focus.start(defaultFocus(instrument));
 }
 
 // A new report starts again from its first instrument.
 watch(sections, (next) => {
 	const first = firstEntry(next)?.instrument ?? null;
 	selected.value = first;
-	focusState.value = first === null ? null : FocusState.start(defaultFocus(first));
+	if (first !== null) {
+		focus.start(defaultFocus(first));
+	}
 });
 
 const selectedEntry = computed(() =>
 	selected.value === null ? null : findEntry(sections.value, selected.value),
 );
-const timeline = computed(() =>
-	selected.value === null ? null : buildTimeline(selected.value, walker.value),
-);
-const lit = computed(() => focusState.value?.lit?.sources ?? null);
 const leftOut = computed(() =>
-	selected.value === null || focusState.value === null
+	selected.value === null || focus.node.value === null
 		? []
-		: leftOutOf(selected.value, focusState.value.focus),
+		: leftOutOf(selected.value, focus.node.value),
 );
 const warnings = computed(() =>
-	selected.value === null || focusState.value === null
+	selected.value === null || focus.node.value === null
 		? []
-		: warningsOf(selected.value, focusState.value.focus),
+		: warningsOf(selected.value, focus.node.value),
 );
 const timelineName = computed(
 	() => selectedEntry.value?.contract?.occSymbol ?? selectedEntry.value?.ticker ?? "",
 );
 // The form as the graph's popovers name it: the report type's own id.
 const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
-
-function describeMark(mark: TimelineMark): string {
-	const date = fieldOf(mark.node, ProvenanceField.DATE) ?? fieldOf(mark.node, ProvenanceField.ACQUIRED_DATE);
-	const quantity = Number(fieldOf(mark.node, ProvenanceField.QUANTITY));
-	return t(markKeys[mark.kind], {
-		date:
-			date === null
-				? ""
-				: DateTime.fromISO(date).setLocale(locale.value).toLocaleString(DateTime.DATE_MED),
-		quantity: new Intl.NumberFormat(locale.value).format(Math.abs(quantity)),
-		amount: new Intl.NumberFormat(locale.value).format(
-			Math.abs(Number(fieldOf(mark.node, ProvenanceField.PRICE))),
-		),
-		currency: fieldOf(mark.node, ProvenanceField.CURRENCY) ?? "",
-	});
-}
-
-defineExpose({ index });
 </script>
 
 <template>
@@ -132,34 +92,30 @@ defineExpose({ index });
       <InstrumentPanel :sections="sections" :selected="selected" @select="select" />
 
       <div
-        v-if="selectedEntry !== null && timeline !== null && focusState !== null"
+        v-if="selectedEntry !== null && selected !== null && focus.node.value !== null"
         class="flex flex-col min-w-0 rounded-md border border-edge"
       >
         <InstrumentHeader :entry="selectedEntry" :chips="chipsOf(selectedEntry.instrument)" />
         <div class="px-4">
           <InstrumentTimeline
-            :timeline="timeline"
-            :focus="focusState.focus"
-            :lit="lit"
+            :instrument="selected"
+            :walker="walker"
             :locale="locale"
             :name="timelineName"
-            :describe="describeMark"
-            @select="focus"
           />
         </div>
         <LazyGraphView
           v-if="selected !== null"
-          :index="index"
+          :graph="outputs.provenance"
+          :reading="reading"
           :walker="walker"
-          :focus-state="focusState"
           :instrument-kind="selected.kind"
           :ticker="timelineName"
           :lot-matching-method="outputs.lotMatchingMethod"
           :locale="locale"
           :form-name="formName"
-          @update:focus-state="(next) => (focusState = next)"
         />
-        <FocusFacts :node="focusState.focus" :left-out="leftOut" :warnings="warnings" />
+        <FocusFacts :left-out="leftOut" :warnings="warnings" />
       </div>
     </div>
   </div>

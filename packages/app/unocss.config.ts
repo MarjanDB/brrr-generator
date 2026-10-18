@@ -1,5 +1,5 @@
 import { defineConfig, presetIcons, presetWind4 } from "unocss";
-import { ColorIntent } from "./app/utils/ColorIntent";
+import { ColorIntent } from "./app/types/ui";
 
 function buttonShortcuts() {
 	return Object.values(ColorIntent).map((color): [string, string] => [
@@ -16,11 +16,11 @@ function buttonShortcuts() {
 export default defineConfig({
 	content: {
 		pipeline: {
-			// UnoCSS's default list plus the download step's pure TypeScript, whose class maps
-			// (`graph/view/nodeLook.ts`) aren't in a .vue file.
+			// UnoCSS's default list plus the app's TypeScript, whose class maps (`utils/nodeLook.ts`)
+			// aren't in a .vue file.
 			include: [
 				/\.(vue|svelte|[jt]sx|mdx?|astro|elm|php|phtml|html)($|\?)/,
-				/app\/download\/.*\.ts($|\?)/,
+				/app\/(utils|composables)\/.*\.ts($|\?)/,
 			],
 		},
 	},

@@ -1,26 +1,21 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { CaptionSegment } from "~/download/graph/CaptionSegment";
-import { captionSentence } from "~/download/graph/view/captionSentence";
-import { type CaptionContext, captionTextOf } from "~/download/graph/view/captionTextOf";
-import { nodeLookOf } from "~/download/graph/view/nodeLook";
+import type { CaptionContext } from "~/composables/useGraphText";
+import type { CaptionSegment } from "~/types/provenanceGraph";
 
 const props = defineProps<{
 	segments: CaptionSegment[];
 	context: CaptionContext;
 }>();
 
-const { translate, format } = useSentences();
+const { captionText } = useGraphText();
 
 // All text is written at render, so switching language redraws it.
 const parts = computed(() =>
-	props.segments.map((segment) => {
-		const text = captionTextOf(segment, props.context);
-		return {
-			sentence: captionSentence(text, translate, format),
-			look: text.node === null ? null : nodeLookOf(text.node.node),
-		};
-	}),
+	props.segments.map((segment) => ({
+		sentence: captionText(segment, props.context),
+		look: segment.node === null ? null : nodeLookOf(segment.node.node),
+	})),
 );
 </script>
 

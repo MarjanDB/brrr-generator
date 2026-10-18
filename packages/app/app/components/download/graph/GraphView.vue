@@ -1,34 +1,19 @@
 <script setup lang="ts">
 import type {
+	ProvenanceGraph,
 	ProvenanceWalker,
 	ReportInstrumentKind,
+	ReportProvenance,
 	TaxAuthorityLotMatchingMethod,
 } from "@brrr/lib";
-import { useEventListener } from "@vueuse/core";
-import { computed, ref, shallowRef, watch } from "vue";
 import GraphCanvas from "~/components/download/graph/GraphCanvas.vue";
 import GraphToolbar from "~/components/download/graph/GraphToolbar.vue";
-import { captionOf } from "~/download/graph/caption";
-import type { FocusState } from "~/download/graph/FocusState";
-import type { StackKey } from "~/download/graph/GraphIdentifiers";
-import type { GraphIndex } from "~/download/graph/GraphIndex";
-import type { GraphLayoutEdge } from "~/download/graph/GraphLayoutEdge";
-import type { GraphLayoutNode } from "~/download/graph/GraphLayoutNode";
-import { defaultGraphMetrics } from "~/download/graph/GraphMetrics";
-import { layoutGraph } from "~/download/graph/layoutGraph";
-import { placeGraph } from "~/download/graph/placeGraph";
-import { interact, remapForModel } from "~/download/graph/view/graphInteraction";
-import { InteractionKind } from "~/download/graph/view/InteractionKind";
-import type { PairSide } from "~/download/graph/view/PairSide";
-import type { PopoverContent } from "~/download/graph/view/PopoverContent";
-import { popoverContentOf } from "~/download/graph/view/popoverContentOf";
-import { lotMatchingKeys } from "~/download/sentences/sentenceKeys";
 
 const props = defineProps<{
-	index: GraphIndex;
+	graph: ProvenanceGraph;
+	reading: ReportProvenance;
 	// For the popovers: where a broker row came from.
 	walker: ProvenanceWalker;
-	focusState: FocusState;
 	instrumentKind: ReportInstrumentKind;
 	ticker: string;
 	lotMatchingMethod: TaxAuthorityLotMatchingMethod;
@@ -37,98 +22,28 @@ const props = defineProps<{
 	formName: string;
 }>();
 
-const emit = defineEmits<{
-	"update:focusState": [focusState: FocusState];
-}>();
-
 const { t } = useI18n();
 
-type OpenPopover = { content: PopoverContent; anchor: GraphLayoutNode };
+const focus = useGraphFocus();
+const {
+	showEveryStep,
+	layout,
+	placement,
+	caption,
+	popover,
+	activateNode,
+	refocusNode,
+	activateLine,
+	spread,
+	activateEdge,
+	clearLight,
+	toggleEveryStep,
+} = useProvenanceGraph({ graph: () => props.graph, reading: () => props.reading });
 
-const showEveryStep = ref(false);
-const expanded = shallowRef<ReadonlySet<StackKey>>(new Set());
-const popover = shallowRef<OpenPopover | null>(null);
-
-// The layout depends on the focus alone: lighting a chain must not draw the graph again, or the
-// chain would point at nodes that no longer exist.
-const focus = computed(() => props.focusState.focus);
-const model = computed(() => props.index.model(showEveryStep.value));
-const layout = computed(() =>
-	layoutGraph(model.value, { focus: focus.value, expanded: expanded.value }),
-);
-const placement = computed(() => placeGraph(layout.value, defaultGraphMetrics));
-const caption = computed(() => captionOf(layout.value));
 const captionContext = computed(() => ({
 	ticker: props.ticker,
 	lotMatchingMethod: props.lotMatchingMethod,
-	locale: props.locale,
 }));
-
-// A new focus starts from the folded graph with nothing open.
-watch(focus, () => {
-	expanded.value = new Set();
-	popover.value = null;
-});
-
-function run(
-	kind: InteractionKind,
-	node: GraphLayoutNode | null,
-	edge: GraphLayoutEdge | null,
-	side: PairSide | null,
-) {
-	const result = interact({
-		layout: layout.value,
-		focusState: props.focusState,
-		expanded: expanded.value,
-		kind,
-		node,
-		edge,
-		side,
-	});
-	expanded.value = result.expanded;
-	const content = result.popoverNode === null ? null : popoverContentOf(result.popoverNode, props.walker);
-	popover.value = content === null || node === null ? null : { content, anchor: node };
-	emit("update:focusState", result.focusState);
-}
-
-function activateNode(node: GraphLayoutNode) {
-	run(InteractionKind.NODE, node, null, null);
-}
-
-function refocusNode(node: GraphLayoutNode) {
-	run(InteractionKind.STUB, node, null, null);
-}
-
-function activateLine(node: GraphLayoutNode, side: PairSide) {
-	run(InteractionKind.PAIR_ROW, node, null, side);
-}
-
-function spread(node: GraphLayoutNode) {
-	run(InteractionKind.STACK, node, null, null);
-}
-
-function activateEdge(edge: GraphLayoutEdge) {
-	run(InteractionKind.EDGE, null, edge, null);
-}
-
-function clearLight() {
-	run(InteractionKind.BACKGROUND, null, null, null);
-}
-
-function toggleEveryStep() {
-	const next = !showEveryStep.value;
-	// The new mode may hide the focused step, so the focus is moved first, in the same tick.
-	emit("update:focusState", remapForModel(props.focusState, props.index.model(next)));
-	showEveryStep.value = next;
-	expanded.value = new Set();
-	popover.value = null;
-}
-
-useEventListener(document, "keydown", (event: KeyboardEvent) => {
-	if (event.key === "Escape") {
-		run(InteractionKind.ESCAPE, null, null, null);
-	}
-});
 </script>
 
 <template>
@@ -136,21 +51,21 @@ useEventListener(document, "keydown", (event: KeyboardEvent) => {
     <GraphToolbar
       :segments="caption"
       :context="captionContext"
-      :can-go-back="focusState.canGoBack()"
+      :can-go-back="focus.canGoBack.value"
       :show-every-step="showEveryStep"
-      @back="emit('update:focusState', focusState.back())"
+      @back="focus.back()"
       @toggle-every-step="toggleEveryStep"
     />
     <GraphCanvas
       :layout="layout"
       :placement="placement"
-      :lit="focusState.lit"
+      :lit="focus.lit.value"
       :instrument-kind="instrumentKind"
       :lot-matching-method-key="lotMatchingKeys[lotMatchingMethod]"
       :locale="locale"
-      :popover="popover?.content ?? null"
-      :popover-anchor="popover?.anchor ?? null"
+      :popover="popover"
       :form-name="formName"
+      :walker="walker"
       @activate-node="activateNode"
       @refocus-node="refocusNode"
       @activate-line="activateLine"

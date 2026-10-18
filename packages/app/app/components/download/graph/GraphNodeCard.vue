@@ -1,18 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { GraphDirection } from "~/download/graph/GraphDirection";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
-import type { PlacedNode } from "~/download/graph/PlacedNode";
-import { CardState } from "~/download/graph/view/CardState";
-import { nodeLookOf } from "~/download/graph/view/nodeLook";
-import { nodeTextOf, nodeValueOf } from "~/download/graph/view/nodeValueOf";
-import { dropSentence } from "~/download/sentences/dropSentence";
-import { warningSentence } from "~/download/sentences/warningSentence";
+import { CardState, GraphDirection, GraphNodeKind, type PlacedNode } from "~/types/provenanceGraph";
 
 const props = defineProps<{
 	placed: PlacedNode;
 	state: CardState;
-	locale: string;
 }>();
 
 const emit = defineEmits<{
@@ -21,21 +13,18 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const { translate, format } = useSentences();
+const { warningSentence } = useProvenanceText();
+const { nodeText } = useGraphText();
 
 const node = computed(() => props.placed.layoutNode.node);
 const isStub = computed(() => props.placed.layoutNode.isStub);
 const look = computed(() => nodeLookOf(node.value));
 
 // What the node says: a left-out node its sentence, anything else its value.
-const text = computed(() =>
-	node.value.drop !== null
-		? dropSentence(node.value.drop, translate, format)
-		: nodeTextOf(nodeValueOf(node.value, props.locale), translate),
-);
+const text = computed(() => nodeText(node.value));
 
 const warnings = computed(() =>
-	node.value.warnings.map((warning) => warningSentence(warning, translate, format)),
+	node.value.warnings.map((warning) => warningSentence(warning)),
 );
 
 // Files and rows say the broker's own words; a stub says it can be followed.

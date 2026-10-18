@@ -3,26 +3,19 @@ import {
 	DropCategory,
 	ProvenanceEventKind,
 	ProvenanceField,
-	type ProvenanceNode,
 	type ProvenanceWarning,
 	type ReportLeftOut,
 } from "@brrr/lib";
-import { DateTime } from "luxon";
 import { computed } from "vue";
-import { fieldOf } from "~/download/fields";
-import { formatNumber } from "~/download/labels/formatNumber";
-import { dropSentence } from "~/download/sentences/dropSentence";
-import { dropCategoryKeys, eventKindKeys } from "~/download/sentences/sentenceKeys";
-import { warningSentence } from "~/download/sentences/warningSentence";
 
-const props = defineProps<{
-	node: ProvenanceNode;
+defineProps<{
 	leftOut: ReportLeftOut[];
 	warnings: ProvenanceWarning[];
 }>();
 
 const { t, locale } = useI18n();
-const { translate, format } = useSentences();
+const focus = useGraphFocus();
+const { dropSentence, warningSentence, date: dateText } = useProvenanceText();
 
 type Fact = { label: string; value: string };
 
@@ -34,24 +27,28 @@ const cashKinds: ProvenanceEventKind[] = [
 ];
 
 const facts = computed<Fact[]>(() => {
+	const node = focus.node.value;
+	if (node === null) {
+		return [];
+	}
 	const result: Fact[] = [];
 	const kind = Object.values(ProvenanceEventKind).find(
-		(candidate) => candidate === fieldOf(props.node, ProvenanceField.EVENT_KIND),
+		(candidate) => candidate === fieldOf(node, ProvenanceField.EVENT_KIND),
 	);
 	if (kind !== undefined) {
 		result.push({ label: t("download_fact_kind"), value: t(eventKindKeys[kind]) });
 	}
 	const date =
-		fieldOf(props.node, ProvenanceField.DATE) ?? fieldOf(props.node, ProvenanceField.ACQUIRED_DATE);
+		fieldOf(node, ProvenanceField.DATE) ?? fieldOf(node, ProvenanceField.ACQUIRED_DATE);
 	if (date !== null) {
 		result.push({
 			label: t("download_fact_date"),
-			value: DateTime.fromISO(date).setLocale(locale.value).toLocaleString(DateTime.DATE_MED),
+			value: dateText(date),
 		});
 	}
-	const quantity = fieldOf(props.node, ProvenanceField.QUANTITY);
-	const price = fieldOf(props.node, ProvenanceField.PRICE);
-	const currency = fieldOf(props.node, ProvenanceField.CURRENCY) ?? "";
+	const quantity = fieldOf(node, ProvenanceField.QUANTITY);
+	const price = fieldOf(node, ProvenanceField.PRICE);
+	const currency = fieldOf(node, ProvenanceField.CURRENCY) ?? "";
 	if (kind !== undefined && cashKinds.includes(kind)) {
 		// A cash transaction is one unit of its amount: show the amount, not a quantity and a price.
 		if (price !== null) {
@@ -67,7 +64,7 @@ const facts = computed<Fact[]>(() => {
 			result.push({ label: t("download_fact_price"), value });
 		}
 	}
-	const transaction = fieldOf(props.node, ProvenanceField.TRANSACTION_ID);
+	const transaction = fieldOf(node, ProvenanceField.TRANSACTION_ID);
 	if (transaction !== null) {
 		result.push({ label: t("download_fact_transaction_id"), value: transaction });
 	}
@@ -99,7 +96,7 @@ const categoryClasses: Record<DropCategory, string> = {
         :class="categoryClasses[item.category]"
       >
         <span class="font-medium">{{ t(dropCategoryKeys[item.category]) }}</span>
-        <span>{{ dropSentence(item.drop, translate, format) }}</span>
+        <span>{{ dropSentence(item.drop) }}</span>
       </li>
       <li
         v-for="(warning, index) in warnings"
@@ -107,7 +104,7 @@ const categoryClasses: Record<DropCategory, string> = {
         class="flex items-center gap-2 rounded-sm bg-warning-soft text-warning-ink px-2 py-1 text-sm"
       >
         <span class="i-mdi-alert-outline" />
-        {{ warningSentence(warning, translate, format) }}
+        {{ warningSentence(warning) }}
       </li>
     </ul>
   </div>

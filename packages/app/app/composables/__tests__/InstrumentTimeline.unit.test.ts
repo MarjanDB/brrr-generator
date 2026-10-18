@@ -1,0 +1,144 @@
+import { ProvenanceEventKind, ProvenanceWalker, type ReportInstrument } from "@brrr/lib";
+import { assert, describe, expect, test } from "vitest";
+import { mountComposable } from "~/composables/__tests__/support/mountComposable";
+import { useInstrumentTimeline } from "~/composables/useInstrumentTimeline";
+import { TickGranularity, TimelineMarkKind } from "~/types/timeline";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
+
+// The timeline composable and the i18n locale it reads, so a test can switch the language. The app
+// is shared between tests, so each starts in English.
+async function mountTimeline(build: GraphBuilder, instrument: ReportInstrument | undefined) {
+	assert(instrument !== undefined);
+	const mounted = await mountComposable(() => ({
+		timeline: useInstrumentTimeline(
+			() => instrument,
+			() => new ProvenanceWalker(build.graph),
+		),
+		i18n: useI18n(),
+	}));
+	await mounted.i18n.setLocale("en");
+	return mounted;
+}
+
+function boughtAndSold(): GraphBuilder {
+	const b = new GraphBuilder();
+	const file = b.file({ name: "U1.xml" });
+	const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+	const buy = b.trade({
+		file,
+		instrument: acme,
+		kind: ProvenanceEventKind.ACQUIRED,
+		date: "2024-01-10",
+		quantity: "10",
+		price: "5",
+		currency: "USD",
+		label: "buy ACME",
+	});
+	const sell = b.trade({
+		file,
+		instrument: acme,
+		kind: ProvenanceEventKind.SOLD,
+		date: "2024-03-10",
+		quantity: "-10",
+		price: "6",
+		currency: "USD",
+		label: "sell ACME",
+	});
+	b.match({
+		instrument: acme,
+		acquired: buy,
+		sold: sell,
+		quantity: "10",
+		boughtOn: "2024-01-10",
+		soldOn: "2024-03-10",
+	});
+	return b;
+}
+
+function dividendAndTax(): GraphBuilder {
+	const b = new GraphBuilder();
+	const file = b.file({ name: "U1.xml" });
+	const tte = b.instrument({ ticker: "TTE", isin: "FR0000120271" });
+	const dividend = b.dividend({
+		file,
+		instrument: tte,
+		kind: ProvenanceEventKind.DIVIDEND,
+		date: "2024-04-01",
+		amount: "20.5",
+		currency: "EUR",
+		label: "dividend TTE",
+	});
+	const tax = b.dividend({
+		file,
+		instrument: tte,
+		kind: ProvenanceEventKind.WITHHOLDING_TAX,
+		date: "2024-04-01",
+		amount: "-3",
+		currency: "EUR",
+		label: "tax TTE",
+	});
+	b.sumInto({ instrument: tte, events: [dividend, tax], dateReceived: "2024-04-01" });
+	return b;
+}
+
+describe("the timeline of the selected instrument", () => {
+	test("its marks, arc and month ticks come from the instrument and the graph", async () => {
+		const b = boughtAndSold();
+		const { timeline } = await mountTimeline(b, b.reading().stocks[0]);
+
+		expect(timeline.timeline.value.marks).toHaveLength(2);
+		expect(timeline.timeline.value.marks[0]?.kind).toEqual(TimelineMarkKind.BOUGHT);
+		expect(timeline.timeline.value.marks[1]?.kind).toEqual(TimelineMarkKind.SOLD);
+		expect(timeline.timeline.value.arcs).toHaveLength(1);
+		expect(timeline.ticks.value[0]?.granularity).toEqual(TickGranularity.MONTH);
+		expect(timeline.ticks.value[0]?.at).toEqual(Date.UTC(2024, 1, 1));
+	});
+});
+
+describe("the tooltip text of a mark", () => {
+	test("a buy says the quantity and the date", async () => {
+		const b = boughtAndSold();
+		const { timeline } = await mountTimeline(b, b.reading().stocks[0]);
+		const mark = timeline.timeline.value.marks[0];
+		assert(mark !== undefined);
+
+		expect(timeline.describeMark(mark)).toEqual("Bought 10 on Jan 10, 2024");
+	});
+
+	test("a sale says the quantity without its sign", async () => {
+		const b = boughtAndSold();
+		const { timeline } = await mountTimeline(b, b.reading().stocks[0]);
+		const mark = timeline.timeline.value.marks[1];
+		assert(mark !== undefined);
+
+		expect(timeline.describeMark(mark)).toEqual("Sold 10 on Mar 10, 2024");
+	});
+
+	test("a dividend says its amount and currency", async () => {
+		const b = dividendAndTax();
+		const { timeline } = await mountTimeline(b, b.reading().dividendPayers[0]);
+		const mark = timeline.timeline.value.marks[0];
+		assert(mark !== undefined);
+
+		expect(timeline.describeMark(mark)).toEqual("Dividend 20.5 EUR on Apr 1, 2024");
+	});
+
+	test("a withholding tax says its amount without its sign", async () => {
+		const b = dividendAndTax();
+		const { timeline } = await mountTimeline(b, b.reading().dividendPayers[0]);
+		const mark = timeline.timeline.value.marks[1];
+		assert(mark !== undefined);
+
+		expect(timeline.describeMark(mark)).toEqual("Tax withheld 3 EUR on Apr 1, 2024");
+	});
+
+	test("the text follows the language", async () => {
+		const b = boughtAndSold();
+		const { timeline, i18n } = await mountTimeline(b, b.reading().stocks[0]);
+		const mark = timeline.timeline.value.marks[0];
+		assert(mark !== undefined);
+		await i18n.setLocale("sl");
+
+		expect(timeline.describeMark(mark)).toEqual("Nakup 10, 10. jan. 2024");
+	});
+});

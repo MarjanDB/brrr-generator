@@ -9,13 +9,11 @@ import {
   DialogTitle,
 } from "reka-ui";
 import { useInstrumentStats } from "~/composables/useInstrumentStats";
-import type { ImportSources } from "~/review/ImportSources";
 
 const props = defineProps<{
   name: string;
   isin: string;
   groupings: FinancialGrouping[];
-  sources: ImportSources;
 }>();
 
 const open = defineModel<boolean>("open", { default: false });
@@ -63,7 +61,6 @@ const xMax = computed(() => stats.value.overallCumulativeSeries[stats.value.over
             :trades="stockTrades"
             :cumulative-series="stats.stockCumulativeSeries"
             :base-currency="stats.baseCurrency"
-            :sources="sources"
             :locale="locale"
             :x-min="xMin"
             :x-max="xMax"
@@ -75,7 +72,6 @@ const xMax = computed(() => stats.value.overallCumulativeSeries[stats.value.over
             :transactions="cashTransactions"
             :cumulative-series="stats.dividendCumulativeSeries"
             :base-currency="stats.baseCurrency"
-            :sources="sources"
             :locale="locale"
             :x-min="xMin"
             :x-max="xMax"
@@ -87,7 +83,6 @@ const xMax = computed(() => stats.value.overallCumulativeSeries[stats.value.over
             :derivative-groupings="derivativeGroupings"
             :cumulative-series="stats.derivativeCumulativeSeries"
             :base-currency="stats.baseCurrency"
-            :sources="sources"
             :locale="locale"
             :x-min="xMin"
             :x-max="xMax"

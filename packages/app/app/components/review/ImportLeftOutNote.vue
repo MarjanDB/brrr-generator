@@ -1,19 +1,18 @@
 <script setup lang="ts">
+import type { ProvenanceGraph } from "@brrr/lib";
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from "reka-ui";
-import { BadgeVariant } from "~/components/ui/BadgeVariant";
-import { dropSentence } from "~/download/sentences/dropSentence";
-import type { ImportLeftOut } from "~/review/ImportLeftOut";
-import { ColorIntent } from "~/utils/ColorIntent";
+import { BadgeVariant, ColorIntent } from "~/types/ui";
 
 const props = defineProps<{
-  leftOut: ImportLeftOut;
+  provenance: ProvenanceGraph;
 }>();
 
 const { t } = useI18n();
-const { translate, format } = useSentences();
+const { dropSentence } = useProvenanceText();
+const leftOut = useImportLeftOut(() => props.provenance);
 
 const open = ref(false);
-const visible = computed(() => props.leftOut.needsALook > 0 || props.leftOut.merged.length > 0);
+const visible = computed(() => leftOut.value.needsALook > 0 || leftOut.value.merged.length > 0);
 </script>
 
 <template>
@@ -45,7 +44,7 @@ const visible = computed(() => props.leftOut.needsALook > 0 || props.leftOut.mer
       <section v-if="leftOut.lines.length > 0" class="flex flex-col gap-3">
         <h3 class="text-label">{{ t("review_left_out_heading") }}</h3>
         <div v-for="(line, index) in leftOut.lines" :key="index" class="flex flex-col gap-1.5">
-          <p class="text-sm app-text">{{ dropSentence(line.drop, translate, format) }}</p>
+          <p class="text-sm app-text">{{ dropSentence(line.drop) }}</p>
           <div class="flex flex-col items-start gap-1">
             <FileChip v-for="file in line.files" :key="file" :name="file" />
             <div v-for="(source, rowIndex) in line.rows" :key="rowIndex" class="flex flex-wrap items-center gap-1.5">

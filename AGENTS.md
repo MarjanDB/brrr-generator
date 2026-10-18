@@ -32,7 +32,7 @@ pnpm 11, pinned in the root `package.json` (`packageManager`). Always use `pnpm`
 | `pnpm --filter @brrr/lib typecheck`                                  | `tsc --noEmit`, lib                                    |
 | `pnpm --filter @brrr/lib build`                                      | tsdown, lib → `packages/lib/dist/`                     |
 | `pnpm --filter @brrr/app typecheck`                                  | `nuxt typecheck`                                       |
-| `pnpm --filter @brrr/app test`                                       | Vitest, app: the download and review steps' logic      |
+| `pnpm --filter @brrr/app test`                                       | Vitest, app: its utils and composables, inside Nuxt    |
 | `pnpm --filter @brrr/app build`                                      | Nuxt build                                             |
 | `pnpm --filter @brrr/cli typecheck`                                  | Typecheck the CLI                                      |
 | `pnpm --filter @brrr/test-cases typecheck`                           | Typecheck the test cases package                       |
@@ -98,12 +98,12 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
 
 - PascalCase for types, classes, enums, Vue components and `packages/lib/src/` folders; camelCase for functions, methods and variables.
 - Imports go at the top of the file. Inside `packages/lib/` import through the `@brrr/*` alias (`@brrr/Core/Models/Events/TradeEvent`), not relative paths.
-- One model per file, named after it: each class, enum and union type gets its own file, in a folder per concern
+- In lib, one model per file, named after it: each class, enum and union type gets its own file, in a folder per concern
   (`Core/Models/Events/Stock/TradeEventStockAcquired.ts`, `Core/Models/Lots/TaxLot.ts`), and `Core/Models/Staging/` mirrors those
   folders for the staging twins. A class's `…Args` type stays in its file, and so does a type that only describes what one of its
   methods takes or returns (`BrokerFileDetection` in `BrokerRegistry.ts`); for an interface's methods, that's the interface's file.
   Models are what several files share. There are no `index.ts` barrels: import each model from its own file.
-- Domain models are classes with `public readonly` fields and one args-object constructor (see `Core/Models/`). Don't mutate them, and
+- Lib's domain models are classes with `public readonly` fields and one args-object constructor (see `Core/Models/`). Don't mutate them, and
   don't copy one just to change a field: build each value once with its final contents. Where a value really changes (a split rescaling
   a trade), one named function builds the new object through the class's constructor, and the stage records it in the run's provenance
   graph as made from the original, so the trace back survives (see `scaleTradeForSplit` in
@@ -179,9 +179,21 @@ Some older Core names predate these rules. They're being brought in line separat
 
 Read the **web-app** skill before changing `packages/app/`. Every user-facing string goes through i18n and needs both `en.json` and `sl.json`.
 
+The app is laid out the Nuxt way, not like lib:
+
+- `components/` holds only `.vue` files.
+- State, and anything reactive or translated, is a composable in `composables/` (`useX`, calling `useI18n` itself). State a whole
+  step shares is provided once (`provideX`) and injected below (`useX`).
+- Pure helpers that several files share are in `utils/`; Nuxt auto-imports composables and utils, so their exported names are unique.
+- Shapes several files share are plain `type`s and enums in `types/<feature>.ts`; a type used by one file stays in it.
+- No classes: lib's model rules above (classes with args constructors, one model per file, `@brrr/*` imports) are lib's. Enums and
+  nominal identifiers apply here too.
+
 ### Tests
 
-Vitest in lib and in the app. Lib's tests use globals (`describe`, `it`, `expect`, `vi` need no import); the app's test pure TypeScript (unit tests, and integration tests that run it on the test cases' real graphs) and import Vitest explicitly. Tests sit in `__tests__/` next to the code they cover. A change in
+Vitest in lib and in the app. Lib's tests use globals (`describe`, `it`, `expect`, `vi` need no import). The app's run inside Nuxt's test environment
+(`@nuxt/test-utils`, happy-dom) and import Vitest explicitly: utils are called directly, composables run inside a mounted component
+(`mountComposable`), and integration tests run them on the test cases' real graphs. Tests sit in `__tests__/` next to the code they cover. A change in
 behaviour gets a test that fails before it and passes after.
 
 Every test file names its kind:

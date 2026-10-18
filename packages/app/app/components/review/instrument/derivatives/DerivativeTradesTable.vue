@@ -2,15 +2,13 @@
 import type { FinancialGrouping } from "@brrr/lib";
 import { TradeEventDerivativeAcquired } from "@brrr/lib";
 import { useI18n } from 'vue-i18n';
-import type { ImportSources } from "~/review/ImportSources";
-import { RowSourceKind } from "~/review/RowSourceKind";
+import { RowSourceKind } from "~/types/importSources";
 
 type DerivativeGrouping = FinancialGrouping["derivativeGroupings"][number];
 
 defineProps<{
   derivativeGroupings: DerivativeGrouping[];
   baseCurrency: string;
-  sources: ImportSources;
 }>();
 
 const { t } = useI18n();
@@ -65,7 +63,7 @@ function formatAmount(amount: number, currency: string) {
                 }}
               </td>
               <td class="py-1 pl-2 text-right sticky right-0 bg-page">
-                <RowSourceButton :sources="sources" :subject="trade" :kind="RowSourceKind.TRADE" />
+                <RowSourceButton :subject="trade" :kind="RowSourceKind.TRADE" />
               </td>
             </tr>
           </tbody>
