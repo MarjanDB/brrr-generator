@@ -27,6 +27,7 @@ import { IdentifierRelationshipResolution } from "@brrr/Core/Services/StagingPro
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/Services/StagingProcessing/StagingFinancialGroupingProcessor";
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceField } from "@brrr/Provenance/Models/ProvenanceField";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
 import { ProvenanceGraph } from "@brrr/Provenance/Services/ProvenanceGraph";
@@ -512,4 +513,41 @@ test("a derivative grouping takes the contract of its trades", () => {
 	expect(contract.strike).toEqual(202.5);
 	expect(contract.optionRight).toEqual(OptionRight.CALL);
 	expect(contract.multiplier).toEqual(100);
+});
+
+test("converted nodes carry their fields", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const stagingEvents = staged(TestKit.ibkr.stockTrade.inputs.simpleStockTrade.read(), graph);
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
+
+	const events = processor.processStagingFinancialEvents(stagingEvents, graph);
+
+	const buy = graph.nodeOf(events.groupings[0].stockTrades[0]);
+	expect(buy.fields[ProvenanceField.EVENT_KIND]).toEqual("ACQUIRED");
+	expect(buy.fields[ProvenanceField.QUANTITY]).toEqual("5");
+	expect(buy.fields[ProvenanceField.PRICE]).toEqual("8.02");
+	expect(buy.fields[ProvenanceField.TRANSACTION_ID]).toEqual("241234985");
+	expect(buy.fields[ProvenanceField.DATE]).toEqual("2022-02-22");
+	const lot = graph.nodeOf(events.groupings[0].stockTaxLots[0]);
+	expect(lot.fields[ProvenanceField.ACQUIRED_DATE]).toEqual("2022-02-22");
+	expect(lot.fields[ProvenanceField.SOLD_DATE]).toEqual("2022-03-24");
+	const grouping = graph.nodeOf(events.groupings[0]);
+	expect(grouping.fields[ProvenanceField.ISIN]).toEqual("FR0010242511");
+	expect(grouping.fields[ProvenanceField.TICKER]).toEqual("EDF");
+});
+
+test("a converted corporate action carries its fields", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const stagingEvents = staged(
+		TestKit.ibkr.corporateActionsTwoRows.inputs.corporateActionsTwoRows.read(),
+		graph,
+	);
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
+
+	const events = processor.processStagingFinancialEvents(stagingEvents, graph);
+
+	const action = graph.nodeOf(events.identifierRelationships[0]);
+	expect(action.fields[ProvenanceField.CORPORATE_ACTION_KIND]).toEqual("SPLIT");
+	expect(action.fields[ProvenanceField.SPLIT_BEFORE]).toEqual("4");
+	expect(action.fields[ProvenanceField.SPLIT_AFTER]).toEqual("40");
 });

@@ -4,6 +4,7 @@ import type { Lot } from "@brrr/Core/Models/LotMatching/Lot";
 import type { Trade } from "@brrr/Core/Models/LotMatching/Trade";
 import type { TaxLot } from "@brrr/Core/Models/Lots/TaxLot";
 import { TradeAssociationTracker } from "@brrr/Core/Services/LotMatching/TradeAssociationTracker";
+import { ProvenanceFields } from "@brrr/Core/Utils/ProvenanceFields";
 import { ProvenanceLabels } from "@brrr/Core/Utils/ProvenanceLabels";
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
@@ -68,7 +69,7 @@ export class ProvidedLotMatchingMethod implements ILotMatchingMethod {
 				matched,
 				ProvenanceNodeKind.MATCHED_LOT,
 				ProvenanceLabels.matchedLot(acquiredTrade.id, soldTrade.id, lot.quantity),
-				{},
+				ProvenanceFields.matchedLot(lot.quantity),
 			);
 			this.provenance.derive([lot], matched, ProvenanceChange.MATCHED, STAGE, null);
 			processedLots.push(matched);

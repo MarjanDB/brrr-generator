@@ -23,6 +23,7 @@ import {
 	recordDerivativeGroupingMembers,
 	recordGroupingMembers,
 } from "@brrr/Core/Utils/GroupingMembers";
+import { ProvenanceFields } from "@brrr/Core/Utils/ProvenanceFields";
 import { ProvenanceLabels } from "@brrr/Core/Utils/ProvenanceLabels";
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
@@ -89,7 +90,7 @@ export class StagingFinancialGroupingProcessor {
 					grouping.financialIdentifier.isin,
 					grouping.financialIdentifier.ticker,
 				),
-				{},
+				ProvenanceFields.derivativeGrouping(grouping.financialIdentifier, grouping.contract),
 			);
 			provenance.derive([input], grouping, ProvenanceChange.CONVERTED, STAGE, null);
 			recordDerivativeGroupingMembers(provenance, grouping, STAGE);
@@ -130,7 +131,7 @@ export class StagingFinancialGroupingProcessor {
 				grouping.financialIdentifier.isin,
 				grouping.financialIdentifier.ticker,
 			),
-			{},
+			ProvenanceFields.grouping(grouping.financialIdentifier),
 		);
 		provenance.derive([input], grouping, ProvenanceChange.CONVERTED, STAGE, null);
 		recordGroupingMembers(provenance, grouping, STAGE);
@@ -189,7 +190,7 @@ export class StagingFinancialGroupingProcessor {
 					fields.toIdentifier.ticker,
 					split,
 				),
-				{},
+				ProvenanceFields.corporateAction(coreRelationship),
 			);
 			provenance.derive([r], coreRelationship, ProvenanceChange.CONVERTED, STAGE, null);
 		}

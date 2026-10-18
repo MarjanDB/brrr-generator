@@ -21,9 +21,11 @@ import { StagingTradeEventDerivativeAcquired } from "@brrr/Core/Models/Staging/E
 import type { StagingTradeEventStock } from "@brrr/Core/Models/Staging/Events/Stock/StagingTradeEventStock";
 import { StagingTradeEventStockAcquired } from "@brrr/Core/Models/Staging/Events/Stock/StagingTradeEventStockAcquired";
 import type { StagingTaxLot } from "@brrr/Core/Models/Staging/Lots/StagingTaxLot";
+import { ProvenanceFields } from "@brrr/Core/Utils/ProvenanceFields";
 import { CashTransactionLabel, ProvenanceLabels } from "@brrr/Core/Utils/ProvenanceLabels";
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceEventKind } from "@brrr/Provenance/Models/ProvenanceEventKind";
 import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 
@@ -35,8 +37,9 @@ function track(
 	core: object,
 	kind: ProvenanceNodeKind,
 	label: string,
+	fields: Record<string, string>,
 ): void {
-	provenance.node(core, kind, label, {});
+	provenance.node(core, kind, label, fields);
 	provenance.derive([staged], core, ProvenanceChange.CONVERTED, STAGE, null);
 }
 
@@ -76,6 +79,10 @@ export function toCoreStockTrade(
 			input.exchangedMoney.quantity,
 			input.financialIdentifier.ticker,
 		),
+		ProvenanceFields.event(
+			trade,
+			acquired ? ProvenanceEventKind.ACQUIRED : ProvenanceEventKind.SOLD,
+		),
 	);
 	return trade;
 }
@@ -101,6 +108,10 @@ export function toCoreDerivativeTrade(
 			input.exchangedMoney.quantity,
 			input.financialIdentifier.ticker,
 		),
+		ProvenanceFields.event(
+			trade,
+			acquired ? ProvenanceEventKind.ACQUIRED : ProvenanceEventKind.SOLD,
+		),
 	);
 	return trade;
 }
@@ -117,24 +128,29 @@ export function toCoreCashTransaction(
 	};
 	let transaction: TradeEventCashTransaction;
 	let label: CashTransactionLabel;
+	let kind: ProvenanceEventKind;
 	if (input instanceof StagingTradeEventCashTransactionDividend) {
 		transaction = new TradeEventCashTransactionDividend({
 			...fields,
 			dividendType: input.dividendType,
 		});
 		label = CashTransactionLabel.DIVIDEND;
+		kind = ProvenanceEventKind.DIVIDEND;
 	} else if (input instanceof StagingTradeEventCashTransactionWithholdingTax) {
 		transaction = new TradeEventCashTransactionWithholdingTax(fields);
 		label = CashTransactionLabel.WITHHOLDING_TAX;
+		kind = ProvenanceEventKind.WITHHOLDING_TAX;
 	} else if (input instanceof StagingTradeEventCashTransactionPaymentInLieuOfDividend) {
 		transaction = new TradeEventCashTransactionPaymentInLieuOfDividend({
 			...fields,
 			dividendType: input.dividendType,
 		});
 		label = CashTransactionLabel.PAYMENT_IN_LIEU;
+		kind = ProvenanceEventKind.PAYMENT_IN_LIEU;
 	} else {
 		transaction = new TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend(fields);
 		label = CashTransactionLabel.WITHHOLDING_TAX_ON_PAYMENT_IN_LIEU;
+		kind = ProvenanceEventKind.WITHHOLDING_TAX_ON_PAYMENT_IN_LIEU;
 	}
 	track(
 		provenance,
@@ -142,6 +158,7 @@ export function toCoreCashTransaction(
 		transaction,
 		ProvenanceNodeKind.EVENT,
 		ProvenanceLabels.cash(label, input.id, input.financialIdentifier.ticker),
+		ProvenanceFields.event(transaction, kind),
 	);
 	return transaction;
 }
@@ -181,6 +198,7 @@ function toCoreLot<A extends TradeEvent, S extends TradeEvent>(
 		lot,
 		ProvenanceNodeKind.LOT,
 		ProvenanceLabels.lot(input.id, input.quantity, input.financialIdentifier.ticker),
+		ProvenanceFields.lot(lot),
 	);
 	return lot;
 }

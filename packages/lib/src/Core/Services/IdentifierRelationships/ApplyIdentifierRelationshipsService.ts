@@ -15,9 +15,11 @@ import {
 	recordDerivativeGroupingMembers,
 	recordGroupingMembers,
 } from "@brrr/Core/Utils/GroupingMembers";
+import { ProvenanceFields } from "@brrr/Core/Utils/ProvenanceFields";
 import { ProvenanceLabels } from "@brrr/Core/Utils/ProvenanceLabels";
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceEventKind } from "@brrr/Provenance/Models/ProvenanceEventKind";
 import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 
@@ -178,7 +180,12 @@ export class ApplyIdentifierRelationshipsService {
 					scaledTrade.exchangedMoney.quantity,
 					ticker,
 				),
-				{},
+				ProvenanceFields.event(
+					scaledTrade,
+					scaledTrade instanceof TradeEventStockAcquired
+						? ProvenanceEventKind.ACQUIRED
+						: ProvenanceEventKind.SOLD,
+				),
 			);
 			provenance.derive([t, relationship], scaledTrade, ProvenanceChange.SPLIT, STAGE, splitDetail);
 			scaledTrades.push(scaledTrade);
@@ -192,7 +199,7 @@ export class ApplyIdentifierRelationshipsService {
 					scaledLot,
 					ProvenanceNodeKind.LOT,
 					ProvenanceLabels.lot(scaledLot.id, scaledLot.quantity, ticker),
-					{},
+					ProvenanceFields.lot(scaledLot),
 				);
 				provenance.derive(
 					[lot, relationship],
@@ -221,7 +228,7 @@ export class ApplyIdentifierRelationshipsService {
 				scaledFrom.financialIdentifier.isin,
 				scaledFrom.financialIdentifier.ticker,
 			),
-			{},
+			ProvenanceFields.grouping(scaledFrom.financialIdentifier),
 		);
 		provenance.derive(
 			[fromGrouping, relationship],
@@ -279,7 +286,7 @@ export class ApplyIdentifierRelationshipsService {
 						rebuilt,
 						ProvenanceNodeKind.GROUPING,
 						ProvenanceLabels.grouping(true, properId.isin, properId.ticker),
-						{},
+						ProvenanceFields.derivativeGrouping(properId, dg.contract),
 					);
 					provenance.derive(
 						[dg, ...record.relationships],
@@ -298,7 +305,7 @@ export class ApplyIdentifierRelationshipsService {
 			merged,
 			ProvenanceNodeKind.GROUPING,
 			ProvenanceLabels.grouping(false, properId.isin, properId.ticker),
-			{},
+			ProvenanceFields.grouping(properId),
 		);
 		provenance.derive(
 			[...groupings, ...record.relationships],
