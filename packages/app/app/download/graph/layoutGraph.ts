@@ -1,4 +1,5 @@
 import type { ProvenanceChange, ProvenanceNode } from "@brrr/lib";
+import { GraphColumn } from "~/download/graph/GraphColumn";
 import { GraphDirection } from "~/download/graph/GraphDirection";
 import { GraphNodeKey, StackKey } from "~/download/graph/GraphIdentifiers";
 import { GraphLane } from "~/download/graph/GraphLane";
@@ -10,6 +11,8 @@ import type { GraphModelEdge } from "~/download/graph/GraphModelEdge";
 import { GraphNode } from "~/download/graph/GraphNode";
 import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { GraphStack } from "~/download/graph/GraphStack";
+import { stageOf } from "~/download/graph/GraphStage";
+import { headingOf } from "~/download/graph/headingOf";
 import type { SplitFactor } from "~/download/graph/SplitFactor";
 
 export type GraphLayoutOptions = {
@@ -115,6 +118,8 @@ export function layoutGraph(model: GraphModel, options: GraphLayoutOptions): Gra
 	}
 
 	const all = [...mainDrafts, ...stubs.values()];
+	const stages = columnStages(all, model);
+	const orders = orderWithinLanes(all, edges, stages);
 	const layoutNodes = new Map<Draft, GraphLayoutNode>();
 	for (const draft of all) {
 		layoutNodes.set(
@@ -124,9 +129,9 @@ export function layoutGraph(model: GraphModel, options: GraphLayoutOptions): Gra
 				isStub: draft.isStub,
 				direction: draft.direction,
 				hasMore: draft.hasMore,
-				column: 0,
+				column: stages.get(draft) ?? 0,
 				lane: draft.lane,
-				order: 0,
+				order: orders.get(draft) ?? 0,
 			}),
 		);
 	}
@@ -153,7 +158,109 @@ export function layoutGraph(model: GraphModel, options: GraphLayoutOptions): Gra
 		focus: focusNode,
 		nodes: [...layoutNodes.values()],
 		edges: layoutEdges,
+		columns: columnsOf(all, stages, model),
 	});
+}
+
+// The node that stands for a draft when it is named or staged: a stack stands for its members.
+function representative(draft: Draft): GraphNode {
+	return draft.node.stack?.members[0] ?? draft.node;
+}
+
+// The column index of each draft: its stage (one more when rebuilt) among the stages in use.
+function columnStages(drafts: Draft[], model: GraphModel): Map<Draft, number> {
+	const stageOfDraft = (draft: Draft): number => {
+		const node = representative(draft);
+		return stageOf(node.kind) + (model.isRebuilt(node) ? 1 : 0);
+	};
+	const used = [...new Set(drafts.map(stageOfDraft))].sort((left, right) => left - right);
+	return new Map(drafts.map((draft) => [draft, used.indexOf(stageOfDraft(draft))]));
+}
+
+function columnsOf(
+	drafts: Draft[],
+	columnOf: Map<Draft, number>,
+	model: GraphModel,
+): GraphColumn[] {
+	const count = Math.max(-1, ...columnOf.values()) + 1;
+	return Array.from({ length: count }, (_, index) => {
+		const inColumn = drafts.filter((draft) => columnOf.get(draft) === index);
+		const main = inColumn.filter((draft) => !draft.isStub);
+		const named = main.length > 0 ? main : inColumn;
+		const headings = named.map((draft) => {
+			const node = representative(draft);
+			return headingOf(node, model.isRebuilt(node));
+		});
+		return new GraphColumn({ index, headings: [...new Set(headings)] });
+	});
+}
+
+const laneRank = [GraphLane.ACQUIRED, GraphLane.MIDDLE, GraphLane.SOLD];
+
+// Six alternating sweeps over the columns, each putting a column's nodes in lane order and then
+// in the mean position of their neighbours on the side just swept. Returns each draft's position
+// inside its column and lane. Nothing random: the same input gives the same order.
+function orderWithinLanes(
+	drafts: Draft[],
+	edges: DraftEdge[],
+	columnOf: Map<Draft, number>,
+): Map<Draft, number> {
+	const left = new Map<Draft, Draft[]>();
+	const right = new Map<Draft, Draft[]>();
+	for (const edge of edges) {
+		left.set(edge.to, [...(left.get(edge.to) ?? []), edge.from]);
+		right.set(edge.from, [...(right.get(edge.from) ?? []), edge.to]);
+	}
+	const columns = new Map<number, Draft[]>();
+	for (const draft of drafts) {
+		const index = columnOf.get(draft) ?? 0;
+		columns.set(index, [...(columns.get(index) ?? []), draft]);
+	}
+	const indexes = [...columns.keys()].sort((a, b) => a - b);
+	const position = new Map<Draft, number>();
+	for (const members of columns.values()) {
+		members.forEach((draft, place) => {
+			position.set(draft, place);
+		});
+	}
+	const positionOf = (draft: Draft): number => position.get(draft) ?? 0;
+	for (let sweep = 0; sweep < 6; sweep++) {
+		const towardsLeft = sweep % 2 === 0;
+		for (const index of towardsLeft ? indexes : [...indexes].reverse()) {
+			const members = columns.get(index) ?? [];
+			const scores = new Map<Draft, number>();
+			for (const draft of members) {
+				const neighbours = (towardsLeft ? left : right).get(draft) ?? [];
+				scores.set(
+					draft,
+					neighbours.length === 0
+						? positionOf(draft)
+						: neighbours.reduce((sum, neighbour) => sum + positionOf(neighbour), 0) /
+								neighbours.length,
+				);
+			}
+			members.sort(
+				(a, b) =>
+					laneRank.indexOf(a.lane) - laneRank.indexOf(b.lane) ||
+					(scores.get(a) ?? 0) - (scores.get(b) ?? 0) ||
+					Number(a.isStub) - Number(b.isStub),
+			);
+			members.forEach((draft, place) => {
+				position.set(draft, place);
+			});
+		}
+	}
+	const orders = new Map<Draft, number>();
+	for (const members of columns.values()) {
+		for (const lane of laneRank) {
+			members
+				.filter((draft) => draft.lane === lane)
+				.forEach((draft, place) => {
+					orders.set(draft, place);
+				});
+		}
+	}
+	return orders;
 }
 
 // Every node reachable from the start, the start included, in the order found.

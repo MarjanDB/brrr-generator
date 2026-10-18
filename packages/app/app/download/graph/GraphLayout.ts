@@ -1,4 +1,6 @@
 import type { ProvenanceNode } from "@brrr/lib";
+import type { GraphColumn } from "~/download/graph/GraphColumn";
+import { GraphLane } from "~/download/graph/GraphLane";
 import type { GraphLayoutEdge } from "~/download/graph/GraphLayoutEdge";
 import type { GraphLayoutNode } from "~/download/graph/GraphLayoutNode";
 import type { GraphNode } from "~/download/graph/GraphNode";
@@ -8,6 +10,7 @@ export type GraphLayoutArgs = {
 	focus: GraphLayoutNode;
 	nodes: GraphLayoutNode[];
 	edges: GraphLayoutEdge[];
+	columns: GraphColumn[];
 };
 
 // What the graph shows for one focus: the main path, the faded stubs and stacks around it, and
@@ -16,6 +19,10 @@ export class GraphLayout {
 	public readonly focus: GraphLayoutNode;
 	public readonly nodes: GraphLayoutNode[];
 	public readonly edges: GraphLayoutEdge[];
+	// Only the stages in use, left to right.
+	public readonly columns: GraphColumn[];
+	// The lanes with at least one node, top to bottom.
+	public readonly lanes: GraphLane[];
 	private readonly byNode = new Map<GraphNode, GraphLayoutNode>();
 	private readonly bySource = new Map<ProvenanceNode, GraphLayoutNode>();
 
@@ -23,6 +30,10 @@ export class GraphLayout {
 		this.focus = args.focus;
 		this.nodes = args.nodes;
 		this.edges = args.edges;
+		this.columns = args.columns;
+		this.lanes = [GraphLane.ACQUIRED, GraphLane.MIDDLE, GraphLane.SOLD].filter((lane) =>
+			args.nodes.some((node) => node.lane === lane),
+		);
 		for (const layoutNode of args.nodes) {
 			const node = layoutNode.node;
 			this.byNode.set(node, layoutNode);
