@@ -68,7 +68,7 @@ imports → broker provider (extract + transform) → **StagingFinancialEvents**
 - `packages/lib/src/InfoProviders/` — company and country lookups (`IInfoProvider`), one folder per implementation; the Node one keeps its JSON data in `Node/Data/`.
 - `packages/lib/src/Pipeline/` — `ReportPipeline`, the one way in for the site, the CLI and the tests: `read(files)` runs the brokers and
   the staging processor and returns the import with its provenance graph; `generate(imported, request)` makes a report from it.
-- `packages/lib/src/Provenance/` — what each stage made from what: a graph recorded beside the tax models and returned with each report. Stages only write to it; nothing in the tax logic reads it.
+- `packages/lib/src/Provenance/` — what each stage made from what: a graph recorded beside the tax models and returned with each report. Stages only write to it; nothing in the tax logic reads it. The area also holds `ProvenanceReportReader`, which turns a report's graph into the lists the site shows; it is exported from `index.ts` and no stage calls it.
 
 Each area (`Core`, `Brokers` and each broker, `TaxAuthorities` and each country, `InfoProviders`, `Pipeline`,
 `Provenance`) is laid out the same way, so a file's folder says what it is:
