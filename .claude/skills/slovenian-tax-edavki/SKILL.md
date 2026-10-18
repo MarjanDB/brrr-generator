@@ -60,7 +60,7 @@ entity, `SP` sole trader), `name`, `address1`, `address2` (nullable), `city`, `p
 
 - The CLI reads `config/userConfig.yml` (template: `config/userConfig.example.yml`) with js-yaml and validates it with this schema.
   Keep the example in step with the schema.
-- The site's `packages/app/app/components/export/SloveniaExportForm.vue` asks for tax number, name, address, city, post number and name, and
+- The site's `packages/app/app/components/configure/SloveniaExportForm.vue` asks for tax number, name, address, city, post number and name, and
   country, and fills the rest with fixed defaults (`FO`, resident, empty strings).
 
 ## Output

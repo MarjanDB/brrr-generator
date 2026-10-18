@@ -269,6 +269,7 @@
 
 /* --- Colour roles --- */
 /* Components use only these roles (unocss.config.ts exposes nothing else); branding changes only this block. */
+/* Charts read --color-accent-edge and --color-edge-strong and add opacity to them, so keep those two as #rrggbb. */
 
 :root {
 	/* Neutral roles */

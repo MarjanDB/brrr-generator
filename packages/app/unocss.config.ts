@@ -34,6 +34,7 @@ export default defineConfig({
 		["app-overlay", "bg-overlay"],
 		["app-surface-overlay", "bg-page"],
 		["app-surface-raised", "bg-surface-raised"],
+		["app-surface-sunken", "bg-surface-hover"],
 		["app-border", "border-edge"],
 		["app-border-strong", "border-edge-strong"],
 		["app-border-subtle", "border-edge-subtle"],

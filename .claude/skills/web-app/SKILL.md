@@ -74,7 +74,7 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
   `-edge`: `bg-accent text-accent-on`, `border-danger-edge`.
 - Class names are written out in full (`AppBadge` maps `ColorIntent` x `BadgeVariant` to literal strings): UnoCSS only sees literals,
   so `` `bg-${color}` `` renders nothing.
-- Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `app-surface-raised`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`,
+- Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `app-surface-raised`, `app-surface-sunken`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`,
   `text-label`, `text-caption`, `input-md`, `button-filled-<intent>`, `button-ghost`, `alert-error`, …
 - There is one theme: no dark mode and no `dark:` classes.
 - Icons are classes: `i-mdi-<name>` (Material Design Icons via `@iconify-json/mdi`).
