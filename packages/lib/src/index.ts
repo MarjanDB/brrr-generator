@@ -18,6 +18,7 @@ export { TradeEventDerivativeAcquired } from "@brrr/Core/Models/Events/Derivativ
 export { TradeEventStockAcquired } from "@brrr/Core/Models/Events/Stock/TradeEventStockAcquired";
 export { FinancialEvents } from "@brrr/Core/Models/FinancialEvents";
 export type { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGrouping";
+export { IdentifierChangeType } from "@brrr/Core/Models/IdentifierRelationships/IdentifierChangeType";
 export { OptionRight } from "@brrr/Core/Models/Instrument/OptionRight";
 export { StagingFinancialGroupingProcessor } from "@brrr/Core/Services/StagingProcessing/StagingFinancialGroupingProcessor";
 
@@ -37,7 +38,7 @@ export { ReportPipeline } from "@brrr/Pipeline/ReportPipeline";
 export { DropCategory } from "@brrr/Provenance/Models/DropCategory";
 export { DropReason } from "@brrr/Provenance/Models/DropReason";
 export { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
-export type { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
+export { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
 export { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
 export { ProvenanceDetailValue } from "@brrr/Provenance/Models/ProvenanceDetailValue";
 export type { ProvenanceDrop } from "@brrr/Provenance/Models/ProvenanceDrop";

@@ -123,7 +123,7 @@ function onRestart() {
     />
 
     <!-- Step 4: Download (mounted only after generation completes) -->
-    <DownloadStep
+    <LazyDownloadStep
       v-if="generatedOutputs !== null && currentStep === 4"
       :outputs="generatedOutputs"
       @restart="onRestart"

@@ -19,7 +19,7 @@ company and country lookups. Nuxt's source directory is `packages/app/app/`.
 
 ## Tests
 
-Vitest runs the app's pure TypeScript only (no DOM, no Vue test utils): the download step's graph logic under `app/download/`. Tests sit
+Vitest runs the app's pure TypeScript only (no DOM, no Vue test utils): the download step's logic under `app/download/` (graph, panel, timeline, sentences). Tests sit
 in `__tests__/` beside the code, import `describe`, `expect` and `test` from `vitest` (no globals, unlike lib), import code through the
 `~/` and `~~/` aliases (`packages/app/vitest.config.ts`), and need lib built, like `typecheck`. Nuxt ignores `*.test.ts`, so they are
 never bundled.
@@ -34,7 +34,7 @@ never bundled.
    summary, each with a table and a chart); `InstrumentModal.vue`.
 3. **Configure** — `components/configure/ConfigureStep.vue`: tax authority cards (`taxAuthorityCards.ts`), then that authority's form
    from `authorityForms` (`SloveniaExportForm.vue`), which takes the `ImportResult` and calls `ReportPipeline.generate`.
-4. **Download** — `components/download/DownloadStep.vue`, receiving `GeneratedOutputs` (the files plus the report's provenance graph and the import), plus the submission guide from `components/download/taxAuthorityGuides.ts`.
+4. **Download** — `components/download/DownloadStep.vue`, receiving `GeneratedOutputs` (the files, the year and lot-matching method, the report's provenance graph and the import). It reads the graph once (`ProvenanceReportReader`) and lays out `DownloadHeader` (form and year, counts, the needs-a-look popover (each item with the file or row it is about) and the warnings popover (each warning with its instrument), guide, downloads, start over), `InstrumentPanel` (the report's instruments by asset type, with search, and an amber badge on a row whose instrument has warnings), `InstrumentHeader`, `InstrumentTimeline` and `FocusFacts` (the focused item's facts and the sentences about it). The logic is plain TypeScript under `app/download/`, tested; the components under `components/download/` only draw. The submission guide comes from `components/download/taxAuthorityGuides.ts`. The step reads facts from node `fields` and sentences from `ProvenanceDetail` and `DropReason`, never from a node's label.
 
 The page is full width; steps 1 and 3 cap their forms at `max-w-screen-md`.
 
@@ -56,19 +56,19 @@ shown by `GuideModal.vue`, with screenshots under `packages/app/public/screensho
 
 - `components: [{ path: "~/components", pathPrefix: false }]`: components auto-register by file name, without their folder as a prefix,
   so names must be unique across folders. Explicit `~/components/...` imports are also used.
-- Folders by area: `upload/`, `review/`, `configure/`, `download/`, `guide/`, `form/`, `ui/`.
+- Folders by area: `upload/`, `review/`, `configure/`, `download/`, `guide/`, `form/`, `ui/`. The download step's logic lives outside `components/`, in `app/download/` (`graph/`, `panel/`, `timeline/`, `sentences/`, `labels/`).
 - Forms: wrap fields in `AppForm` (emits `submit` with `valid`) and use `AppTextInput`, `AppNumberInput`, `AppSelect`, `AppCheckbox`,
   `AppFileInput`. Each takes a `validate` function returning an error string or `null`, registers itself with the surrounding form, and
   links its label through `useId()`.
 - Primitives (select, checkbox, dialog, tooltip) come from reka-ui. Composables from `@vueuse/core` before writing your own.
-- Charts use chart.js; `composables/useChartTheme.ts` reads theme colours from CSS variables.
+- Charts use chart.js; `composables/useChartTheme.ts` reads theme colours from CSS variables. The review step's charts use a time scale with a hand-written date adapter (`CumulativeLineChart.vue`). The download timeline (`InstrumentTimeline.vue`) needs no adapter: its x axis is a linear scale of epoch milliseconds, ticked by `timelineTicks`, and its arcs and marks are drawn by an inline plugin (`app/download/timeline/timelineMarksPlugin.ts`, never registered globally) over one transparent scatter dataset that gives chart.js the hit-testing and tooltip. The canvas is not keyboard-reachable; the marks are reachable through the panel and `FocusFacts`.
 - Biome lints `.vue` files. Pages are exempt from the multi-word component name rule; everything else needs multi-word names.
 
 ## Text (i18n)
 
 `@nuxtjs/i18n` with `strategy: "prefix"` (`/en/…`, `/sl/…`). Messages are flat snake_case keys in `packages/app/i18n/locales/en.json` and
 `sl.json`; every key goes into both files, in Slovenian too. Use `const { t } = useI18n()` and `t("key")` in components; data files such
-as the guides hold keys, not text. Page meta goes through `useSeoMeta` with translated strings.
+as the guides hold keys, not text. Page meta goes through `useSeoMeta` with translated strings. Sentences about enum values (drop reasons, detail kinds, event kinds, categories, lot-matching methods) use `Record<Enum, string>` key maps in `app/download/sentences/sentenceKeys.ts`, so a new enum value fails to compile until it has a key; `LocaleKeys.unit.test.ts` checks that both locale files have the same keys and that every mapped key exists.
 
 ## Styling
 
@@ -90,7 +90,9 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
 ## Build and deploy
 
 - `vite.build.chunkSizeWarningLimit` is 700 kB because the wizard page carries chart.js and the tax engine; keep it just above the
-  largest chunk rather than raising it freely.
+  largest chunk rather than raising it freely. `DownloadStep` is used as `<LazyDownloadStep>` in `pages/index.vue` so the panel,
+  timeline and sentences load only once a report exists and stay out of the page chunk; make the next heavy step lazy the same way
+  rather than raising the limit.
 - `@nuxtjs/seo` prerenders the sitemap and OG images (`zeroRuntime`), so the server bundle holds only the lookup routes.
 - The root `Dockerfile` builds lib, then the app, and runs `.output/server/index.mjs`. Publishing a GitHub release force-pushes `master`
   to the `website` branch (`.github/workflows/sync-website-branch.yml`).

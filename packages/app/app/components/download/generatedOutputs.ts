@@ -1,4 +1,9 @@
-import type { ImportResult, ProvenanceGraph, TaxAuthorityId } from "@brrr/lib";
+import type {
+	ImportResult,
+	ProvenanceGraph,
+	TaxAuthorityId,
+	TaxAuthorityLotMatchingMethod,
+} from "@brrr/lib";
 
 // A generated report, as the configure step hands it to the download step. It also carries the
 // report's provenance graph (which includes the import's) and the import, for the download step's
@@ -10,6 +15,8 @@ export type GeneratedOutputs = {
 	csvFilename: string;
 	authorityId: TaxAuthorityId;
 	reportTypeId: string;
+	year: number;
+	lotMatchingMethod: TaxAuthorityLotMatchingMethod;
 	provenance: ProvenanceGraph;
 	imported: ImportResult;
 };
