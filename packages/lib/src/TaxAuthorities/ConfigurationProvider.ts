@@ -1,12 +1,15 @@
 import { type ValidDateTime, zDateTimeFromISOString } from "@brrr/Utils/DateTime";
 import { z } from "zod/v4";
 
+// eDavki's taxpayer types (taxpayerTypeType in EDP-Common-1.xsd).
 export enum TaxpayerType {
-	PHYSICAL_SUBJECT = "FO", // "FO" = Fizična Oseba (natural person); see EDP-Common-1 schema
-	LAW_SUBJECT = "PO",
-	PHYSICAL_SUBJECT_WITH_ACTIVITY = "SP",
+	NATURAL_PERSON = "FO", // fizična oseba
+	LEGAL_PERSON = "PO", // pravna oseba
+	SOLE_PROPRIETOR = "SP", // samostojni podjetnik
 }
 
+// eDavki's taxpayer block (taxPayerType in EDP-Common-1.xsd) field for field, so the field names are
+// eDavki's own, `maticnaStevilka` and `invalidskoPodjetje` included.
 export const TaxpayerConfigSchema = z.object({
 	taxNumber: z.string(),
 	taxpayerType: z.enum(TaxpayerType),

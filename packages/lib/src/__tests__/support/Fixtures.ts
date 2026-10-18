@@ -30,7 +30,7 @@ import { type TaxpayerInfo, TaxpayerType } from "@brrr/TaxAuthorities/Configurat
 // The taxpayer every expected report file was generated for.
 const taxpayer: TaxpayerInfo = {
 	taxNumber: "12345678",
-	taxpayerType: TaxpayerType.PHYSICAL_SUBJECT,
+	taxpayerType: TaxpayerType.NATURAL_PERSON,
 	name: "Ime Priimek",
 	address1: "Naslov 1",
 	address2: null,
