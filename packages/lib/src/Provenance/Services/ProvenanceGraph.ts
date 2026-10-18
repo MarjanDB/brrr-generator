@@ -15,8 +15,13 @@ export type ProvenanceGraphArgs = {
 	parent: ProvenanceGraph | null;
 };
 
+// What each stage made from what, during one run. Nodes are keyed by the objects the stages
+// record. A report records into a layer of its import's graph; once a graph has layers it is
+// sealed, so a layer's ids can safely continue after its parent's.
 export class ProvenanceGraph implements IProvenanceRecorder {
 	private readonly parent: ProvenanceGraph | null;
+	// How many nodes come before this graph's own: the parent can't grow once it has a layer.
+	private readonly parentNodeCount: number;
 	private readonly subjects = new Map<object, ProvenanceNode>();
 	private readonly ownNodes: ProvenanceNode[] = [];
 	private readonly ownEdges: ProvenanceEdge[] = [];
@@ -26,6 +31,7 @@ export class ProvenanceGraph implements IProvenanceRecorder {
 
 	public constructor(args: ProvenanceGraphArgs) {
 		this.parent = args.parent;
+		this.parentNodeCount = args.parent === null ? 0 : args.parent.nodes().length;
 	}
 
 	public layer(): ProvenanceGraph {
@@ -43,7 +49,7 @@ export class ProvenanceGraph implements IProvenanceRecorder {
 		if (this.find(subject) !== null) {
 			return;
 		}
-		const position = this.parentNodeCount() + this.ownNodes.length + 1;
+		const position = this.parentNodeCount + this.ownNodes.length + 1;
 		const node = new ProvenanceNode({
 			id: ProvenanceNodeId.Schema.parse(`n${position}`),
 			kind,
@@ -111,10 +117,6 @@ export class ProvenanceGraph implements IProvenanceRecorder {
 
 	private find(subject: object): ProvenanceNode | null {
 		return this.subjects.get(subject) ?? this.parent?.find(subject) ?? null;
-	}
-
-	private parentNodeCount(): number {
-		return this.parent === null ? 0 : this.parent.nodes().length;
 	}
 
 	private assertOpen(): void {

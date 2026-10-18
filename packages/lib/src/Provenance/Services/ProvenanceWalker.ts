@@ -10,6 +10,8 @@ enum WalkDirection {
 	DOWN = "DOWN",
 }
 
+// Reads a provenance graph: one step at a time, or a whole walk up to where something came from
+// or down to where it went. Built once per graph, so every walk follows prepared adjacency lists.
 export class ProvenanceWalker {
 	private readonly allNodes: ProvenanceNode[];
 	private readonly nodeSet: Set<ProvenanceNode>;
@@ -45,16 +47,16 @@ export class ProvenanceWalker {
 
 	public parents(node: ProvenanceNode): ProvenanceEdge[] {
 		this.assertKnown(node);
-		return this.incoming.get(node) ?? [];
+		return [...(this.incoming.get(node) ?? [])];
 	}
 
 	public children(node: ProvenanceNode): ProvenanceEdge[] {
 		this.assertKnown(node);
-		return this.outgoing.get(node) ?? [];
+		return [...(this.outgoing.get(node) ?? [])];
 	}
 
 	public drops(): ProvenanceDrop[] {
-		return this.allDrops;
+		return [...this.allDrops];
 	}
 
 	private walk(start: ProvenanceNode, direction: WalkDirection): ProvenanceSlice {

@@ -68,14 +68,14 @@ imports → broker provider (extract + transform) → **StagingFinancialEvents**
 - `packages/lib/src/InfoProviders/` — company and country lookups (`IInfoProvider`), one folder per implementation; the Node one keeps its JSON data in `Node/Data/`.
 - `packages/lib/src/Provenance/` — what each stage made from what: a graph recorded beside the tax models and returned with each report. Stages only write to it; nothing in the tax logic reads it.
 
-Each area (`Core`, `Brokers` and each broker, `TaxAuthorities` and each country, `InfoProviders`, `Provenance`) is laid out the same way, so a
-file's folder says what it is:
+Each area (`Core`, `Brokers` and each broker, `TaxAuthorities` and each country, `InfoProviders`, `Provenance`) is laid out
+the same way, so a file's folder says what it is:
 
 - At the area's top, only its DI wiring (`<Area>Module.ts`), its entry point, the class other areas call (`BrokerRegistry`,
   `IbkrBrokerExportProvider`, `TaxAuthorityRegistry`, `SlovenianTaxAuthorityProvider`), and a folder per implementation
-  (`Brokers/Ibkr/`, `TaxAuthorities/Slovenia/`, `InfoProviders/Node/`). Core, InfoProviders and Provenance
-  have no entry point, and InfoProviders and Provenance no module: `Container.ts` binds the provider it's given, and a
-  provenance graph is created for each run, never bound in the container.
+  (`Brokers/Ibkr/`, `TaxAuthorities/Slovenia/`, `InfoProviders/Node/`). Core, InfoProviders and Provenance have no entry
+  point, and InfoProviders and Provenance no module: `Container.ts` binds the provider it's given, and a provenance graph is
+  created for each run, never bound in the container.
 - `Interfaces/` — the `I…` contracts.
 - `Models/` — what our code builds and passes around: classes, data types, enums, identifiers.
 - `Schemas/` — the outside's formats: the zod schemas we parse input with, the enums and identifiers they parse into, and the XSDs

@@ -131,6 +131,18 @@ test("inputs are the files", () => {
 	expect(inputs[0].label).toEqual("trades.xml");
 });
 
+test("changing a list the walker hands out doesn't change the walker", () => {
+	const walker = new ProvenanceWalker(graph);
+
+	walker.parents(graph.nodeOf(buyAfterSplit)).pop();
+	walker.children(graph.nodeOf(lot)).pop();
+	walker.drops().pop();
+
+	expect(walker.parents(graph.nodeOf(buyAfterSplit))).toHaveLength(2);
+	expect(walker.children(graph.nodeOf(lot))).toHaveLength(2);
+	expect(walker.drops()).toHaveLength(1);
+});
+
 test("drops lists every drop", () => {
 	const walker = new ProvenanceWalker(graph);
 
