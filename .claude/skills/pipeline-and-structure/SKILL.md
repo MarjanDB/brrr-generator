@@ -49,16 +49,16 @@ before checking them.
 
 ## Adding a broker
 
-1. Create `Brokers/<Broker>/` with zod schemas for the raw rows (`Schemas/`), an extract service (file → broker container, plus merging
-   several files without duplicating rows) and a transform service (→ `StagingFinancialEvents`). Corporate actions become
-   `StagingIdentifierRelationshipPartial`s.
+1. Create `Brokers/<Broker>/` with a zod schema per raw row type (`Schemas/`), the broker container (`Models/`), and in `Services/`
+   an extract service (file → broker container, plus merging several files without duplicating rows) and a transform service
+   (→ `StagingFinancialEvents`). Corporate actions become `StagingIdentifierRelationshipPartial`s.
 2. Add `<Broker>BrokerExportProvider implements IBrokerProvider` (`brokerId`, `displayName`, `isThisValidExport`,
    `describeExportProblem`, `loadAndTransform`). The interface takes XML strings; a broker that exports CSV needs that widened first.
 3. Bind it in a `<Broker>Module.ts` and load that from `BrokersModule.ts`.
 4. `BrokerRegistry` takes each provider in its constructor and has the IBKR one written into `listBrokers`, `detectOne` and
    `loadAndTransformDetected`. Add the new provider to all three; staging events from several brokers are combined with
    `StagingFinancialEvents.merge`.
-5. Unit tests in `Brokers/<Broker>/__tests__/`. Anonymised exports go in `packages/test-cases/cases/<Broker>/<Case>/input/`, each case
+5. Unit tests in `__tests__/` beside the files they cover. Anonymised exports go in `packages/test-cases/cases/<Broker>/<Case>/input/`, each case
    declared in a `<broker>` group of the `TestKit` registry (`packages/test-cases/index.ts`: year, named inputs, named expected reports),
    with an acceptance test per case in each tax authority's `__tests__/Acceptance/<Form>.acceptance.test.ts`.
 6. Site: icon at `packages/app/public/icons/brokers/<id>.svg` and in `brokerIconById` (`IbkrUploadStep.vue`); a guide in

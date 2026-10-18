@@ -1,19 +1,17 @@
 import { Fixtures } from "@brrr/__tests__/support/Fixtures";
 import { Scenario } from "@brrr/__tests__/support/Scenario";
+import type { CorporateAction } from "@brrr/Brokers/Ibkr/Schemas/CorporateAction";
+import { IbkrBuyOrSell } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrBuyOrSell";
+import { IbkrCashTransactionType } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrCashTransactionType";
+import { IbkrOpenCloseIndicator } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrOpenCloseIndicator";
 import {
 	IbkrIsin,
 	IbkrSymbol,
 	IbkrTransactionId,
 } from "@brrr/Brokers/Ibkr/Schemas/IbkrIdentifiers";
-import {
-	type CorporateAction,
-	IbkrBuyOrSell,
-	IbkrCashTransactionType,
-	IbkrOpenCloseIndicator,
-	type TradeStock,
-	type TransactionCash,
-} from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
-import { IbkrTransformService } from "@brrr/Brokers/Ibkr/Transform";
+import type { TradeStock } from "@brrr/Brokers/Ibkr/Schemas/TradeStock";
+import type { TransactionCash } from "@brrr/Brokers/Ibkr/Schemas/TransactionCash";
+import { IbkrTransformService } from "@brrr/Brokers/Ibkr/Services/IbkrTransformService";
 import { CorrelationKey } from "@brrr/Core/Models/Identifiers";
 import { StagingTradeEventCashTransactionDividend } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransactionDividend";
 import { StagingTradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransactionPaymentInLieuOfDividend";

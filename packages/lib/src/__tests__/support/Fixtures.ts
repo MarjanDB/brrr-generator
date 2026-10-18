@@ -1,4 +1,15 @@
 import { Values } from "@brrr/__tests__/support/Values";
+import type { CorporateAction } from "@brrr/Brokers/Ibkr/Schemas/CorporateAction";
+import { IbkrAssetClass } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrAssetClass";
+import { IbkrBuyOrSell } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrBuyOrSell";
+import { IbkrCashTransactionType } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrCashTransactionType";
+import { IbkrCodes } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrCodes";
+import { IbkrLevelOfDetail } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrLevelOfDetail";
+import { IbkrOpenCloseIndicator } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrOpenCloseIndicator";
+import { IbkrOrderType } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrOrderType";
+import { IbkrSecurityIDType } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrSecurityIDType";
+import { IbkrSubCategory } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrSubCategory";
+import { IbkrTransactionType } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrTransactionType";
 import {
 	IbkrActionId,
 	IbkrCurrency,
@@ -7,22 +18,9 @@ import {
 	IbkrSymbol,
 	IbkrTransactionId,
 } from "@brrr/Brokers/Ibkr/Schemas/IbkrIdentifiers";
-import {
-	type CorporateAction,
-	IbkrAssetClass,
-	IbkrBuyOrSell,
-	IbkrCashTransactionType,
-	IbkrCodes,
-	IbkrLevelOfDetail,
-	IbkrOpenCloseIndicator,
-	IbkrOrderType,
-	IbkrSecurityIDType,
-	IbkrSubCategory,
-	IbkrTransactionType,
-	type LotStock,
-	type TradeStock,
-	type TransactionCash,
-} from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
+import type { LotStock } from "@brrr/Brokers/Ibkr/Schemas/LotStock";
+import type { TradeStock } from "@brrr/Brokers/Ibkr/Schemas/TradeStock";
+import type { TransactionCash } from "@brrr/Brokers/Ibkr/Schemas/TransactionCash";
 import { CountryCode, CountryName } from "@brrr/Core/Models/Identifiers";
 import { type CompanyInfo, type Country, TreatyType } from "@brrr/InfoProviders/IInfoProvider";
 import { type TaxpayerInfo, TaxpayerType } from "@brrr/TaxAuthorities/ConfigurationProvider";

@@ -2,7 +2,7 @@ import type { Nominal } from "@brrr/Utils/NominalType";
 import { z } from "zod/v4";
 
 // The identifiers in a Flex Query row, typed where the row is parsed. Only the ones the transform
-// reads have a type; they take a core type in Transform.ts.
+// reads have a type; they take a core type in IbkrTransformService.
 
 export type IbkrTransactionId = Nominal<string, "Ibkr.TransactionId">;
 export const IbkrTransactionId = {

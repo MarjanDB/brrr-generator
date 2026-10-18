@@ -1,7 +1,7 @@
 import { StagingBuilders } from "@brrr/__tests__/support/StagingBuilders";
 import { type CashFields, type TradeFields, Values } from "@brrr/__tests__/support/Values";
 import { BrokerRegistry } from "@brrr/Brokers/BrokerRegistry";
-import { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
+import { SegmentedTrades } from "@brrr/Brokers/Ibkr/Models/SegmentedTrades";
 import { createContainer } from "@brrr/Container";
 import { AcquisitionMethod } from "@brrr/Core/Models/Events/AcquisitionMethod";
 import type { TradeEventCashTransaction } from "@brrr/Core/Models/Events/CashTransaction/TradeEventCashTransaction";

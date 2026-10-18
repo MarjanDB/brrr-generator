@@ -1,13 +1,11 @@
-import {
-	type CorporateAction,
-	IbkrCashTransactionType,
-	type LotDerivative,
-	type LotStock,
-	type TradeDerivative,
-	type TradeStock,
-	type TransactionCash,
-} from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
-import type { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
+import type { SegmentedTrades } from "@brrr/Brokers/Ibkr/Models/SegmentedTrades";
+import type { CorporateAction } from "@brrr/Brokers/Ibkr/Schemas/CorporateAction";
+import { IbkrCashTransactionType } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrCashTransactionType";
+import type { LotDerivative } from "@brrr/Brokers/Ibkr/Schemas/LotDerivative";
+import type { LotStock } from "@brrr/Brokers/Ibkr/Schemas/LotStock";
+import type { TradeDerivative } from "@brrr/Brokers/Ibkr/Schemas/TradeDerivative";
+import type { TradeStock } from "@brrr/Brokers/Ibkr/Schemas/TradeStock";
+import type { TransactionCash } from "@brrr/Brokers/Ibkr/Schemas/TransactionCash";
 import { AcquisitionMethod } from "@brrr/Core/Models/Events/AcquisitionMethod";
 import { DividendType } from "@brrr/Core/Models/Events/DividendType";
 import { ExchangedMoney } from "@brrr/Core/Models/Events/ExchangedMoney";
