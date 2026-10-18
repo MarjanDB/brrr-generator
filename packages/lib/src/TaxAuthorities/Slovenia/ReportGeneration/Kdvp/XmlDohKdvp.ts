@@ -1,6 +1,6 @@
 import type {
 	TaxAuthorityConfiguration,
-	TaxPayerInfo,
+	TaxpayerInfo,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { round } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Amounts";
 import type { EDavkiDocumentWorkflowType } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
@@ -13,7 +13,7 @@ import { XMLBuilder } from "fast-xml-parser";
 
 function buildXmlTree(
 	reportConfig: TaxAuthorityConfiguration,
-	userConfig: TaxPayerInfo,
+	userConfig: TaxpayerInfo,
 	documentType: EDavkiDocumentWorkflowType,
 	kdvpItems: EDavkiGenericTradeReportItem[],
 	envelopeAttribs: Record<string, string>,
@@ -135,7 +135,7 @@ function buildXmlTree(
 
 export function generateXmlReport(
 	reportConfig: TaxAuthorityConfiguration,
-	userConfig: TaxPayerInfo,
+	userConfig: TaxpayerInfo,
 	documentType: EDavkiDocumentWorkflowType,
 	kdvpItems: EDavkiGenericTradeReportItem[],
 ): string {

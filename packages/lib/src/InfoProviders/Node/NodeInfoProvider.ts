@@ -3,9 +3,9 @@ import {
 	type CompanyInfo,
 	type CompanyLocationInfo,
 	type Country,
-	type InfoProvider,
+	type IInfoProvider,
 	TreatyType,
-} from "@brrr/InfoProviders/InfoProvider";
+} from "@brrr/InfoProviders/IInfoProvider";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import YahooFinance from "yahoo-finance2";
 import internationalTreaties from "./internationalTreaties.json" with { type: "json" };
@@ -143,7 +143,7 @@ const isinToCompanyLookup = missingCompaniesLookup as Record<
 >;
 
 // Takes plain strings like PredefinedInfoProvider, for the site's lookup routes and the CLI.
-export class NodeInfoProvider implements InfoProvider {
+export class NodeInfoProvider implements IInfoProvider {
 	private readonly predefined = new PredefinedInfoProvider();
 	private readonly yf = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
 

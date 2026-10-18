@@ -197,7 +197,7 @@ test("generate applies identifier relationships once", async () => {
 	const provider = makeProvider({ apply });
 
 	await provider.generate(SlovenianTaxAuthorityReportTypes.DOH_KDVP, {
-		taxPayerInfo: Fixtures.taxPayer,
+		taxpayerInfo: Fixtures.taxpayer,
 		reportConfig: config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		events: testData,
 	});
@@ -211,7 +211,7 @@ test("DIV looks each company up once", async () => {
 	const provider = makeProvider({ info });
 
 	await provider.generate(SlovenianTaxAuthorityReportTypes.DOH_DIV, {
-		taxPayerInfo: Fixtures.taxPayer,
+		taxpayerInfo: Fixtures.taxpayer,
 		reportConfig: config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		events: testData,
 	});
@@ -224,7 +224,7 @@ test("unknown report type id is rejected", async () => {
 
 	await expect(
 		provider.generateExports(ReportTypeId.Schema.parse("nope"), {
-			taxPayerInfo: Fixtures.taxPayer,
+			taxpayerInfo: Fixtures.taxpayer,
 			reportConfig: config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 			events: testData,
 		}),

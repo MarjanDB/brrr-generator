@@ -335,7 +335,7 @@ export class EDavkiDerivativeReportSecurityLineGenericEventSold {
 	}
 }
 
-export type EdavkiDerivativeReportSecurityLines =
+export type EDavkiDerivativeReportSecurityLines =
 	| EDavkiDerivativeReportSecurityLineGenericEventBought
 	| EDavkiDerivativeReportSecurityLineGenericEventSold;
 
@@ -349,7 +349,7 @@ export class EDavkiGenericDerivativeReportItem {
 	public readonly foreignTax: number | null;
 	public readonly ftCountryId: EDavkiCountryCode | null;
 	public readonly ftCountryName: string | null;
-	public readonly items: EdavkiDerivativeReportSecurityLines[];
+	public readonly items: EDavkiDerivativeReportSecurityLines[];
 
 	constructor(args: {
 		inventoryListType: EDavkiDerivativeSecurityType;
@@ -361,7 +361,7 @@ export class EDavkiGenericDerivativeReportItem {
 		foreignTax: number | null;
 		ftCountryId: EDavkiCountryCode | null;
 		ftCountryName: string | null;
-		items: EdavkiDerivativeReportSecurityLines[];
+		items: EDavkiDerivativeReportSecurityLines[];
 	}) {
 		this.inventoryListType = args.inventoryListType;
 		this.itemType = args.itemType;

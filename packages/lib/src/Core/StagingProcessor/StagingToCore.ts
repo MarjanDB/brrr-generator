@@ -1,6 +1,7 @@
 import { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import {
 	type TradeEvent,
+	type TradeEventCashTransaction,
 	TradeEventCashTransactionDividend,
 	TradeEventCashTransactionPaymentInLieuOfDividend,
 	TradeEventCashTransactionWithholdingTax,
@@ -11,18 +12,17 @@ import {
 	type TradeEventStock,
 	TradeEventStockAcquired,
 	TradeEventStockSold,
-	type TransactionCash,
 } from "@brrr/Core/Schemas/Events";
 import { TaxLot, type TaxLotDerivative, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import {
+	type StagingTradeEventCashTransaction,
 	StagingTradeEventCashTransactionDividend,
-	StagingTradeEventCashTransactionPaymentInLieuOfDividends,
+	StagingTradeEventCashTransactionPaymentInLieuOfDividend,
 	StagingTradeEventCashTransactionWithholdingTax,
 	type StagingTradeEventDerivative,
 	StagingTradeEventDerivativeAcquired,
 	type StagingTradeEventStock,
 	StagingTradeEventStockAcquired,
-	type StagingTransactionCash,
 } from "@brrr/Core/Schemas/Staging/Events";
 import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots";
 
@@ -30,7 +30,7 @@ import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots";
 // core model the tax authorities work with.
 
 function toCoreTradeFields(
-	input: StagingTradeEventStock | StagingTradeEventDerivative | StagingTransactionCash,
+	input: StagingTradeEventStock | StagingTradeEventDerivative | StagingTradeEventCashTransaction,
 ) {
 	return {
 		id: input.id,
@@ -58,7 +58,9 @@ export function toCoreDerivativeTrade(input: StagingTradeEventDerivative): Trade
 	return new TradeEventDerivativeSold(fields);
 }
 
-export function toCoreCashTransaction(input: StagingTransactionCash): TransactionCash {
+export function toCoreCashTransaction(
+	input: StagingTradeEventCashTransaction,
+): TradeEventCashTransaction {
 	const fields = {
 		...toCoreTradeFields(input),
 		actionId: input.actionId,
@@ -71,7 +73,7 @@ export function toCoreCashTransaction(input: StagingTransactionCash): Transactio
 	if (input instanceof StagingTradeEventCashTransactionWithholdingTax) {
 		return new TradeEventCashTransactionWithholdingTax(fields);
 	}
-	if (input instanceof StagingTradeEventCashTransactionPaymentInLieuOfDividends) {
+	if (input instanceof StagingTradeEventCashTransactionPaymentInLieuOfDividend) {
 		return new TradeEventCashTransactionPaymentInLieuOfDividend({
 			...fields,
 			dividendType: input.dividendType,

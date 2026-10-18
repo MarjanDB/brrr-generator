@@ -1,11 +1,11 @@
+import type { ILotMatchingMethod } from "@brrr/Core/LotMatching/ILotMatchingMethod";
 import type { Lot } from "@brrr/Core/LotMatching/Lot";
-import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
 import { TradeAssociationTracker } from "@brrr/Core/LotMatching/TradeAssociationTracker";
 import type { TradeEvent } from "@brrr/Core/Schemas/Events";
 import type { TaxLot } from "@brrr/Core/Schemas/Lots";
 
-export class ProvidedLotMatchingMethod implements LotMatchingMethod {
+export class ProvidedLotMatchingMethod implements ILotMatchingMethod {
 	private predefinedLots: TaxLot<TradeEvent, TradeEvent>[];
 
 	constructor(predefinedLots: TaxLot<TradeEvent, TradeEvent>[]) {

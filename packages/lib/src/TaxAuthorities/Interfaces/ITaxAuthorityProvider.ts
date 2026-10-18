@@ -1,12 +1,12 @@
 import type { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import type {
 	TaxAuthorityConfiguration,
-	TaxPayerInfo,
+	TaxpayerInfo,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type { ReportTypeId, TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
 
 export type TaxAuthorityRunContext = {
-	taxPayerInfo: TaxPayerInfo;
+	taxpayerInfo: TaxpayerInfo;
 	reportConfig: TaxAuthorityConfiguration;
 	events: FinancialEvents;
 };

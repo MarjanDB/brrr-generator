@@ -1,14 +1,14 @@
 import { loadBrokersModule } from "@brrr/Brokers/BrokersModule";
 import { loadCoreModule } from "@brrr/Core/CoreModule";
-import { InfoProvider } from "@brrr/InfoProviders/InfoProvider";
+import { IInfoProvider } from "@brrr/InfoProviders/IInfoProvider";
 import { loadTaxAuthoritiesModule } from "@brrr/TaxAuthorities/TaxAuthoritiesModule";
 import { Container } from "inversify";
 
-export function createContainer(infoProvider: InfoProvider): Container {
+export function createContainer(infoProvider: IInfoProvider): Container {
 	const container = new Container();
 
 	container
-		.bind<InfoProvider>(InfoProvider.Token)
+		.bind<IInfoProvider>(IInfoProvider.Token)
 		.toResolvedValue(() => infoProvider)
 		.inSingletonScope();
 

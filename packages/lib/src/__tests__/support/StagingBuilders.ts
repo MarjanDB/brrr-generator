@@ -8,17 +8,17 @@ import {
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
+	type StagingTradeEventCashTransaction,
 	StagingTradeEventCashTransactionDividend,
-	StagingTradeEventCashTransactionPaymentInLieuOfDividends,
+	StagingTradeEventCashTransactionPaymentInLieuOfDividend,
 	StagingTradeEventCashTransactionWithholdingTax,
-	StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends,
+	StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
 	type StagingTradeEventDerivative,
 	StagingTradeEventDerivativeAcquired,
 	StagingTradeEventDerivativeSold,
 	type StagingTradeEventStock,
 	StagingTradeEventStockAcquired,
 	StagingTradeEventStockSold,
-	type StagingTransactionCash,
 } from "@brrr/Core/Schemas/Staging/Events";
 import { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping";
 import { StagingTaxLot, StagingTaxLotMatchingDetails } from "@brrr/Core/Schemas/Staging/Lots";
@@ -99,8 +99,8 @@ export const StagingBuilders = {
 
 	paymentInLieu(
 		fields: CashFields & WithIdentifier & { dividendType: GenericDividendType },
-	): StagingTradeEventCashTransactionPaymentInLieuOfDividends {
-		return new StagingTradeEventCashTransactionPaymentInLieuOfDividends({
+	): StagingTradeEventCashTransactionPaymentInLieuOfDividend {
+		return new StagingTradeEventCashTransactionPaymentInLieuOfDividend({
 			...cashEvent(fields),
 			dividendType: fields.dividendType,
 		});
@@ -108,8 +108,8 @@ export const StagingBuilders = {
 
 	paymentInLieuWithholdingTax(
 		fields: CashFields & WithIdentifier,
-	): StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends {
-		return new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends(
+	): StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend {
+		return new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend(
 			cashEvent(fields),
 		);
 	},
@@ -141,7 +141,7 @@ export const StagingBuilders = {
 			stockTaxLots: StagingTaxLot[];
 			derivativeTrades: StagingTradeEventDerivative[];
 			derivativeTaxLots: StagingTaxLot[];
-			cashTransactions: StagingTransactionCash[];
+			cashTransactions: StagingTradeEventCashTransaction[];
 		} & WithIdentifier,
 	): StagingFinancialGrouping {
 		return new StagingFinancialGrouping({

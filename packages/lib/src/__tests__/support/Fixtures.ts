@@ -24,13 +24,13 @@ import {
 	TransactionType,
 } from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
 import { CountryCode, CountryName } from "@brrr/Core/Schemas/Identifiers";
-import { type CompanyInfo, type Country, TreatyType } from "@brrr/InfoProviders/InfoProvider";
-import { type TaxPayerInfo, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import { type CompanyInfo, type Country, TreatyType } from "@brrr/InfoProviders/IInfoProvider";
+import { type TaxpayerInfo, TaxpayerType } from "@brrr/TaxAuthorities/ConfigurationProvider";
 
 // The taxpayer every expected report file was generated for.
-const taxPayer: TaxPayerInfo = {
+const taxpayer: TaxpayerInfo = {
 	taxNumber: "12345678",
-	taxpayerType: TaxPayerType.PHYSICAL_SUBJECT,
+	taxpayerType: TaxpayerType.PHYSICAL_SUBJECT,
 	name: "Ime Priimek",
 	address1: "Naslov 1",
 	address2: null,
@@ -254,7 +254,7 @@ const ibkrSmciSplitOldRow: CorporateAction = {
 
 // Named test data, looked up on purpose. Nothing here fills in values a test didn't ask for.
 export const Fixtures = {
-	taxPayer,
+	taxpayer,
 	lookups,
 	// Raw IBKR Flex Query rows, the way the extract step parses them. A test that needs a variant
 	// spreads one and lists what it changes.

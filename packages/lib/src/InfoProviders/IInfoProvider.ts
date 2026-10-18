@@ -26,7 +26,7 @@ export type CompanyInfo = {
 	location: CompanyLocationInfo;
 };
 
-export interface InfoProvider {
+export interface IInfoProvider {
 	getCountry(country: CountryName): Promise<Country | null>;
 	getCompanyInfo(isin: Isin): Promise<CompanyInfo | null>;
 
@@ -43,6 +43,6 @@ export interface InfoProvider {
 	listCompanies(): Map<Isin, CompanyInfo>;
 }
 
-export const InfoProvider = {
-	Token: Symbol("InfoProvider"),
+export const IInfoProvider = {
+	Token: Symbol("IInfoProvider"),
 };

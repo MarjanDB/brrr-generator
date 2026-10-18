@@ -60,7 +60,7 @@ imports → broker provider (extract + transform) → **StagingFinancialEvents**
 - `packages/lib/src/Brokers/` — one folder per broker; turns export files into broker-neutral staging events.
 - `packages/lib/src/Core/` — broker- and country-neutral: schemas, staging → core processing, lot matching (NONE / FIFO / PROVIDED).
 - `packages/lib/src/TaxAuthorities/` — one folder per country; turns core events into that country's forms.
-- `packages/lib/src/InfoProviders/` — company and country lookups (`InfoProvider`); the Node implementation and its JSON data sit in `Node/`.
+- `packages/lib/src/InfoProviders/` — company and country lookups (`IInfoProvider`); the Node implementation and its JSON data sit in `Node/`.
 
 The **pipeline-and-structure** skill has the details and the steps for adding a broker, tax authority or report type.
 
@@ -76,8 +76,8 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
   to the original survives (see `scaleTradeForSplit` in `Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts`).
 - Data from outside (XML rows, config files, env) is parsed with zod 4 (`import { z } from "zod/v4"`): a const holding `{ Schema }` and a
   same-named type `z.output<typeof X.Schema>` (see `Brokers/Ibkr/Schemas/IbkrSchemas.ts`).
-- `type` for plain data shapes. `interface` only for contracts a class implements (`IBrokerProvider`, `ITaxAuthorityProvider`,
-  `InfoProvider`).
+- `type` for plain data shapes. `interface` only for contracts a class implements, named with an `I` prefix and in a file of the
+  same name (`IBrokerProvider`, `ITaxAuthorityProvider`, `IInfoProvider`, `ILotMatchingMethod`).
 - `enum` for fixed sets of values, not string-literal unions or `as const` objects.
 - Identifiers (ISINs, transaction IDs, report type IDs, …) get a nominal type from `@brrr/Utils/NominalType`, never a bare `string`.
   Each domain owns its own, even for the same concept: IBKR's in `Brokers/Ibkr/Schemas/IbkrIdentifiers.ts`, core's (staging and
@@ -181,8 +181,8 @@ To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
     Every other value (id, date, quantity, price, currency, commission, tax, fx rate, lot quantity, long/short, every grouping
     list, even an empty one) is required, so the test shows the exact scenario.
   - `Scenario.config.report(year, lotMatching)` and `.infoProvider(lookups)`.
-  - `Scenario.pipeline.run(files)` and `.generate(events, { report, year, lotMatching, taxPayer, info })`, all arguments required.
-- **`Fixtures`** (`packages/lib/src/__tests__/support/Fixtures.ts`) holds named test data that tests look up on purpose: `taxPayer` (the
+  - `Scenario.pipeline.run(files)` and `.generate(events, { report, year, lotMatching, taxpayer, info })`, all arguments required.
+- **`Fixtures`** (`packages/lib/src/__tests__/support/Fixtures.ts`) holds named test data that tests look up on purpose: `taxpayer` (the
   one the expected files were generated for), `lookups` (company and country data), and IBKR sample rows (`ibkr.stockTradeBuy`, …).
   A test that needs a variant spreads a fixture and lists what it changes.
 - Call `Scenario` and `Fixtures` directly: no local wrapper functions around them, and every buy, sale and lot built with its exact

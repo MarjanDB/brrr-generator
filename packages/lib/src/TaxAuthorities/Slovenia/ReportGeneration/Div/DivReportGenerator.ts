@@ -1,17 +1,17 @@
 import { GenericDividendType } from "@brrr/Core/Schemas/CommonFormats";
 import {
+	type TradeEventCashTransaction,
 	TradeEventCashTransactionDividend,
 	TradeEventCashTransactionPaymentInLieuOfDividend,
 	TradeEventCashTransactionWithholdingTax,
 	TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
-	type TransactionCash,
 } from "@brrr/Core/Schemas/Events";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import { type CashActionId, Isin } from "@brrr/Core/Schemas/Identifiers";
-import { type InfoProvider, TreatyType } from "@brrr/InfoProviders/InfoProvider";
+import { type IInfoProvider, TreatyType } from "@brrr/InfoProviders/IInfoProvider";
 import type {
 	TaxAuthorityConfiguration,
-	TaxPayerInfo,
+	TaxpayerInfo,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { round, toOriginalCurrency } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Amounts";
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/CsvDohDiv";
@@ -65,20 +65,20 @@ type Payer = {
 };
 
 function filterOutCashTransactionsBasedOnDate(
-	data: TransactionCash[],
+	data: TradeEventCashTransaction[],
 	fromDateInclusive: DateTime,
 	toDateExclusive: DateTime,
-): TransactionCash[] {
+): TradeEventCashTransaction[] {
 	return data.filter((line) => line.date >= fromDateInclusive && line.date < toDateExclusive);
 }
 
-function amountOf(transaction: TransactionCash): number {
+function amountOf(transaction: TradeEventCashTransaction): number {
 	return (
 		transaction.exchangedMoney.underlyingQuantity * transaction.exchangedMoney.underlyingTradePrice
 	);
 }
 
-function inOriginalCurrency(transaction: TransactionCash, amount: number): number {
+function inOriginalCurrency(transaction: TradeEventCashTransaction, amount: number): number {
 	return toOriginalCurrency(amount, transaction.exchangedMoney.fxRateToBase);
 }
 
@@ -163,7 +163,7 @@ function mergeDividendsReceivedOnSameDay(totals: DividendTotals[]): DividendTota
 }
 
 export class DivReportGenerator {
-	constructor(private readonly infoProvider: InfoProvider) {}
+	constructor(private readonly infoProvider: IInfoProvider) {}
 
 	async convert(
 		config: TaxAuthorityConfiguration,
@@ -260,7 +260,7 @@ export class DivReportGenerator {
 
 	toXml(
 		config: TaxAuthorityConfiguration,
-		userConfig: TaxPayerInfo,
+		userConfig: TaxpayerInfo,
 		selfReport: boolean,
 		items: EDavkiDividendReportLine[],
 	): string {

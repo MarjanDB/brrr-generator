@@ -1,9 +1,9 @@
 import type { GenericCategory } from "@brrr/Core/Schemas/CommonFormats";
 import type { CountryCode } from "@brrr/Core/Schemas/Identifiers";
 import type {
+	StagingTradeEventCashTransaction,
 	StagingTradeEventDerivative,
 	StagingTradeEventStock,
-	StagingTransactionCash,
 } from "@brrr/Core/Schemas/Staging/Events";
 import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots";
 import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
@@ -16,7 +16,7 @@ export class StagingFinancialGrouping {
 	public readonly stockTaxLots: StagingTaxLot[];
 	public readonly derivativeTrades: StagingTradeEventDerivative[];
 	public readonly derivativeTaxLots: StagingTaxLot[];
-	public readonly cashTransactions: StagingTransactionCash[];
+	public readonly cashTransactions: StagingTradeEventCashTransaction[];
 
 	constructor(args: {
 		financialIdentifier: StagingFinancialIdentifier;
@@ -26,7 +26,7 @@ export class StagingFinancialGrouping {
 		stockTaxLots: StagingTaxLot[];
 		derivativeTrades: StagingTradeEventDerivative[];
 		derivativeTaxLots: StagingTaxLot[];
-		cashTransactions: StagingTransactionCash[];
+		cashTransactions: StagingTradeEventCashTransaction[];
 	}) {
 		this.financialIdentifier = args.financialIdentifier;
 		this.countryOfOrigin = args.countryOfOrigin;

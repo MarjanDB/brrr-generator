@@ -1,11 +1,11 @@
-import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod";
+import type { ILotMatchingMethod } from "@brrr/Core/LotMatching/ILotMatchingMethod";
 import type { LotLeg, MatchedLot } from "@brrr/Core/LotMatching/MatchedLot";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
 import type { TradeEventBase } from "@brrr/Core/Schemas/Events";
 import type { TradeEventId } from "@brrr/Core/Schemas/Identifiers";
 
 export class LotMatcher {
-	matchLots<T extends TradeEventBase>(method: LotMatchingMethod, events: T[]): MatchedLot<T>[] {
+	matchLots<T extends TradeEventBase>(method: ILotMatchingMethod, events: T[]): MatchedLot<T>[] {
 		const tradeEventMappings = new Map<TradeEventId, T>();
 		const tradeMappings = new Map<TradeEventId, Trade>();
 

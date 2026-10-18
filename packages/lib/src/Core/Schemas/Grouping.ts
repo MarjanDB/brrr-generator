@@ -1,8 +1,8 @@
 import type { GenericCategory } from "@brrr/Core/Schemas/CommonFormats";
 import type {
+	TradeEventCashTransaction,
 	TradeEventDerivative,
 	TradeEventStock,
-	TransactionCash,
 } from "@brrr/Core/Schemas/Events";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import type { CountryCode } from "@brrr/Core/Schemas/Identifiers";
@@ -37,7 +37,7 @@ type FinancialGroupingArgs = {
 	stockTrades: TradeEventStock[];
 	stockTaxLots: TaxLotStock[];
 	derivativeGroupings: DerivativeGrouping[];
-	cashTransactions: TransactionCash[];
+	cashTransactions: TradeEventCashTransaction[];
 	provenance: AnyProvenanceStep[];
 };
 
@@ -48,7 +48,7 @@ export class FinancialGrouping {
 	public readonly stockTrades: TradeEventStock[];
 	public readonly stockTaxLots: TaxLotStock[];
 	public readonly derivativeGroupings: DerivativeGrouping[];
-	public readonly cashTransactions: TransactionCash[];
+	public readonly cashTransactions: TradeEventCashTransaction[];
 	public readonly provenance: AnyProvenanceStep[];
 
 	constructor(args: FinancialGroupingArgs) {

@@ -40,7 +40,7 @@ report period of 1 January to 1 January of the following year.
   name.
 - **DIV:** keeps cash transactions inside the period, pairs withholding tax with its dividend (a withholding without a matching dividend
   throws), merges dividends of one ISIN paid on the same day, then fills payer name, address, country and the treaty paragraph from the
-  `InfoProvider` using the ISIN. That lookup is best-effort: when it fails, the fields stay blank and the report still generates. Amounts
+  `IInfoProvider` using the ISIN. That lookup is best-effort: when it fails, the fields stay blank and the report still generates. Amounts
   are rounded to 2 decimals and foreign tax is made positive. The XML is always filed as `ORIGINAL`; `isSelfReport` (the report period
   ended before last year) only sets DOH_DIV's `SelfReport` flag.
 
@@ -49,7 +49,7 @@ report period of 1 January to 1 January of the following year.
 
 ## Taxpayer fields
 
-`TaxPayerConfigSchema` in `packages/lib/src/TaxAuthorities/ConfigurationProvider.ts`: `taxNumber`, `taxpayerType` (`FO` natural person, `PO` legal
+`TaxpayerConfigSchema` in `packages/lib/src/TaxAuthorities/ConfigurationProvider.ts`: `taxNumber`, `taxpayerType` (`FO` natural person, `PO` legal
 entity, `SP` sole trader), `name`, `address1`, `address2` (nullable), `city`, `postNumber`, `postName`, `municipalityName`, `birthDate`,
 `maticnaStevilka`, `invalidskoPodjetje`, `resident`, `activityCode`, `activityName`, `countryId`, `countryName`.
 
@@ -81,7 +81,7 @@ The expected XML and CSV for every report live with their test cases in `package
 (`kdvp-fifo`, `kdvp-provided`, `ifi-fifo`, `div`; each case covers one year, declared in the `TestKit` registry and reached as
 `case.expected.slovenia.kdvpFifo`). The acceptance tests in `__tests__/Acceptance/` (`Kdvp`, `Ifi`, `Div`, one test per input
 case, judging only the generated form) compare against them byte for
-byte, so never regenerate them to make a refactor pass. `Fixtures.taxPayer` and `Fixtures.lookups`
+byte, so never regenerate them to make a refactor pass. `Fixtures.taxpayer` and `Fixtures.lookups`
 (`packages/lib/src/__tests__/support/Fixtures.ts`) are the taxpayer and the company and country data they were generated with.
 
 `__tests__/`: `TaxAuthorityProvider.integration.test.ts` (all three reports' lines, builds the provider by hand in `makeProvider` to spy

@@ -21,18 +21,18 @@ export {
 	type CompanyInfo,
 	type CompanyLocationInfo,
 	type Country,
-	InfoProvider,
+	IInfoProvider,
 	TreatyType,
-} from "@brrr/InfoProviders/InfoProvider";
+} from "@brrr/InfoProviders/IInfoProvider";
 export { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 
 // Tax authorities
 export {
 	type TaxAuthorityConfiguration,
 	TaxAuthorityLotMatchingMethod,
-	TaxPayerConfigSchema,
-	type TaxPayerInfo,
-	TaxPayerType,
+	TaxpayerConfigSchema,
+	type TaxpayerInfo,
+	TaxpayerType,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
 export type {
 	GeneratedExports,

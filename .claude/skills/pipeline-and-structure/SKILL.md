@@ -32,14 +32,14 @@ the CLI runs it in Node (`packages/cli/main.ts`, through the same two registries
 | Staging → core | `Core/StagingProcessor/` | `IdentifierRelationshipResolution` pairs partial relationships (a "from" side and a "to" side sharing a `correlationKey`) into whole ones; `StagingToCore.ts` turns each staging event and lot into its core counterpart. |
 | Core model | `Core/Schemas/` | `FinancialEvents` = `FinancialGrouping[]` + `IdentifierRelationshipAny[]`. A `FinancialGrouping` holds one instrument's stock trades, stock tax lots, derivative groupings and cash transactions. The instrument is the grouping's `financialIdentifier`; core events and lots don't repeat it. |
 | Relationships | `Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts` | Merges groupings across `RENAME`, keeping the original events, and rescales across `SPLIT` / `REVERSE_SPLIT` by building new trades and lots through their constructors (`scaleTradeForSplit`, `scaleLotForSplit`) with a `provenance` step recording what they were. Tax authorities call it with the change types they want applied. |
-| Lot matching | `Core/LotMatching/`, `Core/FinancialEvents/FinancialEventsProcessor.ts` | `LotMatchingMethod` implementations (stateless, one `performMatching(trades)`): `FifoLotMatchingMethod`, `ProvidedLotMatchingMethod` (uses the broker's lots). `TaxAuthorityLotMatchingMethod` (`NONE` / `FIFO` / `PROVIDED`) is chosen per report in `TaxAuthorityConfiguration` and turned into a method by `TaxAuthorities/LotMatchingMethodFactory.ts`. `LotMatcher.matchLots` returns `MatchedLot`s whose two `LotLeg`s point at the original trades, with the lot's quantity and its share of the commission. |
+| Lot matching | `Core/LotMatching/`, `Core/FinancialEvents/FinancialEventsProcessor.ts` | `ILotMatchingMethod` implementations (stateless, one `performMatching(trades)`): `FifoLotMatchingMethod`, `ProvidedLotMatchingMethod` (uses the broker's lots). `TaxAuthorityLotMatchingMethod` (`NONE` / `FIFO` / `PROVIDED`) is chosen per report in `TaxAuthorityConfiguration` and turned into a method by `TaxAuthorities/LotMatchingMethodFactory.ts`. `LotMatcher.matchLots` returns `MatchedLot`s whose two `LotLeg`s point at the original trades, with the lot's quantity and its share of the commission. |
 | Tax authority | `TaxAuthorities/<Country>/` | A provider implementing `ITaxAuthorityProvider` holds the `TaxAuthorityDescriptor`, maps report type IDs (`"kdvp"`) to its own report types, and turns `FinancialEvents` into XML and CSV through one generator per report type. |
 | Lookups | `InfoProviders/` | See the **infoproviders-lookup-data** skill. |
-| Config | `TaxAuthorities/ConfigurationProvider.ts` | `TaxPayerConfigSchema` / `TaxPayerInfo`, `TaxAuthorityConfiguration` (`fromDate`, `toDate`, `lotMatchingMethod`). |
+| Config | `TaxAuthorities/ConfigurationProvider.ts` | `TaxpayerConfigSchema` / `TaxpayerInfo`, `TaxAuthorityConfiguration` (`fromDate`, `toDate`, `lotMatchingMethod`). |
 
 ## Wiring
 
-`createContainer(infoProvider)` in `container.ts` binds the `InfoProvider` under `InfoProvider.Token`, then loads `CoreModule.ts`,
+`createContainer(infoProvider)` in `container.ts` binds the `IInfoProvider` under `IInfoProvider.Token`, then loads `CoreModule.ts`,
 `Brokers/BrokersModule.ts` and `TaxAuthorities/TaxAuthoritiesModule.ts`. Every class is bound with
 `toResolvedValue(factory, [dependencies])` in singleton scope; there are no decorators. Classes take their dependencies through the
 constructor, so tests build them by hand without a container.
@@ -72,7 +72,7 @@ before checking them.
    relationships through `ApplyIdentifierRelationshipsService` before generating.
 2. Bind everything in `<Country>Module.ts`, load it from `TaxAuthoritiesModule.ts`, and add the provider to `TaxAuthorityRegistry`
    (constructor, `listAuthorities`, `generateExports`).
-3. If the country needs taxpayer fields `TaxPayerConfigSchema` lacks, extend the schema; the CLI and `config/userConfig.example.yml`
+3. If the country needs taxpayer fields `TaxpayerConfigSchema` lacks, extend the schema; the CLI and `config/userConfig.example.yml`
    follow it.
 4. Site: a card in `packages/app/app/components/export/taxAuthorityCards.ts` (icon in `packages/app/public/icons/tax-authorities/`), a form component
    registered in `authorityForms` in `ExportConfigStep.vue`, a submission guide in `packages/app/app/components/download/taxAuthorityGuides.ts`,
