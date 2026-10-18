@@ -2,7 +2,6 @@ import {
 	createContainer,
 	DropReason,
 	PredefinedInfoProvider,
-	ProvenanceReportReader,
 	ReportPipeline,
 	TradeEventCashTransactionDividend,
 	TradeEventCashTransactionWithholdingTax,
@@ -11,25 +10,29 @@ import {
 } from "@brrr/lib";
 import { TestKit } from "@brrr/test-cases";
 import { assert, describe, expect, test } from "vitest";
-import { ImportSources } from "~/review/ImportSources";
-import { RowSourceKind } from "~/review/RowSourceKind";
-import { readImportLeftOut } from "~/review/readImportLeftOut";
-import { keyAttributesOf } from "~/review/rowAttributes";
+import {
+	mountComposable,
+	mountComposableUnder,
+} from "~/composables/__tests__/support/mountComposable";
+import { useImportLeftOut } from "~/composables/useImportLeftOut";
+import { provideImportSources } from "~/composables/useImportSources";
+import { RowSourceKind } from "~/types/importSources";
+import { keyAttributesOf } from "~/utils/rowAttributes";
 
 const pipeline = createContainer(new PredefinedInfoProvider()).get(ReportPipeline);
 
 describe("the broker rows behind the test cases' real imports", () => {
-	test("a trade in two downloads shows both files, and is counted once", () => {
+	test("a trade in two downloads shows both files, and is counted once", async () => {
 		const imported = pipeline.read(TestKit.ibkr.overlappingExports.readInputs());
-		const sources = new ImportSources(imported.provenance);
+		const sources = await mountComposable(() => provideImportSources(() => imported.provenance));
 		const buy = imported.events.groupings[0]?.stockTrades[0];
 		assert(buy instanceof TradeEventStockAcquired);
 
 		const found = sources.of(buy);
 		const keys = keyAttributesOf(found.row.row, RowSourceKind.TRADE);
-		const leftOut = readImportLeftOut(
-			new ProvenanceReportReader().read(imported.provenance),
-			sources,
+		const leftOut = await mountComposableUnder(
+			() => provideImportSources(() => imported.provenance),
+			() => useImportLeftOut(() => imported.provenance),
 		);
 
 		expect(found.row.fileName).toEqual("SecondDownload.xml");
@@ -43,14 +46,14 @@ describe("the broker rows behind the test cases' real imports", () => {
 		expect(keys[4]).toEqual({ name: "currency", value: "EUR" });
 		expect(keys[5]).toEqual({ name: "ibCommission", value: "-3" });
 		expect(keys[6]).toEqual({ name: "transactionID", value: "241234985" });
-		expect(leftOut.merged).toHaveLength(2);
-		expect(leftOut.lines).toHaveLength(0);
-		expect(leftOut.needsALook).toEqual(0);
+		expect(leftOut.value.merged).toHaveLength(2);
+		expect(leftOut.value.lines).toHaveLength(0);
+		expect(leftOut.value.needsALook).toEqual(0);
 	});
 
-	test("a dividend and its withholding tax show their cash rows", () => {
+	test("a dividend and its withholding tax show their cash rows", async () => {
 		const imported = pipeline.read(TestKit.ibkr.dividends.readInputs());
-		const sources = new ImportSources(imported.provenance);
+		const sources = await mountComposable(() => provideImportSources(() => imported.provenance));
 		const dividend = imported.events.groupings[0]?.cashTransactions[0];
 		const withholding = imported.events.groupings[0]?.cashTransactions[1];
 		assert(dividend instanceof TradeEventCashTransactionDividend);
@@ -81,9 +84,9 @@ describe("the broker rows behind the test cases' real imports", () => {
 		expect(withholdingKeys[6]).toEqual({ name: "transactionID", value: "323614082" });
 	});
 
-	test("an option trade shows its trade row", () => {
+	test("an option trade shows its trade row", async () => {
 		const imported = pipeline.read(TestKit.ibkr.optionTrade.readInputs());
-		const sources = new ImportSources(imported.provenance);
+		const sources = await mountComposable(() => provideImportSources(() => imported.provenance));
 		expect(imported.events.groupings).toHaveLength(1);
 		const trade = imported.events.groupings[0]?.derivativeGroupings[0]?.derivativeTrades[0];
 		assert(trade instanceof TradeEventDerivativeAcquired);
@@ -102,24 +105,23 @@ describe("the broker rows behind the test cases' real imports", () => {
 		expect(keys[6]).toEqual({ name: "transactionID", value: "635331370" });
 	});
 
-	test("a corporate action missing its other half is left out, with the row it was read from", () => {
+	test("a corporate action missing its other half is left out, with the row it was read from", async () => {
 		const imported = pipeline.read([
 			TestKit.ibkr.corporateAction.inputs.simpleCorporateAction.read(),
 		]);
-		const sources = new ImportSources(imported.provenance);
 
-		const leftOut = readImportLeftOut(
-			new ProvenanceReportReader().read(imported.provenance),
-			sources,
+		const leftOut = await mountComposableUnder(
+			() => provideImportSources(() => imported.provenance),
+			() => useImportLeftOut(() => imported.provenance),
 		);
 
-		expect(leftOut.lines).toHaveLength(1);
-		expect(leftOut.lines[0]?.drop.reason).toEqual(DropReason.UNPAIRED);
-		expect(leftOut.lines[0]?.rows).toHaveLength(1);
-		expect(leftOut.lines[0]?.rows[0]?.fileName).toEqual("SimpleCorporateAction.xml");
-		expect(leftOut.lines[0]?.rows[0]?.row.fields.transactionID).toEqual("459779393");
-		expect(leftOut.lines[0]?.files).toHaveLength(0);
-		expect(leftOut.needsALook).toEqual(1);
-		expect(leftOut.merged).toHaveLength(0);
+		expect(leftOut.value.lines).toHaveLength(1);
+		expect(leftOut.value.lines[0]?.drop.reason).toEqual(DropReason.UNPAIRED);
+		expect(leftOut.value.lines[0]?.rows).toHaveLength(1);
+		expect(leftOut.value.lines[0]?.rows[0]?.fileName).toEqual("SimpleCorporateAction.xml");
+		expect(leftOut.value.lines[0]?.rows[0]?.row.fields.transactionID).toEqual("459779393");
+		expect(leftOut.value.lines[0]?.files).toHaveLength(0);
+		expect(leftOut.value.needsALook).toEqual(1);
+		expect(leftOut.value.merged).toHaveLength(0);
 	});
 });

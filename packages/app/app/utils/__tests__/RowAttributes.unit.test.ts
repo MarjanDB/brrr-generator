@@ -1,8 +1,12 @@
 import { ProvenanceGraph, ProvenanceNodeKind } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
-import { IbkrRowAttribute } from "~/review/IbkrRowAttribute";
-import { RowSourceKind } from "~/review/RowSourceKind";
-import { allAttributesOf, keyAttributes, keyAttributesOf } from "~/review/rowAttributes";
+import { RowSourceKind } from "~/types/importSources";
+import {
+	allAttributesOf,
+	IbkrRowAttribute,
+	keyAttributes,
+	keyAttributesOf,
+} from "~/utils/rowAttributes";
 
 describe("a broker row's attributes", () => {
 	test("a trade's key attributes come in the listed order, skipping one the row lacks and keeping an empty one", () => {

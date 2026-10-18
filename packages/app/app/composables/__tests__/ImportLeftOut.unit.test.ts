@@ -6,17 +6,20 @@ import {
 	ProvenanceDetailValue,
 	ProvenanceGraph,
 	ProvenanceNodeKind,
-	ProvenanceReportReader,
 	ProvenanceStage,
 } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
-import { ImportSources } from "~/review/ImportSources";
-import { readImportLeftOut } from "~/review/readImportLeftOut";
+import {
+	mountComposable,
+	mountComposableUnder,
+} from "~/composables/__tests__/support/mountComposable";
+import { useImportLeftOut } from "~/composables/useImportLeftOut";
+import { provideImportSources } from "~/composables/useImportSources";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
 describe("what the import left out and what it counted once", () => {
-	test("the import's drops become one line per sentence, by reason, each with the files and rows behind it", () => {
+	test("the import's drops become one line per sentence, by reason, each with the files and rows behind it", async () => {
 		const graph = new ProvenanceGraph({ parent: null });
 		const other = {};
 		const file = {};
@@ -65,33 +68,35 @@ describe("what the import left out and what it counted once", () => {
 		graph.drop(other, DropReason.NOT_RECOGNISED, stage, null);
 		graph.drop(half, DropReason.UNPAIRED, stage, null);
 
-		const leftOut = readImportLeftOut(
-			new ProvenanceReportReader().read(graph),
-			new ImportSources(graph),
+		const leftOut = await mountComposableUnder(
+			() => provideImportSources(() => graph),
+			() => useImportLeftOut(() => graph),
 		);
 
-		expect(leftOut.needsALook).toEqual(5);
-		expect(leftOut.merged).toHaveLength(0);
-		expect(leftOut.lines).toHaveLength(4);
-		expect(leftOut.lines[0]?.drop.reason).toEqual(DropReason.NOT_RECOGNISED);
-		expect(leftOut.lines[0]?.files).toEqual(["other.xml"]);
-		expect(leftOut.lines[0]?.rows).toHaveLength(0);
-		expect(leftOut.lines[1]?.drop.detail?.values[ProvenanceDetailValue.ASSET_CLASS]).toEqual("FUT");
-		expect(leftOut.lines[1]?.rows).toHaveLength(2);
-		expect(leftOut.lines[1]?.rows[0]?.row).toBe(graph.nodeOf(futureOne));
-		expect(leftOut.lines[1]?.rows[1]?.row).toBe(graph.nodeOf(futureTwo));
-		expect(leftOut.lines[1]?.rows[0]?.fileName).toEqual("U1.xml");
-		expect(leftOut.lines[2]?.drop.detail?.values[ProvenanceDetailValue.ASSET_CLASS]).toEqual(
+		expect(leftOut.value.needsALook).toEqual(5);
+		expect(leftOut.value.merged).toHaveLength(0);
+		expect(leftOut.value.lines).toHaveLength(4);
+		expect(leftOut.value.lines[0]?.drop.reason).toEqual(DropReason.NOT_RECOGNISED);
+		expect(leftOut.value.lines[0]?.files).toEqual(["other.xml"]);
+		expect(leftOut.value.lines[0]?.rows).toHaveLength(0);
+		expect(leftOut.value.lines[1]?.drop.detail?.values[ProvenanceDetailValue.ASSET_CLASS]).toEqual(
+			"FUT",
+		);
+		expect(leftOut.value.lines[1]?.rows).toHaveLength(2);
+		expect(leftOut.value.lines[1]?.rows[0]?.row).toBe(graph.nodeOf(futureOne));
+		expect(leftOut.value.lines[1]?.rows[1]?.row).toBe(graph.nodeOf(futureTwo));
+		expect(leftOut.value.lines[1]?.rows[0]?.fileName).toEqual("U1.xml");
+		expect(leftOut.value.lines[2]?.drop.detail?.values[ProvenanceDetailValue.ASSET_CLASS]).toEqual(
 			"CASH",
 		);
-		expect(leftOut.lines[2]?.rows).toHaveLength(1);
-		expect(leftOut.lines[3]?.drop.reason).toEqual(DropReason.UNPAIRED);
-		expect(leftOut.lines[3]?.rows).toHaveLength(1);
-		expect(leftOut.lines[3]?.rows[0]?.row).toBe(graph.nodeOf(actionRow));
-		expect(leftOut.lines[3]?.files).toHaveLength(0);
+		expect(leftOut.value.lines[2]?.rows).toHaveLength(1);
+		expect(leftOut.value.lines[3]?.drop.reason).toEqual(DropReason.UNPAIRED);
+		expect(leftOut.value.lines[3]?.rows).toHaveLength(1);
+		expect(leftOut.value.lines[3]?.rows[0]?.row).toBe(graph.nodeOf(actionRow));
+		expect(leftOut.value.lines[3]?.files).toHaveLength(0);
 	});
 
-	test("a trade in two exports is counted once, not left out", () => {
+	test("a trade in two exports is counted once, not left out", async () => {
 		const graph = new ProvenanceGraph({ parent: null });
 		const first = {};
 		const second = {};
@@ -111,18 +116,18 @@ describe("what the import left out and what it counted once", () => {
 		graph.derive([secondRow], secondRecord, ProvenanceChange.PARSED, stage, null);
 		graph.derive([firstRecord], secondRecord, ProvenanceChange.DEDUPLICATED, stage, null);
 
-		const leftOut = readImportLeftOut(
-			new ProvenanceReportReader().read(graph),
-			new ImportSources(graph),
+		const leftOut = await mountComposableUnder(
+			() => provideImportSources(() => graph),
+			() => useImportLeftOut(() => graph),
 		);
 
-		expect(leftOut.lines).toHaveLength(0);
-		expect(leftOut.needsALook).toEqual(0);
-		expect(leftOut.merged).toHaveLength(1);
-		expect(leftOut.merged[0]?.row.fileName).toEqual("SecondDownload.xml");
+		expect(leftOut.value.lines).toHaveLength(0);
+		expect(leftOut.value.needsALook).toEqual(0);
+		expect(leftOut.value.merged).toHaveLength(1);
+		expect(leftOut.value.merged[0]?.row.fileName).toEqual("SecondDownload.xml");
 	});
 
-	test("a report made from the import changes nothing the review step reads", () => {
+	test("a report made from the import changes nothing the review step reads", async () => {
 		const graph = new ProvenanceGraph({ parent: null });
 		const file = {};
 		const row = {};
@@ -144,14 +149,15 @@ describe("what the import left out and what it counted once", () => {
 		layer.derive([event], line, ProvenanceChange.REPORTED, stage, null);
 		layer.drop(event, DropReason.POSITION_OPEN, stage, null);
 
-		const leftOut = readImportLeftOut(
-			new ProvenanceReportReader().read(graph),
-			new ImportSources(graph),
+		const leftOut = await mountComposableUnder(
+			() => provideImportSources(() => graph),
+			() => useImportLeftOut(() => graph),
 		);
+		const sources = await mountComposable(() => provideImportSources(() => graph));
 
-		expect(leftOut.lines).toHaveLength(0);
-		expect(leftOut.needsALook).toEqual(0);
-		expect(leftOut.merged).toHaveLength(0);
-		expect(new ImportSources(graph).of(event).row.fileName).toEqual("U1.xml");
+		expect(leftOut.value.lines).toHaveLength(0);
+		expect(leftOut.value.needsALook).toEqual(0);
+		expect(leftOut.value.merged).toHaveLength(0);
+		expect(sources.of(event).row.fileName).toEqual("U1.xml");
 	});
 });

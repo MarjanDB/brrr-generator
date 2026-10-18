@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from "reka-ui";
-import type { ImportSources } from "~/review/ImportSources";
-import type { RowSourceKind } from "~/review/RowSourceKind";
+import type { RowSourceKind } from "~/types/importSources";
 
 defineProps<{
-  sources: ImportSources;
   subject: object;
   kind: RowSourceKind;
 }>();
@@ -33,7 +31,7 @@ const { t } = useI18n();
         :collision-padding="16"
         class="z-[60] w-[min(22rem,calc(100vw-2rem))] max-h-[min(28rem,70vh)] overflow-y-auto card p-3 shadow-lg"
       >
-        <RowSourcePopover :sources="sources" :subject="subject" :kind="kind" />
+        <RowSourcePopover :subject="subject" :kind="kind" />
       </PopoverContent>
     </PopoverPortal>
   </PopoverRoot>

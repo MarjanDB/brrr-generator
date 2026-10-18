@@ -1,18 +1,19 @@
 <script setup lang="ts">
+import type { ProvenanceGraph } from "@brrr/lib";
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from "reka-ui";
 import { dropSentence } from "~/download/sentences/dropSentence";
-import type { ImportLeftOut } from "~/review/ImportLeftOut";
 import { BadgeVariant, ColorIntent } from "~/types/ui";
 
 const props = defineProps<{
-  leftOut: ImportLeftOut;
+  provenance: ProvenanceGraph;
 }>();
 
 const { t } = useI18n();
 const { translate, format } = useSentences();
+const leftOut = useImportLeftOut(() => props.provenance);
 
 const open = ref(false);
-const visible = computed(() => props.leftOut.needsALook > 0 || props.leftOut.merged.length > 0);
+const visible = computed(() => leftOut.value.needsALook > 0 || leftOut.value.merged.length > 0);
 </script>
 
 <template>

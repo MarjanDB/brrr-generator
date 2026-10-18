@@ -6,15 +6,13 @@ import {
   TradeEventCashTransactionWithholdingTax,
 } from "@brrr/lib";
 import { useI18n } from 'vue-i18n';
-import type { ImportSources } from "~/review/ImportSources";
-import { RowSourceKind } from "~/review/RowSourceKind";
+import { RowSourceKind } from "~/types/importSources";
 
 type CashTx = FinancialGrouping["cashTransactions"][number];
 
 defineProps<{
   transactions: CashTx[];
   baseCurrency: string;
-  sources: ImportSources;
 }>();
 
 const { t } = useI18n();
@@ -58,7 +56,7 @@ function cashTxLabel(tx: CashTx): string {
             {{ formatAmount(tx.exchangedMoney.quantity * tx.exchangedMoney.priceInBase, baseCurrency) }}
           </td>
           <td class="py-1 pl-2 text-right sticky right-0 bg-page">
-            <RowSourceButton :sources="sources" :subject="tx" :kind="RowSourceKind.CASH_TRANSACTION" />
+            <RowSourceButton :subject="tx" :kind="RowSourceKind.CASH_TRANSACTION" />
           </td>
         </tr>
       </tbody>

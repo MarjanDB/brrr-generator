@@ -1,11 +1,16 @@
 import { ProvenanceChange, ProvenanceGraph, ProvenanceNodeKind, ProvenanceStage } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
-import { ImportSources } from "~/review/ImportSources";
+import { shallowRef } from "vue";
+import {
+	mountComposable,
+	mountComposableUnder,
+} from "~/composables/__tests__/support/mountComposable";
+import { provideImportSources, useImportSources } from "~/composables/useImportSources";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
 describe("where an imported event came from", () => {
-	test("a trade came from the broker row its record was parsed from, in its file", () => {
+	test("a trade came from the broker row its record was parsed from, in its file", async () => {
 		const graph = new ProvenanceGraph({ parent: null });
 		const file = {};
 		const row = {};
@@ -22,14 +27,14 @@ describe("where an imported event came from", () => {
 		graph.derive([record], staged, ProvenanceChange.TRANSFORMED, stage, null);
 		graph.derive([staged], event, ProvenanceChange.CONVERTED, stage, null);
 
-		const sources = new ImportSources(graph).of(event);
+		const sources = (await mountComposable(() => provideImportSources(() => graph))).of(event);
 
 		expect(sources.row.row).toBe(graph.nodeOf(row));
 		expect(sources.row.fileName).toEqual("U1.xml");
 		expect(sources.alsoIn).toHaveLength(0);
 	});
 
-	test("a trade in two exports was taken from the row lib kept, and the other is a copy counted once", () => {
+	test("a trade in two exports was taken from the row lib kept, and the other is a copy counted once", async () => {
 		const graph = new ProvenanceGraph({ parent: null });
 		const first = {};
 		const second = {};
@@ -55,7 +60,7 @@ describe("where an imported event came from", () => {
 		graph.derive([secondRecord], staged, ProvenanceChange.TRANSFORMED, stage, null);
 		graph.derive([staged], event, ProvenanceChange.CONVERTED, stage, null);
 
-		const sources = new ImportSources(graph).of(event);
+		const sources = (await mountComposable(() => provideImportSources(() => graph))).of(event);
 
 		expect(sources.row.row).toBe(graph.nodeOf(secondRow));
 		expect(sources.row.fileName).toEqual("SecondDownload.xml");
@@ -64,7 +69,7 @@ describe("where an imported event came from", () => {
 		expect(sources.alsoIn[0]?.fileName).toEqual("FirstDownload.xml");
 	});
 
-	test("merged lists each record found in more than one export, with every copy", () => {
+	test("merged lists each record found in more than one export, with every copy", async () => {
 		const graph = new ProvenanceGraph({ parent: null });
 		const fileA = {};
 		const fileB = {};
@@ -98,7 +103,7 @@ describe("where an imported event came from", () => {
 		graph.derive([rowC1], recordC1, ProvenanceChange.PARSED, stage, null);
 		graph.derive([recordA1, recordB1], recordC1, ProvenanceChange.DEDUPLICATED, stage, null);
 
-		const merged = new ImportSources(graph).merged();
+		const merged = (await mountComposable(() => provideImportSources(() => graph))).merged.value;
 
 		expect(merged).toHaveLength(1);
 		expect(merged[0]?.row.fileName).toEqual("C.xml");
@@ -107,7 +112,7 @@ describe("where an imported event came from", () => {
 		expect(merged[0]?.alsoIn[1]?.fileName).toEqual("B.xml");
 	});
 
-	test("behind lists the broker rows in a node's ancestry, itself included", () => {
+	test("behind lists the broker rows in a node's ancestry, itself included", async () => {
 		const graph = new ProvenanceGraph({ parent: null });
 		const file = {};
 		const other = {};
@@ -122,7 +127,7 @@ describe("where an imported event came from", () => {
 		graph.derive([file], row, ProvenanceChange.CONTAINS, stage, null);
 		graph.derive([row], record, ProvenanceChange.PARSED, stage, null);
 		graph.derive([record], lot, ProvenanceChange.TRANSFORMED, stage, null);
-		const sources = new ImportSources(graph);
+		const sources = await mountComposable(() => provideImportSources(() => graph));
 
 		const fromLot = sources.behind(graph.nodeOf(lot));
 		const fromRow = sources.behind(graph.nodeOf(row));
@@ -136,13 +141,72 @@ describe("where an imported event came from", () => {
 		expect(fromFile).toHaveLength(0);
 	});
 
-	test("a node with no broker row above it has no sources", () => {
+	test("a node with no broker row above it has no sources", async () => {
 		const graph = new ProvenanceGraph({ parent: null });
 		const event = {};
 		graph.node(event, ProvenanceNodeKind.EVENT, "stock bought 1 · 10 ACME", {});
 
-		expect(() => new ImportSources(graph).of(event)).toThrow(
-			"Provenance: no broker row behind this node",
+		const sources = await mountComposable(() => provideImportSources(() => graph));
+
+		expect(() => sources.of(event)).toThrow("Provenance: no broker row behind this node");
+	});
+
+	test("a new graph is read afresh", async () => {
+		const first = new ProvenanceGraph({ parent: null });
+		const firstFile = {};
+		const firstRow = {};
+		const firstEvent = {};
+		first.node(firstFile, ProvenanceNodeKind.FILE, "U1.xml", {});
+		first.node(firstRow, ProvenanceNodeKind.ROW, "Trade 1 · ACME", { transactionID: "1" });
+		first.node(firstEvent, ProvenanceNodeKind.EVENT, "stock bought 1 · 10 ACME", {});
+		first.derive([firstFile], firstRow, ProvenanceChange.CONTAINS, stage, null);
+		first.derive([firstRow], firstEvent, ProvenanceChange.CONVERTED, stage, null);
+		const second = new ProvenanceGraph({ parent: null });
+		const secondFile = {};
+		const secondRow = {};
+		const secondEvent = {};
+		second.node(secondFile, ProvenanceNodeKind.FILE, "U2.xml", {});
+		second.node(secondRow, ProvenanceNodeKind.ROW, "Trade 2 · ACME", { transactionID: "2" });
+		second.node(secondEvent, ProvenanceNodeKind.EVENT, "stock bought 2 · 10 ACME", {});
+		second.derive([secondFile], secondRow, ProvenanceChange.CONTAINS, stage, null);
+		second.derive([secondRow], secondEvent, ProvenanceChange.CONVERTED, stage, null);
+		const graph = shallowRef(first);
+		const sources = await mountComposable(() => provideImportSources(() => graph.value));
+
+		const fromFirst = sources.of(firstEvent);
+		graph.value = second;
+		const fromSecond = sources.of(secondEvent);
+
+		expect(fromFirst.row.fileName).toEqual("U1.xml");
+		expect(fromSecond.row.row).toBe(second.nodeOf(secondRow));
+		expect(fromSecond.row.fileName).toEqual("U2.xml");
+	});
+});
+
+describe("handing the import sources to the components below", () => {
+	test("a component below the one that provided them reads the same import", async () => {
+		const graph = new ProvenanceGraph({ parent: null });
+		const file = {};
+		const row = {};
+		const event = {};
+		graph.node(file, ProvenanceNodeKind.FILE, "U1.xml", {});
+		graph.node(row, ProvenanceNodeKind.ROW, "Trade 1 · ACME", { transactionID: "1" });
+		graph.node(event, ProvenanceNodeKind.EVENT, "stock bought 1 · 10 ACME", {});
+		graph.derive([file], row, ProvenanceChange.CONTAINS, stage, null);
+		graph.derive([row], event, ProvenanceChange.CONVERTED, stage, null);
+
+		const sources = await mountComposableUnder(
+			() => provideImportSources(() => graph),
+			() => useImportSources(),
+		);
+
+		expect(sources.of(event).row.row).toBe(graph.nodeOf(row));
+		expect(sources.of(event).row.fileName).toEqual("U1.xml");
+	});
+
+	test("a component with nothing above it that provided them can't read them", async () => {
+		await expect(mountComposable(() => useImportSources())).rejects.toThrow(
+			"useImportSources: no ancestor called provideImportSources",
 		);
 	});
 });
