@@ -30,14 +30,12 @@ import { LotMatcher } from "@brrr/Core/Services/LotMatching/LotMatcher";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/Services/StagingProcessing/StagingFinancialGroupingProcessor";
 import type { CompanyInfo, Country, IInfoProvider } from "@brrr/InfoProviders/IInfoProvider";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
-import type {
-	TaxAuthorityConfiguration,
-	TaxAuthorityLotMatchingMethod,
-	TaxpayerInfo,
-} from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type { GeneratedExports } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
-import type { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
-import { TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
+import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
+import { TaxAuthorityId } from "@brrr/TaxAuthorities/Models/TaxAuthorityIdentifiers";
+import type { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Models/TaxAuthorityLotMatchingMethod";
+import type { TaxpayerInfo } from "@brrr/TaxAuthorities/Schemas/TaxpayerConfigSchema";
+import type { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Models/SlovenianReportTypeId";
 import { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
 
 type LotFields = { id: TaxLotStock["id"]; quantity: number; shortLongType: ShortLong };

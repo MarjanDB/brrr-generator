@@ -1,10 +1,13 @@
 import type {
 	GeneratedExports,
 	ITaxAuthorityProvider,
-	TaxAuthorityDescriptor,
 	TaxAuthorityRunContext,
 } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
-import { ReportTypeId, type TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
+import type { TaxAuthorityDescriptor } from "@brrr/TaxAuthorities/Models/TaxAuthorityDescriptor";
+import {
+	ReportTypeId,
+	type TaxAuthorityId,
+} from "@brrr/TaxAuthorities/Models/TaxAuthorityIdentifiers";
 
 export class TaxAuthorityRegistry {
 	public constructor(private readonly slovenia: ITaxAuthorityProvider) {}

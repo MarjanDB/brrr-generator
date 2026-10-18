@@ -10,15 +10,15 @@ for company, country and treaty data, see **infoproviders-lookup-data**.
 
 ## Report types
 
-`SlovenianTaxAuthorityReportTypes` in `Schemas/ReportTypes.ts`:
+`SlovenianTaxAuthorityReportTypes` in `Models/SlovenianTaxAuthorityReportTypes.ts`:
 
 | Enum | ID (site, CLI, registry) | Covers | Generator | Lot matching |
 | --- | --- | --- | --- | --- |
-| `DOH_KDVP` | `kdvp` | Shares (Vrednostni papirji) | `ReportGeneration/Kdvp/KdvpReportGenerator.ts` | FIFO, or the broker's lots with `PROVIDED` |
-| `DOH_DIV` | `div` | Dividends (Dividende) | `ReportGeneration/Div/DivReportGenerator.ts` | none |
-| `D_IFI` | `ifi` | Derivatives (Izvedeni finančni inštrumenti) | `ReportGeneration/Ifi/IfiReportGenerator.ts` | FIFO, or `PROVIDED` |
+| `DOH_KDVP` | `kdvp` | Shares (Vrednostni papirji) | `Services/Kdvp/KdvpReportGenerator.ts` | FIFO, or the broker's lots with `PROVIDED` |
+| `DOH_DIV` | `div` | Dividends (Dividende) | `Services/Div/DivReportGenerator.ts` | none |
+| `D_IFI` | `ifi` | Derivatives (Izvedeni finančni inštrumenti) | `Services/Ifi/IfiReportGenerator.ts` | FIFO, or `PROVIDED` |
 
-`createLotMatchingMethod` (`TaxAuthorities/LotMatchingMethodFactory.ts`) turns anything other than `PROVIDED` (including `NONE`)
+`createLotMatchingMethod` (`TaxAuthorities/Services/LotMatchingMethodFactory.ts`) turns anything other than `PROVIDED` (including `NONE`)
 into FIFO. The site and the CLI both send FIFO and a
 report period of 1 January to 1 January of the following year.
 
@@ -27,9 +27,9 @@ report period of 1 January to 1 January of the following year.
 - `SlovenianTaxAuthorityProvider` (`ITaxAuthorityProvider`) holds the `TaxAuthorityDescriptor` (`authorityId: TaxAuthorityId.SLOVENIA`) and the
   `REPORT_TYPES` table mapping IDs (`SlovenianReportTypeId`) to the enum. `generate` applies `RENAME`, `SPLIT` and `REVERSE_SPLIT`
   relationships, calls the generator's `convert` once → report lines, and renders them with `toXml` and `toCsv` into `{ xml, csv }`.
-- Shared amount helpers (`round`, `toOriginalCurrency`, `foreignTaxOf`) are in `ReportGeneration/Amounts.ts`.
+- Shared amount helpers (`round`, `toOriginalCurrency`, `foreignTaxOf`) are in `Utils/Amounts.ts`.
 - Each generator keeps the pure pieces in `Xml*.ts` (built with fast-xml-parser's `XMLBuilder`) and `Csv*.ts` (built with
-  `csv-stringify/browser/esm/sync`, never the Node build). Report line classes are in `Schemas/Schemas.ts`.
+  `csv-stringify/browser/esm/sync`, never the Node build). Report line classes and their enums are in `Models/Kdvp/`, `Models/Div/` and `Models/Ifi/`, one per file.
 
 ## Per-report rules
 
@@ -49,7 +49,7 @@ report period of 1 January to 1 January of the following year.
 
 ## Taxpayer fields
 
-`TaxpayerConfigSchema` in `packages/lib/src/TaxAuthorities/ConfigurationProvider.ts`: `taxNumber`, `taxpayerType` (`FO` natural person, `PO` legal
+`TaxpayerConfigSchema` in `packages/lib/src/TaxAuthorities/Schemas/TaxpayerConfigSchema.ts`: `taxNumber`, `taxpayerType` (`FO` natural person, `PO` legal
 entity, `SP` sole trader), `name`, `address1`, `address2` (nullable), `city`, `postNumber`, `postName`, `municipalityName`, `birthDate`,
 `maticnaStevilka`, `invalidskoPodjetje`, `resident`, `activityCode`, `activityName`, `countryId`, `countryName`.
 
@@ -71,7 +71,7 @@ instructions for eDavki are in `packages/app/app/components/download/taxAuthorit
 
 ## XSDs
 
-`XmlSchemas/`: `Doh_KDVP_9.xsd`, `Doh_Div_3.xsd`, `D_IFI_4.xsd`, `Doh_Obr_2.xsd`, `EDP-Common-1.xsd`. When FURS publishes a new version,
+`Schemas/`: `Doh_KDVP_9.xsd`, `Doh_Div_3.xsd`, `D_IFI_4.xsd`, `Doh_Obr_2.xsd`, `EDP-Common-1.xsd`. When FURS publishes a new version,
 replace the file and update the namespace and version in the matching `Xml*.ts`. `.vscode/settings.json` maps generated XML in
 `exports/` to these files for validation in the editor.
 
@@ -86,9 +86,9 @@ byte, so never regenerate them to make a refactor pass. `Fixtures.taxpayer` and 
 
 `__tests__/`: `TaxAuthorityProvider.integration.test.ts` (all three reports' lines, builds the provider by hand in `makeProvider` to spy
 on its collaborators), `PaymentInLieuOfDividend.unit.test.ts`, `CsvWithoutNodeBuffer.unit.test.ts` (CSV generators without Node's
-`Buffer`). `ReportGeneration/Div/__tests__/DivReportGenerator.unit.test.ts` pins DIV's sums, same-day merge and rounding,
-`ReportGeneration/__tests__/Amounts.unit.test.ts` the shared amount helpers, and
-`TaxAuthorities/__tests__/LotMatchingMethodFactory.unit.test.ts` the lot matching choice. Tests build their data and report configs
+`Buffer`). `Services/Div/__tests__/DivReportGenerator.unit.test.ts` pins DIV's sums, same-day merge and rounding,
+`Utils/__tests__/Amounts.unit.test.ts` the shared amount helpers, and
+`TaxAuthorities/Services/__tests__/LotMatchingMethodFactory.unit.test.ts` the lot matching choice. Tests build their data and report configs
 with `Scenario` (`packages/lib/src/__tests__/support/Scenario.ts`), writing every value out, and give the dividend generator a
 `PredefinedInfoProvider` with the companies and countries they need, so they never call Yahoo Finance.
 

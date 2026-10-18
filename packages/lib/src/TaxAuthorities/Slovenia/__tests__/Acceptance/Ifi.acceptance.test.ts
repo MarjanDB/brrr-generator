@@ -1,7 +1,7 @@
 import { Fixtures } from "@brrr/__tests__/support/Fixtures";
 import { Scenario } from "@brrr/__tests__/support/Scenario";
-import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
-import { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
+import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Models/TaxAuthorityLotMatchingMethod";
+import { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Models/SlovenianReportTypeId";
 import { TestKit } from "@brrr/test-cases";
 
 // What eDavki receives in D-IFI (derivatives) for each input.

@@ -23,7 +23,8 @@ import type { TradeStock } from "@brrr/Brokers/Ibkr/Schemas/TradeStock";
 import type { TransactionCash } from "@brrr/Brokers/Ibkr/Schemas/TransactionCash";
 import { CountryCode, CountryName } from "@brrr/Core/Models/Identifiers";
 import { type CompanyInfo, type Country, TreatyType } from "@brrr/InfoProviders/IInfoProvider";
-import { type TaxpayerInfo, TaxpayerType } from "@brrr/TaxAuthorities/ConfigurationProvider";
+import type { TaxpayerInfo } from "@brrr/TaxAuthorities/Schemas/TaxpayerConfigSchema";
+import { TaxpayerType } from "@brrr/TaxAuthorities/Schemas/TaxpayerType";
 
 // The taxpayer every expected report file was generated for.
 const taxpayer: TaxpayerInfo = {
