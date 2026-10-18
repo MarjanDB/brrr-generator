@@ -7,6 +7,15 @@ export type ChartThemeColors = {
 	ticks: string;
 	tooltipBg: string;
 	tooltipText: string;
+	// The instrument timeline's marks, its arcs and the ring around the focus.
+	bought: string;
+	sold: string;
+	corporateAction: string;
+	dividend: string;
+	tax: string;
+	brokerLot: string;
+	arc: string;
+	focus: string;
 };
 
 function cssVar(name: string): string {
@@ -27,7 +36,22 @@ function readColors(): ChartThemeColors {
 	const ticks = cssVar("--color-ink-muted");
 	const tooltipBg = cssVar("--color-surface");
 	const tooltipText = cssVar("--color-ink");
-	return { line, fill: hexWithOpacity(line, 0.12), grid, ticks, tooltipBg, tooltipText };
+	return {
+		line,
+		fill: hexWithOpacity(line, 0.12),
+		grid,
+		ticks,
+		tooltipBg,
+		tooltipText,
+		bought: cssVar("--color-success-edge"),
+		sold: cssVar("--color-danger-edge"),
+		corporateAction: cssVar("--color-accent-edge"),
+		dividend: cssVar("--color-warning-edge"),
+		tax: cssVar("--color-warning-ink"),
+		brokerLot: cssVar("--color-neutral-edge"),
+		arc: cssVar("--color-info-edge"),
+		focus: cssVar("--color-action-edge"),
+	};
 }
 
 export function useChartTheme() {

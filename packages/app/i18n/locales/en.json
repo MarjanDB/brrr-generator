@@ -142,5 +142,13 @@
 	"download_category_needs_look": "Needs a look",
 	"download_lot_matching_none": "no lot matching",
 	"download_lot_matching_fifo": "FIFO",
-	"download_lot_matching_provided": "the broker's lots"
+	"download_lot_matching_provided": "the broker's lots",
+	"download_timeline_label": "Timeline of {name}",
+	"download_mark_bought": "Bought {quantity} on {date}",
+	"download_mark_sold": "Sold {quantity} on {date}",
+	"download_mark_corporate_action": "Corporate action on {date}",
+	"download_mark_dividend": "Dividend {amount} {currency} on {date}",
+	"download_mark_tax": "Tax withheld {amount} {currency} on {date}",
+	"download_mark_broker_lot": "Broker lot of {quantity} from {date}",
+	"download_arc_matched": "Matched {quantity}"
 }

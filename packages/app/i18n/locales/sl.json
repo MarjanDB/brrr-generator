@@ -142,5 +142,13 @@
 	"download_category_needs_look": "Zahteva pregled",
 	"download_lot_matching_none": "brez ujemanja lotov",
 	"download_lot_matching_fifo": "FIFO",
-	"download_lot_matching_provided": "lotov posrednika"
+	"download_lot_matching_provided": "lotov posrednika",
+	"download_timeline_label": "Časovnica za {name}",
+	"download_mark_bought": "Nakup {quantity}, {date}",
+	"download_mark_sold": "Prodaja {quantity}, {date}",
+	"download_mark_corporate_action": "Korporativno dejanje, {date}",
+	"download_mark_dividend": "Dividenda {amount} {currency}, {date}",
+	"download_mark_tax": "Odtegnjen davek {amount} {currency}, {date}",
+	"download_mark_broker_lot": "Lot posrednika {quantity} od {date}",
+	"download_arc_matched": "Povezano {quantity}"
 }
