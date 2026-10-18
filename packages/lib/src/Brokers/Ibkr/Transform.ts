@@ -9,12 +9,11 @@ import {
 } from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
 import type { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
 import {
+	AcquisitionMethod,
 	AssetClass,
 	Category,
+	DividendType,
 	ExchangedMoney,
-	GenericDerivativeReportItemGainType,
-	GenericDividendType,
-	GenericTradeReportItemGainType,
 	ShortLong,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
@@ -149,9 +148,9 @@ export class IbkrTransformService {
 			const isBonusDividend = descLower.includes("bonus dividend");
 			const isPaymentInLieuWithholding = descLower.includes("payment in lieu of dividend");
 
-			let dividendType = GenericDividendType.UNKNOWN;
-			if (isOrdinaryDividend) dividendType = GenericDividendType.ORDINARY;
-			if (isBonusDividend) dividendType = GenericDividendType.BONUS;
+			let dividendType = DividendType.UNKNOWN;
+			if (isOrdinaryDividend) dividendType = DividendType.ORDINARY;
+			if (isBonusDividend) dividendType = DividendType.BONUS;
 
 			const financialIdentifier = new StagingFinancialIdentifier({
 				isin: Isin.Schema.parse(transaction.isin),
@@ -233,7 +232,7 @@ export class IbkrTransformService {
 			if (trade.quantity > 0) {
 				return new StagingTradeEventStockAcquired({
 					...base,
-					acquiredReason: GenericTradeReportItemGainType.BOUGHT,
+					acquisitionMethod: AcquisitionMethod.BOUGHT,
 				});
 			} else {
 				return new StagingTradeEventStockSold(base);
@@ -291,7 +290,7 @@ export class IbkrTransformService {
 			if (trade.quantity > 0) {
 				return new StagingTradeEventDerivativeAcquired({
 					...base,
-					acquiredReason: GenericDerivativeReportItemGainType.BOUGHT,
+					acquisitionMethod: AcquisitionMethod.BOUGHT,
 				});
 			} else {
 				return new StagingTradeEventDerivativeSold(base);

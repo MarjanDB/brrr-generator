@@ -1,5 +1,5 @@
 import type { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
-import { GenericDerivativeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats";
+import { AcquisitionMethod } from "@brrr/Core/Schemas/CommonFormats";
 import {
 	TradeEventDerivativeAcquired,
 	type TradeEventDerivativeSold,
@@ -26,15 +26,11 @@ import {
 	EDavkiGenericDerivativeReportItem,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
 
-const GAIN_MAPPINGS: Record<GenericDerivativeReportItemGainType, EDavkiDerivativeReportGainType> = {
-	[GenericDerivativeReportItemGainType.BOUGHT]: EDavkiDerivativeReportGainType.BOUGHT,
-	[GenericDerivativeReportItemGainType.CAPITAL_INVESTMENT]: EDavkiDerivativeReportGainType.OTHER,
-	[GenericDerivativeReportItemGainType.CAPITAL_RAISE]: EDavkiDerivativeReportGainType.OTHER,
-	[GenericDerivativeReportItemGainType.CAPITAL_ASSET]: EDavkiDerivativeReportGainType.OTHER,
-	[GenericDerivativeReportItemGainType.CAPITALIZATION_CHANGE]: EDavkiDerivativeReportGainType.OTHER,
-	[GenericDerivativeReportItemGainType.INHERITANCE]: EDavkiDerivativeReportGainType.INHERITANCE,
-	[GenericDerivativeReportItemGainType.GIFT]: EDavkiDerivativeReportGainType.GIFT,
-	[GenericDerivativeReportItemGainType.OTHER]: EDavkiDerivativeReportGainType.OTHER,
+const GAIN_MAPPINGS: Record<AcquisitionMethod, EDavkiDerivativeReportGainType> = {
+	[AcquisitionMethod.BOUGHT]: EDavkiDerivativeReportGainType.BOUGHT,
+	[AcquisitionMethod.GIFT]: EDavkiDerivativeReportGainType.GIFT,
+	[AcquisitionMethod.INHERITANCE]: EDavkiDerivativeReportGainType.INHERITANCE,
+	[AcquisitionMethod.OTHER]: EDavkiDerivativeReportGainType.OTHER,
 };
 
 function convertBuy(
@@ -44,7 +40,7 @@ function convertBuy(
 ): EDavkiDerivativeReportSecurityLineGenericEventBought {
 	return new EDavkiDerivativeReportSecurityLineGenericEventBought({
 		boughtOn: trade.date,
-		gainType: GAIN_MAPPINGS[trade.acquiredReason] ?? EDavkiDerivativeReportGainType.OTHER,
+		gainType: GAIN_MAPPINGS[trade.acquisitionMethod] ?? EDavkiDerivativeReportGainType.OTHER,
 		quantity: quantity,
 		pricePerUnit: trade.exchangedMoney.priceInBase * trade.multiplier,
 		pricePerUnitInOriginalCurrency: toOriginalCurrency(

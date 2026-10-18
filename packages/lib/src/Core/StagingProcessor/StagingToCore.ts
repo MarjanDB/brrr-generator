@@ -45,7 +45,7 @@ function toCoreTradeFields(
 export function toCoreStockTrade(input: StagingTradeEventStock): TradeEventStock {
 	const fields = toCoreTradeFields(input);
 	if (input instanceof StagingTradeEventStockAcquired) {
-		return new TradeEventStockAcquired({ ...fields, acquiredReason: input.acquiredReason });
+		return new TradeEventStockAcquired({ ...fields, acquisitionMethod: input.acquisitionMethod });
 	}
 	return new TradeEventStockSold(fields);
 }
@@ -53,7 +53,10 @@ export function toCoreStockTrade(input: StagingTradeEventStock): TradeEventStock
 export function toCoreDerivativeTrade(input: StagingTradeEventDerivative): TradeEventDerivative {
 	const fields = toCoreTradeFields(input);
 	if (input instanceof StagingTradeEventDerivativeAcquired) {
-		return new TradeEventDerivativeAcquired({ ...fields, acquiredReason: input.acquiredReason });
+		return new TradeEventDerivativeAcquired({
+			...fields,
+			acquisitionMethod: input.acquisitionMethod,
+		});
 	}
 	return new TradeEventDerivativeSold(fields);
 }

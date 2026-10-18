@@ -1,10 +1,9 @@
 import { type CashFields, type TradeFields, Values } from "@brrr/__tests__/support/Values";
 import {
+	AcquisitionMethod,
 	AssetClass,
 	type Category,
-	GenericDerivativeReportItemGainType,
-	type GenericDividendType,
-	GenericTradeReportItemGainType,
+	type DividendType,
 	type ShortLong,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
@@ -40,7 +39,7 @@ export const StagingBuilders = {
 			date: Values.date(fields.date),
 			multiplier: 1,
 			exchangedMoney: Values.tradeMoney(fields),
-			acquiredReason: GenericTradeReportItemGainType.BOUGHT,
+			acquisitionMethod: AcquisitionMethod.BOUGHT,
 		});
 	},
 
@@ -65,7 +64,7 @@ export const StagingBuilders = {
 			date: Values.date(fields.date),
 			multiplier: fields.multiplier,
 			exchangedMoney: Values.tradeMoney(fields),
-			acquiredReason: GenericDerivativeReportItemGainType.BOUGHT,
+			acquisitionMethod: AcquisitionMethod.BOUGHT,
 		});
 	},
 
@@ -83,7 +82,7 @@ export const StagingBuilders = {
 	},
 
 	dividend(
-		fields: CashFields & WithIdentifier & { dividendType: GenericDividendType },
+		fields: CashFields & WithIdentifier & { dividendType: DividendType },
 	): StagingTradeEventCashTransactionDividend {
 		return new StagingTradeEventCashTransactionDividend({
 			...cashEvent(fields),
@@ -98,7 +97,7 @@ export const StagingBuilders = {
 	},
 
 	paymentInLieu(
-		fields: CashFields & WithIdentifier & { dividendType: GenericDividendType },
+		fields: CashFields & WithIdentifier & { dividendType: DividendType },
 	): StagingTradeEventCashTransactionPaymentInLieuOfDividend {
 		return new StagingTradeEventCashTransactionPaymentInLieuOfDividend({
 			...cashEvent(fields),

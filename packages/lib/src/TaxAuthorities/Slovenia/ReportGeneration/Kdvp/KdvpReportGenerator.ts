@@ -1,5 +1,5 @@
 import type { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
-import { Category, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats";
+import { AcquisitionMethod, Category } from "@brrr/Core/Schemas/CommonFormats";
 import { TradeEventStockAcquired, type TradeEventStockSold } from "@brrr/Core/Schemas/Events";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import type {
@@ -27,17 +27,11 @@ import {
 	EDavkiTradeSecurityType,
 } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
 
-const GAIN_MAPPINGS: Record<GenericTradeReportItemGainType, EDavkiTradeReportGainType> = {
-	[GenericTradeReportItemGainType.BOUGHT]: EDavkiTradeReportGainType.BOUGHT,
-	[GenericTradeReportItemGainType.CAPITAL_INVESTMENT]: EDavkiTradeReportGainType.CAPITAL_INVESTMENT,
-	[GenericTradeReportItemGainType.CAPITAL_RAISE]: EDavkiTradeReportGainType.CAPITAL_RAISE,
-	[GenericTradeReportItemGainType.CAPITAL_ASSET]: EDavkiTradeReportGainType.CAPITAL_ASSET_RAISE,
-	[GenericTradeReportItemGainType.CAPITALIZATION_CHANGE]:
-		EDavkiTradeReportGainType.CAPITALIZATION_CHANGE,
-	[GenericTradeReportItemGainType.INHERITANCE]: EDavkiTradeReportGainType.INHERITANCE,
-	[GenericTradeReportItemGainType.GIFT]: EDavkiTradeReportGainType.GIFT,
-	[GenericTradeReportItemGainType.OTHER]: EDavkiTradeReportGainType.OTHER,
-	[GenericTradeReportItemGainType.RIGHT_TO_NEWLY_ISSUED_STOCK]: EDavkiTradeReportGainType.OTHER,
+const GAIN_MAPPINGS: Record<AcquisitionMethod, EDavkiTradeReportGainType> = {
+	[AcquisitionMethod.BOUGHT]: EDavkiTradeReportGainType.BOUGHT,
+	[AcquisitionMethod.GIFT]: EDavkiTradeReportGainType.GIFT,
+	[AcquisitionMethod.INHERITANCE]: EDavkiTradeReportGainType.INHERITANCE,
+	[AcquisitionMethod.OTHER]: EDavkiTradeReportGainType.OTHER,
 };
 
 function convertStockBuy(
@@ -47,7 +41,7 @@ function convertStockBuy(
 ): EDavkiTradeReportSecurityLineGenericEventBought {
 	return new EDavkiTradeReportSecurityLineGenericEventBought({
 		boughtOn: trade.date,
-		gainType: GAIN_MAPPINGS[trade.acquiredReason] ?? EDavkiTradeReportGainType.OTHER,
+		gainType: GAIN_MAPPINGS[trade.acquisitionMethod] ?? EDavkiTradeReportGainType.OTHER,
 		quantity: quantity,
 		pricePerUnit: trade.exchangedMoney.priceInBase,
 		pricePerUnitInOriginalCurrency: toOriginalCurrency(

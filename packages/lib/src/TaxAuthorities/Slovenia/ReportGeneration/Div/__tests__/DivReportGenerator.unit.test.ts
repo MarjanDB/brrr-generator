@@ -1,5 +1,5 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
-import { Category, GenericDividendType } from "@brrr/Core/Schemas/CommonFormats";
+import { Category, DividendType } from "@brrr/Core/Schemas/CommonFormats";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import {
 	CashActionId,
@@ -41,7 +41,7 @@ test("dividends add up per action, then per day, and are rounded at the end", as
 					actionId: CashActionId.Schema.parse("A"),
 					transactionId: CashTransactionId.Schema.parse("A-10"),
 					listingExchange: ListingExchange.Schema.parse("EXH"),
-					dividendType: GenericDividendType.ORDINARY,
+					dividendType: DividendType.ORDINARY,
 					currency: CurrencyCode.Schema.parse("USD"),
 					commission: 0,
 					tax: 0.5,
@@ -54,7 +54,7 @@ test("dividends add up per action, then per day, and are rounded at the end", as
 					actionId: CashActionId.Schema.parse("A"),
 					transactionId: CashTransactionId.Schema.parse("A-2.5"),
 					listingExchange: ListingExchange.Schema.parse("EXH"),
-					dividendType: GenericDividendType.ORDINARY,
+					dividendType: DividendType.ORDINARY,
 					currency: CurrencyCode.Schema.parse("USD"),
 					commission: 0,
 					tax: 0.7,
@@ -92,7 +92,7 @@ test("dividends add up per action, then per day, and are rounded at the end", as
 					actionId: CashActionId.Schema.parse("B"),
 					transactionId: CashTransactionId.Schema.parse("B-1"),
 					listingExchange: ListingExchange.Schema.parse("EXH"),
-					dividendType: GenericDividendType.ORDINARY,
+					dividendType: DividendType.ORDINARY,
 					currency: CurrencyCode.Schema.parse("USD"),
 					commission: 0,
 					tax: 0,
@@ -105,7 +105,7 @@ test("dividends add up per action, then per day, and are rounded at the end", as
 					actionId: CashActionId.Schema.parse("C"),
 					transactionId: CashTransactionId.Schema.parse("C-4.444"),
 					listingExchange: ListingExchange.Schema.parse("EXH"),
-					dividendType: GenericDividendType.ORDINARY,
+					dividendType: DividendType.ORDINARY,
 					currency: CurrencyCode.Schema.parse("USD"),
 					commission: 0,
 					tax: 0,
@@ -165,7 +165,7 @@ test("a withholding without a dividend of the same action is rejected", async ()
 						actionId: CashActionId.Schema.parse("A"),
 						transactionId: CashTransactionId.Schema.parse("A-10"),
 						listingExchange: ListingExchange.Schema.parse("EXH"),
-						dividendType: GenericDividendType.ORDINARY,
+						dividendType: DividendType.ORDINARY,
 						currency: CurrencyCode.Schema.parse("USD"),
 						commission: 0,
 						tax: 0,
