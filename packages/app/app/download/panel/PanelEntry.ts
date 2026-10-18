@@ -10,6 +10,7 @@ export type PanelEntryArgs = {
 	hasCorporateAction: boolean;
 	notInReport: number;
 	lineCount: number;
+	warningCount: number;
 };
 
 // One row of the download panel: an instrument and what its row says about it.
@@ -24,6 +25,7 @@ export class PanelEntry {
 	public readonly hasCorporateAction: boolean;
 	public readonly notInReport: number;
 	public readonly lineCount: number;
+	public readonly warningCount: number;
 
 	public constructor(args: PanelEntryArgs) {
 		this.instrument = args.instrument;
@@ -34,5 +36,6 @@ export class PanelEntry {
 		this.hasCorporateAction = args.hasCorporateAction;
 		this.notInReport = args.notInReport;
 		this.lineCount = args.lineCount;
+		this.warningCount = args.warningCount;
 	}
 }

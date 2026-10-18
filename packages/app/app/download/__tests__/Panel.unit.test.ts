@@ -1,14 +1,17 @@
 import {
 	DropReason,
+	IdentifierChangeType,
 	OptionRight,
 	ProvenanceChange,
+	ProvenanceDetail,
+	ProvenanceDetailKind,
+	ProvenanceDetailValue,
 	ProvenanceEventKind,
 	ProvenanceStage,
 	ReportInstrumentKind,
 } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
 import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
-import { CorporateActionChipKind } from "~/download/labels/CorporateActionChipKind";
 import { chipsOf } from "~/download/labels/instrumentLabels";
 import { buildPanel } from "~/download/panel/buildPanel";
 import { defaultFocus } from "~/download/panel/defaultFocus";
@@ -21,7 +24,7 @@ import { ColorIntent } from "~/utils/ColorIntent";
 const stage = ProvenanceStage.Schema.parse("Test");
 
 describe("the download panel's sections", () => {
-	test("the panel lists the reading's shares, contracts, payers and instruments without lines, in the reader's order", () => {
+	test("the panel lists the reading's stocks, contracts, payers and instruments without lines, in the reader's order", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -114,10 +117,10 @@ describe("the download panel's sections", () => {
 
 		const sections = buildPanel(b.reading());
 
-		expect(sections.shares).toHaveLength(1);
-		expect(sections.shares[0]?.ticker).toEqual("ACME");
-		expect(sections.shares[0]?.isin).toEqual("US0000000001");
-		expect(sections.shares[0]?.lineCount).toEqual(2);
+		expect(sections.stocks).toHaveLength(1);
+		expect(sections.stocks[0]?.ticker).toEqual("ACME");
+		expect(sections.stocks[0]?.isin).toEqual("US0000000001");
+		expect(sections.stocks[0]?.lineCount).toEqual(2);
 		expect(sections.underlyings).toHaveLength(1);
 		expect(sections.underlyings[0]?.symbol).toEqual("SPX");
 		expect(sections.payers).toHaveLength(1);
@@ -215,7 +218,7 @@ describe("the download panel's sections", () => {
 		expect(contracts[1]?.contract?.occSymbol).toEqual("SPX   240621P04900000");
 	});
 
-	test("a share rebuilt by a split has a corporate action and a split chip", () => {
+	test("a stock rebuilt by a split has a corporate action and a split chip", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const oldAcme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -258,19 +261,19 @@ describe("the download panel's sections", () => {
 		});
 
 		const sections = buildPanel(b.reading());
-		const [share] = sections.shares;
-		assert(share !== undefined);
-		const chips = chipsOf(share.instrument);
+		const [stock] = sections.stocks;
+		assert(stock !== undefined);
+		const chips = chipsOf(stock.instrument);
 
-		expect(sections.shares).toHaveLength(1);
-		expect(sections.shares[0]?.hasCorporateAction).toEqual(true);
+		expect(sections.stocks).toHaveLength(1);
+		expect(sections.stocks[0]?.hasCorporateAction).toEqual(true);
 		expect(chips).toHaveLength(1);
-		expect(chips[0]?.kind).toEqual(CorporateActionChipKind.SPLIT);
+		expect(chips[0]?.kind).toEqual(IdentifierChangeType.SPLIT);
 		expect(chips[0]?.before).toEqual("4");
 		expect(chips[0]?.after).toEqual("40");
 	});
 
-	test("a share without a corporate action says so", () => {
+	test("a stock without a corporate action says so", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -304,11 +307,11 @@ describe("the download panel's sections", () => {
 		});
 
 		const sections = buildPanel(b.reading());
-		const [share] = sections.shares;
-		assert(share !== undefined);
+		const [stock] = sections.stocks;
+		assert(stock !== undefined);
 
-		expect(share.hasCorporateAction).toEqual(false);
-		expect(chipsOf(share.instrument)).toHaveLength(0);
+		expect(stock.hasCorporateAction).toEqual(false);
+		expect(chipsOf(stock.instrument)).toHaveLength(0);
 	});
 });
 
@@ -346,7 +349,7 @@ describe("the item an instrument opens on", () => {
 			soldOn: "2024-03-10",
 		});
 
-		const [instrument] = b.reading().shares;
+		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
 		const focus = defaultFocus(instrument);
@@ -412,7 +415,7 @@ describe("the item an instrument opens on", () => {
 });
 
 describe("searching the panel", () => {
-	test("a query that names an underlying keeps all its contracts and drops the shares", () => {
+	test("a query that names an underlying keeps all its contracts and drops the stocks", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -518,7 +521,7 @@ describe("searching the panel", () => {
 
 		const found = filterPanel(sections, "spx");
 
-		expect(found.shares).toHaveLength(0);
+		expect(found.stocks).toHaveLength(0);
 		expect(found.underlyings).toHaveLength(1);
 		expect(found.underlyings[0]?.symbol).toEqual("SPX");
 		expect(found.underlyings[0]?.contracts).toHaveLength(2);
@@ -607,7 +610,7 @@ describe("searching the panel", () => {
 		expect(found.underlyings[0]?.contracts[0]?.contract?.right).toEqual(OptionRight.PUT);
 	});
 
-	test("an ISIN finds the share, whatever the case", () => {
+	test("an ISIN finds the stock, whatever the case", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -643,8 +646,8 @@ describe("searching the panel", () => {
 
 		const found = filterPanel(sections, "us0000000001");
 
-		expect(found.shares).toHaveLength(1);
-		expect(found.shares[0]?.ticker).toEqual("ACME");
+		expect(found.stocks).toHaveLength(1);
+		expect(found.stocks[0]?.ticker).toEqual("ACME");
 	});
 
 	test("a blank query changes nothing", () => {
@@ -722,14 +725,14 @@ describe("searching the panel", () => {
 
 		const found = filterPanel(sections, "nothing");
 
-		expect(found.shares).toHaveLength(0);
+		expect(found.stocks).toHaveLength(0);
 		expect(found.underlyings).toHaveLength(0);
 		expect(found.payers).toHaveLength(0);
 		expect(found.withoutLines).toHaveLength(0);
 		expect(firstEntry(found)).toBeNull();
 	});
 
-	test("the first entry is the first share when there is one", () => {
+	test("the first entry is the first stock when there is one", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -769,7 +772,7 @@ describe("searching the panel", () => {
 });
 
 describe("finding an instrument's entry", () => {
-	test("an instrument is found among the shares, and an unknown one is not found", () => {
+	test("an instrument is found among the stocks, and an unknown one is not found", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -816,14 +819,14 @@ describe("finding an instrument's entry", () => {
 		});
 		other.graph.drop(zedBuy.event, DropReason.POSITION_OPEN, stage, null);
 		const reading = b.reading();
-		const [share] = reading.shares;
+		const [stock] = reading.stocks;
 		const [stranger] = other.reading().withoutLines;
-		assert(share !== undefined);
+		assert(stock !== undefined);
 		assert(stranger !== undefined);
 
 		const sections = buildPanel(reading);
 
-		expect(findEntry(sections, share)?.ticker).toEqual("ACME");
+		expect(findEntry(sections, stock)?.ticker).toEqual("ACME");
 		expect(findEntry(sections, stranger)).toBeNull();
 	});
 });
@@ -846,5 +849,49 @@ describe("the monogram", () => {
 
 	test("a longer ticker is cut to three characters", () => {
 		expect(monogramText("SMCI.OLD")).toEqual("SMC");
+	});
+});
+
+describe("the warning count of a panel entry", () => {
+	test("an instrument whose report line was warned about carries the count, and one without carries none", () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const tte = b.instrument({ ticker: "TTE", isin: "FR0000120271" });
+		const dividend = b.dividend({
+			file,
+			instrument: tte,
+			kind: ProvenanceEventKind.DIVIDEND,
+			date: "2024-04-01",
+			amount: "20",
+			currency: "EUR",
+			label: "dividend TTE",
+		});
+		const summed = b.sumInto({ instrument: tte, events: [dividend], dateReceived: "2024-04-01" });
+		b.graph.warn(
+			summed.line,
+			stage,
+			new ProvenanceDetail({
+				kind: ProvenanceDetailKind.COMPANY_NOT_FOUND,
+				values: { [ProvenanceDetailValue.ISIN]: "FR0000120271" },
+			}),
+		);
+		const eni = b.instrument({ ticker: "ENI", isin: "IT0003132476" });
+		const eniDividend = b.dividend({
+			file,
+			instrument: eni,
+			kind: ProvenanceEventKind.DIVIDEND,
+			date: "2024-04-02",
+			amount: "10",
+			currency: "EUR",
+			label: "dividend ENI",
+		});
+		b.sumInto({ instrument: eni, events: [eniDividend], dateReceived: "2024-04-02" });
+
+		const sections = buildPanel(b.reading());
+
+		expect(sections.payers[0]?.ticker).toEqual("ENI");
+		expect(sections.payers[0]?.warningCount).toEqual(0);
+		expect(sections.payers[1]?.ticker).toEqual("TTE");
+		expect(sections.payers[1]?.warningCount).toEqual(1);
 	});
 });

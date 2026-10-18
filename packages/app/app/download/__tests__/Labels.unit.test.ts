@@ -1,5 +1,5 @@
+import { IdentifierChangeType } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
-import { CorporateActionChipKind } from "~/download/labels/CorporateActionChipKind";
 import { formatNumber } from "~/download/labels/formatNumber";
 import { splitRatioOf } from "~/download/labels/instrumentLabels";
 import { SplitChip } from "~/download/labels/SplitChip";
@@ -29,7 +29,7 @@ describe("numbers as a person reads them", () => {
 describe("a split chip's ratio", () => {
 	test("a split of 4 shares into 40 reads 10 : 1", () => {
 		const chip = new SplitChip({
-			kind: CorporateActionChipKind.SPLIT,
+			kind: IdentifierChangeType.SPLIT,
 			before: "4",
 			after: "40",
 			fromIsin: "US86800U1043",
@@ -44,7 +44,7 @@ describe("a split chip's ratio", () => {
 
 	test("a reverse split of 10 shares into 1 reads 1 : 10", () => {
 		const chip = new SplitChip({
-			kind: CorporateActionChipKind.REVERSE_SPLIT,
+			kind: IdentifierChangeType.REVERSE_SPLIT,
 			before: "10",
 			after: "1",
 			fromIsin: "US0000000001",
@@ -59,7 +59,7 @@ describe("a split chip's ratio", () => {
 
 	test("a rename has no ratio", () => {
 		const chip = new SplitChip({
-			kind: CorporateActionChipKind.RENAME,
+			kind: IdentifierChangeType.RENAME,
 			before: null,
 			after: null,
 			fromIsin: "US0000000001",

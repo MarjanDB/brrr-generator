@@ -109,7 +109,7 @@ describe("what the report says about the focused item", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const [instrument] = b.reading().shares;
+		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
 		expect(leftOutOf(instrument, b.node(sell.event))).toHaveLength(0);

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { OptionRight } from "@brrr/lib";
+import { IdentifierChangeType, OptionRight } from "@brrr/lib";
 import { DateTime } from "luxon";
 import { computed } from "vue";
-import { CorporateActionChipKind } from "~/download/labels/CorporateActionChipKind";
+import { formatNumber } from "~/download/labels/formatNumber";
 import { splitRatioOf } from "~/download/labels/instrumentLabels";
 import type { SplitChip } from "~/download/labels/SplitChip";
 import { monogramIntent, monogramText } from "~/download/panel/monogramIntent";
@@ -45,7 +45,7 @@ const title = computed(() => {
 	}
 	const right =
 		contract.right === OptionRight.CALL ? t("download_option_call") : t("download_option_put");
-	return `${contract.underlyingSymbol} ${contract.strike} ${right}`;
+	return `${contract.underlyingSymbol} ${formatNumber(contract.strike, locale.value)} ${right}`;
 });
 
 const subtitle = computed(() => {
@@ -69,10 +69,10 @@ function chipText(chip: SplitChip): string {
 		isin: chip.fromIsin ?? "",
 		ticker: chip.fromTicker ?? "",
 	};
-	const keys: Record<CorporateActionChipKind, string> = {
-		[CorporateActionChipKind.SPLIT]: "download_chip_split",
-		[CorporateActionChipKind.REVERSE_SPLIT]: "download_chip_reverse_split",
-		[CorporateActionChipKind.RENAME]: "download_chip_rename",
+	const keys: Record<IdentifierChangeType, string> = {
+		[IdentifierChangeType.SPLIT]: "download_chip_split",
+		[IdentifierChangeType.REVERSE_SPLIT]: "download_chip_reverse_split",
+		[IdentifierChangeType.RENAME]: "download_chip_rename",
 	};
 	return t(keys[chip.kind], params);
 }

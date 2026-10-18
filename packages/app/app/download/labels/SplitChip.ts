@@ -1,7 +1,7 @@
-import type { CorporateActionChipKind } from "~/download/labels/CorporateActionChipKind";
+import type { IdentifierChangeType } from "@brrr/lib";
 
 export type SplitChipArgs = {
-	kind: CorporateActionChipKind;
+	kind: IdentifierChangeType;
 	before: string | null;
 	after: string | null;
 	fromIsin: string | null;
@@ -10,7 +10,7 @@ export type SplitChipArgs = {
 
 // What a corporate action chip in the instrument header says, as the action recorded it.
 export class SplitChip {
-	public readonly kind: CorporateActionChipKind;
+	public readonly kind: IdentifierChangeType;
 	public readonly before: string | null;
 	public readonly after: string | null;
 	public readonly fromIsin: string | null;

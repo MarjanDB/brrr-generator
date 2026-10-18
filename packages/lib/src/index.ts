@@ -18,6 +18,7 @@ export { TradeEventDerivativeAcquired } from "@brrr/Core/Models/Events/Derivativ
 export { TradeEventStockAcquired } from "@brrr/Core/Models/Events/Stock/TradeEventStockAcquired";
 export { FinancialEvents } from "@brrr/Core/Models/FinancialEvents";
 export type { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGrouping";
+export { IdentifierChangeType } from "@brrr/Core/Models/IdentifierRelationships/IdentifierChangeType";
 export { OptionRight } from "@brrr/Core/Models/Instrument/OptionRight";
 export { StagingFinancialGroupingProcessor } from "@brrr/Core/Services/StagingProcessing/StagingFinancialGroupingProcessor";
 

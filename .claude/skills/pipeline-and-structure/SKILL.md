@@ -85,7 +85,8 @@ before checking them.
    service, the lot matching and each `convert`, and have `convert` record each line it builds as a `REPORT_LINE` made from what's
    behind it, plus a drop for anything the report leaves out (see the Slovenian generators). `drop` and `warn` take a
    `ProvenanceDetail` (a `ProvenanceDetailKind` plus named `ProvenanceDetailValue`s), never a sentence; a new kind needs a member in
-   `ProvenanceDetailKind` and the site's two locale files (the site is wired in a later phase).
+   `ProvenanceDetailKind`, a key for it in `detailKindKeys` (`packages/app/app/download/sentences/sentenceKeys.ts`) and that
+   key's text in both locale files.
 2. Bind everything in `<Country>Module.ts`, load it from `TaxAuthoritiesModule.ts`, and add the provider to `TaxAuthorityRegistry`
    (constructor, `listAuthorities`, `generateExports`).
 3. If the country needs taxpayer fields `TaxpayerConfigSchema` lacks, extend the schema; the CLI and `config/userConfig.example.yml`

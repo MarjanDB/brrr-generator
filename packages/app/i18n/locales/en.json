@@ -156,6 +156,8 @@
 	"download_count_needs_look": "Needs a look",
 	"download_count_warnings": "Warnings",
 	"download_needs_look_title": "These need a look",
+	"download_warnings_title": "Warnings in this report",
+	"download_badge_warnings": "{n} warning(s)",
 	"download_panel_search": "Ticker, name or ISIN",
 	"download_panel_no_match": "Nothing matches",
 	"download_section_shares": "Shares",

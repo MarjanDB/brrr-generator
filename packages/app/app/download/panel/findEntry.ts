@@ -8,7 +8,7 @@ export function findEntry(
 	instrument: ReportInstrument,
 ): PanelEntry | null {
 	const entries = [
-		...sections.shares,
+		...sections.stocks,
 		...sections.underlyings.flatMap((underlying) => underlying.contracts),
 		...sections.payers,
 		...sections.withoutLines,

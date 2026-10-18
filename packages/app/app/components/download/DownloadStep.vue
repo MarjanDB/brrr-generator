@@ -118,6 +118,7 @@ defineExpose({ index });
     <DownloadHeader
       :outputs="outputs"
       :reading="reading"
+      :sections="sections"
       :guide="guide"
       @open-guide="guideOpen = true"
       @restart="emit('restart')"

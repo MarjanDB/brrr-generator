@@ -43,13 +43,14 @@ function entryOf(instrument: ReportInstrument): PanelEntry {
 		hasCorporateAction: instrument.corporateActions.length > 0,
 		notInReport: instrument.notInReport,
 		lineCount: instrument.lines.length,
+		warningCount: instrument.warnings.length,
 	});
 }
 
 // Arranges the reader's instruments into the panel's sections. It adds none and drops none.
 export function buildPanel(reading: ReportProvenance): PanelSections {
 	return new PanelSections({
-		shares: reading.shares.map(entryOf),
+		stocks: reading.stocks.map(entryOf),
 		underlyings: reading.optionUnderlyings.map(
 			(underlying) =>
 				new PanelUnderlying({

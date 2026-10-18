@@ -4,6 +4,7 @@ import { DateTime } from "luxon";
 import { computed } from "vue";
 import AppBadge from "~/components/ui/AppBadge.vue";
 import AppTooltip from "~/components/ui/AppTooltip.vue";
+import { formatNumber } from "~/download/labels/formatNumber";
 import { monogramIntent, monogramText } from "~/download/panel/monogramIntent";
 import type { PanelEntry } from "~/download/panel/PanelEntry";
 import { ColorIntent } from "~/utils/ColorIntent";
@@ -58,8 +59,14 @@ const expiry = computed(() => {
       >
         {{ isCall ? t('download_option_call_short') : t('download_option_put_short') }}
       </span>
-      <span class="font-semibold text-sm tabular-nums">{{ entry.contract.strike }}</span>
+      <span class="font-semibold text-sm tabular-nums">{{ formatNumber(entry.contract.strike, locale) }}</span>
       <span class="text-xs text-ink-muted flex-1 truncate">{{ expiry }}</span>
+      <AppTooltip v-if="entry.warningCount > 0" :content="t('download_badge_warnings', { n: entry.warningCount })">
+        <AppBadge :color="ColorIntent.WARNING" class="gap-1">
+          <span class="i-mdi-alert-outline" />
+          {{ entry.warningCount }}
+        </AppBadge>
+      </AppTooltip>
       <AppTooltip v-if="entry.notInReport > 0" :content="t('download_badge_not_in_report', { n: entry.notInReport })">
         <AppBadge :color="ColorIntent.NEUTRAL">{{ entry.notInReport }}</AppBadge>
       </AppTooltip>
@@ -92,6 +99,12 @@ const expiry = computed(() => {
       </span>
       <span class="block text-xs text-ink-muted truncate">{{ entry.isin }}</span>
     </span>
+    <AppTooltip v-if="entry.warningCount > 0" :content="t('download_badge_warnings', { n: entry.warningCount })">
+      <AppBadge :color="ColorIntent.WARNING" class="gap-1">
+        <span class="i-mdi-alert-outline" />
+        {{ entry.warningCount }}
+      </AppBadge>
+    </AppTooltip>
     <AppTooltip v-if="entry.notInReport > 0" :content="t('download_badge_not_in_report', { n: entry.notInReport })">
       <AppBadge :color="ColorIntent.NEUTRAL">{{ entry.notInReport }}</AppBadge>
     </AppTooltip>

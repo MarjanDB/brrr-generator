@@ -21,11 +21,17 @@ const withoutLinesOpen = ref(false);
 
 const shown = computed(() => filterPanel(props.sections, query.value));
 const searching = computed(() => query.value.trim() !== "");
-// "Not in this report" is collapsed until asked for, and open while a search is looking through it.
-const withoutLinesVisible = computed(() => withoutLinesOpen.value || searching.value);
+// "Not in this report" is collapsed until asked for, and open while a search is looking through it
+// or the selected instrument is in it.
+const holdsSelected = computed(() =>
+	props.sections.withoutLines.some((entry) => entry.instrument === props.selected),
+);
+const withoutLinesVisible = computed(
+	() => withoutLinesOpen.value || searching.value || holdsSelected.value,
+);
 const isEmpty = computed(
 	() =>
-		shown.value.shares.length === 0 &&
+		shown.value.stocks.length === 0 &&
 		shown.value.underlyings.length === 0 &&
 		shown.value.payers.length === 0 &&
 		shown.value.withoutLines.length === 0,
@@ -47,10 +53,10 @@ const isEmpty = computed(
 
     <p v-if="isEmpty" class="text-caption px-1.5 py-2">{{ t('download_panel_no_match') }}</p>
 
-    <section v-if="shown.shares.length > 0" class="flex flex-col gap-0.5">
+    <section v-if="shown.stocks.length > 0" class="flex flex-col gap-0.5">
       <h3 class="text-xs uppercase tracking-wide text-ink-muted px-1.5 pt-2">{{ t('download_section_shares') }}</h3>
       <InstrumentPanelRow
-        v-for="entry in shown.shares"
+        v-for="entry in shown.stocks"
         :key="entry.instrument.node.id"
         :entry="entry"
         :selected="entry.instrument === selected"

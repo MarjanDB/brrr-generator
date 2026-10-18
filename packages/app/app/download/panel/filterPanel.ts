@@ -20,7 +20,7 @@ export function filterPanel(sections: PanelSections, rawQuery: string): PanelSec
 		return sections;
 	}
 	return new PanelSections({
-		shares: sections.shares.filter((entry) => matches(entry, query)),
+		stocks: sections.stocks.filter((entry) => matches(entry, query)),
 		underlyings: sections.underlyings
 			.map((underlying) =>
 				underlying.symbol.toLowerCase().includes(query)

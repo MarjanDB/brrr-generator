@@ -7,12 +7,16 @@ import type { TaxAuthorityGuide } from "~/components/download/taxAuthorityGuides
 import AppBadge from "~/components/ui/AppBadge.vue";
 import AppButton from "~/components/ui/AppButton.vue";
 import AppTooltip from "~/components/ui/AppTooltip.vue";
+import type { PanelSections } from "~/download/panel/PanelSections";
+import { warningItemsOf } from "~/download/panel/warningItems";
 import { dropSentence } from "~/download/sentences/dropSentence";
+import { warningSentence } from "~/download/sentences/warningSentence";
 import { ColorIntent } from "~/utils/ColorIntent";
 
 const props = defineProps<{
 	outputs: GeneratedOutputs;
 	reading: ReportProvenance;
+	sections: PanelSections;
 	guide: TaxAuthorityGuide | undefined;
 }>();
 
@@ -23,6 +27,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const { translate, format } = useSentences();
+
+const warningItems = computed(() => warningItemsOf(props.sections));
 
 const xmlUrl = ref<string | null>(null);
 const csvUrl = ref<string | null>(null);
@@ -99,6 +105,7 @@ onUnmounted(revokeUrls);
                 :key="index"
                 class="rounded-sm bg-warning-soft text-warning-ink px-2 py-1 text-sm"
               >
+                <span class="mr-1.5 rounded-sm bg-surface px-1 font-mono text-xs text-ink-muted">{{ item.subject.label }}</span>
                 {{ dropSentence(item.drop, translate, format) }}
               </li>
             </ul>
@@ -112,8 +119,38 @@ onUnmounted(revokeUrls);
         </AppBadge>
       </AppTooltip>
 
-      <AppTooltip :content="t('download_count_warnings')">
-        <AppBadge :color="ColorIntent.WARNING" class="gap-1">
+      <PopoverRoot v-if="warningItems.length > 0">
+        <PopoverTrigger as-child>
+          <button type="button" :aria-label="t('download_count_warnings')">
+            <AppBadge :color="ColorIntent.WARNING" class="gap-1 cursor-pointer">
+              <span class="i-mdi-alert-outline" />
+              {{ reading.totals.warnings }}
+            </AppBadge>
+          </button>
+        </PopoverTrigger>
+        <PopoverPortal>
+          <PopoverContent
+            side="bottom"
+            align="start"
+            :side-offset="6"
+            class="z-50 w-96 max-w-[90vw] rounded-md border border-edge-strong bg-surface p-3 shadow-md"
+          >
+            <p class="text-label mb-2">{{ t('download_warnings_title') }}</p>
+            <ul class="flex flex-col gap-1.5">
+              <li
+                v-for="(item, index) in warningItems"
+                :key="index"
+                class="rounded-sm bg-warning-soft text-warning-ink px-2 py-1 text-sm"
+              >
+                <span class="mr-1.5 rounded-sm bg-surface px-1 font-mono text-xs text-ink-muted">{{ item.title }}</span>
+                {{ warningSentence(item.warning, translate, format) }}
+              </li>
+            </ul>
+          </PopoverContent>
+        </PopoverPortal>
+      </PopoverRoot>
+      <AppTooltip v-else :content="t('download_count_warnings')">
+        <AppBadge :color="ColorIntent.WARNING" class="gap-1 opacity-50">
           <span class="i-mdi-alert-outline" />
           {{ reading.totals.warnings }}
         </AppBadge>

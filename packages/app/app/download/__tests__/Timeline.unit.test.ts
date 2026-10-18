@@ -47,7 +47,7 @@ describe("the data behind an instrument's timeline", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const [instrument] = b.reading().shares;
+		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
 		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
@@ -105,7 +105,7 @@ describe("the data behind an instrument's timeline", () => {
 		});
 		b.graph.derive([brokerLot], acme, ProvenanceChange.GROUPED, stage, null);
 		b.graph.drop(brokerLot, DropReason.NOT_USED, stage, null);
-		const [instrument] = b.reading().shares;
+		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
 		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
@@ -120,7 +120,7 @@ describe("the data behind an instrument's timeline", () => {
 		expect(timeline.stackDepth).toEqual(2);
 	});
 
-	test("a share rebuilt by a split has a corporate action mark on the action's date", () => {
+	test("a stock rebuilt by a split has a corporate action mark on the action's date", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const oldAcme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -161,7 +161,7 @@ describe("the data behind an instrument's timeline", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const [instrument] = b.reading().shares;
+		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
 		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));

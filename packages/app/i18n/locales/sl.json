@@ -156,6 +156,8 @@
 	"download_count_needs_look": "Zahteva pregled",
 	"download_count_warnings": "Opozorila",
 	"download_needs_look_title": "To je treba pregledati",
+	"download_warnings_title": "Opozorila v tem poročilu",
+	"download_badge_warnings": "Opozorila: {n}",
 	"download_panel_search": "Oznaka, ime ali ISIN",
 	"download_panel_no_match": "Nič se ne ujema",
 	"download_section_shares": "Delnice",

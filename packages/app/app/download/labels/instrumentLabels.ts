@@ -1,7 +1,6 @@
-import { ProvenanceField, type ReportInstrument } from "@brrr/lib";
+import { IdentifierChangeType, ProvenanceField, type ReportInstrument } from "@brrr/lib";
 import { fieldOf } from "~/download/fields";
 import { SplitFactor, SplitFactorKind } from "~/download/graph/SplitFactor";
-import { CorporateActionChipKind } from "~/download/labels/CorporateActionChipKind";
 import { formatNumber } from "~/download/labels/formatNumber";
 import { SplitChip } from "~/download/labels/SplitChip";
 
@@ -23,8 +22,8 @@ export function splitRatioOf(
 		: { before: "1", after: amount };
 }
 
-function chipKindOf(value: string | null): CorporateActionChipKind | null {
-	return Object.values(CorporateActionChipKind).find((kind) => kind === value) ?? null;
+function chipKindOf(value: string | null): IdentifierChangeType | null {
+	return Object.values(IdentifierChangeType).find((kind) => kind === value) ?? null;
 }
 
 // One chip per corporate action behind the instrument, from the facts the action recorded.
