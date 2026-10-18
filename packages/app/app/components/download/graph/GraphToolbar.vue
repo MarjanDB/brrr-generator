@@ -24,7 +24,8 @@ const { t } = useI18n();
 <template>
   <div class="flex items-center gap-3 px-4 py-2 border-b border-edge-subtle">
     <AppButton
-      class="button-ghost size-8 shrink-0"
+      ghost
+      class="size-8 shrink-0"
       :disabled="!canGoBack"
       :aria-label="t('download_graph_back')"
       @click="emit('back')"

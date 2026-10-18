@@ -68,6 +68,8 @@ const props = defineProps<{
   xMax?: number;
 }>();
 
+const { t } = useI18n();
+
 const expanded = ref(false);
 const canvasRef = useTemplateRef<HTMLCanvasElement>("canvas");
 const wrapperRef = useTemplateRef<HTMLDivElement>("wrapper");
@@ -217,7 +219,9 @@ watch(
   <div ref="wrapper" class="relative w-full">
     <button
       type="button"
-      class="w-full text-left"
+      class="w-full text-left rounded-md app-focus-ring"
+      :aria-label="t('review_chart_label')"
+      :aria-expanded="expanded"
       @click="expanded = !expanded"
     >
       <div

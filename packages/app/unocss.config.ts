@@ -84,7 +84,7 @@ export default defineConfig({
 		// Floating layers (reka-ui portals them to the body)
 		[
 			"tooltip-box",
-			"z-50 px-2.5 py-1.5 rounded-md text-xs bg-surface-inverse text-ink-inverse shadow-md select-none",
+			"z-50 max-w-80 whitespace-pre-line px-2.5 py-1.5 rounded-md text-xs bg-surface-inverse text-ink-inverse shadow-md select-none",
 		],
 
 		// Input base
@@ -113,7 +113,7 @@ export default defineConfig({
 		],
 
 		// Buttons
-		["button", "transition-colors cursor-pointer disabled:cursor-not-allowed"],
+		["button", "transition-colors cursor-pointer disabled:cursor-not-allowed app-focus-ring"],
 		["button-sm", "button px-3 py-1.5 text-sm rounded-sm"],
 		["button-md", "button px-4 py-2 text-base rounded-md"],
 		["button-lg", "button px-5 py-2 text-lg rounded-md"],

@@ -40,8 +40,11 @@ const isEmpty = computed(
 
 <template>
   <div class="flex flex-col gap-2">
-    <div class="flex items-center gap-2 rounded-md border border-edge-strong bg-surface-raised px-2.5 py-1.5 text-ink-muted">
-      <span class="i-mdi-magnify" />
+    <!-- The input's own outline is off, so the box shows its focus. -->
+    <div
+      class="input-base rounded-md flex items-center gap-2 px-2.5 py-1.5 text-ink-muted focus-within:ring-2 focus-within:ring-accent-edge"
+    >
+      <span class="i-mdi-magnify" aria-hidden="true" />
       <input
         v-model="query"
         type="search"

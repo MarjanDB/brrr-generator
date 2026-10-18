@@ -95,7 +95,7 @@ function onFormSubmit(valid: boolean) {
 				<span class="text-xs app-text-muted w-20">{{ intent.name }}</span>
 				<button type="button" :class="intent.filled">filled</button>
 				<button type="button" disabled :class="intent.filled">disabled</button>
-				<AppButton :class="intent.filled" :loading="true">filled</AppButton>
+				<AppButton :color="intent.name" :loading="true">filled</AppButton>
 			</div>
 		</div>
 
@@ -176,7 +176,7 @@ function onFormSubmit(valid: boolean) {
 					:validate="validateCheckbox"
 				/>
 				<div class="flex items-center gap-3">
-					<AppButton class="button-filled-accent" type="submit">Submit</AppButton>
+					<AppButton :color="ColorIntent.ACCENT" type="submit">Submit</AppButton>
 					<span v-if="formSubmitResult" class="text-sm app-text-muted">{{ formSubmitResult }}</span>
 				</div>
 			</AppForm>

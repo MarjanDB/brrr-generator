@@ -108,7 +108,7 @@ function openModal(row: InstrumentRow, event: MouseEvent) {
             @click="openModal(row, $event)"
           >
             <td class="app-table-td pl-2">
-              <button type="button" class="text-left hover:underline">{{ row.name }}</button>
+              <button type="button" class="text-left rounded-sm hover:underline app-focus-ring">{{ row.name }}</button>
             </td>
             <td class="app-table-td font-mono text-xs"><span class="app-text-muted">{{ row.isin }}</span></td>
             <td class="app-table-td text-right">{{ row.stockTrades  }}</td>
@@ -118,7 +118,7 @@ function openModal(row: InstrumentRow, event: MouseEvent) {
         </tbody>
       </table>
     </div>
-    <AppButton class="button-filled-action self-start" @click="emit('confirmed')">
+    <AppButton class="self-start" @click="emit('confirmed')">
       {{ t('review_confirm_button') }}
     </AppButton>
   </div>

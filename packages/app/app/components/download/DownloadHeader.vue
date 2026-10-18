@@ -81,7 +81,7 @@ onUnmounted(revokeUrls);
 
       <AppPopover v-if="reading.totals.needsALook > 0" :tooltip="t('download_count_needs_look')" class="w-96">
         <template #trigger>
-          <button type="button" :aria-label="t('download_count_needs_look')">
+          <button type="button" class="rounded-sm app-focus-ring" :aria-label="t('download_count_needs_look')">
             <AppBadge :color="ColorIntent.WARNING" class="gap-1 cursor-pointer">
               <span class="i-mdi-eye-outline" />
               {{ reading.totals.needsALook }}
@@ -105,7 +105,7 @@ onUnmounted(revokeUrls);
 
       <AppPopover v-if="warningItems.length > 0" :tooltip="t('download_count_warnings')" class="w-96">
         <template #trigger>
-          <button type="button" :aria-label="t('download_count_warnings')">
+          <button type="button" class="rounded-sm app-focus-ring" :aria-label="t('download_count_warnings')">
             <AppBadge :color="ColorIntent.WARNING" class="gap-1 cursor-pointer">
               <span class="i-mdi-alert-outline" />
               {{ reading.totals.warnings }}
@@ -132,7 +132,7 @@ onUnmounted(revokeUrls);
 
     <GuideModal v-if="guide" :name-key="guide.nameKey" :steps="guide.steps">
       <template #trigger>
-        <AppButton class="button-filled-action">
+        <AppButton>
           {{ t('tax_authority_guide_button') }}
         </AppButton>
       </template>
@@ -143,7 +143,7 @@ onUnmounted(revokeUrls);
     <a v-if="xmlUrl" :href="xmlUrl" :download="outputs.xmlFilename" class="button-filled-accent">
       {{ t('download_xml_label') }}
     </a>
-    <AppButton class="button-filled-neutral" @click="emit('restart')">
+    <AppButton :color="ColorIntent.NEUTRAL" @click="emit('restart')">
       {{ t('restart_button') }}
     </AppButton>
   </div>

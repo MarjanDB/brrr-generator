@@ -26,15 +26,16 @@ const hint = computed(() => {
 </script>
 
 <template>
-  <AppBadge
-    :color="ColorIntent.ACCENT"
-    pill
-    :title="hint"
-    :style="{ left: `${x}px`, top: `${y}px` }"
-    class="absolute -translate-x-1/2 -translate-y-1/2 gap-0.5 transition-opacity"
-    :class="state === CardState.DIMMED ? 'opacity-15' : ''"
-  >
-    <span class="i-mdi-call-split" aria-hidden="true" />
-    {{ text }}
-  </AppBadge>
+  <AppTooltip :content="hint">
+    <AppBadge
+      :color="ColorIntent.ACCENT"
+      pill
+      :style="{ left: `${x}px`, top: `${y}px` }"
+      class="absolute -translate-x-1/2 -translate-y-1/2 gap-0.5 transition-opacity"
+      :class="state === CardState.DIMMED ? 'opacity-15' : ''"
+    >
+      <span class="i-mdi-call-split" aria-hidden="true" />
+      {{ text }}
+    </AppBadge>
+  </AppTooltip>
 </template>

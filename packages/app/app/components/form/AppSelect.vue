@@ -18,6 +18,8 @@ export interface SelectOption {
 
 const props = defineProps<{
 	label?: string;
+	// The name a screen reader reads when there is no visible label.
+	ariaLabel?: string;
 	placeholder?: string;
 	options: SelectOption[];
 	disabled?: boolean;
@@ -64,6 +66,7 @@ if (form) {
 		<SelectRoot v-model="model" :disabled="disabled" @update:model-value="onChange">
 			<SelectTrigger
 				:id="id"
+				:aria-label="label === undefined ? ariaLabel : undefined"
 				:class="[
 					error ? 'input-md-error' : 'input-md',
 					'w-full flex items-center justify-between gap-2',

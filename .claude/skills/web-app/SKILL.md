@@ -105,7 +105,12 @@ step 1, the guide button in the download header), with screenshots under `packag
   components and composables use them without import lines and their exported names must be unique.
 - Forms: wrap fields in `AppForm` (emits `submit` with `valid`) and use `AppTextInput`, `AppNumberInput`, `AppSelect`, `AppCheckbox`,
   `AppFileInput`. Each takes a `validate` function returning an error string or `null`, registers itself with the surrounding form, and
-  links its label through `useId()`.
+  links its label through `useId()`. A select with no visible label (the language switch) takes `ariaLabel`.
+- Buttons are `AppButton`: `color` (a `ColorIntent`, filled) or `ghost`, plus `loading` and `disabled`; it renders the
+  `button-filled-<intent>` / `button-ghost` shortcut itself, so callers add only layout classes. The `button` shortcut carries
+  `app-focus-ring`. A link styled as a button (the downloads) uses the shortcut directly.
+- Tooltips, not `title`: `AppTooltip` (or `AppPopover`'s `tooltip`) for any hint, including on the graph's cards. `tooltip-box`
+  keeps line breaks and wraps at `max-w-80`.
 - Primitives (select, checkbox, dialog, tooltip, popover) come from reka-ui. Composables from `@vueuse/core` before writing your own.
 - `AppTooltip` has no provider of its own: `app.vue`'s `TooltipProvider` is shared, so moving between neighbouring tooltips
   skips the delay. A reka trigger inside a tooltip takes the tooltip's `data-state`, so style such a trigger by its own ARIA
