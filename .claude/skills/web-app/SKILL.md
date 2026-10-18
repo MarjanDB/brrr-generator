@@ -20,12 +20,12 @@ company and country lookups. Nuxt's source directory is `packages/app/app/`.
 
 `packages/app/app/pages/index.vue` is the whole product: one page holding the state of four steps, each a component that emits to move on.
 
-1. **Upload** — `components/ibkr/IbkrUploadStep.vue`: reads the files, runs `BrokerRegistry.loadAndTransformDetected` and
-   `StagingFinancialGroupingProcessor`, emits `FinancialEvents`.
+1. **Upload** — `components/ibkr/IbkrUploadStep.vue`: reads the files, runs `ReportPipeline.read`, emits the `ImportResult`
+   (detections, `FinancialEvents` and the provenance graph).
 2. **Review** — `components/ibkr/IbkrReviewStep.vue` and `components/ibkr/instrument/` (per-instrument stocks, derivatives, dividends and
    summary, each with a table and a chart); `IbkrGroupingModal.vue`.
 3. **Configure** — `components/export/ExportConfigStep.vue`: tax authority cards (`taxAuthorityCards.ts`), then that authority's form
-   from `authorityForms` (`SloveniaExportForm.vue`), which calls `TaxAuthorityRegistry.generateExports`.
+   from `authorityForms` (`SloveniaExportForm.vue`), which takes the `ImportResult` and calls `ReportPipeline.generate`.
 4. **Download** — `components/export/ExportDownloadStep.vue`, plus the submission guide from `components/download/taxAuthorityGuides.ts`.
 
 Guides (broker export instructions, tax authority submission instructions) are data: `GuideStep`s in `components/guide/guideTypes.ts`,
@@ -35,8 +35,10 @@ shown by `GuideModal.vue`, with screenshots under `packages/app/public/screensho
 
 ## Using lib in components
 
-- Build a container with `createContainer(new ApiInfoProvider())` and `container.get(...)` the registry you need.
-- Hold lib objects (`FinancialEvents`, groupings) in `shallowRef`: they are class instances and shouldn't be made deeply reactive.
+- Build a container with `createContainer(new ApiInfoProvider())` and `container.get(ReportPipeline)`: `read(files)` gives the
+  `ImportResult`, and `generate(imported, request)` gives a report from it. Pass the `ImportResult` between steps; don't rebuild it.
+- Hold lib objects (`ImportResult`, `FinancialEvents`, groupings) in `shallowRef`: they are class instances and shouldn't be made
+  deeply reactive.
 - Lookups go through `packages/app/app/utils/ApiInfoProvider.ts` → `packages/app/server/api/isin/[isin].get.ts` and `packages/app/server/api/country/[name].get.ts`,
   which run `NodeInfoProvider` on the server. `Country.treaties` is a `Map` and is sent as a plain object.
 
