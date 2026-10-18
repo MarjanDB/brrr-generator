@@ -32,6 +32,7 @@ import type { IInfoProvider } from "@brrr/InfoProviders/Interfaces/IInfoProvider
 import type { CompanyInfo } from "@brrr/InfoProviders/Models/CompanyInfo";
 import type { Country } from "@brrr/InfoProviders/Models/Country";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
+import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
 import type { GeneratedExports } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
 import { TaxAuthorityId } from "@brrr/TaxAuthorities/Models/TaxAuthorityIdentifiers";
@@ -231,7 +232,7 @@ const pipeline = {
 		const container = createContainer(new PredefinedInfoProvider());
 		const { detections, stagingEvents } = container
 			.get(BrokerRegistry)
-			.loadAndTransformDetected(files);
+			.load(files, new NullProvenanceRecorder());
 
 		const unread = detections.filter((d) => d.error !== null || d.detectedBroker === null);
 		if (unread.length > 0) {
