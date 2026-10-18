@@ -85,5 +85,26 @@ describe("Slovenia, Doh-KDVP", () => {
 			await expect(report.xml).toMatchFileSnapshot(split.expected.slovenia.kdvpFifo.xmlPath);
 			await expect(report.csv).toMatchFileSnapshot(split.expected.slovenia.kdvpFifo.csvPath);
 		});
+
+		// StockTrade's export given twice: the report must equal StockTrade's own.
+		test("5 EDF shares in two overlapping exports are reported once (2022, FIFO)", async () => {
+			const overlappingExports = TestKit.ibkr.overlappingExports;
+			const imported = Scenario.pipeline.run(overlappingExports.readInputs());
+
+			const report = await Scenario.pipeline.generate(imported, {
+				report: SlovenianReportTypeId.KDVP,
+				year: overlappingExports.year,
+				lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
+				taxpayer: Fixtures.taxpayer,
+				info: Scenario.config.infoProvider(Fixtures.lookups),
+			});
+
+			await expect(report.xml).toMatchFileSnapshot(
+				overlappingExports.expected.slovenia.kdvpFifo.xmlPath,
+			);
+			await expect(report.csv).toMatchFileSnapshot(
+				overlappingExports.expected.slovenia.kdvpFifo.csvPath,
+			);
+		});
 	});
 });

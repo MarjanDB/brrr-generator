@@ -62,3 +62,13 @@ test("Ibkr/Split", async () => {
 		split.expected.importProvenancePath,
 	);
 });
+
+test("Ibkr/OverlappingExports", async () => {
+	const overlappingExports = TestKit.ibkr.overlappingExports;
+
+	const imported = Scenario.pipeline.run(overlappingExports.readInputs());
+
+	await expect(renderProvenance(imported.provenance)).toMatchFileSnapshot(
+		overlappingExports.expected.importProvenancePath,
+	);
+});

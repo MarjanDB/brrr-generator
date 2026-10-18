@@ -146,6 +146,14 @@ export const TestKit = {
 			inputs: { smciSplit: "SmciSplit.xml" },
 			expected: { slovenia: { kdvpFifo: "kdvp-fifo" } },
 		}),
+		// StockTrade's export downloaded twice, the way two overlapping downloads would be: each trade
+		// counts once.
+		overlappingExports: testCase({
+			folder: "Ibkr/OverlappingExports",
+			year: 2022,
+			inputs: { firstDownload: "FirstDownload.xml", secondDownload: "SecondDownload.xml" },
+			expected: { slovenia: { kdvpFifo: "kdvp-fifo" } },
+		}),
 		corporateAction: exportsOnly({
 			folder: "Ibkr/CorporateAction",
 			inputs: { simpleCorporateAction: "SimpleCorporateAction.xml" },
