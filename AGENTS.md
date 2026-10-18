@@ -109,6 +109,36 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
   `CsvWithoutNodeBuffer.unit.test.ts` guards the CSV generators.
 - Biome formats and lints everything, `.vue` included: tabs, line width 100.
 
+### Naming
+
+Where a name comes from depends on the layer it sits in. We only take the industry's name when our own would mislead.
+
+- **Brokers and tax authorities use their source's names and codes.** `Brokers/Ibkr/` mirrors the Flex Query
+  (`AssetClass.STOCK = "STK"`), and `TaxAuthorities/Slovenia/` mirrors eDavki (`EDavkiTradeReportGainType`, `"PLVP"`), because
+  those values are read from or written to someone else's file.
+- **Core uses our own words, chosen to read well.** Industry codes don't become Core names or values (`SPLIT`, not `SPLF`).
+  Where a Core enum has an industry counterpart, a comment above it names the standard and each member gives its code:
+
+  ```ts
+  // ISO 15022/20022 corporate action event codes (CAEV).
+  export enum IdentifierChangeType {
+  	RENAME = "RENAME", // CHAN
+  	SPLIT = "SPLIT", // SPLF
+  	REVERSE_SPLIT = "REVERSE_SPLIT", // SPLR
+  }
+  ```
+
+- **Values another body assigns keep that body's code.** We store the standard's code for ISINs (ISO 6166), currencies
+  (ISO 4217), countries (ISO 3166-1 alpha-2) and exchanges (ISO 10383 MIC), and keep no list of our own.
+- **An industry term keeps its industry meaning.** We can coin words, but a term with an established meaning in finance
+  ("underlying", "leg", "position", "proceeds") either means exactly that or isn't used.
+- **Core is country-neutral, values included.** A country's codes (eDavki's acquisition methods, ZDoh-2 dividend types) live
+  under that country's tax authority, which maps Core values to them.
+- **One name per concept.** A staging class and its core twin differ only by the `Staging` prefix, and each word is spelled one
+  way across the code (`taxpayer`, `EDavki`).
+
+Some older Core names predate these rules. They're being brought in line separately, so don't rename them in passing.
+
 ### App
 
 Read the **web-app** skill before changing `packages/app/`. Every user-facing string goes through i18n and needs both `en.json` and `sl.json`.
