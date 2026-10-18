@@ -59,7 +59,7 @@ function onGenerated(outputs: GeneratedOutputs) {
     </div>
   </div>
 
-  <div v-else class="flex flex-col gap-4">
+  <div v-else class="flex flex-col gap-4 w-full max-w-screen-md mx-auto">
     <!-- Tax authority selector -->
     <div class="card card-padding-md flex flex-col gap-3">
       <h2 class="text-h5">{{ t('tax_authority_label') }}</h2>

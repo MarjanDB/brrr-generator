@@ -35,7 +35,7 @@ const xMax = computed(() => stats.value.overallCumulativeSeries[stats.value.over
     <DialogPortal>
       <DialogOverlay class="fixed inset-0 z-50 app-overlay" />
       <DialogContent
-        class="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(90vw,820px)] max-h-[85vh] flex flex-col app-surface-overlay border app-border-strong rounded-lg shadow-xl overflow-hidden"
+        class="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-2rem)] sm:w-[calc(100vw-4rem)] max-h-[85vh] flex flex-col app-surface-overlay border app-border-strong rounded-lg shadow-xl overflow-hidden"
       >
         <!-- Header -->
         <div class="flex items-start justify-between gap-4 px-5 py-4 border-b app-border shrink-0">

@@ -28,6 +28,8 @@ company and country lookups. Nuxt's source directory is `packages/app/app/`.
    from `authorityForms` (`SloveniaExportForm.vue`), which takes the `ImportResult` and calls `ReportPipeline.generate`.
 4. **Download** — `components/download/DownloadStep.vue`, plus the submission guide from `components/download/taxAuthorityGuides.ts`.
 
+The page is full width; steps 1 and 3 cap their forms at `max-w-screen-md`.
+
 Guides (broker export instructions, tax authority submission instructions) are data: `GuideStep`s in `components/guide/guideTypes.ts`,
 shown by `GuideModal.vue`, with screenshots under `packages/app/public/screenshots/` and icons under `packages/app/public/icons/`.
 

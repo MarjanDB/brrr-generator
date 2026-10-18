@@ -96,7 +96,7 @@ watch(xmlFiles, (v) => {
     </div>
   </div>
 
-  <div v-else class="card card-padding-md flex flex-col gap-3">
+  <div v-else class="card card-padding-md flex flex-col gap-3 w-full max-w-screen-md mx-auto">
     <h2 class="text-h5">{{ t('ibkr_export_title') }}</h2>
     <p class="text-body-sm app-text-muted">{{ t('ibkr_export_hint') }}</p>
     
