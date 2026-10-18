@@ -1,3 +1,4 @@
+import { Fixtures } from "@brrr/__tests__/support/Fixtures";
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { TradeEventStockAcquired } from "@brrr/Core/Models/Events/Stock/TradeEventStockAcquired";
 import { TradeEventStockSold } from "@brrr/Core/Models/Events/Stock/TradeEventStockSold";
@@ -1293,6 +1294,7 @@ test("a rename records a rebuilt derivative grouping as made from the old one, t
 	});
 	const derivative = build.derivativeGrouping({
 		identifier: idOption,
+		contract: Fixtures.optionContract,
 		trades: [bought, sold],
 		taxLots: [optionLot],
 	});
@@ -1352,4 +1354,92 @@ test("a rename records a rebuilt derivative grouping as made from the old one, t
 	expect(parents[3].change).toEqual(ProvenanceChange.GROUPED);
 	expect(parents[4].from).toBe(graph.nodeOf(optionLot));
 	expect(parents[4].change).toEqual(ProvenanceChange.GROUPED);
+});
+
+test("a rename keeps the contract of a rebuilt derivative grouping", () => {
+	const idA = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US111"),
+		ticker: Ticker.Schema.parse("OLD"),
+		name: "Old Co",
+	});
+	const idB = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US222"),
+		ticker: Ticker.Schema.parse("NEW"),
+		name: "New Co",
+	});
+	const idOption = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US111"),
+		ticker: Ticker.Schema.parse("OLD  240621C00100000"),
+		name: "OLD 21JUN24 100 C",
+	});
+	const bought = build.optionBought({
+		id: TradeEventId.Schema.parse("o1"),
+		date: "2024-01-02",
+		quantity: 1,
+		price: 2,
+		currency: CurrencyCode.Schema.parse("USD"),
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+		multiplier: 100,
+	});
+	const sold = build.optionSold({
+		id: TradeEventId.Schema.parse("o2"),
+		date: "2024-02-02",
+		quantity: -1,
+		price: 3,
+		currency: CurrencyCode.Schema.parse("USD"),
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+		multiplier: 100,
+	});
+	const optionLot = build.derivativeTaxLot({
+		id: TaxLotId.Schema.parse("ol1"),
+		quantity: 1,
+		shortLongType: ShortLong.LONG,
+		acquired: bought,
+		sold,
+	});
+	const derivative = build.derivativeGrouping({
+		identifier: idOption,
+		contract: Fixtures.optionContract,
+		trades: [bought, sold],
+		taxLots: [optionLot],
+	});
+	const groupingA = build.grouping({
+		identifier: idA,
+		countryOfOrigin: CountryCode.Schema.parse("US"),
+		category: Category.REGULAR,
+		stockTrades: [],
+		stockTaxLots: [],
+		derivativeGroupings: [derivative],
+		cashTransactions: [],
+	});
+	const groupingB = build.grouping({
+		identifier: idB,
+		countryOfOrigin: CountryCode.Schema.parse("US"),
+		category: Category.REGULAR,
+		stockTrades: [],
+		stockTaxLots: [],
+		derivativeGroupings: [],
+		cashTransactions: [],
+	});
+	const rel = new IdentifierRelationship({
+		fromIdentifier: idA,
+		toIdentifier: idB,
+		changeType: IdentifierChangeType.RENAME,
+		effectiveDate: build.date("2024-06-01"),
+	});
+	const events = new FinancialEvents({
+		groupings: [groupingA, groupingB],
+		identifierRelationships: [rel],
+	});
+	const result = new ApplyIdentifierRelationshipsService().apply(
+		events,
+		[IdentifierChangeType.RENAME],
+		new NullProvenanceRecorder(),
+	);
+
+	expect(result.groupings[0].derivativeGroupings[0].contract).toBe(Fixtures.optionContract);
 });

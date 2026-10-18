@@ -3,6 +3,7 @@ import { AcquisitionMethod } from "@brrr/Core/Models/Events/AcquisitionMethod";
 import type { DividendType } from "@brrr/Core/Models/Events/DividendType";
 import { AssetClass } from "@brrr/Core/Models/Instrument/AssetClass";
 import type { Category } from "@brrr/Core/Models/Instrument/Category";
+import type { OptionContract } from "@brrr/Core/Models/Instrument/OptionContract";
 import type { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
 import type { StagingTradeEventCashTransaction } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransaction";
 import { StagingTradeEventCashTransactionDividend } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransactionDividend";
@@ -52,7 +53,7 @@ export const StagingBuilders = {
 	},
 
 	optionBought(
-		fields: TradeFields & WithIdentifier & { multiplier: number },
+		fields: TradeFields & WithIdentifier & { multiplier: number; contract: OptionContract },
 	): StagingTradeEventDerivativeAcquired {
 		return new StagingTradeEventDerivativeAcquired({
 			id: fields.id,
@@ -61,12 +62,13 @@ export const StagingBuilders = {
 			date: Values.date(fields.date),
 			multiplier: fields.multiplier,
 			exchangedMoney: Values.tradeMoney(fields),
+			contract: fields.contract,
 			acquisitionMethod: AcquisitionMethod.BOUGHT,
 		});
 	},
 
 	optionSold(
-		fields: TradeFields & WithIdentifier & { multiplier: number },
+		fields: TradeFields & WithIdentifier & { multiplier: number; contract: OptionContract },
 	): StagingTradeEventDerivativeSold {
 		return new StagingTradeEventDerivativeSold({
 			id: fields.id,
@@ -75,6 +77,7 @@ export const StagingBuilders = {
 			date: Values.date(fields.date),
 			multiplier: fields.multiplier,
 			exchangedMoney: Values.tradeMoney(fields),
+			contract: fields.contract,
 		});
 	},
 

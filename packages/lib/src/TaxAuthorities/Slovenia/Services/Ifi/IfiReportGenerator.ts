@@ -25,6 +25,7 @@ import { EDavkiGenericDerivativeReportItem } from "@brrr/TaxAuthorities/Slovenia
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/Services/Ifi/CsvDIfi";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/Services/Ifi/XmlDIfi";
 import { foreignTaxOf, toOriginalCurrency } from "@brrr/TaxAuthorities/Slovenia/Utils/Amounts";
+import { ReportLineFields } from "@brrr/TaxAuthorities/Slovenia/Utils/ReportLineFields";
 import { ReportLineLabels } from "@brrr/TaxAuthorities/Slovenia/Utils/ReportLineLabels";
 
 const STAGE = ProvenanceStage.Schema.parse("IfiReportGenerator");
@@ -143,7 +144,9 @@ export class IfiReportGenerator {
 						line,
 						ProvenanceNodeKind.REPORT_LINE,
 						ReportLineLabels.ifiLine(bought, trade.date, quantity, code),
-						{},
+						line instanceof EDavkiDerivativeReportSecurityLineGenericEventBought
+							? ReportLineFields.ifiBought(line)
+							: ReportLineFields.ifiSold(line),
 					);
 					provenance.derive(
 						[leg, derivativeGrouping],

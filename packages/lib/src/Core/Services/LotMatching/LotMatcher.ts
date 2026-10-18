@@ -5,10 +5,12 @@ import type { LotLeg } from "@brrr/Core/Models/LotMatching/LotLeg";
 import type { MatchedLot } from "@brrr/Core/Models/LotMatching/MatchedLot";
 import type { Trade } from "@brrr/Core/Models/LotMatching/Trade";
 
+import { ProvenanceFields } from "@brrr/Core/Utils/ProvenanceFields";
 import { ProvenanceLabels } from "@brrr/Core/Utils/ProvenanceLabels";
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
 import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
+import { ProvenanceLegSide } from "@brrr/Provenance/Models/ProvenanceLegSide";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 
 const STAGE = ProvenanceStage.Schema.parse("LotMatcher");
@@ -46,18 +48,23 @@ export class LotMatcher {
 				lot,
 				ProvenanceNodeKind.MATCHED_LOT,
 				ProvenanceLabels.matchedLot(acquiredTrade.id, soldTrade.id, lot.quantity),
-				{},
+				ProvenanceFields.matchedLot(lot.quantity),
 			);
 			provenance.derive([acquiredTrade, soldTrade], lot, ProvenanceChange.MATCHED, STAGE, null);
-			for (const leg of [matched.acquired, matched.sold]) {
-				provenance.node(
-					leg,
-					ProvenanceNodeKind.LEG,
-					ProvenanceLabels.leg(leg.trade.id, leg.quantity),
-					{},
-				);
-				provenance.derive([lot], leg, ProvenanceChange.MATCHED, STAGE, null);
-			}
+			provenance.node(
+				matched.acquired,
+				ProvenanceNodeKind.LEG,
+				ProvenanceLabels.leg(matched.acquired.trade.id, matched.acquired.quantity),
+				ProvenanceFields.leg(ProvenanceLegSide.ACQUIRED, matched.acquired.quantity),
+			);
+			provenance.derive([lot], matched.acquired, ProvenanceChange.MATCHED, STAGE, null);
+			provenance.node(
+				matched.sold,
+				ProvenanceNodeKind.LEG,
+				ProvenanceLabels.leg(matched.sold.trade.id, matched.sold.quantity),
+				ProvenanceFields.leg(ProvenanceLegSide.SOLD, matched.sold.quantity),
+			);
+			provenance.derive([lot], matched.sold, ProvenanceChange.MATCHED, STAGE, null);
 
 			return matched;
 		});

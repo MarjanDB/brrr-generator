@@ -1,6 +1,7 @@
 import type { SegmentedTrades } from "@brrr/Brokers/Ibkr/Models/SegmentedTrades";
 import type { CorporateAction } from "@brrr/Brokers/Ibkr/Schemas/CorporateAction";
 import { IbkrCashTransactionType } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrCashTransactionType";
+import { IbkrPutOrCall } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrPutOrCall";
 import type { LotDerivative } from "@brrr/Brokers/Ibkr/Schemas/LotDerivative";
 import type { LotStock } from "@brrr/Brokers/Ibkr/Schemas/LotStock";
 import type { TradeDerivative } from "@brrr/Brokers/Ibkr/Schemas/TradeDerivative";
@@ -23,6 +24,8 @@ import {
 } from "@brrr/Core/Models/Identifiers";
 import { AssetClass } from "@brrr/Core/Models/Instrument/AssetClass";
 import { Category } from "@brrr/Core/Models/Instrument/Category";
+import { OptionContract } from "@brrr/Core/Models/Instrument/OptionContract";
+import { OptionRight } from "@brrr/Core/Models/Instrument/OptionRight";
 import { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
 import type { StagingTradeEventCashTransaction } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransaction";
 import { StagingTradeEventCashTransactionDividend } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransactionDividend";
@@ -52,6 +55,11 @@ import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 
 const STAGE = ProvenanceStage.Schema.parse("IbkrTransformService");
+
+const OPTION_RIGHTS: Record<IbkrPutOrCall, OptionRight> = {
+	[IbkrPutOrCall.PUT]: OptionRight.PUT,
+	[IbkrPutOrCall.CALL]: OptionRight.CALL,
+};
 
 type AnyEvent = { financialIdentifier: StagingFinancialIdentifier };
 
@@ -381,6 +389,13 @@ export class IbkrTransformService {
 				multiplier: trade.multiplier,
 				date: trade.dateTime,
 				exchangedMoney,
+				contract: new OptionContract({
+					underlyingSymbol: Ticker.Schema.parse(trade.underlyingSymbol),
+					expiry: trade.expiry,
+					strike: trade.strike,
+					optionRight: OPTION_RIGHTS[trade.putOrCall],
+					multiplier: trade.multiplier,
+				}),
 			};
 			const event =
 				trade.quantity > 0

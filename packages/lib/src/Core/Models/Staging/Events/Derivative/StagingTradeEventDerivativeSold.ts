@@ -1,3 +1,18 @@
-import { StagingTradeEventBase } from "@brrr/Core/Models/Staging/Events/StagingTradeEventBase";
+import type { OptionContract } from "@brrr/Core/Models/Instrument/OptionContract";
+import {
+	type StagingTradeEventArgs,
+	StagingTradeEventBase,
+} from "@brrr/Core/Models/Staging/Events/StagingTradeEventBase";
 
-export class StagingTradeEventDerivativeSold extends StagingTradeEventBase {}
+type StagingDerivativeSoldArgs = StagingTradeEventArgs & {
+	contract: OptionContract;
+};
+
+export class StagingTradeEventDerivativeSold extends StagingTradeEventBase {
+	public readonly contract: OptionContract;
+
+	public constructor(args: StagingDerivativeSoldArgs) {
+		super(args);
+		this.contract = args.contract;
+	}
+}

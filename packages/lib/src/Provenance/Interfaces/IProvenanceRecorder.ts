@@ -6,6 +6,8 @@ import type { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeK
 
 export interface IProvenanceRecorder {
 	// Registers an object as a node. Idempotent: the same object is always the same node.
+	// The keys of a ROW's fields are the broker's attribute names; every other kind's are
+	// ProvenanceField (or, for report lines and sums, the authority's own enum).
 	node(
 		subject: object,
 		kind: ProvenanceNodeKind,

@@ -20,9 +20,12 @@ import { FinancialEvents } from "@brrr/Core/Models/FinancialEvents";
 import { DerivativeGrouping } from "@brrr/Core/Models/Groupings/DerivativeGrouping";
 import { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGrouping";
 import type { IdentifierRelationshipAny } from "@brrr/Core/Models/IdentifierRelationships/IdentifierRelationshipAny";
+import type { Ticker } from "@brrr/Core/Models/Identifiers";
 import { AssetClass } from "@brrr/Core/Models/Instrument/AssetClass";
 import type { Category } from "@brrr/Core/Models/Instrument/Category";
 import type { FinancialIdentifier } from "@brrr/Core/Models/Instrument/FinancialIdentifier";
+import { OptionContract } from "@brrr/Core/Models/Instrument/OptionContract";
+import type { OptionRight } from "@brrr/Core/Models/Instrument/OptionRight";
 import type { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
 import { TaxLot, type TaxLotDerivative, type TaxLotStock } from "@brrr/Core/Models/Lots/TaxLot";
 import { FinancialEventsProcessor } from "@brrr/Core/Services/LotMatching/FinancialEventsProcessor";
@@ -129,13 +132,31 @@ const build = {
 		return new TaxLot(fields);
 	},
 
+	optionContract(fields: {
+		underlyingSymbol: Ticker;
+		expiry: string;
+		strike: number;
+		optionRight: OptionRight;
+		multiplier: number;
+	}): OptionContract {
+		return new OptionContract({
+			underlyingSymbol: fields.underlyingSymbol,
+			expiry: Values.date(fields.expiry),
+			strike: fields.strike,
+			optionRight: fields.optionRight,
+			multiplier: fields.multiplier,
+		});
+	},
+
 	derivativeGrouping(fields: {
 		identifier: FinancialIdentifier;
+		contract: OptionContract;
 		trades: TradeEventDerivative[];
 		taxLots: TaxLotDerivative[];
 	}): DerivativeGrouping {
 		return new DerivativeGrouping({
 			financialIdentifier: fields.identifier,
+			contract: fields.contract,
 			derivativeTrades: fields.trades,
 			derivativeTaxLots: fields.taxLots,
 		});
