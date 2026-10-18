@@ -26,7 +26,7 @@ const currentLocale = computed({
 const currentStep = ref<1 | 2 | 3 | 4>(1);
 const xmlFiles = ref<FileList | null>(null);
 const imported = shallowRef<ImportResult | null>(null);
-const generatedOutputs = ref<GeneratedOutputs | null>(null);
+const generatedOutputs = shallowRef<GeneratedOutputs | null>(null);
 // Tracks whether the user has confirmed step 2 (unlocks step 3 component)
 const step3Unlocked = ref(false);
 
