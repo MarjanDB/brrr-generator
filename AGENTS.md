@@ -133,8 +133,7 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
   `toResolvedValue(factory, [dependencies])` in singleton scope, and `createContainer(infoProvider)` in `packages/lib/src/Container.ts` loads them
   all. Anything the app or CLI needs is exported from `packages/lib/src/index.ts`.
 - `packages/lib/` stays platform-neutral: no DOM, and no Node built-ins (`fs`, `Buffer`, …) outside `InfoProviders/Node/`, which is exported
-  separately as `@brrr/lib/info/node`. Dependencies used by the report code need a browser build (e.g. `csv-stringify/browser/esm/sync`);
-  `CsvWithoutNodeBuffer.unit.test.ts` guards the CSV generators.
+  separately as `@brrr/lib/info/node`. Dependencies used by the report code need a browser build (e.g. `csv-stringify/browser/esm/sync`).
 - Every class member states its accessibility (`public`, `private` or `protected`), constructors included. Biome's
   `useConsistentMemberAccessibility` enforces it.
 - Biome formats and lints everything, `.vue` included: tabs, line width 100.

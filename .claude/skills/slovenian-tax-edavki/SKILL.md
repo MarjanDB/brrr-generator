@@ -85,8 +85,7 @@ byte, so never regenerate them to make a refactor pass. `Fixtures.taxpayer` and 
 (`packages/lib/src/__tests__/support/Fixtures.ts`) are the taxpayer and the company and country data they were generated with.
 
 `__tests__/`: `TaxAuthorityProvider.integration.test.ts` (all three reports' lines, builds the provider by hand in `makeProvider` to spy
-on its collaborators), `PaymentInLieuOfDividend.unit.test.ts`, `CsvWithoutNodeBuffer.unit.test.ts` (CSV generators without Node's
-`Buffer`). `Services/Div/__tests__/DivReportGenerator.unit.test.ts` pins DIV's sums, same-day merge and rounding,
+on its collaborators), `PaymentInLieuOfDividend.unit.test.ts`. `Services/Div/__tests__/DivReportGenerator.unit.test.ts` pins DIV's sums, same-day merge and rounding,
 `Utils/__tests__/Amounts.unit.test.ts` the shared amount helpers, and
 `TaxAuthorities/Services/__tests__/LotMatchingMethodFactory.unit.test.ts` the lot matching choice. Tests build their data and report configs
 with `Scenario` (`packages/lib/src/__tests__/support/Scenario.ts`), writing every value out, and give the dividend generator a
