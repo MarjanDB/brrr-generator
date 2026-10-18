@@ -3,6 +3,7 @@ import {
 	detailKindKeys,
 	dropCategoryKeys,
 	dropReasonKeys,
+	eventKindKeys,
 	lotMatchingKeys,
 } from "~/download/sentences/sentenceKeys";
 import en from "~~/i18n/locales/en.json";
@@ -25,6 +26,12 @@ describe("the locale files", () => {
 
 	test("every detail kind has a key in the locale files", () => {
 		for (const key of Object.values(detailKindKeys)) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
+	});
+
+	test("every event kind has a key in the locale files", () => {
+		for (const key of Object.values(eventKindKeys)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});

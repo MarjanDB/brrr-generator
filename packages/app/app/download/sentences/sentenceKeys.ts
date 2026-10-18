@@ -3,6 +3,7 @@ import {
 	DropReason,
 	ProvenanceDetailKind,
 	ProvenanceDetailValue,
+	ProvenanceEventKind,
 	TaxAuthorityLotMatchingMethod,
 } from "@brrr/lib";
 
@@ -44,6 +45,16 @@ export const detailValueParams: Record<ProvenanceDetailValue, string> = {
 export const dropCategoryKeys: Record<DropCategory, string> = {
 	[DropCategory.NOT_IN_THIS_REPORT]: "download_category_not_in_report",
 	[DropCategory.NEEDS_A_LOOK]: "download_category_needs_look",
+};
+
+export const eventKindKeys: Record<ProvenanceEventKind, string> = {
+	[ProvenanceEventKind.ACQUIRED]: "download_fact_kind_acquired",
+	[ProvenanceEventKind.SOLD]: "download_fact_kind_sold",
+	[ProvenanceEventKind.DIVIDEND]: "download_fact_kind_dividend",
+	[ProvenanceEventKind.PAYMENT_IN_LIEU]: "download_fact_kind_payment_in_lieu",
+	[ProvenanceEventKind.WITHHOLDING_TAX]: "download_fact_kind_withholding_tax",
+	[ProvenanceEventKind.WITHHOLDING_TAX_ON_PAYMENT_IN_LIEU]:
+		"download_fact_kind_withholding_tax_on_payment_in_lieu",
 };
 
 export const lotMatchingKeys: Record<TaxAuthorityLotMatchingMethod, string> = {
