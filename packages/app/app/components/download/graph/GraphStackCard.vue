@@ -30,6 +30,7 @@ const stateClasses: Record<CardState, string> = {
 <template>
   <button
     type="button"
+    :data-node-key="placed.layoutNode.node.key"
     :title="t('download_graph_spread')"
     :style="{
       left: `${placed.x}px`,

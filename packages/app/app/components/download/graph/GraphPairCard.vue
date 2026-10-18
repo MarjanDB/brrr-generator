@@ -60,6 +60,7 @@ const classes = computed(() => [
 
 <template>
   <div
+    :data-node-key="placed.layoutNode.node.key"
     :style="{
       left: `${placed.x}px`,
       top: `${placed.y}px`,

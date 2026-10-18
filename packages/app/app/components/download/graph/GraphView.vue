@@ -37,6 +37,7 @@ const {
 	spread,
 	activateEdge,
 	clearLight,
+	closePopover,
 	toggleEveryStep,
 } = useProvenanceGraph({ graph: () => props.graph, reading: () => props.reading });
 
@@ -72,6 +73,7 @@ const captionContext = computed(() => ({
       @spread="spread"
       @activate-edge="activateEdge"
       @clear-light="clearLight"
+      @close-popover="closePopover"
     />
   </section>
 </template>

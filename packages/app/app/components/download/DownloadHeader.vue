@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { type ReportProvenance, SlovenianReportTypeId } from "@brrr/lib";
-import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from "reka-ui";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import AppBadge from "~/components/ui/AppBadge.vue";
 import AppButton from "~/components/ui/AppButton.vue";
+import AppPopover from "~/components/ui/AppPopover.vue";
 import AppTooltip from "~/components/ui/AppTooltip.vue";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
 import type { PanelSections } from "~/types/instrumentPanel";
@@ -79,36 +79,27 @@ onUnmounted(revokeUrls);
         </AppBadge>
       </AppTooltip>
 
-      <PopoverRoot v-if="reading.totals.needsALook > 0">
-        <PopoverTrigger as-child>
+      <AppPopover v-if="reading.totals.needsALook > 0" :tooltip="t('download_count_needs_look')" class="w-96">
+        <template #trigger>
           <button type="button" :aria-label="t('download_count_needs_look')">
             <AppBadge :color="ColorIntent.WARNING" class="gap-1 cursor-pointer">
               <span class="i-mdi-eye-outline" />
               {{ reading.totals.needsALook }}
             </AppBadge>
           </button>
-        </PopoverTrigger>
-        <PopoverPortal>
-          <PopoverContent
-            side="bottom"
-            align="start"
-            :side-offset="6"
-            class="z-50 w-96 max-w-[90vw] rounded-md border border-edge-strong bg-surface p-3 shadow-md"
+        </template>
+        <p class="text-label mb-2">{{ t('download_needs_look_title') }}</p>
+        <ul class="flex flex-col gap-1.5">
+          <li
+            v-for="(item, index) in reading.needsALook"
+            :key="index"
+            class="rounded-sm bg-warning-soft text-warning-ink px-2 py-1 text-sm"
           >
-            <p class="text-label mb-2">{{ t('download_needs_look_title') }}</p>
-            <ul class="flex flex-col gap-1.5">
-              <li
-                v-for="(item, index) in reading.needsALook"
-                :key="index"
-                class="rounded-sm bg-warning-soft text-warning-ink px-2 py-1 text-sm"
-              >
-                <span class="mr-1.5 rounded-sm bg-surface px-1 font-mono text-xs text-ink-muted">{{ item.subject.label }}</span>
-                {{ dropSentence(item.drop) }}
-              </li>
-            </ul>
-          </PopoverContent>
-        </PopoverPortal>
-      </PopoverRoot>
+            <span class="mr-1.5 rounded-sm bg-surface px-1 font-mono text-xs text-ink-muted">{{ item.subject.label }}</span>
+            {{ dropSentence(item.drop) }}
+          </li>
+        </ul>
+      </AppPopover>
       <AppTooltip v-else :content="t('download_count_needs_look')">
         <AppBadge :color="ColorIntent.WARNING" class="gap-1 opacity-50">
           <span class="i-mdi-eye-outline" />
@@ -116,36 +107,27 @@ onUnmounted(revokeUrls);
         </AppBadge>
       </AppTooltip>
 
-      <PopoverRoot v-if="warningItems.length > 0">
-        <PopoverTrigger as-child>
+      <AppPopover v-if="warningItems.length > 0" :tooltip="t('download_count_warnings')" class="w-96">
+        <template #trigger>
           <button type="button" :aria-label="t('download_count_warnings')">
             <AppBadge :color="ColorIntent.WARNING" class="gap-1 cursor-pointer">
               <span class="i-mdi-alert-outline" />
               {{ reading.totals.warnings }}
             </AppBadge>
           </button>
-        </PopoverTrigger>
-        <PopoverPortal>
-          <PopoverContent
-            side="bottom"
-            align="start"
-            :side-offset="6"
-            class="z-50 w-96 max-w-[90vw] rounded-md border border-edge-strong bg-surface p-3 shadow-md"
+        </template>
+        <p class="text-label mb-2">{{ t('download_warnings_title') }}</p>
+        <ul class="flex flex-col gap-1.5">
+          <li
+            v-for="(item, index) in warningItems"
+            :key="index"
+            class="rounded-sm bg-warning-soft text-warning-ink px-2 py-1 text-sm"
           >
-            <p class="text-label mb-2">{{ t('download_warnings_title') }}</p>
-            <ul class="flex flex-col gap-1.5">
-              <li
-                v-for="(item, index) in warningItems"
-                :key="index"
-                class="rounded-sm bg-warning-soft text-warning-ink px-2 py-1 text-sm"
-              >
-                <span class="mr-1.5 rounded-sm bg-surface px-1 font-mono text-xs text-ink-muted">{{ item.title }}</span>
-                {{ warningSentence(item.warning) }}
-              </li>
-            </ul>
-          </PopoverContent>
-        </PopoverPortal>
-      </PopoverRoot>
+            <span class="mr-1.5 rounded-sm bg-surface px-1 font-mono text-xs text-ink-muted">{{ item.title }}</span>
+            {{ warningSentence(item.warning) }}
+          </li>
+        </ul>
+      </AppPopover>
       <AppTooltip v-else :content="t('download_count_warnings')">
         <AppBadge :color="ColorIntent.WARNING" class="gap-1 opacity-50">
           <span class="i-mdi-alert-outline" />

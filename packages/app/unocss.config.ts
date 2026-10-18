@@ -69,6 +69,12 @@ export default defineConfig({
 		["card", "bg-surface border app-border-strong rounded-md"],
 		["card-padding-md", "p-4"],
 
+		// Floating layers (reka-ui portals them to the body)
+		[
+			"tooltip-box",
+			"z-50 px-2.5 py-1.5 rounded-md text-xs bg-surface-inverse text-ink-inverse shadow-md select-none",
+		],
+
 		// Input base
 		[
 			"input-base",

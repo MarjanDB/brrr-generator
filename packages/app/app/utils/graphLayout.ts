@@ -512,34 +512,3 @@ function entryPoint(edge: GraphLayoutEdge, target: PlacedNode, metrics: GraphMet
 			return middle;
 	}
 }
-
-export type PopoverPositionArgs = {
-	// The node it hangs on, in graph units.
-	anchorX: number;
-	anchorY: number;
-	anchorWidth: number;
-	popoverWidth: number;
-	popoverHeight: number;
-	canvasWidth: number;
-	canvasHeight: number;
-	// How the graph is drawn on the canvas.
-	scale: number;
-	shift: number;
-};
-
-const popoverGap = 14;
-const popoverEdgeMargin = 4;
-
-// To the right of the node; to its left when that would pass the canvas's right edge; moved up
-// when it would pass the bottom. In canvas pixels, not scaled.
-export function popoverPosition(args: PopoverPositionArgs): GraphPoint {
-	let x = args.shift + (args.anchorX + args.anchorWidth + popoverGap) * args.scale;
-	if (x + args.popoverWidth > args.canvasWidth) {
-		x = args.shift + args.anchorX * args.scale - args.popoverWidth - popoverGap;
-	}
-	let y = args.anchorY * args.scale;
-	if (y + args.popoverHeight > args.canvasHeight) {
-		y = Math.max(0, args.canvasHeight - args.popoverHeight);
-	}
-	return { x: Math.max(popoverEdgeMargin, x), y };
-}

@@ -52,7 +52,7 @@ switches the locale starts by setting `en`. Graph tests build graphs with `utils
 **Download step graph.** Under the timeline, `<LazyGraphView>` (`components/download/graph/`) draws the focused item's provenance.
 Its shapes are plain types in `types/provenanceGraph.ts`. The engine is pure utils: `graphModelOf(graph, reading, showEveryStep)`
 (`utils/graphModel.ts`, with lookups such as `modelNodeFor`) → `layoutGraph(model, { focus, expanded })` →
-`placeGraph(layout, defaultGraphMetrics)` (`utils/graphLayout.ts`, with `popoverPosition`), and `captionOf` (`utils/graphCaption.ts`).
+`placeGraph(layout, defaultGraphMetrics)` (`utils/graphLayout.ts`), and `captionOf` (`utils/graphCaption.ts`).
 Three composables hold the rest:
 - `useGraphFocus()` (provided by `DownloadStep`): the focus, the back trail and the lit chain, with `start`, `refocus`, `back`,
   `lightNode`/`lightEdge` (the chain walk) and `remap`. The timeline lights its marks from the lit chain, and a mark click refocuses.
@@ -64,7 +64,11 @@ The interaction rules:
   are separate targets; its header opens nothing.
 - Only a stub, a double-click or a timeline mark moves the focus (the old one joins the back trail). A left-out node can be lit, never
   followed. A stack spreads on click, and spread stacks fold again when the focus changes.
-- A click on empty canvas or Escape clears the light and the popover; an edge's hit area lights the chain through it.
+- A click on empty canvas or Escape clears the light and the popover; an edge's hit area lights the chain through it. A click
+  elsewhere outside the popover closes it and keeps the chain lit. Escape is left to any other open reka layer (a header popover,
+  a tooltip, a dialog): the graph's `document` listener skips it while a `[data-dismissable-layer]` is on the page.
+- The popover is an `AppPopover` hung on the clicked card (`reference`, found by the card's `data-node-key`), portaled to the body,
+  so reka places it and keeps it on screen.
 - "Show every step" remaps the focus through `modelNodeFor`, so a focus on a hidden step lands on the visible node beside it.
 - The layout must depend on the focus alone: lighting a chain must not redraw the graph, because the chain holds that layout's nodes.
 Every icon and tint is a literal class string in `utils/nodeLook.ts` (UnoCSS cannot see a built name), numbers go through
@@ -100,9 +104,14 @@ Guides (broker export instructions, tax authority submission instructions) are d
 - Forms: wrap fields in `AppForm` (emits `submit` with `valid`) and use `AppTextInput`, `AppNumberInput`, `AppSelect`, `AppCheckbox`,
   `AppFileInput`. Each takes a `validate` function returning an error string or `null`, registers itself with the surrounding form, and
   links its label through `useId()`.
-- Primitives (select, checkbox, dialog, tooltip) come from reka-ui. Composables from `@vueuse/core` before writing your own.
+- Primitives (select, checkbox, dialog, tooltip, popover) come from reka-ui. Composables from `@vueuse/core` before writing your own.
+- Popovers go through `ui/AppPopover.vue`: a `trigger` slot (or a `reference` element for one opened by code), an optional
+  `tooltip` for the trigger, and one box (`card`, `z-50`, collision padding, scrolling past 28rem); width and an `aria-label` pass
+  through to the box. Tooltips go through `ui/AppTooltip.vue`; both use the `tooltip-box` shortcut. A reka trigger inside a
+  tooltip anchors to the tooltip's popper, so `AppPopover` wraps a tooltip-and-trigger in its own `PopoverAnchor`.
 - Charts use chart.js; `composables/useChartTheme.ts` reads theme colours from CSS variables. The review step's charts use a time scale with a hand-written date adapter (`CumulativeLineChart.vue`). The download timeline (`InstrumentTimeline.vue`) needs no adapter: its x axis is a linear scale of epoch milliseconds, ticked by `timelineTicks`, and its arcs and marks are drawn by an inline plugin (`utils/timelineMarksPlugin.ts`, never registered globally) over one transparent scatter dataset that gives chart.js the hit-testing and tooltip. The canvas is not keyboard-reachable; the marks are reachable through the panel and `FocusFacts`.
-- A popover inside a reka `Dialog` needs `PopoverPortal` (the dialog is translated and clips overflow) and a z-index above the dialog's `z-50`.
+- A popover inside a reka `Dialog` needs `PopoverPortal` (the dialog is translated and clips overflow); `AppPopover` portals, and
+  its `z-50` sits above the dialog because it is appended to the body after it.
 - Biome lints `.vue` files. Pages are exempt from the multi-word component name rule; everything else needs multi-word names.
 
 ## Text (i18n)

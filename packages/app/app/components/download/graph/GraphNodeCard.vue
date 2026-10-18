@@ -71,6 +71,7 @@ const classes = computed(() => [
 <template>
   <button
     type="button"
+    :data-node-key="placed.layoutNode.node.key"
     :title="title"
     :style="{
       left: `${placed.x}px`,

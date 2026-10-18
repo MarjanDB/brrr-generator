@@ -29,7 +29,7 @@ withDefaults(defineProps<{
 				<TooltipContent
 					:side="side"
 					:side-offset="sideOffset"
-					class="z-50 px-2.5 py-1.5 rounded-md text-xs bg-surface-inverse text-ink-inverse shadow-md select-none"
+					class="tooltip-box"
 				>
 					{{ content }}
 				</TooltipContent>
