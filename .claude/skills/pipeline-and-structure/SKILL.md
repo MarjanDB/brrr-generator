@@ -73,7 +73,7 @@ before checking them.
    declared in a `<broker>` group of the `TestKit` registry (`packages/test-cases/index.ts`: year, named inputs, named expected reports),
    with an acceptance test per case in each tax authority's `__tests__/Acceptance/<Form>.acceptance.test.ts`.
 6. Site: icon at `packages/app/public/icons/brokers/<id>.svg` and in `brokerIconById` (`UploadStep.vue`); a guide in
-   `packages/app/app/components/upload/brokerGuides.ts` with screenshots in `packages/app/public/screenshots/brokers/<id>/`; i18n keys in both locale files.
+   `packages/app/app/utils/brokerGuides.ts` with screenshots in `packages/app/public/screenshots/brokers/<id>/`; i18n keys in both locale files.
 
 ## Adding a tax authority
 
@@ -85,14 +85,14 @@ before checking them.
    service, the lot matching and each `convert`, and have `convert` record each line it builds as a `REPORT_LINE` made from what's
    behind it, plus a drop for anything the report leaves out (see the Slovenian generators). `drop` and `warn` take a
    `ProvenanceDetail` (a `ProvenanceDetailKind` plus named `ProvenanceDetailValue`s), never a sentence; a new kind needs a member in
-   `ProvenanceDetailKind`, a key for it in `detailKindKeys` (`packages/app/app/download/sentences/sentenceKeys.ts`) and that
+   `ProvenanceDetailKind`, a key for it in `detailKindKeys` (`packages/app/app/utils/i18nKeys.ts`) and that
    key's text in both locale files.
 2. Bind everything in `<Country>Module.ts`, load it from `TaxAuthoritiesModule.ts`, and add the provider to `TaxAuthorityRegistry`
    (constructor, `listAuthorities`, `generateExports`).
 3. If the country needs taxpayer fields `TaxpayerConfigSchema` lacks, extend the schema; the CLI and `config/userConfig.example.yml`
    follow it.
-4. Site: a card in `packages/app/app/components/configure/taxAuthorityCards.ts` (icon in `packages/app/public/icons/tax-authorities/`), a form component
-   registered in `authorityForms` in `ConfigureStep.vue`, a submission guide in `packages/app/app/components/download/taxAuthorityGuides.ts`,
+4. Site: a card in `packages/app/app/utils/taxAuthorityCards.ts` (icon in `packages/app/public/icons/tax-authorities/`), a form component
+   registered in `authorityForms` in `ConfigureStep.vue`, a submission guide in `packages/app/app/utils/taxAuthorityGuides.ts`,
    i18n keys in both locale files.
 
 ## Adding a report type to an existing country
