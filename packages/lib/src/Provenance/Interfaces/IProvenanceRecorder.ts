@@ -1,0 +1,26 @@
+import type { DropReason } from "@brrr/Provenance/Models/DropReason";
+import type { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import type { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
+import type { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
+
+export interface IProvenanceRecorder {
+	// Registers an object as a node. Idempotent: the same object is always the same node.
+	node(
+		subject: object,
+		kind: ProvenanceNodeKind,
+		label: string,
+		fields: Record<string, string>,
+	): void;
+	// `to` was made from `from` by `by`. Both ends must already be recorded as nodes.
+	derive(
+		from: object[],
+		to: object,
+		change: ProvenanceChange,
+		by: ProvenanceStage,
+		detail: string | null,
+	): void;
+	// `subject` goes no further, for `reason`.
+	drop(subject: object, reason: DropReason, by: ProvenanceStage, detail: string | null): void;
+	// `subject` went on, but something about it is worth knowing.
+	warn(subject: object, by: ProvenanceStage, detail: string): void;
+}
