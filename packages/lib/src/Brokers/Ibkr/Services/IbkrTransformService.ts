@@ -45,11 +45,21 @@ import { StagingFinancialIdentifier } from "@brrr/Core/Models/Staging/Instrument
 import { StagingTaxLot } from "@brrr/Core/Models/Staging/Lots/StagingTaxLot";
 import { StagingTaxLotMatchingDetails } from "@brrr/Core/Models/Staging/Lots/StagingTaxLotMatchingDetails";
 import { StagingFinancialEvents } from "@brrr/Core/Models/Staging/StagingFinancialEvents";
+import { CashTransactionLabel, ProvenanceLabels } from "@brrr/Core/Utils/ProvenanceLabels";
+import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
+import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
+import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
+
+const STAGE = ProvenanceStage.Schema.parse("IbkrTransformService");
 
 type AnyEvent = { financialIdentifier: StagingFinancialIdentifier };
 
 export class IbkrTransformService {
-	public convertSegmentedTradesToStagingEvents(segmented: SegmentedTrades): StagingFinancialEvents {
+	public convertSegmentedTradesToStagingEvents(
+		segmented: SegmentedTrades,
+		provenance: IProvenanceRecorder,
+	): StagingFinancialEvents {
 		const stockTrades = [...segmented.stockTrades].sort((a, b) => a.isin.localeCompare(b.isin));
 		const stockLots = [...segmented.stockLots].sort((a, b) => a.isin.localeCompare(b.isin));
 		const derivativeTrades = [...segmented.derivativeTrades].sort((a, b) =>
@@ -62,11 +72,14 @@ export class IbkrTransformService {
 			a.isin.localeCompare(b.isin),
 		);
 
-		const stockTradeEvents = this.convertStockTradesToEvents(stockTrades);
-		const stockLotEvents = this.convertStockLotsToEvents(stockLots);
-		const cashTransactionEvents = this.convertToCashTransactions(cashTransactions);
-		const derivativeTradeEvents = this.convertDerivativeTradesToEvents(derivativeTrades);
-		const derivativeLotEvents = this.convertDerivativeLotsToEvents(derivativeLots);
+		const stockTradeEvents = this.convertStockTradesToEvents(stockTrades, provenance);
+		const stockLotEvents = this.convertStockLotsToEvents(stockLots, provenance);
+		const cashTransactionEvents = this.convertToCashTransactions(cashTransactions, provenance);
+		const derivativeTradeEvents = this.convertDerivativeTradesToEvents(
+			derivativeTrades,
+			provenance,
+		);
+		const derivativeLotEvents = this.convertDerivativeLotsToEvents(derivativeLots, provenance);
 
 		const groupByIdentifier = <T extends AnyEvent>(
 			items: T[],
@@ -109,21 +122,29 @@ export class IbkrTransformService {
 				derivativeLotsMap.get(key) ??
 				dividendsMap.get(key))!.identifier;
 
-			groupings.push(
-				new StagingFinancialGrouping({
-					financialIdentifier: identifier,
-					countryOfOrigin: null,
-					underlyingCategory: Category.REGULAR,
-					stockTrades: stocksMap.get(key)?.items ?? [],
-					stockTaxLots: stockLotsMap.get(key)?.items ?? [],
-					derivativeTrades: derivativesMap.get(key)?.items ?? [],
-					derivativeTaxLots: derivativeLotsMap.get(key)?.items ?? [],
-					cashTransactions: dividendsMap.get(key)?.items ?? [],
-				}),
+			const grouping = new StagingFinancialGrouping({
+				financialIdentifier: identifier,
+				countryOfOrigin: null,
+				underlyingCategory: Category.REGULAR,
+				stockTrades: stocksMap.get(key)?.items ?? [],
+				stockTaxLots: stockLotsMap.get(key)?.items ?? [],
+				derivativeTrades: derivativesMap.get(key)?.items ?? [],
+				derivativeTaxLots: derivativeLotsMap.get(key)?.items ?? [],
+				cashTransactions: dividendsMap.get(key)?.items ?? [],
+			});
+			provenance.node(
+				grouping,
+				ProvenanceNodeKind.STAGING_GROUPING,
+				ProvenanceLabels.grouping(false, identifier.isin, identifier.ticker),
+				{},
 			);
+			groupings.push(grouping);
 		}
 
-		const partials = this.convertCorporateActionsToPartialRelationships(segmented.corporateActions);
+		const partials = this.convertCorporateActionsToPartialRelationships(
+			segmented.corporateActions,
+			provenance,
+		);
 		const identifierRelationships = new StagingIdentifierRelationships({
 			relationships: [],
 			partialRelationships: partials,
@@ -134,71 +155,111 @@ export class IbkrTransformService {
 
 	private convertToCashTransactions(
 		cashTransactions: TransactionCash[],
+		provenance: IProvenanceRecorder,
 	): StagingTradeEventCashTransaction[] {
 		return cashTransactions.map((transaction) => {
-			const descLower = transaction.description.toLowerCase();
-			const isOrdinaryDividend = descLower.includes("ordinary dividend");
-			const isBonusDividend = descLower.includes("bonus dividend");
-			const isPaymentInLieuWithholding = descLower.includes("payment in lieu of dividend");
-
-			let dividendType = DividendType.UNKNOWN;
-			if (isOrdinaryDividend) dividendType = DividendType.ORDINARY;
-			if (isBonusDividend) dividendType = DividendType.BONUS;
-
-			const financialIdentifier = new StagingFinancialIdentifier({
-				isin: Isin.Schema.parse(transaction.isin),
-				ticker: Ticker.Schema.parse(transaction.symbol),
-			});
-			const currency = CurrencyCode.Schema.parse(transaction.currency);
-			const exchangedMoney = new ExchangedMoney({
-				quantity: 1,
-				priceInBase: transaction.amount * transaction.fxRateToBase,
-				currency: currency,
-				commissionCurrency: currency,
-				commissionInBase: 0,
-				taxCurrency: currency,
-				taxTotal: 0,
-				fxRateToBase: transaction.fxRateToBase,
-			});
-			const base = {
-				id: TradeEventId.Schema.parse(transaction.transactionID),
-				financialIdentifier,
-				assetClass: AssetClass.CASH_AND_CASH_EQUIVALENTS,
-				date: transaction.dateTime,
-				multiplier: 1,
-				exchangedMoney,
-				actionId: CashActionId.Schema.parse(transaction.actionID),
-				transactionId: CashTransactionId.Schema.parse(transaction.transactionID),
-				listingExchange: ListingExchange.Schema.parse(transaction.listingExchange),
-			};
-
-			if (transaction.type === IbkrCashTransactionType.DIVIDEND) {
-				return new StagingTradeEventCashTransactionDividend({ ...base, dividendType });
-			}
-
-			if (
-				transaction.type === IbkrCashTransactionType.WITHHOLDING_TAX &&
-				isPaymentInLieuWithholding
-			) {
-				return new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend(base);
-			}
-
-			if (transaction.type === IbkrCashTransactionType.WITHHOLDING_TAX) {
-				return new StagingTradeEventCashTransactionWithholdingTax(base);
-			}
-
-			if (transaction.type === IbkrCashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS) {
-				return new StagingTradeEventCashTransactionPaymentInLieuOfDividend({
-					...base,
-					dividendType,
-				});
-			}
-
-			throw new Error(`Unknown cash transaction type: ${transaction.type}`);
+			const event = this.toCashTransaction(transaction);
+			this.track(
+				provenance,
+				transaction,
+				event,
+				ProvenanceNodeKind.STAGING_EVENT,
+				ProvenanceLabels.cash(this.cashLabel(event), event.id, event.financialIdentifier.ticker),
+			);
+			return event;
 		});
 	}
 
-	private convertStockTradesToEvents(trades: TradeStock[]): StagingTradeEventStock[] {
+	private cashLabel(event: StagingTradeEventCashTransaction): CashTransactionLabel {
+		if (event instanceof StagingTradeEventCashTransactionDividend) {
+			return CashTransactionLabel.DIVIDEND;
+		}
+		if (event instanceof StagingTradeEventCashTransactionPaymentInLieuOfDividend) {
+			return CashTransactionLabel.PAYMENT_IN_LIEU;
+		}
+		if (event instanceof StagingTradeEventCashTransactionWithholdingTax) {
+			return CashTransactionLabel.WITHHOLDING_TAX;
+		}
+		return CashTransactionLabel.WITHHOLDING_TAX_ON_PAYMENT_IN_LIEU;
+	}
+
+	private track(
+		provenance: IProvenanceRecorder,
+		record: object,
+		staged: object,
+		kind: ProvenanceNodeKind,
+		label: string,
+	): void {
+		provenance.node(staged, kind, label, {});
+		provenance.derive([record], staged, ProvenanceChange.TRANSFORMED, STAGE, null);
+	}
+
+	private toCashTransaction(transaction: TransactionCash): StagingTradeEventCashTransaction {
+		const descLower = transaction.description.toLowerCase();
+		const isOrdinaryDividend = descLower.includes("ordinary dividend");
+		const isBonusDividend = descLower.includes("bonus dividend");
+		const isPaymentInLieuWithholding = descLower.includes("payment in lieu of dividend");
+
+		let dividendType = DividendType.UNKNOWN;
+		if (isOrdinaryDividend) dividendType = DividendType.ORDINARY;
+		if (isBonusDividend) dividendType = DividendType.BONUS;
+
+		const financialIdentifier = new StagingFinancialIdentifier({
+			isin: Isin.Schema.parse(transaction.isin),
+			ticker: Ticker.Schema.parse(transaction.symbol),
+		});
+		const currency = CurrencyCode.Schema.parse(transaction.currency);
+		const exchangedMoney = new ExchangedMoney({
+			quantity: 1,
+			priceInBase: transaction.amount * transaction.fxRateToBase,
+			currency: currency,
+			commissionCurrency: currency,
+			commissionInBase: 0,
+			taxCurrency: currency,
+			taxTotal: 0,
+			fxRateToBase: transaction.fxRateToBase,
+		});
+		const base = {
+			id: TradeEventId.Schema.parse(transaction.transactionID),
+			financialIdentifier,
+			assetClass: AssetClass.CASH_AND_CASH_EQUIVALENTS,
+			date: transaction.dateTime,
+			multiplier: 1,
+			exchangedMoney,
+			actionId: CashActionId.Schema.parse(transaction.actionID),
+			transactionId: CashTransactionId.Schema.parse(transaction.transactionID),
+			listingExchange: ListingExchange.Schema.parse(transaction.listingExchange),
+		};
+
+		if (transaction.type === IbkrCashTransactionType.DIVIDEND) {
+			return new StagingTradeEventCashTransactionDividend({ ...base, dividendType });
+		}
+
+		if (
+			transaction.type === IbkrCashTransactionType.WITHHOLDING_TAX &&
+			isPaymentInLieuWithholding
+		) {
+			return new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend(base);
+		}
+
+		if (transaction.type === IbkrCashTransactionType.WITHHOLDING_TAX) {
+			return new StagingTradeEventCashTransactionWithholdingTax(base);
+		}
+
+		if (transaction.type === IbkrCashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS) {
+			return new StagingTradeEventCashTransactionPaymentInLieuOfDividend({
+				...base,
+				dividendType,
+			});
+		}
+
+		throw new Error(`Unknown cash transaction type: ${transaction.type}`);
+	}
+
+	private convertStockTradesToEvents(
+		trades: TradeStock[],
+		provenance: IProvenanceRecorder,
+	): StagingTradeEventStock[] {
 		return trades.map((trade) => {
 			const financialIdentifier = new StagingFinancialIdentifier({
 				isin: Isin.Schema.parse(trade.isin),
@@ -222,39 +283,67 @@ export class IbkrTransformService {
 				multiplier: 1,
 				exchangedMoney,
 			};
-			if (trade.quantity > 0) {
-				return new StagingTradeEventStockAcquired({
-					...base,
-					acquisitionMethod: AcquisitionMethod.BOUGHT,
-				});
-			} else {
-				return new StagingTradeEventStockSold(base);
-			}
+			const event =
+				trade.quantity > 0
+					? new StagingTradeEventStockAcquired({
+							...base,
+							acquisitionMethod: AcquisitionMethod.BOUGHT,
+						})
+					: new StagingTradeEventStockSold(base);
+			this.track(
+				provenance,
+				trade,
+				event,
+				ProvenanceNodeKind.STAGING_EVENT,
+				ProvenanceLabels.trade(
+					AssetClass.STOCK,
+					trade.quantity > 0,
+					event.id,
+					event.exchangedMoney.quantity,
+					financialIdentifier.ticker,
+				),
+			);
+			return event;
 		});
 	}
 
-	private convertStockLotsToEvents(lots: LotStock[]): StagingTaxLot[] {
-		return lots.map(
-			(lot) =>
-				new StagingTaxLot({
-					id: TaxLotId.Schema.parse(lot.transactionID),
-					financialIdentifier: new StagingFinancialIdentifier({
-						isin: Isin.Schema.parse(lot.isin),
-						ticker: Ticker.Schema.parse(lot.symbol),
-					}),
-					quantity: lot.quantity,
-					acquired: new StagingTaxLotMatchingDetails({
-						id: TradeEventId.Schema.parse(lot.transactionID),
-						dateTime: null,
-					}),
-					sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
-					shortLongType: ShortLong.LONG,
+	private convertStockLotsToEvents(
+		lots: LotStock[],
+		provenance: IProvenanceRecorder,
+	): StagingTaxLot[] {
+		return lots.map((lot) => {
+			const staged = new StagingTaxLot({
+				id: TaxLotId.Schema.parse(lot.transactionID),
+				financialIdentifier: new StagingFinancialIdentifier({
+					isin: Isin.Schema.parse(lot.isin),
+					ticker: Ticker.Schema.parse(lot.symbol),
 				}),
+				quantity: lot.quantity,
+				acquired: new StagingTaxLotMatchingDetails({
+					id: TradeEventId.Schema.parse(lot.transactionID),
+					dateTime: null,
+				}),
+				sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
+				shortLongType: ShortLong.LONG,
+			});
+			this.trackLot(provenance, lot, staged);
+			return staged;
+		});
+	}
+
+	private trackLot(provenance: IProvenanceRecorder, record: object, staged: StagingTaxLot): void {
+		this.track(
+			provenance,
+			record,
+			staged,
+			ProvenanceNodeKind.STAGING_LOT,
+			ProvenanceLabels.lot(staged.id, staged.quantity, staged.financialIdentifier.ticker),
 		);
 	}
 
 	private convertDerivativeTradesToEvents(
 		trades: TradeDerivative[],
+		provenance: IProvenanceRecorder,
 	): StagingTradeEventDerivative[] {
 		return trades.map((trade) => {
 			const financialIdentifier = new StagingFinancialIdentifier({
@@ -280,40 +369,58 @@ export class IbkrTransformService {
 				date: trade.dateTime,
 				exchangedMoney,
 			};
-			if (trade.quantity > 0) {
-				return new StagingTradeEventDerivativeAcquired({
-					...base,
-					acquisitionMethod: AcquisitionMethod.BOUGHT,
-				});
-			} else {
-				return new StagingTradeEventDerivativeSold(base);
-			}
+			const event =
+				trade.quantity > 0
+					? new StagingTradeEventDerivativeAcquired({
+							...base,
+							acquisitionMethod: AcquisitionMethod.BOUGHT,
+						})
+					: new StagingTradeEventDerivativeSold(base);
+			this.track(
+				provenance,
+				trade,
+				event,
+				ProvenanceNodeKind.STAGING_EVENT,
+				ProvenanceLabels.trade(
+					AssetClass.OPTION,
+					trade.quantity > 0,
+					event.id,
+					event.exchangedMoney.quantity,
+					financialIdentifier.ticker,
+				),
+			);
+			return event;
 		});
 	}
 
-	private convertDerivativeLotsToEvents(lots: LotDerivative[]): StagingTaxLot[] {
-		return lots.map(
-			(lot) =>
-				new StagingTaxLot({
-					id: TaxLotId.Schema.parse(lot.transactionID),
-					financialIdentifier: new StagingFinancialIdentifier({
-						isin: Isin.Schema.parse(lot.underlyingSecurityID),
-						ticker: Ticker.Schema.parse(lot.symbol),
-						name: lot.description,
-					}),
-					quantity: lot.quantity,
-					acquired: new StagingTaxLotMatchingDetails({
-						id: TradeEventId.Schema.parse(lot.transactionID),
-						dateTime: null,
-					}),
-					sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
-					shortLongType: ShortLong.LONG,
+	private convertDerivativeLotsToEvents(
+		lots: LotDerivative[],
+		provenance: IProvenanceRecorder,
+	): StagingTaxLot[] {
+		return lots.map((lot) => {
+			const staged = new StagingTaxLot({
+				id: TaxLotId.Schema.parse(lot.transactionID),
+				financialIdentifier: new StagingFinancialIdentifier({
+					isin: Isin.Schema.parse(lot.underlyingSecurityID),
+					ticker: Ticker.Schema.parse(lot.symbol),
+					name: lot.description,
 				}),
-		);
+				quantity: lot.quantity,
+				acquired: new StagingTaxLotMatchingDetails({
+					id: TradeEventId.Schema.parse(lot.transactionID),
+					dateTime: null,
+				}),
+				sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
+				shortLongType: ShortLong.LONG,
+			});
+			this.trackLot(provenance, lot, staged);
+			return staged;
+		});
 	}
 
 	private convertCorporateActionsToPartialRelationships(
 		corporateActions: CorporateAction[],
+		provenance: IProvenanceRecorder,
 	): StagingIdentifierRelationshipPartialAny[] {
 		const partials: StagingIdentifierRelationshipPartialAny[] = [];
 
@@ -338,28 +445,32 @@ export class IbkrTransformService {
 			const fromIdentifier = isFromSide ? identifier : null;
 			const toIdentifier = isFromSide ? null : identifier;
 
-			if (changeType === StagingIdentifierChangeType.SPLIT) {
-				partials.push(
-					new StagingIdentifierRelationshipPartialWithQuantity({
-						fromIdentifier,
-						toIdentifier,
-						correlationKey: CorrelationKey.Schema.parse(row.actionID),
-						changeType,
-						effectiveDate: row.dateTime,
-						quantity: Math.abs(row.quantity),
-					}),
-				);
-			} else {
-				partials.push(
-					new StagingIdentifierRelationshipPartial({
-						fromIdentifier,
-						toIdentifier,
-						correlationKey: CorrelationKey.Schema.parse(row.actionID),
-						changeType,
-						effectiveDate: row.dateTime,
-					}),
-				);
-			}
+			const correlationKey = CorrelationKey.Schema.parse(row.actionID);
+			const partial =
+				changeType === StagingIdentifierChangeType.SPLIT
+					? new StagingIdentifierRelationshipPartialWithQuantity({
+							fromIdentifier,
+							toIdentifier,
+							correlationKey,
+							changeType,
+							effectiveDate: row.dateTime,
+							quantity: Math.abs(row.quantity),
+						})
+					: new StagingIdentifierRelationshipPartial({
+							fromIdentifier,
+							toIdentifier,
+							correlationKey,
+							changeType,
+							effectiveDate: row.dateTime,
+						});
+			partials.push(partial);
+			this.track(
+				provenance,
+				row,
+				partial,
+				ProvenanceNodeKind.STAGING_CORPORATE_ACTION,
+				ProvenanceLabels.corporateActionHalf(correlationKey, isFromSide, identifier.ticker),
+			);
 		}
 
 		return partials;

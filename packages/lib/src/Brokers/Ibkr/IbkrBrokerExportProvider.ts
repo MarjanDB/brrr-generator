@@ -31,7 +31,10 @@ export class IbkrBrokerExportProvider implements IBrokerProvider {
 		);
 
 		const merged = this.extract.mergeTrades(segmentedList, new NullProvenanceRecorder());
-		const transformed = this.transform.convertSegmentedTradesToStagingEvents(merged);
+		const transformed = this.transform.convertSegmentedTradesToStagingEvents(
+			merged,
+			new NullProvenanceRecorder(),
+		);
 
 		return transformed;
 	}
