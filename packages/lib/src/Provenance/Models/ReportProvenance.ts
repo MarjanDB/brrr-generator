@@ -4,7 +4,7 @@ import type { ReportTotals } from "@brrr/Provenance/Models/ReportTotals";
 import type { ReportUnderlying } from "@brrr/Provenance/Models/ReportUnderlying";
 
 export type ReportProvenanceArgs = {
-	shares: ReportInstrument[];
+	stocks: ReportInstrument[];
 	optionUnderlyings: ReportUnderlying[];
 	dividendPayers: ReportInstrument[];
 	withoutLines: ReportInstrument[];
@@ -13,7 +13,7 @@ export type ReportProvenanceArgs = {
 };
 
 export class ReportProvenance {
-	public readonly shares: ReportInstrument[];
+	public readonly stocks: ReportInstrument[];
 	public readonly optionUnderlyings: ReportUnderlying[];
 	public readonly dividendPayers: ReportInstrument[];
 	public readonly withoutLines: ReportInstrument[];
@@ -21,7 +21,7 @@ export class ReportProvenance {
 	public readonly totals: ReportTotals;
 
 	public constructor(args: ReportProvenanceArgs) {
-		this.shares = args.shares;
+		this.stocks = args.stocks;
 		this.optionUnderlyings = args.optionUnderlyings;
 		this.dividendPayers = args.dividendPayers;
 		this.withoutLines = args.withoutLines;

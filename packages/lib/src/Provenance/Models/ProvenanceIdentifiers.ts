@@ -10,3 +10,9 @@ export type ProvenanceStage = Nominal<string, "Provenance.Stage">;
 export const ProvenanceStage = {
 	Schema: z.string().transform((value) => value as ProvenanceStage),
 };
+
+// An option's underlying as the graph recorded it (the UNDERLYING_SYMBOL field).
+export type ProvenanceUnderlyingSymbol = Nominal<string, "Provenance.UnderlyingSymbol">;
+export const ProvenanceUnderlyingSymbol = {
+	Schema: z.string().transform((value) => value as ProvenanceUnderlyingSymbol),
+};

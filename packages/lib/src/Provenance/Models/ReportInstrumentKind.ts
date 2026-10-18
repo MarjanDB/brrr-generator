@@ -1,5 +1,5 @@
 export enum ReportInstrumentKind {
-	SHARE = "SHARE",
+	STOCK = "STOCK",
 	OPTION_CONTRACT = "OPTION_CONTRACT",
 	DIVIDEND_PAYER = "DIVIDEND_PAYER",
 }

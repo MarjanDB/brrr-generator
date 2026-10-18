@@ -3,6 +3,7 @@ import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
 import type { ProvenanceDrop } from "@brrr/Provenance/Models/ProvenanceDrop";
 import { ProvenanceEventKind } from "@brrr/Provenance/Models/ProvenanceEventKind";
 import { ProvenanceField } from "@brrr/Provenance/Models/ProvenanceField";
+import { ProvenanceUnderlyingSymbol } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 import { ProvenanceLegSide } from "@brrr/Provenance/Models/ProvenanceLegSide";
 import type { ProvenanceNode } from "@brrr/Provenance/Models/ProvenanceNode";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
@@ -58,8 +59,8 @@ export class ProvenanceReportReader {
 			.filter((leftOut) => leftOut.category === DropCategory.NOT_IN_THIS_REPORT);
 
 		return new ReportProvenance({
-			shares: this.sortByTicker(
-				withLines.filter((instrument) => instrument.kind === ReportInstrumentKind.SHARE),
+			stocks: this.sortByTicker(
+				withLines.filter((instrument) => instrument.kind === ReportInstrumentKind.STOCK),
 			),
 			optionUnderlyings: this.underlyingsOf(options),
 			dividendPayers: this.sortByTicker(
@@ -192,7 +193,7 @@ export class ProvenanceReportReader {
 		if (events.some((event) => cashEventKinds.includes(event.fields[ProvenanceField.EVENT_KIND]))) {
 			return ReportInstrumentKind.DIVIDEND_PAYER;
 		}
-		return ReportInstrumentKind.SHARE;
+		return ReportInstrumentKind.STOCK;
 	}
 
 	private itemOf(node: ProvenanceNode, flow: ProvenanceWalker): ReportItem {
@@ -287,7 +288,10 @@ export class ProvenanceReportReader {
 			.sort(([left], [right]) => this.compare(left, right))
 			.map(
 				([underlyingSymbol, grouped]) =>
-					new ReportUnderlying({ underlyingSymbol, contracts: grouped }),
+					new ReportUnderlying({
+						underlyingSymbol: ProvenanceUnderlyingSymbol.Schema.parse(underlyingSymbol),
+						contracts: grouped,
+					}),
 			);
 	}
 

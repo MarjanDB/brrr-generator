@@ -17,7 +17,7 @@ import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Models/TaxAu
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
-test("a share lists its events by date, its broker lots, its matched lots with their two lines, and what was left out", () => {
+test("a stock lists its events by date, its broker lots, its matched lots with their two lines, and what was left out", () => {
 	const graph = new ProvenanceGraph({ parent: null });
 	const grouping = {};
 	const sell = {};
@@ -76,26 +76,26 @@ test("a share lists its events by date, its broker lots, its matched lots with t
 
 	const reading = new ProvenanceReportReader().read(graph);
 
-	expect(reading.shares).toHaveLength(1);
-	const share = reading.shares[0];
-	expect(share.kind).toEqual(ReportInstrumentKind.SHARE);
-	expect(share.node).toBe(graph.nodeOf(grouping));
-	expect(share.events).toHaveLength(3);
-	expect(share.events[0].node).toBe(graph.nodeOf(buy));
-	expect(share.events[1].node).toBe(graph.nodeOf(sell));
-	expect(share.events[2].node).toBe(graph.nodeOf(open));
-	expect(share.events[2].leftOut).toHaveLength(1);
-	expect(share.events[2].leftOut[0].drop.reason).toEqual(DropReason.POSITION_OPEN);
-	expect(share.events[2].leftOut[0].category).toEqual(DropCategory.NOT_IN_THIS_REPORT);
-	expect(share.brokerLots).toHaveLength(1);
-	expect(share.brokerLots[0].leftOut[0].drop.reason).toEqual(DropReason.NOT_USED);
-	expect(share.matchedLots).toHaveLength(1);
-	expect(share.matchedLots[0].acquired.leg).toBe(graph.nodeOf(legBuy));
-	expect(share.matchedLots[0].acquired.line).toBe(graph.nodeOf(lineBuy));
-	expect(share.matchedLots[0].sold.leg).toBe(graph.nodeOf(legSell));
-	expect(share.matchedLots[0].sold.line).toBe(graph.nodeOf(lineSell));
-	expect(share.lines).toHaveLength(2);
-	expect(share.notInReport).toEqual(2);
+	expect(reading.stocks).toHaveLength(1);
+	const stock = reading.stocks[0];
+	expect(stock.kind).toEqual(ReportInstrumentKind.STOCK);
+	expect(stock.node).toBe(graph.nodeOf(grouping));
+	expect(stock.events).toHaveLength(3);
+	expect(stock.events[0].node).toBe(graph.nodeOf(buy));
+	expect(stock.events[1].node).toBe(graph.nodeOf(sell));
+	expect(stock.events[2].node).toBe(graph.nodeOf(open));
+	expect(stock.events[2].leftOut).toHaveLength(1);
+	expect(stock.events[2].leftOut[0].drop.reason).toEqual(DropReason.POSITION_OPEN);
+	expect(stock.events[2].leftOut[0].category).toEqual(DropCategory.NOT_IN_THIS_REPORT);
+	expect(stock.brokerLots).toHaveLength(1);
+	expect(stock.brokerLots[0].leftOut[0].drop.reason).toEqual(DropReason.NOT_USED);
+	expect(stock.matchedLots).toHaveLength(1);
+	expect(stock.matchedLots[0].acquired.leg).toBe(graph.nodeOf(legBuy));
+	expect(stock.matchedLots[0].acquired.line).toBe(graph.nodeOf(lineBuy));
+	expect(stock.matchedLots[0].sold.leg).toBe(graph.nodeOf(legSell));
+	expect(stock.matchedLots[0].sold.line).toBe(graph.nodeOf(lineSell));
+	expect(stock.lines).toHaveLength(2);
+	expect(stock.notInReport).toEqual(2);
 	expect(reading.withoutLines).toHaveLength(0);
 	expect(reading.totals.lines).toEqual(2);
 	expect(reading.totals.notInReport).toEqual(2);
@@ -168,7 +168,7 @@ test("option contracts are listed under their underlying, each its own entry, by
 
 	const reading = new ProvenanceReportReader().read(graph);
 
-	expect(reading.shares).toHaveLength(0);
+	expect(reading.stocks).toHaveLength(0);
 	expect(reading.optionUnderlyings).toHaveLength(2);
 	expect(reading.optionUnderlyings[0].underlyingSymbol).toEqual("AAPL");
 	expect(reading.optionUnderlyings[0].contracts).toHaveLength(1);
@@ -216,7 +216,7 @@ test("a dividend payer lists its dividend and withholding, its line, and the war
 
 	const reading = new ProvenanceReportReader().read(graph);
 
-	expect(reading.shares).toHaveLength(0);
+	expect(reading.stocks).toHaveLength(0);
 	expect(reading.dividendPayers).toHaveLength(1);
 	const payer = reading.dividendPayers[0];
 	expect(payer.kind).toEqual(ReportInstrumentKind.DIVIDEND_PAYER);
@@ -246,7 +246,7 @@ test("an instrument the report touched but gave no line goes to the ones without
 
 	const reading = new ProvenanceReportReader().read(graph);
 
-	expect(reading.shares).toHaveLength(0);
+	expect(reading.stocks).toHaveLength(0);
 	expect(reading.withoutLines).toHaveLength(1);
 	expect(reading.withoutLines[0].node).toBe(graph.nodeOf(grouping));
 	expect(reading.withoutLines[0].lines).toHaveLength(0);
@@ -268,7 +268,7 @@ test("an instrument whose items the report did nothing with is not listed", () =
 
 	const reading = new ProvenanceReportReader().read(graph);
 
-	expect(reading.shares).toHaveLength(0);
+	expect(reading.stocks).toHaveLength(0);
 	expect(reading.dividendPayers).toHaveLength(0);
 	expect(reading.optionUnderlyings).toHaveLength(0);
 	expect(reading.withoutLines).toHaveLength(0);
@@ -355,7 +355,7 @@ test("what the import dropped needs a look, whatever instrument it was near", ()
 	expect(reading.needsALook[1].drop.reason).toEqual(DropReason.NOT_SUPPORTED);
 	expect(reading.totals.needsALook).toEqual(2);
 	expect(reading.totals.notInReport).toEqual(0);
-	expect(reading.shares).toHaveLength(0);
+	expect(reading.stocks).toHaveLength(0);
 });
 
 test("a matched lot whose legs closed outside the period is one thing left out and has no lines", () => {
