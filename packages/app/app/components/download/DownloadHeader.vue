@@ -2,8 +2,6 @@
 import { type ReportProvenance, SlovenianReportTypeId } from "@brrr/lib";
 import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from "reka-ui";
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import type { GeneratedOutputs } from "~/components/download/generatedOutputs";
-import type { TaxAuthorityGuide } from "~/components/download/taxAuthorityGuides";
 import AppBadge from "~/components/ui/AppBadge.vue";
 import AppButton from "~/components/ui/AppButton.vue";
 import AppTooltip from "~/components/ui/AppTooltip.vue";
@@ -11,7 +9,9 @@ import type { PanelSections } from "~/download/panel/PanelSections";
 import { warningItemsOf } from "~/download/panel/warningItems";
 import { dropSentence } from "~/download/sentences/dropSentence";
 import { warningSentence } from "~/download/sentences/warningSentence";
-import { ColorIntent } from "~/utils/ColorIntent";
+import type { GeneratedOutputs } from "~/types/generatedOutputs";
+import { ColorIntent } from "~/types/ui";
+import type { TaxAuthorityGuide } from "~/utils/taxAuthorityGuides";
 
 const props = defineProps<{
 	outputs: GeneratedOutputs;

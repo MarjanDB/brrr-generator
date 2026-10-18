@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TaxAuthorityId } from "@brrr/lib";
-import type { TaxAuthorityCard } from "./taxAuthorityCards";
+import type { TaxAuthorityCard } from "~/utils/taxAuthorityCards";
 
 defineProps<{
 	card: TaxAuthorityCard;

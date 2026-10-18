@@ -1,5 +1,5 @@
 import { defineConfig, presetIcons, presetWind4 } from "unocss";
-import { ColorIntent } from "./app/utils/ColorIntent";
+import { ColorIntent } from "./app/types/ui";
 
 function buttonShortcuts() {
 	return Object.values(ColorIntent).map((color): [string, string] => [

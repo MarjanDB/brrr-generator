@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from "reka-ui";
-import { BadgeVariant } from "~/components/ui/BadgeVariant";
 import { dropSentence } from "~/download/sentences/dropSentence";
 import type { ImportLeftOut } from "~/review/ImportLeftOut";
-import { ColorIntent } from "~/utils/ColorIntent";
+import { BadgeVariant, ColorIntent } from "~/types/ui";
 
 const props = defineProps<{
   leftOut: ImportLeftOut;

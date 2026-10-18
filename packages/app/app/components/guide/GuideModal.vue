@@ -7,7 +7,7 @@ import {
   DialogRoot,
   DialogTitle,
 } from "reka-ui";
-import type { GuideStep, LinkSegment, Segment } from "~/components/guide/guideTypes";
+import type { GuideStep, LinkSegment, Segment } from "~/types/guide";
 
 defineProps<{
   nameKey: string;

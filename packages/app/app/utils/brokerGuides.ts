@@ -1,6 +1,4 @@
-export type { GuideStep, LinkSegment, Segment, TextSegment } from "../guide/guideTypes";
-
-import type { GuideStep } from "../guide/guideTypes";
+import type { GuideStep } from "~/types/guide";
 
 export type BrokerGuide = {
 	id: string;

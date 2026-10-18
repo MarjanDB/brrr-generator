@@ -1,4 +1,4 @@
-import { ColorIntent } from "~/utils/ColorIntent";
+import { ColorIntent } from "~/types/ui";
 
 const intents: ColorIntent[] = [
 	ColorIntent.ACTION,

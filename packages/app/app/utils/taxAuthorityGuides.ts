@@ -1,5 +1,5 @@
 import { SlovenianReportTypeId, TaxAuthorityId } from "@brrr/lib";
-import type { GuideStep } from "~/components/guide/guideTypes";
+import type { GuideStep } from "~/types/guide";
 
 const SLOVENIA_SCREENSHOTS = "/screenshots/tax-authorities/slovenia-edavki";
 

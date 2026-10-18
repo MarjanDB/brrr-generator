@@ -7,3 +7,8 @@ export enum ColorIntent {
 	DANGER = "danger",
 	INFO = "info",
 }
+
+export enum BadgeVariant {
+	SOLID = "solid",
+	SOFT = "soft",
+}

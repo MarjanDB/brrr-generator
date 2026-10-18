@@ -19,7 +19,7 @@ import { filterPanel } from "~/download/panel/filterPanel";
 import { findEntry } from "~/download/panel/findEntry";
 import { firstEntry } from "~/download/panel/firstEntry";
 import { monogramIntent, monogramText } from "~/download/panel/monogramIntent";
-import { ColorIntent } from "~/utils/ColorIntent";
+import { ColorIntent } from "~/types/ui";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 

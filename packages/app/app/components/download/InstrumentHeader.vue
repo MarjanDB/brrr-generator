@@ -7,7 +7,7 @@ import { splitRatioOf } from "~/download/labels/instrumentLabels";
 import type { SplitChip } from "~/download/labels/SplitChip";
 import { monogramIntent, monogramText } from "~/download/panel/monogramIntent";
 import type { PanelEntry } from "~/download/panel/PanelEntry";
-import { ColorIntent } from "~/utils/ColorIntent";
+import { ColorIntent } from "~/types/ui";
 
 const props = defineProps<{
 	entry: PanelEntry;
