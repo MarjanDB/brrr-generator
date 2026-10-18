@@ -1,9 +1,16 @@
 <script setup lang="ts">
-import { type FinancialEvents, type FinancialGrouping, TradeEventCashTransactionDividend } from "@brrr/lib";
+import {
+  type FinancialEvents,
+  type FinancialGrouping,
+  type ProvenanceGraph,
+  TradeEventCashTransactionDividend,
+} from "@brrr/lib";
 import { shallowRef } from "vue";
+import { ImportSources } from "~/review/ImportSources";
 
 const props = defineProps<{
   financialEvents: FinancialEvents;
+  provenance: ProvenanceGraph;
   collapsed: boolean;
 }>();
 
@@ -12,6 +19,9 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+
+// Built once per import: where each imported row came from.
+const sources = computed(() => new ImportSources(props.provenance));
 
 interface InstrumentRow {
   name: string;
@@ -116,5 +126,6 @@ function openModal(row: InstrumentRow) {
     :name="modalRow.name"
     :isin="modalRow.isin"
     :groupings="modalRow.groupings"
+    :sources="sources"
   />
 </template>

@@ -2,6 +2,7 @@
 import type { FinancialGrouping } from "@brrr/lib";
 import { useI18n } from 'vue-i18n';
 import type { CumulativePoint } from "~/composables/useInstrumentStats";
+import type { ImportSources } from "~/review/ImportSources";
 
 type CashTx = FinancialGrouping["cashTransactions"][number];
 
@@ -9,6 +10,7 @@ defineProps<{
   transactions: CashTx[];
   cumulativeSeries: CumulativePoint[];
   baseCurrency: string;
+  sources: ImportSources;
   locale: string;
   xMin?: number;
   xMax?: number;
@@ -28,6 +30,6 @@ const { t } = useI18n();
       :x-min="xMin"
       :x-max="xMax"
     />
-    <DividendTransactionsTable :transactions="transactions" :base-currency="baseCurrency" />
+    <DividendTransactionsTable :transactions="transactions" :base-currency="baseCurrency" :sources="sources" />
   </section>
 </template>

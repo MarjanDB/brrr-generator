@@ -110,6 +110,7 @@ function onRestart() {
     <ReviewStep
       v-if="imported !== null"
       :financial-events="imported.events"
+      :provenance="imported.provenance"
       :collapsed="currentStep > 2"
       @confirmed="onConfirmed"
     />
