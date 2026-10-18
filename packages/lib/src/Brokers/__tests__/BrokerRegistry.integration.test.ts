@@ -1,6 +1,6 @@
 import { BrokerRegistry } from "@brrr/Brokers/BrokerRegistry";
 import { createContainer } from "@brrr/Container";
-import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
+import { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
 import { TestKit } from "@brrr/test-cases";
 
 const dividendsXml = TestKit.ibkr.dividends.inputs.simpleCashTransactionOfDividends.read().xml;

@@ -12,7 +12,7 @@
 			"type": "node",
 			"request": "launch",
 			"runtimeArgs": ["--import", "tsx"],
-			"program": "${workspaceFolder}/packages/cli/main.ts",
+			"program": "${workspaceFolder}/packages/cli/src/main.ts",
 			"args": ["--year", "2024"],
 			"cwd": "${workspaceFolder}/packages/cli"
 		}

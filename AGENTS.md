@@ -60,13 +60,15 @@ imports → broker provider (extract + transform) → **StagingFinancialEvents**
 - `packages/lib/src/Brokers/` — one folder per broker; turns export files into broker-neutral staging events.
 - `packages/lib/src/Core/` — broker- and country-neutral: models, staging → core processing, lot matching (NONE / FIFO / PROVIDED).
 - `packages/lib/src/TaxAuthorities/` — one folder per country; turns core events into that country's forms.
-- `packages/lib/src/InfoProviders/` — company and country lookups (`IInfoProvider`); the Node implementation and its JSON data sit in `Node/`.
+- `packages/lib/src/InfoProviders/` — company and country lookups (`IInfoProvider`), one folder per implementation; the Node one keeps its JSON data in `Node/Data/`.
 
 Each area (`Core`, `Brokers` and each broker, `TaxAuthorities` and each country, `InfoProviders`) is laid out the same way, so a
 file's folder says what it is:
 
-- At the area's top, only its DI wiring (`<Area>Module.ts`) and its entry point, the class other areas call (`BrokerRegistry`,
-  `IbkrBrokerExportProvider`, `TaxAuthorityRegistry`, `SlovenianTaxAuthorityProvider`). Core has no entry point.
+- At the area's top, only its DI wiring (`<Area>Module.ts`), its entry point, the class other areas call (`BrokerRegistry`,
+  `IbkrBrokerExportProvider`, `TaxAuthorityRegistry`, `SlovenianTaxAuthorityProvider`), and a folder per implementation
+  (`Brokers/Ibkr/`, `TaxAuthorities/Slovenia/`, `InfoProviders/Node/`). Core and InfoProviders have no entry point, and
+  InfoProviders no module: `Container.ts` binds the provider it's given.
 - `Interfaces/` — the `I…` contracts.
 - `Models/` — what our code builds and passes around: classes, data types, enums, identifiers.
 - `Schemas/` — the outside's formats: the zod schemas we parse input with, the enums and identifiers they parse into, and the XSDs
@@ -76,8 +78,7 @@ file's folder says what it is:
 - `Utils/` — helpers that hold no state.
 
 `Models/` and `Services/` split into a folder per concern where an area has several (`Core/Models/Events/Stock/`,
-`Core/Services/LotMatching/`). Core, Brokers and TaxAuthorities follow this layout; InfoProviders is still to be moved to it, so
-don't move its files in passing.
+`Core/Services/LotMatching/`). The CLI keeps its code in `packages/cli/src/`.
 
 The **pipeline-and-structure** skill has the details and the steps for adding a broker, tax authority or report type.
 

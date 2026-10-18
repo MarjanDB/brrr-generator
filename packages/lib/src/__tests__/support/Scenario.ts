@@ -28,8 +28,10 @@ import { TaxLot, type TaxLotDerivative, type TaxLotStock } from "@brrr/Core/Mode
 import { FinancialEventsProcessor } from "@brrr/Core/Services/LotMatching/FinancialEventsProcessor";
 import { LotMatcher } from "@brrr/Core/Services/LotMatching/LotMatcher";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/Services/StagingProcessing/StagingFinancialGroupingProcessor";
-import type { CompanyInfo, Country, IInfoProvider } from "@brrr/InfoProviders/IInfoProvider";
-import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
+import type { IInfoProvider } from "@brrr/InfoProviders/Interfaces/IInfoProvider";
+import type { CompanyInfo } from "@brrr/InfoProviders/Models/CompanyInfo";
+import type { Country } from "@brrr/InfoProviders/Models/Country";
+import { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
 import type { GeneratedExports } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
 import { TaxAuthorityId } from "@brrr/TaxAuthorities/Models/TaxAuthorityIdentifiers";

@@ -14,7 +14,7 @@ import { Category } from "@brrr/Core/Models/Instrument/Category";
 import { FinancialIdentifier } from "@brrr/Core/Models/Instrument/FinancialIdentifier";
 import { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/Services/IdentifierRelationships/ApplyIdentifierRelationshipsService";
-import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
+import { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
 import { ReportTypeId } from "@brrr/TaxAuthorities/Models/TaxAuthorityIdentifiers";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Models/TaxAuthorityLotMatchingMethod";
 import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Models/SlovenianTaxAuthorityReportTypes";

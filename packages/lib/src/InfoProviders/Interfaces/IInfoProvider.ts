@@ -1,30 +1,6 @@
-import type { CountryCode, CountryName, Isin } from "@brrr/Core/Models/Identifiers";
-
-export enum TreatyType {
-	TaxRelief = "TAX_RELIEF",
-}
-
-export type Country = {
-	name: CountryName;
-	shortCode2: CountryCode;
-	treaties: Map<TreatyType, string>;
-};
-
-export type CompanyLocationInfo = {
-	country: CountryName;
-	address1: string;
-	address2: string | null;
-	zipCode: string;
-	city: string;
-	state: string | null;
-	shortCodeCountry2: CountryCode;
-};
-
-export type CompanyInfo = {
-	shortName: string;
-	longName: string;
-	location: CompanyLocationInfo;
-};
+import type { CountryName, Isin } from "@brrr/Core/Models/Identifiers";
+import type { CompanyInfo } from "@brrr/InfoProviders/Models/CompanyInfo";
+import type { Country } from "@brrr/InfoProviders/Models/Country";
 
 export interface IInfoProvider {
 	getCountry(country: CountryName): Promise<Country | null>;

@@ -1,5 +1,7 @@
 import { CountryName, Isin } from "@brrr/Core/Models/Identifiers";
-import type { CompanyInfo, Country, IInfoProvider } from "@brrr/InfoProviders/IInfoProvider";
+import type { IInfoProvider } from "@brrr/InfoProviders/Interfaces/IInfoProvider";
+import type { CompanyInfo } from "@brrr/InfoProviders/Models/CompanyInfo";
+import type { Country } from "@brrr/InfoProviders/Models/Country";
 
 // Takes plain strings, so the site and the CLI can use it without building lib's identifiers.
 export class PredefinedInfoProvider implements IInfoProvider {

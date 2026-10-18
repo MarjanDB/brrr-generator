@@ -1,17 +1,15 @@
 import { CountryCode, CountryName, type Isin } from "@brrr/Core/Models/Identifiers";
-import {
-	type CompanyInfo,
-	type CompanyLocationInfo,
-	type Country,
-	type IInfoProvider,
-	TreatyType,
-} from "@brrr/InfoProviders/IInfoProvider";
-import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
+import type { IInfoProvider } from "@brrr/InfoProviders/Interfaces/IInfoProvider";
+import type { CompanyInfo } from "@brrr/InfoProviders/Models/CompanyInfo";
+import type { CompanyLocationInfo } from "@brrr/InfoProviders/Models/CompanyLocationInfo";
+import type { Country } from "@brrr/InfoProviders/Models/Country";
+import { TreatyType } from "@brrr/InfoProviders/Models/TreatyType";
+import { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
 import YahooFinance from "yahoo-finance2";
-import internationalTreaties from "./internationalTreaties.json" with { type: "json" };
-import missingCompaniesLookup from "./missingCompaniesLookup.json" with { type: "json" };
-import missingISINLookup from "./missingISINLookup.json" with { type: "json" };
-import specialCountryMappings from "./specialCountryMappings.json" with { type: "json" };
+import internationalTreaties from "./Data/internationalTreaties.json" with { type: "json" };
+import missingCompaniesLookup from "./Data/missingCompaniesLookup.json" with { type: "json" };
+import missingISINLookup from "./Data/missingISINLookup.json" with { type: "json" };
+import specialCountryMappings from "./Data/specialCountryMappings.json" with { type: "json" };
 
 const problematicCountryMappings = specialCountryMappings as Record<string, string>;
 const taxReliefTreaties = (
