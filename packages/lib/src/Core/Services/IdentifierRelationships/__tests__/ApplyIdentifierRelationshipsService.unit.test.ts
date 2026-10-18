@@ -16,7 +16,6 @@ import {
 import { Category } from "@brrr/Core/Models/Instrument/Category";
 import { FinancialIdentifier } from "@brrr/Core/Models/Instrument/FinancialIdentifier";
 import { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
-import { SplitProvenanceStep } from "@brrr/Core/Models/Provenance/SplitProvenanceStep";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/Services/IdentifierRelationships/ApplyIdentifierRelationshipsService";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
@@ -97,10 +96,6 @@ test("two groupings with rename produce one merged grouping", () => {
 	const merged = result.groupings[0];
 	expect(merged.financialIdentifier.isTheSameAs(idB)).toEqual(true);
 	expect(merged.stockTrades.length).toEqual(2);
-	expect(merged.provenance.length).toEqual(1);
-	expect(merged.provenance[0].fromIdentifier.isTheSameAs(idA)).toEqual(true);
-	expect(merged.provenance[0].toIdentifier.isTheSameAs(idB)).toEqual(true);
-	expect(merged.provenance[0].changeType).toEqual(IdentifierChangeType.RENAME);
 });
 
 test("a rename merge keeps the original trades", () => {
@@ -328,11 +323,6 @@ test("chain A to B to C produces one grouping with C", () => {
 	const merged = result.groupings[0];
 	expect(merged.financialIdentifier.isTheSameAs(idC)).toEqual(true);
 	expect(merged.stockTrades.length).toEqual(2);
-	expect(merged.provenance.length).toEqual(2);
-	expect(merged.provenance[0].fromIdentifier.isTheSameAs(idA)).toEqual(true);
-	expect(merged.provenance[0].toIdentifier.isTheSameAs(idB)).toEqual(true);
-	expect(merged.provenance[1].fromIdentifier.isTheSameAs(idB)).toEqual(true);
-	expect(merged.provenance[1].toIdentifier.isTheSameAs(idC)).toEqual(true);
 });
 
 test("sink grouping with different instance merges into one", () => {
@@ -521,14 +511,6 @@ test("apply split scales trades before effective date and merges into to", () =>
 	const trade = merged.stockTrades[0];
 	expect(trade.exchangedMoney.quantity).toEqual(40.0);
 	expect(trade.exchangedMoney.priceInBase).toEqual(1.0);
-	expect(trade.provenance.length).toEqual(1);
-	expect(trade.provenance[0]).toBeInstanceOf(SplitProvenanceStep);
-	expect(trade.provenance[0]).toMatchObject({
-		quantityBefore: 4.0,
-		quantityAfter: 40.0,
-		beforeQuantity: 4.0,
-		beforeTradePrice: 10.0,
-	});
 });
 
 test("apply split builds new trades and leaves the originals untouched", () => {
@@ -596,9 +578,7 @@ test("apply split builds new trades and leaves the originals untouched", () => {
 	expect(merged.stockTrades[1]).toBeInstanceOf(TradeEventStockSold);
 	expect(merged.stockTrades.map((t) => t.exchangedMoney.quantity)).toEqual([40, -20]);
 	expect(bought.exchangedMoney.quantity).toEqual(4.0);
-	expect(bought.provenance).toEqual([]);
 	expect(sold.exchangedMoney.quantity).toEqual(-2.0);
-	expect(sold.provenance).toEqual([]);
 });
 
 test("apply split scales underlying trade price", () => {
@@ -769,9 +749,6 @@ test("apply split scales lots before effective date", () => {
 	expect(result.groupings[0].stockTaxLots.length).toEqual(1);
 	const scaledLot = result.groupings[0].stockTaxLots[0];
 	expect(scaledLot.quantity).toEqual(20.0);
-	expect(scaledLot.provenance.length).toEqual(1);
-	expect(scaledLot.provenance[0]).toBeInstanceOf(SplitProvenanceStep);
-	expect(scaledLot.provenance[0]).toMatchObject({ beforeQuantity: 2.0 });
 });
 
 test("apply reverse split scales by ratio", () => {
@@ -1034,4 +1011,170 @@ test("a rename records the merged grouping, from both groupings and the corporat
 	expect(parents[0].from).toBe(graph.nodeOf(groupingA));
 	expect(parents[1].from).toBe(graph.nodeOf(groupingB));
 	expect(parents[2].from).toBe(graph.nodeOf(rel));
+});
+
+test("a rename chain records the merged grouping, from every grouping and both corporate actions", () => {
+	const idA = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US111"),
+		ticker: Ticker.Schema.parse("A"),
+		name: "A",
+	});
+	const idB = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US222"),
+		ticker: Ticker.Schema.parse("B"),
+		name: "B",
+	});
+	const idC = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US333"),
+		ticker: Ticker.Schema.parse("C"),
+		name: "C",
+	});
+	const groupingA = build.grouping({
+		identifier: idA,
+		countryOfOrigin: CountryCode.Schema.parse("US"),
+		category: Category.REGULAR,
+		stockTrades: [],
+		stockTaxLots: [],
+		derivativeGroupings: [],
+		cashTransactions: [],
+	});
+	const groupingB = build.grouping({
+		identifier: idB,
+		countryOfOrigin: CountryCode.Schema.parse("US"),
+		category: Category.REGULAR,
+		stockTrades: [],
+		stockTaxLots: [],
+		derivativeGroupings: [],
+		cashTransactions: [],
+	});
+	const groupingC = build.grouping({
+		identifier: idC,
+		countryOfOrigin: CountryCode.Schema.parse("US"),
+		category: Category.REGULAR,
+		stockTrades: [],
+		stockTaxLots: [],
+		derivativeGroupings: [],
+		cashTransactions: [],
+	});
+	const relAB = new IdentifierRelationship({
+		fromIdentifier: idA,
+		toIdentifier: idB,
+		changeType: IdentifierChangeType.RENAME,
+		effectiveDate: build.date("2024-01-01"),
+	});
+	const relBC = new IdentifierRelationship({
+		fromIdentifier: idB,
+		toIdentifier: idC,
+		changeType: IdentifierChangeType.RENAME,
+		effectiveDate: build.date("2024-02-01"),
+	});
+	const events = new FinancialEvents({
+		groupings: [groupingA, groupingB, groupingC],
+		identifierRelationships: [relAB, relBC],
+	});
+	const graph = new ProvenanceGraph({ parent: null });
+	graph.node(groupingA, ProvenanceNodeKind.GROUPING, "grouping US111 · A", {});
+	graph.node(groupingB, ProvenanceNodeKind.GROUPING, "grouping US222 · B", {});
+	graph.node(groupingC, ProvenanceNodeKind.GROUPING, "grouping US333 · C", {});
+	graph.node(relAB, ProvenanceNodeKind.CORPORATE_ACTION, "RENAME A → B", {});
+	graph.node(relBC, ProvenanceNodeKind.CORPORATE_ACTION, "RENAME B → C", {});
+
+	const result = new ApplyIdentifierRelationshipsService().apply(
+		events,
+		[IdentifierChangeType.RENAME],
+		graph,
+	);
+
+	const merged = graph.nodeOf(result.groupings[0]);
+	expect(merged.label).toEqual("grouping US333 · C");
+	const parents = new ProvenanceWalker(graph).parents(merged);
+	expect(parents).toHaveLength(5);
+	expect(parents[0].from).toBe(graph.nodeOf(groupingA));
+	expect(parents[1].from).toBe(graph.nodeOf(groupingB));
+	expect(parents[2].from).toBe(graph.nodeOf(groupingC));
+	expect(parents[3].from).toBe(graph.nodeOf(relAB));
+	expect(parents[4].from).toBe(graph.nodeOf(relBC));
+	expect(parents[4].change).toEqual(ProvenanceChange.RENAMED);
+	expect(parents[4].detail).toEqual(null);
+});
+
+test("a split records each rebuilt lot, from the old one and the corporate action", () => {
+	const idFrom = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US111"),
+		ticker: Ticker.Schema.parse("OLD"),
+		name: "Old",
+	});
+	const idTo = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US222"),
+		ticker: Ticker.Schema.parse("NEW"),
+		name: "New",
+	});
+	const rel = new IdentifierRelationshipSplit({
+		fromIdentifier: idFrom,
+		toIdentifier: idTo,
+		changeType: IdentifierChangeType.SPLIT,
+		effectiveDate: build.date("2024-10-01"),
+		quantityBefore: 2.0,
+		quantityAfter: 20.0,
+	});
+	const acquired = build.stockBought({
+		id: TradeEventId.Schema.parse("acq"),
+		date: "2024-09-01",
+		quantity: 2.0,
+		price: 10.0,
+		currency: CurrencyCode.Schema.parse("USD"),
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	});
+	const sold = build.stockSold({
+		id: TradeEventId.Schema.parse("sold"),
+		date: "2024-09-15",
+		quantity: -2.0,
+		price: 10.0,
+		currency: CurrencyCode.Schema.parse("USD"),
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	});
+	const lot = build.stockTaxLot({
+		id: TaxLotId.Schema.parse("lot1"),
+		quantity: 2.0,
+		shortLongType: ShortLong.LONG,
+		acquired,
+		sold,
+	});
+	const grouping = build.grouping({
+		identifier: idFrom,
+		countryOfOrigin: CountryCode.Schema.parse("US"),
+		category: Category.REGULAR,
+		stockTrades: [],
+		stockTaxLots: [lot],
+		derivativeGroupings: [],
+		cashTransactions: [],
+	});
+	const events = new FinancialEvents({
+		groupings: [grouping],
+		identifierRelationships: [rel],
+	});
+	const graph = new ProvenanceGraph({ parent: null });
+	graph.node(lot, ProvenanceNodeKind.LOT, "lot lot1 · 2 OLD", {});
+	graph.node(rel, ProvenanceNodeKind.CORPORATE_ACTION, "SPLIT OLD → NEW (2 → 20)", {});
+	graph.node(grouping, ProvenanceNodeKind.GROUPING, "grouping US111 · OLD", {});
+
+	const result = new ApplyIdentifierRelationshipsService().apply(
+		events,
+		[IdentifierChangeType.SPLIT],
+		graph,
+	);
+
+	const scaled = graph.nodeOf(result.groupings[0].stockTaxLots[0]);
+	expect(scaled.kind).toEqual(ProvenanceNodeKind.LOT);
+	expect(scaled.label).toEqual("lot lot1 · 20 OLD");
+	const parents = new ProvenanceWalker(graph).parents(scaled);
+	expect(parents).toHaveLength(2);
+	expect(parents[0].from).toBe(graph.nodeOf(lot));
+	expect(parents[0].change).toEqual(ProvenanceChange.SPLIT);
+	expect(parents[0].detail).toEqual("2 → 20");
+	expect(parents[1].from).toBe(graph.nodeOf(rel));
 });
