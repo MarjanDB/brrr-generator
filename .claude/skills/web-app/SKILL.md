@@ -14,8 +14,10 @@ company and country lookups. Nuxt's source directory is `packages/app/app/`.
   the dev server runs. For anything else, `pnpm --filter @brrr/lib build` first, and again after every lib change.
 - `pnpm dev`, `pnpm --filter @brrr/app typecheck`, `pnpm --filter @brrr/app test`, `pnpm --filter @brrr/app build`, `pnpm lint:fix`.
   One test file: `pnpm --filter @brrr/app exec vitest run <name>`.
-- Env: `packages/app/util/env.config.ts` (`APP_CONFIG`, zod) reads `packages/app/.env` if present: `PORT`, `HOST`, `NODE_ENV`, and
-  `NUXT_PUBLIC_POSTHOG_PUBLIC_KEY` / `NUXT_PUBLIC_POSTHOG_HOST` for analytics.
+- Env is Nuxt's own: the CLI loads `packages/app/.env` for dev, build and preview, and production reads the real environment.
+  `NUXT_PUBLIC_POSTHOG_PUBLIC_KEY` / `NUXT_PUBLIC_POSTHOG_HOST` override the runtime config `@posthog/nuxt` sets up, and Nitro
+  reads `PORT` / `HOST`. Devtools run only under `nuxt dev`. A new setting goes in `runtimeConfig`, overridden by its `NUXT_`
+  variable, not read from `process.env` in `nuxt.config.ts`.
 
 ## Tests
 
