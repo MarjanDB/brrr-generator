@@ -1,7 +1,6 @@
 import { Fixtures } from "@brrr/__tests__/support/Fixtures";
 import { Scenario } from "@brrr/__tests__/support/Scenario";
-import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
-import { DividendType } from "@brrr/Core/Schemas/Events/DividendType";
+import { DividendType } from "@brrr/Core/Models/Events/DividendType";
 import {
 	CashActionId,
 	CashTransactionId,
@@ -10,10 +9,11 @@ import {
 	ListingExchange,
 	TaxLotId,
 	TradeEventId,
-} from "@brrr/Core/Schemas/Identifiers";
-import { Category } from "@brrr/Core/Schemas/Instrument/Category";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/Instrument/FinancialIdentifier";
-import { ShortLong } from "@brrr/Core/Schemas/Lots/ShortLong";
+} from "@brrr/Core/Models/Identifiers";
+import { Category } from "@brrr/Core/Models/Instrument/Category";
+import { FinancialIdentifier } from "@brrr/Core/Models/Instrument/FinancialIdentifier";
+import { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
+import { ApplyIdentifierRelationshipsService } from "@brrr/Core/Services/IdentifierRelationships/ApplyIdentifierRelationshipsService";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";

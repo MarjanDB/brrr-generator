@@ -1,0 +1,56 @@
+import type { ILotMatchingMethod } from "@brrr/Core/Interfaces/ILotMatchingMethod";
+import type { TradeEventDerivative } from "@brrr/Core/Models/Events/Derivative/TradeEventDerivative";
+import type { TradeEventStock } from "@brrr/Core/Models/Events/Stock/TradeEventStock";
+import type { DerivativeGrouping } from "@brrr/Core/Models/Groupings/DerivativeGrouping";
+import type { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGrouping";
+import type { LotLeg } from "@brrr/Core/Models/LotMatching/LotLeg";
+import type { MatchedLot } from "@brrr/Core/Models/LotMatching/MatchedLot";
+import type { LotMatcher } from "@brrr/Core/Services/LotMatching/LotMatcher";
+import type { ValidDateTime } from "@brrr/Utils/DateTime";
+
+// Matches an instrument's trades into lots and keeps the legs of the lots closed in a period:
+// those are the trades a capital gains report lists, each with the lot's share of it.
+export class FinancialEventsProcessor {
+	public constructor(private readonly lotMatcher: LotMatcher) {}
+
+	public stockLotLegsClosedInPeriod(
+		grouping: FinancialGrouping,
+		method: ILotMatchingMethod,
+		fromDate: ValidDateTime,
+		toDate: ValidDateTime,
+	): LotLeg<TradeEventStock>[] {
+		return legsOfLotsClosedInPeriod(
+			this.lotMatcher.matchLots(method, grouping.stockTrades),
+			fromDate,
+			toDate,
+		);
+	}
+
+	public derivativeLotLegsClosedInPeriod(
+		grouping: DerivativeGrouping,
+		method: ILotMatchingMethod,
+		fromDate: ValidDateTime,
+		toDate: ValidDateTime,
+	): LotLeg<TradeEventDerivative>[] {
+		return legsOfLotsClosedInPeriod(
+			this.lotMatcher.matchLots(method, grouping.derivativeTrades),
+			fromDate,
+			toDate,
+		);
+	}
+}
+
+function legsOfLotsClosedInPeriod<T extends { date: ValidDateTime }>(
+	lots: MatchedLot<T>[],
+	periodStart: ValidDateTime,
+	periodEnd: ValidDateTime,
+): LotLeg<T>[] {
+	const closedInPeriod = lots.filter(
+		(lot) => lot.sold.trade.date >= periodStart && lot.sold.trade.date <= periodEnd,
+	);
+	const legs = [
+		...closedInPeriod.map((lot) => lot.acquired),
+		...closedInPeriod.map((lot) => lot.sold),
+	];
+	return legs.sort((a, b) => a.trade.date.toMillis() - b.trade.date.toMillis());
+}

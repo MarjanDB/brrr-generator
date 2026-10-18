@@ -1,11 +1,11 @@
-import type { TradeEventCashTransaction } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransaction";
-import { TradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionDividend";
-import { TradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionPaymentInLieuOfDividend";
-import { TradeEventCashTransactionWithholdingTax } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionWithholdingTax";
-import { TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend";
-import { DividendType } from "@brrr/Core/Schemas/Events/DividendType";
-import type { FinancialGrouping } from "@brrr/Core/Schemas/Groupings/FinancialGrouping";
-import { type CashActionId, Isin } from "@brrr/Core/Schemas/Identifiers";
+import type { TradeEventCashTransaction } from "@brrr/Core/Models/Events/CashTransaction/TradeEventCashTransaction";
+import { TradeEventCashTransactionDividend } from "@brrr/Core/Models/Events/CashTransaction/TradeEventCashTransactionDividend";
+import { TradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Models/Events/CashTransaction/TradeEventCashTransactionPaymentInLieuOfDividend";
+import { TradeEventCashTransactionWithholdingTax } from "@brrr/Core/Models/Events/CashTransaction/TradeEventCashTransactionWithholdingTax";
+import { TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend } from "@brrr/Core/Models/Events/CashTransaction/TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend";
+import { DividendType } from "@brrr/Core/Models/Events/DividendType";
+import type { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGrouping";
+import { type CashActionId, Isin } from "@brrr/Core/Models/Identifiers";
 import { type IInfoProvider, TreatyType } from "@brrr/InfoProviders/IInfoProvider";
 import type {
 	TaxAuthorityConfiguration,

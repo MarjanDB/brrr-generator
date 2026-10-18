@@ -23,7 +23,7 @@ import {
 	type TradeStock,
 	type TransactionCash,
 } from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
-import { CountryCode, CountryName } from "@brrr/Core/Schemas/Identifiers";
+import { CountryCode, CountryName } from "@brrr/Core/Models/Identifiers";
 import { type CompanyInfo, type Country, TreatyType } from "@brrr/InfoProviders/IInfoProvider";
 import { type TaxpayerInfo, TaxpayerType } from "@brrr/TaxAuthorities/ConfigurationProvider";
 

@@ -1,4 +1,4 @@
-import { CountryCode, CountryName, type Isin } from "@brrr/Core/Schemas/Identifiers";
+import { CountryCode, CountryName, type Isin } from "@brrr/Core/Models/Identifiers";
 import {
 	type CompanyInfo,
 	type CompanyLocationInfo,

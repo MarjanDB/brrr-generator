@@ -1,5 +1,5 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
-import { CurrencyCode, TradeEventId } from "@brrr/Core/Schemas/Identifiers";
+import { CurrencyCode, TradeEventId } from "@brrr/Core/Models/Identifiers";
 import {
 	foreignTaxOf,
 	round,

@@ -1,4 +1,4 @@
-import { CountryName, Isin } from "@brrr/Core/Schemas/Identifiers";
+import { CountryName, Isin } from "@brrr/Core/Models/Identifiers";
 import type { CompanyInfo, Country, IInfoProvider } from "@brrr/InfoProviders/IInfoProvider";
 
 // Takes plain strings, so the site and the CLI can use it without building lib's identifiers.

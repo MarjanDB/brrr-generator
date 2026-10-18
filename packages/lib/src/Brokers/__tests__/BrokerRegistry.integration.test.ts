@@ -1,5 +1,5 @@
 import { BrokerRegistry } from "@brrr/Brokers/BrokerRegistry";
-import { createContainer } from "@brrr/container";
+import { createContainer } from "@brrr/Container";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import { TestKit } from "@brrr/test-cases";
 
