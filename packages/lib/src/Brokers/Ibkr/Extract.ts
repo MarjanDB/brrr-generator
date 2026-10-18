@@ -1,3 +1,4 @@
+import type { IbkrTransactionId } from "@brrr/Brokers/Ibkr/Schemas/IbkrIdentifiers";
 import {
 	AssetClass,
 	CorporateAction,
@@ -7,8 +8,8 @@ import {
 	TradeDerivative,
 	TradeStock,
 	TransactionCash,
-} from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
-import { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades";
+} from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
+import { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
 import { XMLParser } from "fast-xml-parser";
 
 export class IbkrExtractService {
@@ -82,9 +83,11 @@ export class IbkrExtractService {
 		});
 	}
 
-	private deduplicateByTransactionID<T extends { transactionID: string }>(lists: T[][]): T[] {
+	private deduplicateByTransactionID<T extends { transactionID: IbkrTransactionId }>(
+		lists: T[][],
+	): T[] {
 		const all = lists.flat();
-		const map = new Map<string, T>();
+		const map = new Map<IbkrTransactionId, T>();
 		for (const item of all) {
 			map.set(item.transactionID, item);
 		}

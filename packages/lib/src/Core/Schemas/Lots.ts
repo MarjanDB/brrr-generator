@@ -5,10 +5,11 @@ import type {
 	TradeEventStockAcquired,
 	TradeEventStockSold,
 } from "@brrr/Core/Schemas/Events";
+import type { TaxLotId } from "@brrr/Core/Schemas/Identifiers";
 import type { AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance";
 
 type TaxLotArgs<A, S> = {
-	id: string;
+	id: TaxLotId;
 	quantity: number;
 	acquired: A;
 	sold: S;
@@ -17,7 +18,7 @@ type TaxLotArgs<A, S> = {
 };
 
 export class TaxLot<A, S> {
-	public readonly id: string;
+	public readonly id: TaxLotId;
 	public readonly quantity: number;
 	public readonly acquired: A;
 	public readonly sold: S;

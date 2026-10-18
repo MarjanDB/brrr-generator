@@ -5,6 +5,7 @@ import type {
 	TransactionCash,
 } from "@brrr/Core/Schemas/Events";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
+import type { CountryCode } from "@brrr/Core/Schemas/Identifiers";
 import type { TaxLotDerivative, TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import type { AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance";
 
@@ -31,7 +32,7 @@ export class DerivativeGrouping {
 
 type FinancialGroupingArgs = {
 	financialIdentifier: FinancialIdentifier;
-	countryOfOrigin: string | null;
+	countryOfOrigin: CountryCode | null;
 	underlyingCategory: GenericCategory;
 	stockTrades: TradeEventStock[];
 	stockTaxLots: TaxLotStock[];
@@ -42,7 +43,7 @@ type FinancialGroupingArgs = {
 
 export class FinancialGrouping {
 	public readonly financialIdentifier: FinancialIdentifier;
-	public readonly countryOfOrigin: string | null;
+	public readonly countryOfOrigin: CountryCode | null;
 	public readonly underlyingCategory: GenericCategory;
 	public readonly stockTrades: TradeEventStock[];
 	public readonly stockTaxLots: TaxLotStock[];

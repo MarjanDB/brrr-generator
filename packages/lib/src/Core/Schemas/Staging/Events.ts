@@ -5,11 +5,17 @@ import type {
 	GenericMonetaryExchangeInformation,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
+import type {
+	CashActionId,
+	CashTransactionId,
+	ListingExchange,
+	TradeEventId,
+} from "@brrr/Core/Schemas/Identifiers";
 import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 
 type StagingTradeEventArgs = {
-	id: string;
+	id: TradeEventId;
 	financialIdentifier: StagingFinancialIdentifier;
 	assetClass: GenericAssetClass;
 	date: ValidDateTime;
@@ -18,13 +24,13 @@ type StagingTradeEventArgs = {
 };
 
 type StagingCashTransactionArgs = StagingTradeEventArgs & {
-	actionId: string;
-	transactionId: string;
-	listingExchange: string;
+	actionId: CashActionId;
+	transactionId: CashTransactionId;
+	listingExchange: ListingExchange;
 };
 
 abstract class StagingTradeEventBase {
-	public readonly id: string;
+	public readonly id: TradeEventId;
 	public readonly financialIdentifier: StagingFinancialIdentifier;
 	public readonly assetClass: GenericAssetClass;
 	public readonly date: ValidDateTime;
@@ -42,9 +48,9 @@ abstract class StagingTradeEventBase {
 }
 
 abstract class StagingCashTransactionBase extends StagingTradeEventBase {
-	public readonly actionId: string;
-	public readonly transactionId: string;
-	public readonly listingExchange: string;
+	public readonly actionId: CashActionId;
+	public readonly transactionId: CashTransactionId;
+	public readonly listingExchange: ListingExchange;
 
 	constructor(args: StagingCashTransactionArgs) {
 		super(args);

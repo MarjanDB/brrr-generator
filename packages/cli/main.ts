@@ -3,10 +3,11 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-	BrokerageRegistry,
+	BrokerRegistry,
 	createContainer,
 	SlovenianReportTypeId,
 	StagingFinancialGroupingProcessor,
+	TaxAuthorityId,
 	TaxAuthorityLotMatchingMethod,
 	TaxAuthorityRegistry,
 	TaxPayerConfigSchema,
@@ -35,8 +36,6 @@ const ROOT = findWorkspaceRoot(path.dirname(fileURLToPath(import.meta.url)));
 const IMPORTS_DIR = path.join(ROOT, "imports");
 const EXPORTS_DIR = path.join(ROOT, "exports");
 const CONFIG_FILE = path.join(ROOT, "config", "userConfig.yml");
-
-const AUTHORITY_ID = "slovenia";
 
 const OUTPUT_FILES: Record<SlovenianReportTypeId, { xml: string; csv: string }> = {
 	[SlovenianReportTypeId.KDVP]: { xml: "Doh_KDVP.xml", csv: "export-trades.csv" },
@@ -99,7 +98,7 @@ async function main() {
 	};
 
 	const container = createContainer(new NodeInfoProvider());
-	const brokerages = container.get(BrokerageRegistry);
+	const brokers = container.get(BrokerRegistry);
 	const groupingProcessor = container.get(StagingFinancialGroupingProcessor);
 	const taxAuthorities = container.get(TaxAuthorityRegistry);
 
@@ -114,7 +113,7 @@ async function main() {
 	}
 	console.log(`Found ${files.length} XML file(s)`);
 
-	const { detections, stagingEvents } = brokerages.loadAndTransformDetected(files);
+	const { detections, stagingEvents } = brokers.loadAndTransformDetected(files);
 	// A broker export that can't be read must stop the run: leaving it out would silently change
 	// the reports (e.g. the cost basis of later sales).
 	const unreadable = detections.filter((detection) => detection.error !== null);
@@ -126,7 +125,7 @@ async function main() {
 		process.exit(1);
 	}
 	for (const detection of detections) {
-		if (detection.detectedBrokerage === null) {
+		if (detection.detectedBroker === null) {
 			console.warn(`Skipping ${detection.fileName}: not a recognised broker export`);
 		}
 	}
@@ -139,7 +138,7 @@ async function main() {
 	for (const reportType of reportTypes) {
 		const outputFiles = OUTPUT_FILES[reportType];
 		const { xml, csv } = await taxAuthorities.generateExports({
-			authorityId: AUTHORITY_ID,
+			authorityId: TaxAuthorityId.SLOVENIA,
 			reportTypeId: reportType,
 			taxPayerInfo,
 			reportConfig,

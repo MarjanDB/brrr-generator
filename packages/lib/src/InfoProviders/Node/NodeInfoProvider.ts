@@ -1,3 +1,4 @@
+import { CountryCode, CountryName, type Isin } from "@brrr/Core/Schemas/Identifiers";
 import {
 	type CompanyInfo,
 	type CompanyLocationInfo,
@@ -141,6 +142,7 @@ const isinToCompanyLookup = missingCompaniesLookup as Record<
 	}
 >;
 
+// Takes plain strings like PredefinedInfoProvider, for the site's lookup routes and the CLI.
 export class NodeInfoProvider implements InfoProvider {
 	private readonly predefined = new PredefinedInfoProvider();
 	private readonly yf = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
@@ -158,7 +160,7 @@ export class NodeInfoProvider implements InfoProvider {
 		this.predefined.removeCompany(isin);
 	}
 
-	listCompanies(): Map<string, CompanyInfo> {
+	listCompanies(): Map<Isin, CompanyInfo> {
 		return this.predefined.listCompanies();
 	}
 
@@ -174,7 +176,7 @@ export class NodeInfoProvider implements InfoProvider {
 		this.predefined.removeCountry(name);
 	}
 
-	listCountries(): Map<string, Country> {
+	listCountries(): Map<CountryName, Country> {
 		return this.predefined.listCountries();
 	}
 
@@ -202,7 +204,11 @@ export class NodeInfoProvider implements InfoProvider {
 			treaties.set(TreatyType.TaxRelief, taxReliefTreaties[shortCode]);
 		}
 
-		return { name, shortCode2: shortCode, treaties };
+		return {
+			name: CountryName.Schema.parse(name),
+			shortCode2: CountryCode.Schema.parse(shortCode),
+			treaties,
+		};
 	}
 
 	async getCompanyInfo(isin: string): Promise<CompanyInfo | null> {
@@ -217,13 +223,14 @@ export class NodeInfoProvider implements InfoProvider {
 			isinToCompanyLookup[isin] ?? isinToCompanyLookup[isinToTickerLookup[isin] ?? ""];
 
 		if (companyData !== undefined) {
-			const countryDef = await this.getCountry(companyData.country);
+			const country = CountryName.Schema.parse(companyData.country);
+			const countryDef = await this.getCountry(country);
 			if (countryDef === null) {
 				return null;
 			}
 
 			const location: CompanyLocationInfo = {
-				country: companyData.country,
+				country,
 				address1: companyData.address1,
 				address2: companyData.address2 ?? null,
 				zipCode: companyData.zip,
@@ -258,7 +265,7 @@ export class NodeInfoProvider implements InfoProvider {
 				return null;
 			}
 
-			const countryName = profile.country ?? "";
+			const countryName = CountryName.Schema.parse(profile.country ?? "");
 
 			const countryDef = countryName ? await this.getCountry(countryName) : null;
 			if (countryDef === null) {

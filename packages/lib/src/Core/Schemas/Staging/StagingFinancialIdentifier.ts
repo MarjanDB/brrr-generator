@@ -1,9 +1,11 @@
+import { FinancialIdentifierKey, type Isin, type Ticker } from "@brrr/Core/Schemas/Identifiers";
+
 export class StagingFinancialIdentifier {
-	public readonly isin: string | null;
-	public readonly ticker: string | null;
+	public readonly isin: Isin | null;
+	public readonly ticker: Ticker | null;
 	public readonly name: string | null;
 
-	constructor(params: { isin?: string | null; ticker?: string | null; name?: string | null } = {}) {
+	constructor(params: { isin?: Isin | null; ticker?: Ticker | null; name?: string | null } = {}) {
 		this.isin = params.isin ?? null;
 		this.ticker = params.ticker ?? null;
 		this.name = params.name ?? null;
@@ -38,8 +40,10 @@ export class StagingFinancialIdentifier {
 	}
 
 	// Map key: identifiers with the same ISIN, ticker and name share a key.
-	toKey(): string {
-		return `${this.isin ?? ""}|${this.ticker ?? ""}|${this.name ?? ""}`;
+	toKey(): FinancialIdentifierKey {
+		return FinancialIdentifierKey.Schema.parse(
+			`${this.isin ?? ""}|${this.ticker ?? ""}|${this.name ?? ""}`,
+		);
 	}
 
 	toString(): string {

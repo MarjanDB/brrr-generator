@@ -1,3 +1,4 @@
+import type { CorrelationKey } from "@brrr/Core/Schemas/Identifiers";
 import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 
@@ -55,7 +56,7 @@ export class StagingIdentifierRelationshipSplit {
 type StagingIdentifierRelationshipPartialArgs = {
 	fromIdentifier: StagingFinancialIdentifier | null;
 	toIdentifier: StagingFinancialIdentifier | null;
-	correlationKey: string;
+	correlationKey: CorrelationKey;
 	changeType: StagingIdentifierChangeType;
 	effectiveDate: ValidDateTime;
 	quantity?: number | null;
@@ -64,7 +65,7 @@ type StagingIdentifierRelationshipPartialArgs = {
 export class StagingIdentifierRelationshipPartial {
 	public readonly fromIdentifier: StagingFinancialIdentifier | null;
 	public readonly toIdentifier: StagingFinancialIdentifier | null;
-	public readonly correlationKey: string;
+	public readonly correlationKey: CorrelationKey;
 	public readonly changeType: StagingIdentifierChangeType;
 	public readonly effectiveDate: ValidDateTime;
 	public readonly quantity?: number | null;
@@ -87,7 +88,7 @@ type StagingIdentifierRelationshipPartialWithQuantityArgs = Omit<
 export class StagingIdentifierRelationshipPartialWithQuantity {
 	public readonly fromIdentifier: StagingFinancialIdentifier | null;
 	public readonly toIdentifier: StagingFinancialIdentifier | null;
-	public readonly correlationKey: string;
+	public readonly correlationKey: CorrelationKey;
 	public readonly changeType: StagingIdentifierChangeType;
 	public readonly effectiveDate: ValidDateTime;
 	public readonly quantity: number;

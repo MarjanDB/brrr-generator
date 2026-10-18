@@ -14,6 +14,10 @@ import {
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/CsvDIfi";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/XmlDIfi";
 import {
+	EDavkiIsin,
+	EDavkiSecurityCode,
+} from "@brrr/TaxAuthorities/Slovenia/Schemas/EDavkiIdentifiers";
+import {
 	EDavkiDerivativeReportGainType,
 	EDavkiDerivativeReportItemType,
 	EDavkiDerivativeReportSecurityLineGenericEventBought,
@@ -124,11 +128,12 @@ export class IfiReportGenerator {
 					legs.map((leg) => leg.trade),
 				);
 
+				const { ticker, isin } = derivativeGrouping.financialIdentifier;
 				const isinEntry = new EDavkiGenericDerivativeReportItem({
 					inventoryListType: EDavkiDerivativeSecurityType.OPTION_OR_CERTIFICATE,
 					itemType: EDavkiDerivativeReportItemType.DERIVATIVE,
-					code: derivativeGrouping.financialIdentifier.ticker,
-					isin: derivativeGrouping.financialIdentifier.isin,
+					code: ticker === null ? null : EDavkiSecurityCode.FromTicker(ticker),
+					isin: isin === null ? null : EDavkiIsin.FromIsin(isin),
 					name: derivativeGrouping.financialIdentifier.name,
 					hasForeignTax,
 					foreignTax: foreignTaxPaid,

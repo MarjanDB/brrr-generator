@@ -1,4 +1,5 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
+import { CorrelationKey, Isin, Ticker } from "@brrr/Core/Schemas/Identifiers";
 import {
 	StagingIdentifierChangeType,
 	StagingIdentifierRelationship,
@@ -12,20 +13,28 @@ import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFi
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
 
 test("two partials same key produce one full relationship", () => {
-	const fromId = new StagingFinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old Inc" });
-	const toId = new StagingFinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New Inc" });
+	const fromId = new StagingFinancialIdentifier({
+		isin: Isin.Schema.parse("US111"),
+		ticker: Ticker.Schema.parse("OLD"),
+		name: "Old Inc",
+	});
+	const toId = new StagingFinancialIdentifier({
+		isin: Isin.Schema.parse("US222"),
+		ticker: Ticker.Schema.parse("NEW"),
+		name: "New Inc",
+	});
 	const partials: StagingIdentifierRelationshipPartial[] = [
 		new StagingIdentifierRelationshipPartial({
 			fromIdentifier: fromId,
 			toIdentifier: null,
-			correlationKey: "action-1",
+			correlationKey: CorrelationKey.Schema.parse("action-1"),
 			changeType: StagingIdentifierChangeType.SPLIT,
 			effectiveDate: Scenario.build.date("2024-10-01"),
 		}),
 		new StagingIdentifierRelationshipPartial({
 			fromIdentifier: null,
 			toIdentifier: toId,
-			correlationKey: "action-1",
+			correlationKey: CorrelationKey.Schema.parse("action-1"),
 			changeType: StagingIdentifierChangeType.SPLIT,
 			effectiveDate: Scenario.build.date("2024-10-01"),
 		}),
@@ -42,20 +51,20 @@ test("two partials same key produce one full relationship", () => {
 
 test("partials with quantity produce full with quantityBefore/quantityAfter", () => {
 	const fromId = new StagingFinancialIdentifier({
-		isin: "US86800U1043",
-		ticker: "SMCI.OLD",
+		isin: Isin.Schema.parse("US86800U1043"),
+		ticker: Ticker.Schema.parse("SMCI.OLD"),
 		name: "Old",
 	});
 	const toId = new StagingFinancialIdentifier({
-		isin: "US86800U3023",
-		ticker: "SMCI",
+		isin: Isin.Schema.parse("US86800U3023"),
+		ticker: Ticker.Schema.parse("SMCI"),
 		name: "New",
 	});
 	const partials: StagingIdentifierRelationshipPartialWithQuantity[] = [
 		new StagingIdentifierRelationshipPartialWithQuantity({
 			fromIdentifier: fromId,
 			toIdentifier: null,
-			correlationKey: "action-1",
+			correlationKey: CorrelationKey.Schema.parse("action-1"),
 			changeType: StagingIdentifierChangeType.SPLIT,
 			effectiveDate: Scenario.build.date("2024-09-30"),
 			quantity: 4.0,
@@ -63,7 +72,7 @@ test("partials with quantity produce full with quantityBefore/quantityAfter", ()
 		new StagingIdentifierRelationshipPartialWithQuantity({
 			fromIdentifier: null,
 			toIdentifier: toId,
-			correlationKey: "action-1",
+			correlationKey: CorrelationKey.Schema.parse("action-1"),
 			changeType: StagingIdentifierChangeType.SPLIT,
 			effectiveDate: Scenario.build.date("2024-09-30"),
 			quantity: 40.0,
@@ -82,13 +91,21 @@ test("partials with quantity produce full with quantityBefore/quantityAfter", ()
 });
 
 test("reverse split inferred when quantity after less than before", () => {
-	const fromId = new StagingFinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
-	const toId = new StagingFinancialIdentifier({ isin: "US222", ticker: "NEW", name: "New" });
+	const fromId = new StagingFinancialIdentifier({
+		isin: Isin.Schema.parse("US111"),
+		ticker: Ticker.Schema.parse("OLD"),
+		name: "Old",
+	});
+	const toId = new StagingFinancialIdentifier({
+		isin: Isin.Schema.parse("US222"),
+		ticker: Ticker.Schema.parse("NEW"),
+		name: "New",
+	});
 	const partials: StagingIdentifierRelationshipPartialWithQuantity[] = [
 		new StagingIdentifierRelationshipPartialWithQuantity({
 			fromIdentifier: fromId,
 			toIdentifier: null,
-			correlationKey: "rev-1",
+			correlationKey: CorrelationKey.Schema.parse("rev-1"),
 			changeType: StagingIdentifierChangeType.SPLIT,
 			effectiveDate: Scenario.build.date("2024-10-01"),
 			quantity: 10.0,
@@ -96,7 +113,7 @@ test("reverse split inferred when quantity after less than before", () => {
 		new StagingIdentifierRelationshipPartialWithQuantity({
 			fromIdentifier: null,
 			toIdentifier: toId,
-			correlationKey: "rev-1",
+			correlationKey: CorrelationKey.Schema.parse("rev-1"),
 			changeType: StagingIdentifierChangeType.SPLIT,
 			effectiveDate: Scenario.build.date("2024-10-01"),
 			quantity: 1.0,
@@ -115,12 +132,16 @@ test("reverse split inferred when quantity after less than before", () => {
 });
 
 test("only from partial produces no full relationship", () => {
-	const fromId = new StagingFinancialIdentifier({ isin: "US111", ticker: "OLD", name: "Old" });
+	const fromId = new StagingFinancialIdentifier({
+		isin: Isin.Schema.parse("US111"),
+		ticker: Ticker.Schema.parse("OLD"),
+		name: "Old",
+	});
 	const partials: StagingIdentifierRelationshipPartial[] = [
 		new StagingIdentifierRelationshipPartial({
 			fromIdentifier: fromId,
 			toIdentifier: null,
-			correlationKey: "action-1",
+			correlationKey: CorrelationKey.Schema.parse("action-1"),
 			changeType: StagingIdentifierChangeType.RENAME,
 			effectiveDate: Scenario.build.date("2024-01-01"),
 		}),
@@ -137,8 +158,16 @@ test("empty partials returns empty", () => {
 });
 
 test("preserves existing full relationships", () => {
-	const fromId = new StagingFinancialIdentifier({ isin: "US111", ticker: "A", name: "A" });
-	const toId = new StagingFinancialIdentifier({ isin: "US222", ticker: "B", name: "B" });
+	const fromId = new StagingFinancialIdentifier({
+		isin: Isin.Schema.parse("US111"),
+		ticker: Ticker.Schema.parse("A"),
+		name: "A",
+	});
+	const toId = new StagingFinancialIdentifier({
+		isin: Isin.Schema.parse("US222"),
+		ticker: Ticker.Schema.parse("B"),
+		name: "B",
+	});
 	const events = new StagingFinancialEvents({
 		groupings: [],
 		identifierRelationships: new StagingIdentifierRelationships({

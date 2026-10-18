@@ -1,4 +1,5 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
+import { CurrencyCode, TradeEventId } from "@brrr/Core/Schemas/Identifiers";
 import {
 	foreignTaxOf,
 	round,
@@ -33,21 +34,21 @@ test("foreignTaxOf reports no foreign tax for no trades", () => {
 
 test("foreignTaxOf sums the trades' taxes", () => {
 	const soldWithTax1_5 = build.stockSold({
-		id: "T1.5",
+		id: TradeEventId.Schema.parse("T1.5"),
 		date: "2024-01-02",
 		quantity: -1,
 		price: 10,
-		currency: "USD",
+		currency: CurrencyCode.Schema.parse("USD"),
 		commission: 0,
 		tax: 1.5,
 		fxRateToBase: 0.9,
 	});
 	const soldWithTax2 = build.stockSold({
-		id: "T2",
+		id: TradeEventId.Schema.parse("T2"),
 		date: "2024-01-02",
 		quantity: -1,
 		price: 10,
-		currency: "USD",
+		currency: CurrencyCode.Schema.parse("USD"),
 		commission: 0,
 		tax: 2,
 		fxRateToBase: 0.9,
@@ -61,11 +62,11 @@ test("foreignTaxOf sums the trades' taxes", () => {
 
 test("foreignTaxOf treats a non-positive total as no foreign tax", () => {
 	const soldWithNegativeTax = build.stockSold({
-		id: "T-1",
+		id: TradeEventId.Schema.parse("T-1"),
 		date: "2024-01-02",
 		quantity: -1,
 		price: 10,
-		currency: "USD",
+		currency: CurrencyCode.Schema.parse("USD"),
 		commission: 0,
 		tax: -1,
 		fxRateToBase: 0.9,

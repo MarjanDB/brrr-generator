@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { TaxAuthorityId } from "@brrr/lib";
 import type { TaxAuthorityCard } from "./taxAuthorityCards";
 
 defineProps<{
@@ -7,7 +8,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-	select: [authorityId: string];
+	select: [authorityId: TaxAuthorityId];
 }>();
 </script>
 

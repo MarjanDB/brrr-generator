@@ -1,7 +1,8 @@
 import type { CompanyInfo, Country, InfoProvider } from "@brrr/lib";
 import { PredefinedInfoProvider, type TreatyType } from "@brrr/lib";
 
-type SerializedCountry = { name: string; shortCode2: string; treaties: Record<string, string> };
+// The country route's JSON: a Country with its treaties as a plain object.
+type SerializedCountry = Omit<Country, "treaties"> & { treaties: Record<string, string> };
 
 export class ApiInfoProvider implements InfoProvider {
 	private readonly predefined = new PredefinedInfoProvider();
@@ -46,7 +47,7 @@ export class ApiInfoProvider implements InfoProvider {
 	removeCompany(isin: string): void {
 		this.predefined.removeCompany(isin);
 	}
-	listCompanies(): Map<string, CompanyInfo> {
+	listCompanies() {
 		return this.predefined.listCompanies();
 	}
 	addCountry(name: string, country: Country): void {
@@ -58,7 +59,7 @@ export class ApiInfoProvider implements InfoProvider {
 	removeCountry(name: string): void {
 		this.predefined.removeCountry(name);
 	}
-	listCountries(): Map<string, Country> {
+	listCountries() {
 		return this.predefined.listCountries();
 	}
 }

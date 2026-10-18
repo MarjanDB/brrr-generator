@@ -1,21 +1,23 @@
+import type { CountryCode, CountryName, Isin } from "@brrr/Core/Schemas/Identifiers";
+
 export enum TreatyType {
 	TaxRelief = "TAX_RELIEF",
 }
 
 export type Country = {
-	name: string;
-	shortCode2: string;
+	name: CountryName;
+	shortCode2: CountryCode;
 	treaties: Map<TreatyType, string>;
 };
 
 export type CompanyLocationInfo = {
-	country: string;
+	country: CountryName;
 	address1: string;
 	address2: string | null;
 	zipCode: string;
 	city: string;
 	state: string | null;
-	shortCodeCountry2: string;
+	shortCodeCountry2: CountryCode;
 };
 
 export type CompanyInfo = {
@@ -25,20 +27,20 @@ export type CompanyInfo = {
 };
 
 export interface InfoProvider {
-	getCountry(country: string): Promise<Country | null>;
-	getCompanyInfo(isin: string): Promise<CompanyInfo | null>;
+	getCountry(country: CountryName): Promise<Country | null>;
+	getCompanyInfo(isin: Isin): Promise<CompanyInfo | null>;
 
 	// Country overrides
-	addCountry(name: string, country: Country): void;
-	updateCountry(name: string, country: Country): void;
-	removeCountry(name: string): void;
-	listCountries(): Map<string, Country>;
+	addCountry(name: CountryName, country: Country): void;
+	updateCountry(name: CountryName, country: Country): void;
+	removeCountry(name: CountryName): void;
+	listCountries(): Map<CountryName, Country>;
 
 	// Company overrides
-	addCompany(isin: string, info: CompanyInfo): void;
-	updateCompany(isin: string, info: CompanyInfo): void;
-	removeCompany(isin: string): void;
-	listCompanies(): Map<string, CompanyInfo>;
+	addCompany(isin: Isin, info: CompanyInfo): void;
+	updateCompany(isin: Isin, info: CompanyInfo): void;
+	removeCompany(isin: Isin): void;
+	listCompanies(): Map<Isin, CompanyInfo>;
 }
 
 export const InfoProvider = {

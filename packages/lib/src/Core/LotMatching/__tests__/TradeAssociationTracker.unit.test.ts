@@ -1,14 +1,15 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
 import { TradeAssociationTracker } from "@brrr/Core/LotMatching/TradeAssociationTracker";
+import { TradeEventId } from "@brrr/Core/Schemas/Identifiers";
 
 const simpleBuyTrade: Trade = {
-	id: "ID",
+	id: TradeEventId.Schema.parse("ID"),
 	quantity: 1,
 	date: Scenario.build.date("2023-01-01"),
 };
 const simpleSoldTrade: Trade = {
-	id: "ID2",
+	id: TradeEventId.Schema.parse("ID2"),
 	quantity: -1,
 	date: Scenario.build.date("2023-01-01"),
 };

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-  BrokerageRegistry,
+  BrokerRegistry,
   createContainer,
   type FinancialEvents,
   StagingFinancialGroupingProcessor,
@@ -34,7 +34,7 @@ const loading = ref(false);
 const processedEvents = shallowRef<FinancialEvents | null>(null);
 const processedFiles = shallowRef<FileList | null>(null);
 const detections = ref<
-  { fileName: string; detectedBrokerage: { id: string; name: string } | null }[]
+  { fileName: string; detectedBroker: { id: string; name: string } | null }[]
 >([]);
 
 const validateFiles = (v: FileList | null) =>
@@ -55,14 +55,14 @@ async function processSelectedFiles(files: FileList) {
     if (current !== processingVersion) return;
     const container = createContainer(new ApiInfoProvider());
 
-    const brokerageRegistry = container.get(BrokerageRegistry);
+    const brokerRegistry = container.get(BrokerRegistry);
     const normalized = xmlContents.map((xml, i) => ({
       fileName: files.item(i)?.name ?? `file-${i + 1}.xml`,
       xml,
     }));
 
     const { detections: detectedRows, stagingEvents } =
-      brokerageRegistry.loadAndTransformDetected(normalized);
+      brokerRegistry.loadAndTransformDetected(normalized);
     if (current !== processingVersion) return;
 
     detections.value = detectedRows;
@@ -136,7 +136,7 @@ watch(xmlFiles, (v) => {
                     {{ t('upload_detection_file') }}
                   </th>
                   <th class="text-left py-2 pr-2 font-medium app-text">
-                    {{ t('upload_detection_brokerage') }}
+                    {{ t('upload_detection_broker') }}
                   </th>
                 </tr>
               </thead>
@@ -148,14 +148,14 @@ watch(xmlFiles, (v) => {
                 >
                   <td class="pl-2 py-2 pr-4 app-text font-mono text-xs">{{ row.fileName }}</td>
                   <td class="py-2 pr-2">
-                    <span v-if="row.detectedBrokerage" class="inline-flex items-center gap-2 app-text">
+                    <span v-if="row.detectedBroker" class="inline-flex items-center gap-2 app-text">
                       <img
-                        v-if="brokerIconUrl(row.detectedBrokerage.id)"
-                        :src="brokerIconUrl(row.detectedBrokerage.id) ?? ''"
-                        :alt="row.detectedBrokerage.name"
+                        v-if="brokerIconUrl(row.detectedBroker.id)"
+                        :src="brokerIconUrl(row.detectedBroker.id) ?? ''"
+                        :alt="row.detectedBroker.name"
                         class="h-4 w-4 shrink-0"
                       />
-                      <span>{{ row.detectedBrokerage.name }}</span>
+                      <span>{{ row.detectedBroker.name }}</span>
                     </span>
                     <span v-else class="app-text-muted">{{ t('upload_detection_unknown') }}</span>
                   </td>
@@ -164,7 +164,7 @@ watch(xmlFiles, (v) => {
             </table>
           </div>
           <div
-            v-if="detections.some((d) => d.detectedBrokerage === null)"
+            v-if="detections.some((d) => d.detectedBroker === null)"
             class="text-body-sm app-text-muted"
           >
             {{ t('upload_detection_ignored') }}

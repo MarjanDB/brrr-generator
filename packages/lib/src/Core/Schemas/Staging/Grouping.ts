@@ -1,4 +1,5 @@
 import type { GenericCategory } from "@brrr/Core/Schemas/CommonFormats";
+import type { CountryCode } from "@brrr/Core/Schemas/Identifiers";
 import type {
 	StagingTradeEventDerivative,
 	StagingTradeEventStock,
@@ -9,7 +10,7 @@ import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/Stag
 
 export class StagingFinancialGrouping {
 	public readonly financialIdentifier: StagingFinancialIdentifier;
-	public readonly countryOfOrigin: string | null;
+	public readonly countryOfOrigin: CountryCode | null;
 	public readonly underlyingCategory: GenericCategory;
 	public readonly stockTrades: StagingTradeEventStock[];
 	public readonly stockTaxLots: StagingTaxLot[];
@@ -19,7 +20,7 @@ export class StagingFinancialGrouping {
 
 	constructor(args: {
 		financialIdentifier: StagingFinancialIdentifier;
-		countryOfOrigin: string | null;
+		countryOfOrigin: CountryCode | null;
 		underlyingCategory: GenericCategory;
 		stockTrades: StagingTradeEventStock[];
 		stockTaxLots: StagingTaxLot[];

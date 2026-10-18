@@ -1,3 +1,11 @@
+import type {
+	EDavkiCountryCode,
+	EDavkiDividendTrackingId,
+	EDavkiIsin,
+	EDavkiPayerIdentificationNumber,
+	EDavkiSecurityCode,
+	EDavkiTaxNumber,
+} from "@brrr/TaxAuthorities/Slovenia/Schemas/EDavkiIdentifiers";
 import type { DateTime } from "luxon";
 
 // https://www.racunovodstvo.net/zakonodaja/zdoh/90-clen
@@ -13,14 +21,14 @@ export enum EDavkiDividendType {
 
 type EDavkiDividendReportLineArgs = {
 	dateReceived: DateTime;
-	taxNumberForDividendPayer: string;
-	dividendPayerIdentificationNumber: string;
+	taxNumberForDividendPayer: EDavkiTaxNumber;
+	dividendPayerIdentificationNumber: EDavkiPayerIdentificationNumber;
 	dividendPayerTitle: string;
 	dividendPayerAddress: string | null;
-	dividendPayerCountryOfOrigin: string;
+	dividendPayerCountryOfOrigin: EDavkiCountryCode;
 	dividendType: EDavkiDividendType;
-	countryOfOrigin: string;
-	dividendIdentifierForTracking: string;
+	countryOfOrigin: EDavkiCountryCode;
+	dividendIdentifierForTracking: EDavkiDividendTrackingId;
 	taxReliefParagraphInInternationalTreaty: string | null;
 	dividendAmount: number;
 	dividendAmountInOriginalCurrency: number;
@@ -30,14 +38,14 @@ type EDavkiDividendReportLineArgs = {
 
 export class EDavkiDividendReportLine {
 	public readonly dateReceived: DateTime;
-	public readonly taxNumberForDividendPayer: string;
-	public readonly dividendPayerIdentificationNumber: string;
+	public readonly taxNumberForDividendPayer: EDavkiTaxNumber;
+	public readonly dividendPayerIdentificationNumber: EDavkiPayerIdentificationNumber;
 	public readonly dividendPayerTitle: string;
 	public readonly dividendPayerAddress: string | null;
-	public readonly dividendPayerCountryOfOrigin: string;
+	public readonly dividendPayerCountryOfOrigin: EDavkiCountryCode;
 	public readonly dividendType: EDavkiDividendType;
-	public readonly countryOfOrigin: string;
-	public readonly dividendIdentifierForTracking: string;
+	public readonly countryOfOrigin: EDavkiCountryCode;
+	public readonly dividendIdentifierForTracking: EDavkiDividendTrackingId;
 	public readonly taxReliefParagraphInInternationalTreaty: string | null;
 	public readonly dividendAmount: number;
 	public readonly dividendAmountInOriginalCurrency: number;
@@ -157,8 +165,8 @@ export class EDavkiTradeReportSecurityLineGenericEventSold {
 }
 
 export class EDavkiTradeReportSecurityLineEvent {
-	public readonly isin: string;
-	public readonly code: string | null;
+	public readonly isin: EDavkiIsin;
+	public readonly code: EDavkiSecurityCode | null;
 	public readonly name: string | null;
 	public readonly isFund: boolean;
 	public readonly resolution: string | null;
@@ -169,8 +177,8 @@ export class EDavkiTradeReportSecurityLineEvent {
 	)[];
 
 	constructor(args: {
-		isin: string;
-		code: string | null;
+		isin: EDavkiIsin;
+		code: EDavkiSecurityCode | null;
 		name: string | null;
 		isFund: boolean;
 		resolution: string | null;
@@ -196,7 +204,7 @@ export class EDavkiGenericTradeReportItem {
 	public readonly name: string | null;
 	public readonly hasForeignTax: boolean;
 	public readonly foreignTax: number | null;
-	public readonly ftCountryId: string | null;
+	public readonly ftCountryId: EDavkiCountryCode | null;
 	public readonly ftCountryName: string | null;
 	public readonly hasLossTransfer: boolean | null;
 	public readonly foreignTransfer: boolean | null;
@@ -209,7 +217,7 @@ export class EDavkiGenericTradeReportItem {
 		name: string | null;
 		hasForeignTax: boolean;
 		foreignTax: number | null;
-		ftCountryId: string | null;
+		ftCountryId: EDavkiCountryCode | null;
 		ftCountryName: string | null;
 		hasLossTransfer: boolean | null;
 		foreignTransfer: boolean | null;
@@ -335,11 +343,11 @@ export class EDavkiGenericDerivativeReportItem {
 	public readonly inventoryListType: EDavkiDerivativeSecurityType;
 	public readonly itemType: EDavkiDerivativeReportItemType;
 	public readonly name: string | null;
-	public readonly code: string | null;
-	public readonly isin: string | null;
+	public readonly code: EDavkiSecurityCode | null;
+	public readonly isin: EDavkiIsin | null;
 	public readonly hasForeignTax: boolean;
 	public readonly foreignTax: number | null;
-	public readonly ftCountryId: string | null;
+	public readonly ftCountryId: EDavkiCountryCode | null;
 	public readonly ftCountryName: string | null;
 	public readonly items: EdavkiDerivativeReportSecurityLines[];
 
@@ -347,11 +355,11 @@ export class EDavkiGenericDerivativeReportItem {
 		inventoryListType: EDavkiDerivativeSecurityType;
 		itemType: EDavkiDerivativeReportItemType;
 		name: string | null;
-		code: string | null;
-		isin: string | null;
+		code: EDavkiSecurityCode | null;
+		isin: EDavkiIsin | null;
 		hasForeignTax: boolean;
 		foreignTax: number | null;
-		ftCountryId: string | null;
+		ftCountryId: EDavkiCountryCode | null;
 		ftCountryName: string | null;
 		items: EdavkiDerivativeReportSecurityLines[];
 	}) {

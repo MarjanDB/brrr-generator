@@ -1,7 +1,7 @@
 import { StagingBuilders } from "@brrr/__tests__/support/StagingBuilders";
 import { type CashFields, type TradeFields, Values } from "@brrr/__tests__/support/Values";
-import { BrokerageRegistry } from "@brrr/Brokerages/BrokerageRegistry";
-import { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades";
+import { BrokerRegistry } from "@brrr/Brokers/BrokerRegistry";
+import { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
 import {
@@ -41,6 +41,7 @@ import type {
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type { GeneratedExports } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
 import type { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
+import { TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
 import { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
 
 type LotFields = { id: TaxLotStock["id"]; quantity: number; shortLongType: GenericShortLong };
@@ -151,7 +152,7 @@ const build = {
 
 	grouping(fields: {
 		identifier: FinancialIdentifier;
-		countryOfOrigin: string | null;
+		countryOfOrigin: FinancialGrouping["countryOfOrigin"];
 		category: GenericCategory;
 		stockTrades: TradeEventStock[];
 		stockTaxLots: TaxLotStock[];
@@ -235,10 +236,10 @@ const pipeline = {
 	run(files: { fileName: string; xml: string }[]) {
 		const container = createContainer(new PredefinedInfoProvider());
 		const { detections, stagingEvents } = container
-			.get(BrokerageRegistry)
+			.get(BrokerRegistry)
 			.loadAndTransformDetected(files);
 
-		const unread = detections.filter((d) => d.error !== null || d.detectedBrokerage === null);
+		const unread = detections.filter((d) => d.error !== null || d.detectedBroker === null);
 		if (unread.length > 0) {
 			throw new Error(`Not read as a broker export: ${unread.map((d) => d.fileName).join(", ")}`);
 		}
@@ -262,7 +263,7 @@ const pipeline = {
 	): Promise<GeneratedExports> {
 		const container = createContainer(options.info);
 		return await container.get(TaxAuthorityRegistry).generateExports({
-			authorityId: "slovenia",
+			authorityId: TaxAuthorityId.SLOVENIA,
 			reportTypeId: options.report,
 			taxPayerInfo: options.taxPayer,
 			reportConfig: config.report(options.year, options.lotMatching),

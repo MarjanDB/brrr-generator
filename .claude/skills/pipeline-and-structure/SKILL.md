@@ -12,7 +12,7 @@ plug into. All paths are under `packages/lib/src/` unless they say otherwise.
 
 ```
 export files (XML strings)
-  → BrokerageRegistry.loadAndTransformDetected   detects the broker of each file, runs that broker's provider
+  → BrokerRegistry.loadAndTransformDetected   detects the broker of each file, runs that broker's provider
   → StagingFinancialEvents                         staging groupings + partial identifier relationships
   → StagingFinancialGroupingProcessor.processStagingFinancialEvents
   → FinancialEvents                                core groupings + resolved identifier relationships
@@ -27,7 +27,7 @@ the CLI runs it in Node (`packages/cli/main.ts`, through the same two registries
 
 | Layer | Where | Notes |
 | --- | --- | --- |
-| Broker | `Brokerages/<Broker>/` | Parses export files into a broker-specific container (IBKR: `SegmentedTrades`), merges files, transforms to `StagingFinancialEvents`. Nothing broker-specific leaves this folder. |
+| Broker | `Brokers/<Broker>/` | Parses export files into a broker-specific container (IBKR: `SegmentedTrades`), merges files, transforms to `StagingFinancialEvents`. Nothing broker-specific leaves this folder. |
 | Staging model | `Core/Schemas/Staging/` | Broker-neutral, unprocessed. Groupings are keyed by `StagingFinancialIdentifier.toKey()` (ISIN, ticker and name together), so an instrument that changed ISIN or ticker stays in two groupings until relationships join them. |
 | Staging → core | `Core/StagingProcessor/` | `IdentifierRelationshipResolution` pairs partial relationships (a "from" side and a "to" side sharing a `correlationKey`) into whole ones; `StagingToCore.ts` turns each staging event and lot into its core counterpart. |
 | Core model | `Core/Schemas/` | `FinancialEvents` = `FinancialGrouping[]` + `IdentifierRelationshipAny[]`. A `FinancialGrouping` holds one instrument's stock trades, stock tax lots, derivative groupings and cash transactions. The instrument is the grouping's `financialIdentifier`; core events and lots don't repeat it. |
@@ -40,7 +40,7 @@ the CLI runs it in Node (`packages/cli/main.ts`, through the same two registries
 ## Wiring
 
 `createContainer(infoProvider)` in `container.ts` binds the `InfoProvider` under `InfoProvider.Token`, then loads `CoreModule.ts`,
-`Brokerages/BrokeragesModule.ts` and `TaxAuthorities/TaxAuthoritiesModule.ts`. Every class is bound with
+`Brokers/BrokersModule.ts` and `TaxAuthorities/TaxAuthoritiesModule.ts`. Every class is bound with
 `toResolvedValue(factory, [dependencies])` in singleton scope; there are no decorators. Classes take their dependencies through the
 constructor, so tests build them by hand without a container.
 
@@ -49,16 +49,16 @@ before checking them.
 
 ## Adding a broker
 
-1. Create `Brokerages/<Broker>/` with zod schemas for the raw rows (`Schemas/`), an extract service (file → broker container, plus merging
+1. Create `Brokers/<Broker>/` with zod schemas for the raw rows (`Schemas/`), an extract service (file → broker container, plus merging
    several files without duplicating rows) and a transform service (→ `StagingFinancialEvents`). Corporate actions become
    `StagingIdentifierRelationshipPartial`s.
-2. Add `<Broker>BrokerageExportProvider implements IBrokerageProvider` (`brokerageId`, `displayName`, `isThisValidExport`,
+2. Add `<Broker>BrokerExportProvider implements IBrokerProvider` (`brokerId`, `displayName`, `isThisValidExport`,
    `describeExportProblem`, `loadAndTransform`). The interface takes XML strings; a broker that exports CSV needs that widened first.
-3. Bind it in a `<Broker>Module.ts` and load that from `BrokeragesModule.ts`.
-4. `BrokerageRegistry` takes each provider in its constructor and has the IBKR one written into `listBrokerages`, `detectOne` and
+3. Bind it in a `<Broker>Module.ts` and load that from `BrokersModule.ts`.
+4. `BrokerRegistry` takes each provider in its constructor and has the IBKR one written into `listBrokers`, `detectOne` and
    `loadAndTransformDetected`. Add the new provider to all three; staging events from several brokers are combined with
    `StagingFinancialEvents.merge`.
-5. Unit tests in `Brokerages/<Broker>/__tests__/`. Anonymised exports go in `packages/test-cases/cases/<Broker>/<Case>/input/`, each case
+5. Unit tests in `Brokers/<Broker>/__tests__/`. Anonymised exports go in `packages/test-cases/cases/<Broker>/<Case>/input/`, each case
    declared in a `<broker>` group of the `TestKit` registry (`packages/test-cases/index.ts`: year, named inputs, named expected reports),
    with an acceptance test per case in each tax authority's `__tests__/Acceptance/<Form>.acceptance.test.ts`.
 6. Site: icon at `packages/app/public/icons/brokers/<id>.svg` and in `brokerIconById` (`IbkrUploadStep.vue`); a guide in

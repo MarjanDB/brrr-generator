@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { FinancialEvents } from "@brrr/lib";
+import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
 
 const { $toggleTheme, $theme } = useNuxtApp();
 const { locale, setLocale, locales, t } = useI18n();
@@ -26,7 +27,7 @@ const currentLocale = computed({
 const currentStep = ref<1 | 2 | 3 | 4>(1);
 const xmlFiles = ref<FileList | null>(null);
 const financialEvents = shallowRef<FinancialEvents | null>(null);
-const generatedOutputs = ref<{ xml: string; csv: string; xmlFilename: string; csvFilename: string; authorityId: string; reportTypeId: string } | null>(null);
+const generatedOutputs = ref<GeneratedOutputs | null>(null);
 // Tracks whether the user has confirmed step 2 (unlocks step 3 component)
 const step3Unlocked = ref(false);
 
@@ -58,7 +59,7 @@ function onConfirmed() {
   currentStep.value = 3;
 }
 
-function onGenerated(outputs: { xml: string; csv: string; xmlFilename: string; csvFilename: string; authorityId: string; reportTypeId: string }) {
+function onGenerated(outputs: GeneratedOutputs) {
   generatedOutputs.value = outputs;
   currentStep.value = 4;
 }

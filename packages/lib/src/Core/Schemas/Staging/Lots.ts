@@ -1,13 +1,14 @@
 import type { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats";
+import type { TaxLotId, TradeEventId } from "@brrr/Core/Schemas/Identifiers";
 import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 
 export class StagingTaxLotMatchingDetails {
-	public readonly id: string | null;
+	public readonly id: TradeEventId | null;
 	public readonly dateTime: ValidDateTime | null;
 
 	constructor(args: {
-		id: string | null;
+		id: TradeEventId | null;
 		dateTime: ValidDateTime | null;
 	}) {
 		this.id = args.id;
@@ -16,7 +17,7 @@ export class StagingTaxLotMatchingDetails {
 }
 
 export class StagingTaxLot {
-	public readonly id: string;
+	public readonly id: TaxLotId;
 	public readonly financialIdentifier: StagingFinancialIdentifier;
 	public readonly quantity: number;
 	public readonly acquired: StagingTaxLotMatchingDetails;
@@ -24,7 +25,7 @@ export class StagingTaxLot {
 	public readonly shortLongType: GenericShortLong;
 
 	constructor(args: {
-		id: string;
+		id: TaxLotId;
 		financialIdentifier: StagingFinancialIdentifier;
 		quantity: number;
 		acquired: StagingTaxLotMatchingDetails;

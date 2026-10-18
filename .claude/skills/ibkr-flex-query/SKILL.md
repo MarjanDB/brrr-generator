@@ -5,7 +5,7 @@ description: Interactive Brokers Flex Query XML and how lib parses and transform
 
 # IBKR Flex Query
 
-The broker layer for Interactive Brokers, in `packages/lib/src/Brokerages/Ibkr/`. For the layers it feeds, see the **pipeline-and-structure**
+The broker layer for Interactive Brokers, in `packages/lib/src/Brokers/Ibkr/`. For the layers it feeds, see the **pipeline-and-structure**
 skill.
 
 ## Files
@@ -13,10 +13,11 @@ skill.
 | File | Role |
 | --- | --- |
 | `Schemas/IbkrSchemas.ts` | Enums for IBKR codes (`AssetClass`, `BuyOrSell`, `CashTransactionType`, `Codes`, …) and a zod schema per row type: `TradeStock`, `LotStock`, `TradeDerivative`, `LotDerivative`, `CorporateAction`, `TransactionCash`. Also `FlexQueryResponseSchema` for the document. |
+| `Schemas/IbkrIdentifiers.ts` | IBKR's identifier types (`IbkrTransactionId`, `IbkrIsin`, `IbkrSymbol`, …) for the row fields the extract and transform read; the row schemas use their `Schema`s. |
 | `Schemas/SegmentedTrades.ts` | The broker container: `cashTransactions`, `corporateActions`, `stockTrades`, `stockLots`, `derivativeTrades`, `derivativeLots`. |
 | `Extract.ts` | `IbkrExtractService`: `extractFromXML(xml)` → `SegmentedTrades`; `mergeTrades(list)` combines several files. |
 | `Transform.ts` | `IbkrTransformService.convertSegmentedTradesToStagingEvents` → `StagingFinancialEvents`. |
-| `IbkrBrokerageExportProvider.ts` | `IBrokerageProvider` with `brokerageId = "ibkr"`. A file counts as IBKR when `extractFromXML` doesn't throw. |
+| `IbkrBrokerExportProvider.ts` | `IBrokerProvider` with `brokerId = BrokerId.IBKR`. A file counts as IBKR when `extractFromXML` doesn't throw. |
 | `IbkrModule.ts` | Inversify bindings. |
 
 ## Parsing

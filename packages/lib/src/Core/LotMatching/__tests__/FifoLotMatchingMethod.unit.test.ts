@@ -1,48 +1,137 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { FifoLotMatchingMethod } from "@brrr/Core/LotMatching/FifoLotMatchingMethod";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
+import { TradeEventId } from "@brrr/Core/Schemas/Identifiers";
 
 const simpleCaseNoProfit = {
-	Buy: { id: "ID", quantity: 1, date: Scenario.build.date("2023-01-01") },
-	Sell: { id: "ID2", quantity: -1, date: Scenario.build.date("2023-01-02") },
+	Buy: {
+		id: TradeEventId.Schema.parse("ID"),
+		quantity: 1,
+		date: Scenario.build.date("2023-01-01"),
+	},
+	Sell: {
+		id: TradeEventId.Schema.parse("ID2"),
+		quantity: -1,
+		date: Scenario.build.date("2023-01-02"),
+	},
 };
 
 const simpleCaseWithMultipleSellEvents = {
-	Buy: { id: "ID", quantity: 2, date: Scenario.build.date("2023-01-01") },
-	Sell: { id: "ID2", quantity: -1, date: Scenario.build.date("2023-01-02") },
-	Sell2: { id: "ID3", quantity: -1, date: Scenario.build.date("2023-01-03") },
+	Buy: {
+		id: TradeEventId.Schema.parse("ID"),
+		quantity: 2,
+		date: Scenario.build.date("2023-01-01"),
+	},
+	Sell: {
+		id: TradeEventId.Schema.parse("ID2"),
+		quantity: -1,
+		date: Scenario.build.date("2023-01-02"),
+	},
+	Sell2: {
+		id: TradeEventId.Schema.parse("ID3"),
+		quantity: -1,
+		date: Scenario.build.date("2023-01-03"),
+	},
 };
 
 const simpleCaseWithMultipleBuyEvents = {
-	Buy: { id: "ID", quantity: 1, date: Scenario.build.date("2023-01-01") },
-	Buy2: { id: "ID2", quantity: 1, date: Scenario.build.date("2023-01-02") },
-	Sell: { id: "ID3", quantity: -2, date: Scenario.build.date("2023-01-02") },
+	Buy: {
+		id: TradeEventId.Schema.parse("ID"),
+		quantity: 1,
+		date: Scenario.build.date("2023-01-01"),
+	},
+	Buy2: {
+		id: TradeEventId.Schema.parse("ID2"),
+		quantity: 1,
+		date: Scenario.build.date("2023-01-02"),
+	},
+	Sell: {
+		id: TradeEventId.Schema.parse("ID3"),
+		quantity: -2,
+		date: Scenario.build.date("2023-01-02"),
+	},
 };
 
 const simpleCaseWithBuySellBuySellEvents = {
-	Buy1: { id: "ID", quantity: 1, date: Scenario.build.date("2023-01-01") },
-	Sell1: { id: "ID2", quantity: -1, date: Scenario.build.date("2023-01-02") },
-	Buy2: { id: "ID3", quantity: 1, date: Scenario.build.date("2023-01-03") },
-	Sell2: { id: "ID4", quantity: -1, date: Scenario.build.date("2023-01-04") },
+	Buy1: {
+		id: TradeEventId.Schema.parse("ID"),
+		quantity: 1,
+		date: Scenario.build.date("2023-01-01"),
+	},
+	Sell1: {
+		id: TradeEventId.Schema.parse("ID2"),
+		quantity: -1,
+		date: Scenario.build.date("2023-01-02"),
+	},
+	Buy2: {
+		id: TradeEventId.Schema.parse("ID3"),
+		quantity: 1,
+		date: Scenario.build.date("2023-01-03"),
+	},
+	Sell2: {
+		id: TradeEventId.Schema.parse("ID4"),
+		quantity: -1,
+		date: Scenario.build.date("2023-01-04"),
+	},
 };
 
 const complexCaseOverlappingEvents = {
-	Buy1: { id: "ID1", quantity: 2, date: Scenario.build.date("2023-01-01") },
-	Sell1: { id: "ID2", quantity: -1, date: Scenario.build.date("2023-01-02") },
-	Buy2: { id: "ID3", quantity: 1, date: Scenario.build.date("2023-01-03") },
-	Sell2: { id: "ID4", quantity: -2, date: Scenario.build.date("2023-01-04") },
+	Buy1: {
+		id: TradeEventId.Schema.parse("ID1"),
+		quantity: 2,
+		date: Scenario.build.date("2023-01-01"),
+	},
+	Sell1: {
+		id: TradeEventId.Schema.parse("ID2"),
+		quantity: -1,
+		date: Scenario.build.date("2023-01-02"),
+	},
+	Buy2: {
+		id: TradeEventId.Schema.parse("ID3"),
+		quantity: 1,
+		date: Scenario.build.date("2023-01-03"),
+	},
+	Sell2: {
+		id: TradeEventId.Schema.parse("ID4"),
+		quantity: -2,
+		date: Scenario.build.date("2023-01-04"),
+	},
 };
 
 const complexCasePartialBuys = {
-	Buy1: { id: "ID1", quantity: 0.5, date: Scenario.build.date("2023-01-01") },
-	Buy2: { id: "ID2", quantity: 0.5, date: Scenario.build.date("2023-01-02") },
-	Sell: { id: "ID3", quantity: -1, date: Scenario.build.date("2023-01-03") },
+	Buy1: {
+		id: TradeEventId.Schema.parse("ID1"),
+		quantity: 0.5,
+		date: Scenario.build.date("2023-01-01"),
+	},
+	Buy2: {
+		id: TradeEventId.Schema.parse("ID2"),
+		quantity: 0.5,
+		date: Scenario.build.date("2023-01-02"),
+	},
+	Sell: {
+		id: TradeEventId.Schema.parse("ID3"),
+		quantity: -1,
+		date: Scenario.build.date("2023-01-03"),
+	},
 };
 
 const complexCasePartialSells = {
-	Buy: { id: "ID1", quantity: 1, date: Scenario.build.date("2023-01-01") },
-	Sell1: { id: "ID2", quantity: -0.5, date: Scenario.build.date("2023-01-02") },
-	Sell2: { id: "ID3", quantity: -0.5, date: Scenario.build.date("2023-01-03") },
+	Buy: {
+		id: TradeEventId.Schema.parse("ID1"),
+		quantity: 1,
+		date: Scenario.build.date("2023-01-01"),
+	},
+	Sell1: {
+		id: TradeEventId.Schema.parse("ID2"),
+		quantity: -0.5,
+		date: Scenario.build.date("2023-01-02"),
+	},
+	Sell2: {
+		id: TradeEventId.Schema.parse("ID3"),
+		quantity: -0.5,
+		date: Scenario.build.date("2023-01-03"),
+	},
 };
 
 test("simple single lot generation", () => {
@@ -184,9 +273,9 @@ test("complex partial sells", () => {
 test("a short position covered in several fills throws", () => {
 	const method = new FifoLotMatchingMethod();
 	const events: Trade[] = [
-		{ id: "S1", quantity: -10, date: Scenario.build.date("2023-01-01") },
-		{ id: "B1", quantity: 5, date: Scenario.build.date("2023-01-02") },
-		{ id: "B2", quantity: 5, date: Scenario.build.date("2023-01-03") },
+		{ id: TradeEventId.Schema.parse("S1"), quantity: -10, date: Scenario.build.date("2023-01-01") },
+		{ id: TradeEventId.Schema.parse("B1"), quantity: 5, date: Scenario.build.date("2023-01-02") },
+		{ id: TradeEventId.Schema.parse("B2"), quantity: 5, date: Scenario.build.date("2023-01-03") },
 	];
 
 	expect(() => method.performMatching(events)).toThrow("Tracker for event (S1) does not exist");

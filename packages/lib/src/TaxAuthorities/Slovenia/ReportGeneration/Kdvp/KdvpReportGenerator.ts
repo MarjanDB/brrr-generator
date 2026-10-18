@@ -13,6 +13,10 @@ import {
 } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Amounts";
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/CsvDohKdvp";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/XmlDohKdvp";
+import {
+	EDavkiIsin,
+	EDavkiSecurityCode,
+} from "@brrr/TaxAuthorities/Slovenia/Schemas/EDavkiIdentifiers";
 import type { EDavkiDocumentWorkflowType } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
 import {
 	EDavkiGenericTradeReportItem,
@@ -104,7 +108,7 @@ export class KdvpReportGenerator {
 		const periodEnd = config.toDate;
 
 		for (const isinGrouping of groupings) {
-			const isin = isinGrouping.financialIdentifier.isin; // TODO: Security line has 3 possible identifiers, not just isin
+			const { isin, ticker } = isinGrouping.financialIdentifier; // TODO: Security line has 3 possible identifiers, not just isin
 
 			const legs = this.processor.stockLotLegsClosedInPeriod(
 				isinGrouping,
@@ -126,8 +130,8 @@ export class KdvpReportGenerator {
 			const isTrustFund = isinGrouping.underlyingCategory === GenericCategory.TRUST_FUND;
 
 			const reportItem = new EDavkiTradeReportSecurityLineEvent({
-				isin: isin ?? "",
-				code: isinGrouping.financialIdentifier.ticker,
+				isin: isin === null ? EDavkiIsin.Schema.parse("") : EDavkiIsin.FromIsin(isin),
+				code: ticker === null ? null : EDavkiSecurityCode.FromTicker(ticker),
 				name: null,
 				isFund: isTrustFund,
 				resolution: null,

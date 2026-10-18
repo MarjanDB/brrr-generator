@@ -57,7 +57,7 @@ Run these for what you touched before calling a change done, and report failures
 imports → broker provider (extract + transform) → **StagingFinancialEvents** → **StagingFinancialGroupingProcessor** →
 **FinancialEvents** → tax authority provider (applies identifier relationships, lot matching, report generation) → XML + CSV
 
-- `packages/lib/src/Brokerages/` — one folder per broker; turns export files into broker-neutral staging events.
+- `packages/lib/src/Brokers/` — one folder per broker; turns export files into broker-neutral staging events.
 - `packages/lib/src/Core/` — broker- and country-neutral: schemas, staging → core processing, lot matching (NONE / FIFO / PROVIDED).
 - `packages/lib/src/TaxAuthorities/` — one folder per country; turns core events into that country's forms.
 - `packages/lib/src/InfoProviders/` — company and country lookups (`InfoProvider`); the Node implementation and its JSON data sit in `Node/`.
@@ -75,12 +75,30 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
   a trade), one named function builds the new object through the class's constructor and appends a `provenance` step, so the trace back
   to the original survives (see `scaleTradeForSplit` in `Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts`).
 - Data from outside (XML rows, config files, env) is parsed with zod 4 (`import { z } from "zod/v4"`): a const holding `{ Schema }` and a
-  same-named type `z.output<typeof X.Schema>` (see `Brokerages/Ibkr/Schemas/IbkrSchemas.ts`).
-- `type` for plain data shapes. `interface` only for contracts a class implements (`IBrokerageProvider`, `ITaxAuthorityProvider`,
+  same-named type `z.output<typeof X.Schema>` (see `Brokers/Ibkr/Schemas/IbkrSchemas.ts`).
+- `type` for plain data shapes. `interface` only for contracts a class implements (`IBrokerProvider`, `ITaxAuthorityProvider`,
   `InfoProvider`).
 - `enum` for fixed sets of values, not string-literal unions or `as const` objects.
-- Identifiers in new code (ISINs, transaction IDs, report type IDs, …) get a nominal type, `Nominal<string, "Isin">` from
-  `@brrr/Utils/NominalType`, rather than a bare `string`.
+- Identifiers (ISINs, transaction IDs, report type IDs, …) get a nominal type from `@brrr/Utils/NominalType`, never a bare `string`.
+  Each domain owns its own, even for the same concept: IBKR's in `Brokers/Ibkr/Schemas/IbkrIdentifiers.ts`, core's (staging and
+  the lookups included) in `Core/Schemas/Identifiers.ts`, eDavki's in `TaxAuthorities/Slovenia/Schemas/EDavkiIdentifiers.ts`, the
+  registries' in `TaxAuthorities/TaxAuthorityIdentifiers.ts` and `Brokers/BrokerIdentifiers.ts` (enums where the set is fixed).
+  A value changes type only where it crosses into the next domain. Declare the type, then a same-named const whose `Schema` holds
+  the one cast; the brand names the domain:
+
+  ```ts
+  export type Isin = Nominal<string, "Core.Isin">;
+  export const Isin = {
+  	Schema: z.string().transform((value) => value as Isin),
+  };
+  ```
+
+  A type built from another domain's adds a `From<X>` helper that goes through its `Schema` (`EDavkiIsin.FromIsin`), where its
+  domain may depend on the other. Core can't know brokers, so `Transform.ts` turns IBKR values into core ones with the core type's
+  `Schema`. Tests build ids the same way: `Isin.Schema.parse("US0378331005")`.
+  Lib's exports never make a caller (the site, the CLI) create one: `index.ts` exports enums but no nominal types, and the
+  public entry points (`TaxAuthorityRegistry.generateExports`, `PredefinedInfoProvider`, `NodeInfoProvider`) take plain strings
+  and build the ids inside lib.
 - Dates and times use luxon. Models hold `ValidDateTime` (`DateTime<true>`); parse input with `zDateTimeFromISOString`
   (`@brrr/Utils/DateTime`). No `Date`.
 - Dependency injection is Inversify without decorators: each area has a `*Module.ts` that binds classes with
