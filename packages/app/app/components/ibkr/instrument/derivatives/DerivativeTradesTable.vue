@@ -7,6 +7,7 @@ type DerivativeGrouping = FinancialGrouping["derivativeGroupings"][number];
 
 defineProps<{
   derivativeGroupings: DerivativeGrouping[];
+  baseCurrency: string;
 }>();
 
 const { t } = useI18n();
@@ -49,13 +50,13 @@ function formatAmount(amount: number, currency: string) {
               </td>
               <td class="py-1.5 pr-3 text-right app-text text-xs">{{ trade.exchangedMoney.quantity }}</td>
               <td class="py-1.5 pr-3 text-right app-text text-xs">
-                {{ formatAmount(trade.exchangedMoney.priceInBase, trade.exchangedMoney.currency) }}
+                {{ formatAmount(trade.exchangedMoney.priceInBase, baseCurrency) }}
               </td>
               <td class="py-1.5 text-right app-text text-xs">
                 {{
                   formatAmount(
-                    trade.exchangedMoney.quantity * trade.exchangedMoney.priceInBase,
-                    trade.exchangedMoney.currency,
+                    trade.exchangedMoney.quantity * trade.exchangedMoney.priceInBase * trade.multiplier,
+                    baseCurrency,
                   )
                 }}
               </td>
