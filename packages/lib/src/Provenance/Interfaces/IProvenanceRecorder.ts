@@ -1,5 +1,6 @@
 import type { DropReason } from "@brrr/Provenance/Models/DropReason";
 import type { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import type { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
 import type { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 import type { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 
@@ -20,7 +21,12 @@ export interface IProvenanceRecorder {
 		detail: string | null,
 	): void;
 	// `subject` goes no further, for `reason`.
-	drop(subject: object, reason: DropReason, by: ProvenanceStage, detail: string | null): void;
+	drop(
+		subject: object,
+		reason: DropReason,
+		by: ProvenanceStage,
+		detail: ProvenanceDetail | null,
+	): void;
 	// `subject` went on, but something about it is worth knowing.
-	warn(subject: object, by: ProvenanceStage, detail: string): void;
+	warn(subject: object, by: ProvenanceStage, detail: ProvenanceDetail): void;
 }

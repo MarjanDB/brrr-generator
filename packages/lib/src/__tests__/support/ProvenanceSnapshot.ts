@@ -1,5 +1,13 @@
+import type { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
 import type { ProvenanceGraph } from "@brrr/Provenance/Services/ProvenanceGraph";
 import { ProvenanceWalker } from "@brrr/Provenance/Services/ProvenanceWalker";
+
+function describe(detail: ProvenanceDetail): string {
+	const values = Object.entries(detail.values)
+		.sort(([a], [b]) => a.localeCompare(b))
+		.map(([key, value]) => `${key}=${value}`);
+	return [detail.kind, ...values].join(" ");
+}
 
 function withDetail(text: string, detail: string | null): string {
 	return detail === null ? text : `${text} (${detail})`;
@@ -22,7 +30,12 @@ export function renderProvenance(graph: ProvenanceGraph): string {
 		lines.push("(none)");
 	}
 	for (const drop of drops) {
-		lines.push(withDetail(`${drop.node.id} ${drop.reason} by ${drop.by}`, drop.detail));
+		lines.push(
+			withDetail(
+				`${drop.node.id} ${drop.reason} by ${drop.by}`,
+				drop.detail === null ? null : describe(drop.detail),
+			),
+		);
 	}
 	lines.push("", "Warnings:");
 	const warnings = graph.warnings();
@@ -30,7 +43,7 @@ export function renderProvenance(graph: ProvenanceGraph): string {
 		lines.push("(none)");
 	}
 	for (const warning of warnings) {
-		lines.push(`${warning.node.id} by ${warning.by}: ${warning.detail}`);
+		lines.push(`${warning.node.id} by ${warning.by}: ${describe(warning.detail)}`);
 	}
 	lines.push("");
 	return lines.join("\n");

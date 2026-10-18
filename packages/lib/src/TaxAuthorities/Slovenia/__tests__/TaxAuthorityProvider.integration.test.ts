@@ -17,6 +17,7 @@ import { ApplyIdentifierRelationshipsService } from "@brrr/Core/Services/Identif
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
 import { ProvenanceWalker } from "@brrr/Provenance/Services/ProvenanceWalker";
@@ -292,5 +293,6 @@ test("IFI records its lines, and drops the broker's derivative lots as not used 
 	const notUsed = report.provenance.drops().filter((drop) => drop.reason === DropReason.NOT_USED);
 	expect(notUsed).toHaveLength(1);
 	expect(notUsed[0].node.label).toEqual("lot 635331370 · 1 AAPL  231222C00202500");
-	expect(notUsed[0].detail).toEqual("IFI matches derivative trades without the broker's lots");
+	expect(notUsed[0].detail?.kind).toEqual(ProvenanceDetailKind.FORM_IGNORES_BROKER_LOTS);
+	expect(notUsed[0].detail?.values).toEqual({});
 });

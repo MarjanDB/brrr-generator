@@ -4,6 +4,8 @@ import { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
 import { FifoLotMatchingMethod } from "@brrr/Core/Services/LotMatching/FifoLotMatchingMethod";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/Services/LotMatching/ProvidedLotMatchingMethod";
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
+import { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
+import { ProvenanceDetailValue } from "@brrr/Provenance/Models/ProvenanceDetailValue";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
 import { ProvenanceGraph } from "@brrr/Provenance/Services/ProvenanceGraph";
@@ -69,5 +71,10 @@ test("under FIFO the broker's lots are recorded as not used", () => {
 	expect(graph.drops()[0].node).toBe(graph.nodeOf(lot));
 	expect(graph.drops()[0].reason).toEqual(DropReason.NOT_USED);
 	expect(graph.drops()[0].by).toEqual("LotMatchingMethodFactory");
-	expect(graph.drops()[0].detail).toEqual("lot matching is FIFO");
+	expect(graph.drops()[0].detail?.kind).toEqual(
+		ProvenanceDetailKind.LOT_MATCHING_IGNORES_BROKER_LOTS,
+	);
+	expect(graph.drops()[0].detail?.values[ProvenanceDetailValue.LOT_MATCHING_METHOD]).toEqual(
+		"FIFO",
+	);
 });

@@ -79,7 +79,9 @@ before checking them.
    `TaxAuthorityDescriptor`, maps report type IDs to the enum and generates `{ xml, csv }` from one `convert`. Apply identifier
    relationships through `ApplyIdentifierRelationshipsService` before generating. Pass `ctx.provenance` to the relationships
    service, the lot matching and each `convert`, and have `convert` record each line it builds as a `REPORT_LINE` made from what's
-   behind it, plus a drop for anything the report leaves out (see the Slovenian generators).
+   behind it, plus a drop for anything the report leaves out (see the Slovenian generators). `drop` and `warn` take a
+   `ProvenanceDetail` (a `ProvenanceDetailKind` plus named `ProvenanceDetailValue`s), never a sentence; a new kind needs a member in
+   `ProvenanceDetailKind` and the site's two locale files (the site is wired in a later phase).
 2. Bind everything in `<Country>Module.ts`, load it from `TaxAuthoritiesModule.ts`, and add the provider to `TaxAuthorityRegistry`
    (constructor, `listAuthorities`, `generateExports`).
 3. If the country needs taxpayer fields `TaxpayerConfigSchema` lacks, extend the schema; the CLI and `config/userConfig.example.yml`

@@ -6,6 +6,8 @@ import type { FinancialEventsProcessor } from "@brrr/Core/Services/LotMatching/F
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
+import { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
 import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
@@ -109,7 +111,10 @@ export class IfiReportGenerator {
 						lot,
 						DropReason.NOT_USED,
 						STAGE,
-						"IFI matches derivative trades without the broker's lots",
+						new ProvenanceDetail({
+							kind: ProvenanceDetailKind.FORM_IGNORES_BROKER_LOTS,
+							values: {},
+						}),
 					);
 				}
 

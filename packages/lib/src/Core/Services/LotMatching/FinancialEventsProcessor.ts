@@ -8,6 +8,9 @@ import type { MatchedLot } from "@brrr/Core/Models/LotMatching/MatchedLot";
 import type { LotMatcher } from "@brrr/Core/Services/LotMatching/LotMatcher";
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
+import { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
+import { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
+import { ProvenanceDetailValue } from "@brrr/Provenance/Models/ProvenanceDetailValue";
 import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 
@@ -64,8 +67,12 @@ function legsOfLotsClosedInPeriod<T extends { date: ValidDateTime }>(
 			closedInPeriod.push(lot);
 		} else {
 			const closed = lot.sold.trade.date.toFormat("yyyy-MM-dd");
-			provenance.drop(lot.acquired, DropReason.OUTSIDE_PERIOD, STAGE, `closed ${closed}`);
-			provenance.drop(lot.sold, DropReason.OUTSIDE_PERIOD, STAGE, `closed ${closed}`);
+			const detail = new ProvenanceDetail({
+				kind: ProvenanceDetailKind.CLOSED_OUTSIDE_PERIOD,
+				values: { [ProvenanceDetailValue.DATE]: closed },
+			});
+			provenance.drop(lot.acquired, DropReason.OUTSIDE_PERIOD, STAGE, detail);
+			provenance.drop(lot.sold, DropReason.OUTSIDE_PERIOD, STAGE, detail);
 		}
 	}
 

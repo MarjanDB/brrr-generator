@@ -1,5 +1,8 @@
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
+import { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
+import { ProvenanceDetailValue } from "@brrr/Provenance/Models/ProvenanceDetailValue";
 import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 import { ProvenanceGraph } from "@brrr/Provenance/Services/ProvenanceGraph";
@@ -34,7 +37,15 @@ graph.derive([file], rowSell, ProvenanceChange.CONTAINS, stage, null);
 graph.derive([file], rowSplitOld, ProvenanceChange.CONTAINS, stage, null);
 graph.derive([file], rowSplitNew, ProvenanceChange.CONTAINS, stage, null);
 graph.derive([file], rowFuture, ProvenanceChange.CONTAINS, stage, null);
-graph.drop(rowFuture, DropReason.NOT_SUPPORTED, stage, "asset class FUT");
+graph.drop(
+	rowFuture,
+	DropReason.NOT_SUPPORTED,
+	stage,
+	new ProvenanceDetail({
+		kind: ProvenanceDetailKind.ASSET_CLASS_NOT_SUPPORTED,
+		values: { [ProvenanceDetailValue.ASSET_CLASS]: "FUT" },
+	}),
+);
 graph.node(buy, ProvenanceNodeKind.EVENT, "buy 10", {});
 graph.node(sell, ProvenanceNodeKind.EVENT, "sell 40", {});
 graph.derive([rowBuy], buy, ProvenanceChange.TRANSFORMED, stage, null);
@@ -104,7 +115,8 @@ test("walking down from a dropped row ends at its drop", () => {
 	expect(slice.edges).toEqual([]);
 	expect(slice.drops).toHaveLength(1);
 	expect(slice.drops[0].reason).toEqual(DropReason.NOT_SUPPORTED);
-	expect(slice.drops[0].detail).toEqual("asset class FUT");
+	expect(slice.drops[0].detail?.kind).toEqual(ProvenanceDetailKind.ASSET_CLASS_NOT_SUPPORTED);
+	expect(slice.drops[0].detail?.values[ProvenanceDetailValue.ASSET_CLASS]).toEqual("FUT");
 });
 
 test("parents and children are one step", () => {

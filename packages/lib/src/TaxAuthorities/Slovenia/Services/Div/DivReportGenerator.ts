@@ -11,6 +11,9 @@ import { TreatyType } from "@brrr/InfoProviders/Models/TreatyType";
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
+import { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
+import { ProvenanceDetailValue } from "@brrr/Provenance/Models/ProvenanceDetailValue";
 import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
@@ -66,7 +69,7 @@ type Payer = {
 };
 
 // The payer, and why the lookup couldn't fill it in (null when it could).
-type PayerLookup = { payer: Payer; problem: string | null };
+type PayerLookup = { payer: Payer; problem: ProvenanceDetail | null };
 
 function filterOutCashTransactionsBasedOnDate(
 	data: TradeEventCashTransaction[],
@@ -83,7 +86,10 @@ function filterOutCashTransactionsBasedOnDate(
 				line,
 				DropReason.OUTSIDE_PERIOD,
 				STAGE,
-				`paid ${line.date.toFormat("yyyy-MM-dd")}`,
+				new ProvenanceDetail({
+					kind: ProvenanceDetailKind.PAID_OUTSIDE_PERIOD,
+					values: { [ProvenanceDetailValue.DATE]: line.date.toFormat("yyyy-MM-dd") },
+				}),
 			);
 		}
 	}
@@ -297,7 +303,7 @@ export class DivReportGenerator {
 		let address = "";
 		let countryOfOrigin = EDavkiCountryCode.Schema.parse("");
 		let taxReliefParagraph: string | null = null;
-		let problem: string | null = null;
+		let problem: ProvenanceDetail | null = null;
 
 		try {
 			const responsibleCompany = await this.infoProvider.getCompanyInfo(isin);
@@ -314,11 +320,20 @@ export class DivReportGenerator {
 				);
 				taxReliefParagraph = relevantCountry?.treaties.get(TreatyType.TaxRelief) ?? null;
 			} else {
-				problem = `no company found for ${isin}`;
+				problem = new ProvenanceDetail({
+					kind: ProvenanceDetailKind.COMPANY_NOT_FOUND,
+					values: { [ProvenanceDetailValue.ISIN]: isin },
+				});
 			}
 		} catch (e) {
 			// The lookup is best-effort: the line goes out with what was found, and says so.
-			problem = `company lookup failed: ${e instanceof Error ? e.message : String(e)}`;
+			problem = new ProvenanceDetail({
+				kind: ProvenanceDetailKind.COMPANY_LOOKUP_FAILED,
+				values: {
+					[ProvenanceDetailValue.ISIN]: isin,
+					[ProvenanceDetailValue.ERROR]: e instanceof Error ? e.message : String(e),
+				},
+			});
 		}
 
 		return { payer: { title, address, countryOfOrigin, taxReliefParagraph }, problem };

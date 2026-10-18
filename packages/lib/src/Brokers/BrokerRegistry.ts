@@ -7,6 +7,9 @@ import type { ImportFile } from "@brrr/Brokers/Models/ImportFile";
 import { StagingFinancialEvents } from "@brrr/Core/Models/Staging/StagingFinancialEvents";
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
+import { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
+import { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
+import { ProvenanceDetailValue } from "@brrr/Provenance/Models/ProvenanceDetailValue";
 import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 
@@ -33,7 +36,15 @@ export class BrokerRegistry {
 			const detection = detections[index];
 			if (detection.detectedBroker !== null) continue;
 			if (detection.error !== null) {
-				provenance.drop(file, DropReason.UNREADABLE, STAGE, detection.error);
+				provenance.drop(
+					file,
+					DropReason.UNREADABLE,
+					STAGE,
+					new ProvenanceDetail({
+						kind: ProvenanceDetailKind.FILE_ERROR,
+						values: { [ProvenanceDetailValue.ERROR]: detection.error },
+					}),
+				);
 			} else {
 				provenance.drop(file, DropReason.NOT_RECOGNISED, STAGE, null);
 			}

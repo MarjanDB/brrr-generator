@@ -68,8 +68,8 @@ n29 REPORT_LINE DOH_KDVP sold 2022-03-24 · -5 FR0010242511
   ← n24 REPORTED by KdvpReportGenerator
 
 Dropped:
-n22 NOT_USED by LotMatchingMethodFactory (lot matching is FIFO)
-n23 NOT_USED by LotMatchingMethodFactory (lot matching is FIFO)
+n22 NOT_USED by LotMatchingMethodFactory (LOT_MATCHING_IGNORES_BROKER_LOTS LOT_MATCHING_METHOD=FIFO)
+n23 NOT_USED by LotMatchingMethodFactory (LOT_MATCHING_IGNORES_BROKER_LOTS LOT_MATCHING_METHOD=FIFO)
 
 Warnings:
 (none)

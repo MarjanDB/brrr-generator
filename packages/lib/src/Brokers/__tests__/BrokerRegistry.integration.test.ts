@@ -5,6 +5,8 @@ import { IbkrTransformService } from "@brrr/Brokers/Ibkr/Services/IbkrTransformS
 import { createContainer } from "@brrr/Container";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
+import { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
+import { ProvenanceDetailValue } from "@brrr/Provenance/Models/ProvenanceDetailValue";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
 import { ProvenanceGraph } from "@brrr/Provenance/Services/ProvenanceGraph";
@@ -41,7 +43,8 @@ test("a Flex Query that fails to parse carries the parse error, and its file is 
 	expect(graph.drops()).toHaveLength(1);
 	expect(graph.drops()[0].node).toBe(graph.nodeOf(file));
 	expect(graph.drops()[0].reason).toEqual(DropReason.UNREADABLE);
-	expect(graph.drops()[0].detail).toContain('"type"');
+	expect(graph.drops()[0].detail?.kind).toEqual(ProvenanceDetailKind.FILE_ERROR);
+	expect(graph.drops()[0].detail?.values[ProvenanceDetailValue.ERROR]).toContain('"type"');
 });
 
 test("an unrelated file is not detected, is not an error, and is dropped as not recognised", () => {

@@ -5,6 +5,9 @@ import { FifoLotMatchingMethod } from "@brrr/Core/Services/LotMatching/FifoLotMa
 import { ProvidedLotMatchingMethod } from "@brrr/Core/Services/LotMatching/ProvidedLotMatchingMethod";
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
+import { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
+import { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
+import { ProvenanceDetailValue } from "@brrr/Provenance/Models/ProvenanceDetailValue";
 import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Models/TaxAuthorityLotMatchingMethod";
 
@@ -19,7 +22,15 @@ export function createLotMatchingMethod(
 		return new ProvidedLotMatchingMethod(providedLots, provenance);
 	}
 	for (const lot of providedLots) {
-		provenance.drop(lot, DropReason.NOT_USED, STAGE, `lot matching is ${method}`);
+		provenance.drop(
+			lot,
+			DropReason.NOT_USED,
+			STAGE,
+			new ProvenanceDetail({
+				kind: ProvenanceDetailKind.LOT_MATCHING_IGNORES_BROKER_LOTS,
+				values: { [ProvenanceDetailValue.LOT_MATCHING_METHOD]: method },
+			}),
+		);
 	}
 	// NONE has no implementation of its own and matches FIFO.
 	return new FifoLotMatchingMethod();

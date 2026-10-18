@@ -15,6 +15,8 @@ import type { CompanyInfo } from "@brrr/InfoProviders/Models/CompanyInfo";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
 import { DropReason } from "@brrr/Provenance/Models/DropReason";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
+import { ProvenanceDetailValue } from "@brrr/Provenance/Models/ProvenanceDetailValue";
 import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
 import { ProvenanceGraph } from "@brrr/Provenance/Services/ProvenanceGraph";
@@ -292,7 +294,8 @@ test("a dividend line is recorded from its day's sum, which comes from its actio
 	expect(graph.drops()).toHaveLength(1);
 	expect(graph.drops()[0].node).toBe(graph.nodeOf(d0));
 	expect(graph.drops()[0].reason).toEqual(DropReason.OUTSIDE_PERIOD);
-	expect(graph.drops()[0].detail).toEqual("paid 2021-12-30");
+	expect(graph.drops()[0].detail?.kind).toEqual(ProvenanceDetailKind.PAID_OUTSIDE_PERIOD);
+	expect(graph.drops()[0].detail?.values[ProvenanceDetailValue.DATE]).toEqual("2021-12-30");
 });
 
 // Wiring for one test, not test data: a lookup that cannot be reached.
@@ -342,7 +345,9 @@ test("a failed company lookup warns on the line, which still goes out", async ()
 	expect(graph.warnings()).toHaveLength(1);
 	expect(graph.warnings()[0].node).toBe(graph.nodeOf(line));
 	expect(graph.warnings()[0].by).toEqual("DivReportGenerator");
-	expect(graph.warnings()[0].detail).toEqual("company lookup failed: offline");
+	expect(graph.warnings()[0].detail.kind).toEqual(ProvenanceDetailKind.COMPANY_LOOKUP_FAILED);
+	expect(graph.warnings()[0].detail.values[ProvenanceDetailValue.ERROR]).toEqual("offline");
+	expect(graph.warnings()[0].detail.values[ProvenanceDetailValue.ISIN]).toEqual("US0000000001");
 });
 
 test("a lookup that finds no company warns on the line, which still goes out", async () => {
@@ -384,5 +389,6 @@ test("a lookup that finds no company warns on the line, which still goes out", a
 	expect(line.dividendPayerTitle).toEqual("");
 	expect(graph.warnings()).toHaveLength(1);
 	expect(graph.warnings()[0].node).toBe(graph.nodeOf(line));
-	expect(graph.warnings()[0].detail).toEqual("no company found for US0000000001");
+	expect(graph.warnings()[0].detail.kind).toEqual(ProvenanceDetailKind.COMPANY_NOT_FOUND);
+	expect(graph.warnings()[0].detail.values[ProvenanceDetailValue.ISIN]).toEqual("US0000000001");
 });
