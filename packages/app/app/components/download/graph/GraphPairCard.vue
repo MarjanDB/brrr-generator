@@ -84,9 +84,7 @@ const classes = computed(() => [
       class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle hover:bg-surface-hover"
       @click.stop="onRow(PairSide.ACQUIRED)"
     >
-      <span class="size-4.5 shrink-0 rounded-sm grid place-items-center bg-success-soft text-success-ink">
-        <span class="i-mdi-triangle text-xs" aria-hidden="true" />
-      </span>
+      <NodeIcon :look="acquiredLook" :small="true" />
       <span class="truncate">{{ acquiredText }}</span>
     </button>
     <button
@@ -94,9 +92,7 @@ const classes = computed(() => [
       class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle hover:bg-surface-hover"
       @click.stop="onRow(PairSide.SOLD)"
     >
-      <span class="size-4.5 shrink-0 rounded-sm grid place-items-center bg-danger-soft text-danger-ink">
-        <span class="i-mdi-triangle-down text-xs" aria-hidden="true" />
-      </span>
+      <NodeIcon :look="soldLook" :small="true" />
       <span class="truncate">{{ soldText }}</span>
     </button>
   </div>

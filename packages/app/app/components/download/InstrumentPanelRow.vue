@@ -20,19 +20,6 @@ const emit = defineEmits<{
 
 const { t, locale } = useI18n();
 
-// UnoCSS only sees class strings written out in full.
-const monogramClasses: Record<ColorIntent, string> = {
-	[ColorIntent.ACTION]: "bg-action-soft text-action-ink",
-	[ColorIntent.ACCENT]: "bg-accent-soft text-accent-ink",
-	[ColorIntent.NEUTRAL]: "bg-neutral-soft text-neutral-ink",
-	[ColorIntent.SUCCESS]: "bg-success-soft text-success-ink",
-	[ColorIntent.WARNING]: "bg-warning-soft text-warning-ink",
-	[ColorIntent.DANGER]: "bg-danger-soft text-danger-ink",
-	[ColorIntent.INFO]: "bg-info-soft text-info-ink",
-};
-
-const monogram = computed(() => monogramText(props.entry.ticker));
-const monogramClass = computed(() => monogramClasses[monogramIntent(props.entry.ticker)]);
 const isCall = computed(() => props.entry.contract?.right === OptionRight.CALL);
 const expiry = computed(() => {
 	const contract = props.entry.contract;
@@ -51,12 +38,9 @@ const expiry = computed(() => {
       class="w-full flex items-center gap-2 text-left rounded-r-md py-1 pl-3 pr-1.5 ml-3 border-l border-edge transition-colors"
       :class="selected ? 'bg-action-soft' : 'hover:bg-surface-hover'"
     >
-      <span
-        class="text-xs font-bold rounded-sm px-1 leading-4"
-        :class="isCall ? 'bg-success-soft text-success-ink' : 'bg-danger-soft text-danger-ink'"
-      >
+      <AppBadge :color="isCall ? ColorIntent.SUCCESS : ColorIntent.DANGER">
         {{ isCall ? t('download_option_call_short') : t('download_option_put_short') }}
-      </span>
+      </AppBadge>
       <span class="font-semibold text-sm tabular-nums">{{ formatNumber(entry.contract.strike, locale) }}</span>
       <span class="text-xs text-ink-muted flex-1 truncate">{{ expiry }}</span>
       <AppTooltip v-if="entry.warningCount > 0" :content="t('download_badge_warnings', { n: entry.warningCount })">
@@ -82,12 +66,7 @@ const expiry = computed(() => {
     class="w-full flex items-center gap-2 text-left rounded-md p-1.5 transition-colors"
     :class="selected ? 'bg-action-soft' : 'hover:bg-surface-hover'"
   >
-    <span
-      class="size-8 shrink-0 rounded-md grid place-items-center text-xs font-bold"
-      :class="monogramClass"
-    >
-      {{ monogram }}
-    </span>
+    <InstrumentMonogram :ticker="entry.ticker" :large="false" />
     <span class="min-w-0 flex-1">
       <span class="flex items-center gap-1.5 font-semibold text-sm text-ink">
         <span class="truncate">{{ entry.ticker }}</span>

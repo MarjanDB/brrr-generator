@@ -82,42 +82,38 @@ function openModal(row: InstrumentRow, event: MouseEvent) {
 </script>
 
 <template>
-  <div v-if="collapsed" class="card p-3 flex items-center gap-3">
-    <span class="i-mdi-check-circle text-icon-confirm text-lg shrink-0" />
-    <div class="flex flex-col min-w-0">
-      <span class="text-h5">{{ t('review_instruments_title') }}</span>
-      <span class="text-body-sm app-text-muted">{{ t('review_summary', { n: groupingCount }) }}</span>
-    </div>
-  </div>
+  <StepSummaryCard v-if="collapsed" :title="t('review_instruments_title')">
+    {{ t('review_summary', { n: groupingCount }) }}
+  </StepSummaryCard>
 
   <div v-else class="card card-padding-md flex flex-col gap-4">
     <h2 class="text-h5">{{ t('review_instruments_title') }}</h2>
     <ImportLeftOutNote :provenance="provenance" />
     <div class="overflow-x-auto">
-      <table class="w-full text-sm">
+      <table class="app-table">
         <thead>
-          <tr class="border-b app-border-strong">
-            <th class="text-left py-2 pr-4 font-medium app-text">{{ t('review_column_name') }}</th>
-            <th class="text-left py-2 pr-4 font-medium app-text">{{ t('review_column_isin') }}</th>
-            <th class="text-right py-2 pr-4 font-medium app-text">{{ t('review_column_stock_trades') }}</th>
-            <th class="text-right py-2 pr-4 font-medium app-text">{{ t('review_column_dividends') }}</th>
-            <th class="text-right py-2 font-medium app-text">{{ t('review_column_derivatives') }}</th>
+          <tr class="app-table-head-row">
+            <th class="app-table-th text-left">{{ t('review_column_name') }}</th>
+            <th class="app-table-th text-left">{{ t('review_column_isin') }}</th>
+            <th class="app-table-th text-right">{{ t('review_column_stock_trades') }}</th>
+            <th class="app-table-th text-right">{{ t('review_column_dividends') }}</th>
+            <th class="app-table-th text-right">{{ t('review_column_derivatives') }}</th>
           </tr>
         </thead>
         <tbody>
           <tr
             v-for="(row, i) in rows"
             :key="row.isin || String(i)"
-            class="border-b app-border last:border-0 app-row-interactive"
+            class="app-table-row app-row-interactive"
             @click="openModal(row, $event)"
           >
-            <td class="pl-2 py-2 pr-4 app-text">
+            <td class="app-table-td pl-2">
               <button type="button" class="text-left hover:underline">{{ row.name }}</button>
             </td>
-            <td class="py-2 pr-4 app-text-muted font-mono text-xs">{{ row.isin }}</td>
-            <td class="py-2 pr-4 text-right app-text">{{ row.stockTrades  }}</td>
-            <td class="py-2 pr-4 text-right app-text">{{ row.dividends  }}</td>
-            <td class="py-2 pr-2 text-right app-text">{{ row.derivatives  }}</td>
+            <td class="app-table-td font-mono text-xs"><span class="app-text-muted">{{ row.isin }}</span></td>
+            <td class="app-table-td text-right">{{ row.stockTrades  }}</td>
+            <td class="app-table-td text-right">{{ row.dividends  }}</td>
+            <td class="app-table-td text-right">{{ row.derivatives  }}</td>
           </tr>
         </tbody>
       </table>

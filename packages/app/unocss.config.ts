@@ -67,6 +67,18 @@ export default defineConfig({
 
 		// Card
 		["card", "bg-surface border app-border-strong rounded-md"],
+
+		// Tables: a step's own tables, and the denser ones inside a dialog. Cells leave their alignment
+		// to the caller.
+		["app-table", "w-full text-sm"],
+		["app-table-head-row", "border-b app-border-strong"],
+		["app-table-row", "border-b app-border last:border-0"],
+		["app-table-th", "py-2 pr-4 font-medium app-text"],
+		["app-table-td", "py-2 pr-4 app-text"],
+		["app-table-head-row-dense", "border-b app-border"],
+		["app-table-row-dense", "border-b app-border-subtle last:border-0"],
+		["app-table-th-dense", "py-1.5 pr-3 font-medium app-text-muted"],
+		["app-table-td-dense", "py-1.5 pr-3 app-text text-xs"],
 		["card-padding-md", "p-4"],
 
 		// Floating layers (reka-ui portals them to the body)

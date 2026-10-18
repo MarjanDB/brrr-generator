@@ -90,14 +90,10 @@ onUnmounted(revokeUrls);
         </template>
         <p class="text-label mb-2">{{ t('download_needs_look_title') }}</p>
         <ul class="flex flex-col gap-1.5">
-          <li
-            v-for="(item, index) in reading.needsALook"
-            :key="index"
-            class="rounded-sm bg-warning-soft text-warning-ink px-2 py-1 text-sm"
-          >
+          <AppCallout v-for="(item, index) in reading.needsALook" :key="index" as="li" :color="ColorIntent.WARNING">
             <span class="mr-1.5 rounded-sm bg-surface px-1 font-mono text-xs text-ink-muted">{{ item.subject.label }}</span>
             {{ dropSentence(item.drop) }}
-          </li>
+          </AppCallout>
         </ul>
       </AppPopover>
       <AppTooltip v-else :content="t('download_count_needs_look')">
@@ -118,14 +114,10 @@ onUnmounted(revokeUrls);
         </template>
         <p class="text-label mb-2">{{ t('download_warnings_title') }}</p>
         <ul class="flex flex-col gap-1.5">
-          <li
-            v-for="(item, index) in warningItems"
-            :key="index"
-            class="rounded-sm bg-warning-soft text-warning-ink px-2 py-1 text-sm"
-          >
+          <AppCallout v-for="(item, index) in warningItems" :key="index" as="li" :color="ColorIntent.WARNING">
             <span class="mr-1.5 rounded-sm bg-surface px-1 font-mono text-xs text-ink-muted">{{ item.title }}</span>
             {{ warningSentence(item.warning) }}
-          </li>
+          </AppCallout>
         </ul>
       </AppPopover>
       <AppTooltip v-else :content="t('download_count_warnings')">

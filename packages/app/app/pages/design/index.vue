@@ -110,7 +110,21 @@ function onFormSubmit(valid: boolean) {
 					<span class="text-xs app-text-muted w-16 shrink-0">solid</span>
 					<AppBadge v-for="intent in intents" :key="intent.name" :color="intent.name" :variant="BadgeVariant.SOLID">{{ intent.name }}</AppBadge>
 				</div>
+				<div class="flex flex-row gap-2 flex-wrap items-center">
+					<span class="text-xs app-text-muted w-16 shrink-0">pill</span>
+					<AppBadge v-for="intent in intents" :key="intent.name" :color="intent.name" pill>{{ intent.name }}</AppBadge>
+				</div>
 			</div>
+		</div>
+
+		<div class="flex flex-col gap-4 border b-1 p-5">
+			<h2 class="text-h3">Callouts and step summary</h2>
+			<ul class="flex flex-col gap-1.5 max-w-md">
+				<AppCallout v-for="intent in intents" :key="intent.name" as="li" :color="intent.name">
+					A {{ intent.name }} callout about the item above it.
+				</AppCallout>
+			</ul>
+			<StepSummaryCard title="Select Files" class="max-w-md">2 file(s) loaded</StepSummaryCard>
 		</div>
 
 		<div class="flex flex-col gap-4 border b-1 p-5">

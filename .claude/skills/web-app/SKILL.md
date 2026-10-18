@@ -144,12 +144,18 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
   `ink`, `ink-muted`, `ink-inverse`, `edge`, `edge-strong`, `edge-subtle`, `overlay`. Each `ColorIntent` (`app/types/ui.ts`:
   action, accent, neutral, success, warning, danger, info) has `<intent>`, `-hover`, `-on` (text on the fill), `-soft`, `-ink` and
   `-edge`: `bg-accent text-accent-on`, `border-danger-edge`.
-- Class names are written out in full (`AppBadge` maps `ColorIntent` x `BadgeVariant` to literal strings): UnoCSS only sees literals,
-  so `` `bg-${color}` `` renders nothing.
+- Class names are written out in full: UnoCSS only sees literals, so `` `bg-${color}` `` renders nothing. An intent's classes
+  come from `utils/intentClasses.ts` (`softIntentClasses`, `solidIntentClasses`, `edgeIntentClasses`), which `AppBadge`,
+  `AppCallout`, `InstrumentMonogram`, `nodeLook` and the rest read; don't write another `Record<ColorIntent, string>`.
 - UnoCSS scans `.vue` files and, through `content.pipeline.include` in `unocss.config.ts`, the TypeScript in `app/utils/` and
   `app/composables/`. A class or icon written only in a `.ts` file anywhere else is never generated.
 - Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `app-surface-raised`, `app-surface-sunken`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`,
-  `text-label`, `text-caption`, `input-md`, `button-filled-<intent>`, `button-ghost`, `alert-error`, …
+  `text-label`, `text-caption`, `input-md`, `button-filled-<intent>`, `button-ghost`, `alert-error`, `tooltip-box`,
+  `app-focus-ring`, and for tables `app-table`, `app-table-head-row`, `app-table-row`, `app-table-th`, `app-table-td` (with a
+  `-dense` set for the tables inside a dialog; cells leave alignment to the caller), …
+- Shared pieces before hand-written markup: `AppBadge` (`pill` for an outlined chip), `AppCallout` (a tinted line, `as="li"`
+  in a list), `StepSummaryCard` (a finished wizard step folded to one line), `InstrumentMonogram` and the graph's `NodeIcon`.
+  `pages/design/` shows each of them.
 - There is one theme: no dark mode and no `dark:` classes.
 - Icons are classes: `i-mdi-<name>` (Material Design Icons via `@iconify-json/mdi`).
 

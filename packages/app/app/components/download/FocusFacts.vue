@@ -7,6 +7,7 @@ import {
 	type ReportLeftOut,
 } from "@brrr/lib";
 import { computed } from "vue";
+import { ColorIntent } from "~/types/ui";
 
 defineProps<{
 	leftOut: ReportLeftOut[];
@@ -71,11 +72,10 @@ const facts = computed<Fact[]>(() => {
 	return result;
 });
 
-// Written out so UnoCSS sees them: grey for what the report is expected to leave out, amber for
-// what needs a look.
-const categoryClasses: Record<DropCategory, string> = {
-	[DropCategory.NOT_IN_THIS_REPORT]: "bg-neutral-soft text-neutral-ink",
-	[DropCategory.NEEDS_A_LOOK]: "bg-warning-soft text-warning-ink",
+// Grey for what the report is expected to leave out, amber for what needs a look.
+const categoryColors: Record<DropCategory, ColorIntent> = {
+	[DropCategory.NOT_IN_THIS_REPORT]: ColorIntent.NEUTRAL,
+	[DropCategory.NEEDS_A_LOOK]: ColorIntent.WARNING,
 };
 </script>
 
@@ -89,23 +89,26 @@ const categoryClasses: Record<DropCategory, string> = {
     </dl>
 
     <ul v-if="leftOut.length > 0 || warnings.length > 0" class="flex flex-col gap-1.5">
-      <li
+      <AppCallout
         v-for="(item, index) in leftOut"
         :key="`left-out-${index}`"
-        class="flex items-center gap-2 rounded-sm px-2 py-1 text-sm"
-        :class="categoryClasses[item.category]"
+        as="li"
+        :color="categoryColors[item.category]"
+        class="flex items-center gap-2"
       >
         <span class="font-medium">{{ t(dropCategoryKeys[item.category]) }}</span>
         <span>{{ dropSentence(item.drop) }}</span>
-      </li>
-      <li
+      </AppCallout>
+      <AppCallout
         v-for="(warning, index) in warnings"
         :key="`warning-${index}`"
-        class="flex items-center gap-2 rounded-sm bg-warning-soft text-warning-ink px-2 py-1 text-sm"
+        as="li"
+        :color="ColorIntent.WARNING"
+        class="flex items-center gap-2"
       >
-        <span class="i-mdi-alert-outline" />
+        <span class="i-mdi-alert-outline" aria-hidden="true" />
         {{ warningSentence(warning) }}
-      </li>
+      </AppCallout>
     </ul>
   </div>
 </template>

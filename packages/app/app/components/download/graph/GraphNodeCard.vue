@@ -84,9 +84,7 @@ const classes = computed(() => [
     @click.stop="onClick"
     @dblclick.stop="onDoubleClick"
   >
-    <span class="size-6 shrink-0 rounded-sm grid place-items-center" :class="look.tint">
-      <span class="text-sm" :class="look.icon" aria-hidden="true" />
-    </span>
+    <NodeIcon :look="look" :small="false" />
     <span class="min-w-0 flex-1 truncate tabular-nums">{{ text }}</span>
     <span
       v-if="warnings.length > 0"

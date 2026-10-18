@@ -45,9 +45,7 @@ const stateClasses: Record<CardState, string> = {
     <span class="absolute inset-0 translate-x-2 translate-y-2 -z-20 rounded-md border border-edge bg-surface-raised" />
     <span class="absolute inset-0 translate-x-1 translate-y-1 -z-10 rounded-md border border-edge-strong bg-surface-raised" />
     <span class="absolute inset-0 flex items-center gap-2 rounded-md border border-edge-strong bg-surface-raised px-1.5">
-      <span class="size-6 shrink-0 rounded-sm grid place-items-center" :class="look.tint">
-        <span class="text-sm" :class="look.icon" aria-hidden="true" />
-      </span>
+      <NodeIcon :look="look" :small="false" />
       <span class="min-w-0 flex-1 truncate tabular-nums">{{ text }}</span>
     </span>
   </button>

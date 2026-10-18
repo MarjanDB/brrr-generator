@@ -16,9 +16,7 @@ const isRow = computed(() => props.node.kind === GraphNodeKind.ROW);
 <template>
   <div class="text-sm text-ink">
     <div class="flex items-center gap-2 font-semibold mb-2">
-      <span class="size-5.5 shrink-0 rounded-sm grid place-items-center" :class="look.tint">
-        <span class="text-sm" :class="look.icon" aria-hidden="true" />
-      </span>
+      <NodeIcon :look="look" :small="false" />
       {{ content.title }}
     </div>
     <dl class="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 tabular-nums">

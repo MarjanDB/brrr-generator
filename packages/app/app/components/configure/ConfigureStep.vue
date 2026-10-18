@@ -53,16 +53,10 @@ function onGenerated(outputs: GeneratedOutputs) {
 </script>
 
 <template>
-  <div v-if="collapsed" class="card p-3 flex items-center gap-3">
-    <span class="i-mdi-check-circle text-icon-confirm text-lg shrink-0" />
-    <div class="flex flex-col min-w-0">
-      <span class="text-h5">{{ t('report_settings_title') }}</span>
-      <span v-if="lastXmlFilename" class="text-body-sm app-text-muted">
-        {{ lastXmlFilename }}
-        <template v-if="selectedCard"> · {{ selectedCard.name }}</template>
-      </span>
-    </div>
-  </div>
+  <StepSummaryCard v-if="collapsed" :title="t('report_settings_title')">
+    {{ lastXmlFilename }}
+    <template v-if="selectedCard"> · {{ selectedCard.name }}</template>
+  </StepSummaryCard>
 
   <div v-else class="flex flex-col gap-4 w-full max-w-screen-md mx-auto">
     <!-- Tax authority selector -->
