@@ -69,9 +69,14 @@ const groupingCount = computed(() => rows.value.length);
 
 const modalRow = shallowRef<InstrumentRow | null>(null);
 const modalOpen = ref(false);
+// The clicked row's button, so the focus goes back to it when the dialog closes.
+const modalTrigger = shallowRef<HTMLElement | null>(null);
 
-function openModal(row: InstrumentRow) {
+// The whole row opens the dialog; its button is what a keyboard reaches.
+function openModal(row: InstrumentRow, event: MouseEvent) {
   modalRow.value = row;
+  modalTrigger.value =
+    event.currentTarget instanceof HTMLElement ? event.currentTarget.querySelector("button") : null;
   modalOpen.value = true;
 }
 </script>
@@ -104,9 +109,11 @@ function openModal(row: InstrumentRow) {
             v-for="(row, i) in rows"
             :key="row.isin || String(i)"
             class="border-b app-border last:border-0 app-row-interactive"
-            @click="openModal(row)"
+            @click="openModal(row, $event)"
           >
-            <td class="pl-2 py-2 pr-4 app-text">{{ row.name }}</td>
+            <td class="pl-2 py-2 pr-4 app-text">
+              <button type="button" class="text-left hover:underline">{{ row.name }}</button>
+            </td>
             <td class="py-2 pr-4 app-text-muted font-mono text-xs">{{ row.isin }}</td>
             <td class="py-2 pr-4 text-right app-text">{{ row.stockTrades  }}</td>
             <td class="py-2 pr-4 text-right app-text">{{ row.dividends  }}</td>
@@ -126,5 +133,6 @@ function openModal(row: InstrumentRow) {
     :name="modalRow.name"
     :isin="modalRow.isin"
     :groupings="modalRow.groupings"
+    :return-focus="modalTrigger"
   />
 </template>

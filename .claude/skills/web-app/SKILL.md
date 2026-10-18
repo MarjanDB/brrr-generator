@@ -37,7 +37,8 @@ switches the locale starts by setting `en`. Graph tests build graphs with `utils
 1. **Upload** — `components/upload/UploadStep.vue`: reads the files, runs `ReportPipeline.read`, emits the `ImportResult`
    (detections, `FinancialEvents` and the provenance graph).
 2. **Review** — `components/review/ReviewStep.vue` and `components/review/instrument/` (per-instrument stocks, derivatives, dividends and
-   summary, each with a table and a chart); `InstrumentModal.vue`. `ReviewStep` takes the import's `provenance` graph and calls
+   summary, each with a table and a chart); `InstrumentModal.vue`, opened by a row (its name is the button a keyboard reaches,
+   and gets the focus back on close). `ReviewStep` takes the import's `provenance` graph and calls
    `provideImportSources` once; anything below it reads the rows behind an event with `useImportSources()`. Each trade and cash
    row has a "where from" popover (`components/review/source/`: `RowSourceButton`, mounted-when-open `RowSourcePopover`,
    `FileChip`) showing the export file(s), a "counted once" note for a deduplicated row, the row's key IBKR attributes and an "All
@@ -79,7 +80,8 @@ the 700 kB limit.
 The page is full width; steps 1 and 3 cap their forms at `max-w-screen-md`.
 
 Guides (broker export instructions, tax authority submission instructions) are data (`utils/brokerGuides.ts`, `utils/taxAuthorityGuides.ts`):
-`GuideStep`s from `types/guide.ts`, shown by `GuideModal.vue`, with screenshots under `packages/app/public/screenshots/` and icons under `packages/app/public/icons/`.
+`GuideStep`s from `types/guide.ts`, shown by `GuideModal.vue` (its `trigger` slot holds the button that opens it: each broker in
+step 1, the guide button in the download header), with screenshots under `packages/app/public/screenshots/` and icons under `packages/app/public/icons/`.
 
 `pages/design/` is a design-system showcase (colours, buttons, badges, form controls). Check new shortcuts and components there.
 
@@ -105,6 +107,10 @@ Guides (broker export instructions, tax authority submission instructions) are d
   `AppFileInput`. Each takes a `validate` function returning an error string or `null`, registers itself with the surrounding form, and
   links its label through `useId()`.
 - Primitives (select, checkbox, dialog, tooltip, popover) come from reka-ui. Composables from `@vueuse/core` before writing your own.
+- Dialogs go through `ui/AppDialog.vue`: a `title`, an optional `description` (or `description` slot) read out with it, a
+  `DialogSize`, an `icon` slot, a close button named by `dialog_close`, and a `trigger` slot. A dialog opened by code (the
+  instrument dialog, one for many rows) passes `returnFocus`, since reka only returns focus to a `DialogTrigger`. Without a
+  description, `aria-describedby` is left off, which is what reka's "Missing Description" warning asks for.
 - Popovers go through `ui/AppPopover.vue`: a `trigger` slot (or a `reference` element for one opened by code), an optional
   `tooltip` for the trigger, and one box (`card`, `z-50`, collision padding, scrolling past 28rem); width and an `aria-label` pass
   through to the box. Tooltips go through `ui/AppTooltip.vue`; both use the `tooltip-box` shortcut. A reka trigger inside a

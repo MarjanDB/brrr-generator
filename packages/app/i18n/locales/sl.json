@@ -61,6 +61,7 @@
 	"upload_detection_ignored": "Nekaterih datotek ni bilo mogoče prepoznati in bodo ignorirane.",
 	"export_summary": "{type} / {year}",
 	"restart_button": "Začni znova",
+	"dialog_close": "Zapri",
 	"download_xml_label": "Prenesi XML (eDavki)",
 	"download_csv_label": "Prenesi CSV",
 	"modal_stock_trades_title": "Trgovanje z delnicami",

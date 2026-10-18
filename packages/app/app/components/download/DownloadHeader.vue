@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type ReportProvenance, SlovenianReportTypeId } from "@brrr/lib";
 import { computed, onMounted, onUnmounted, ref } from "vue";
+import GuideModal from "~/components/guide/GuideModal.vue";
 import AppBadge from "~/components/ui/AppBadge.vue";
 import AppButton from "~/components/ui/AppButton.vue";
 import AppPopover from "~/components/ui/AppPopover.vue";
@@ -19,7 +20,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	restart: [];
-	openGuide: [];
 }>();
 
 const { t } = useI18n();
@@ -138,9 +138,13 @@ onUnmounted(revokeUrls);
 
     <span class="flex-1" />
 
-    <AppButton v-if="guide" class="button-filled-action" @click="emit('openGuide')">
-      {{ t('tax_authority_guide_button') }}
-    </AppButton>
+    <GuideModal v-if="guide" :name-key="guide.nameKey" :steps="guide.steps">
+      <template #trigger>
+        <AppButton class="button-filled-action">
+          {{ t('tax_authority_guide_button') }}
+        </AppButton>
+      </template>
+    </GuideModal>
     <a v-if="csvUrl" :href="csvUrl" :download="outputs.csvFilename" class="button-filled-accent">
       {{ t('download_csv_label') }}
     </a>

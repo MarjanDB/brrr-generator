@@ -1,4 +1,7 @@
 <script setup lang="ts">
+// The attributes go on the button once: as-child triggers (a dialog's, a popover's) pass their click here.
+defineOptions({ inheritAttrs: false });
+
 defineProps<{
 	loading?: boolean;
 }>();
