@@ -6,7 +6,8 @@ import { TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend } fro
 import { DividendType } from "@brrr/Core/Models/Events/DividendType";
 import type { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGrouping";
 import { type CashActionId, Isin } from "@brrr/Core/Models/Identifiers";
-import { type IInfoProvider, TreatyType } from "@brrr/InfoProviders/IInfoProvider";
+import type { IInfoProvider } from "@brrr/InfoProviders/Interfaces/IInfoProvider";
+import { TreatyType } from "@brrr/InfoProviders/Models/TreatyType";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
 import type { TaxpayerInfo } from "@brrr/TaxAuthorities/Schemas/TaxpayerConfigSchema";
 import { EDavkiDividendReportLine } from "@brrr/TaxAuthorities/Slovenia/Models/Div/EDavkiDividendReportLine";

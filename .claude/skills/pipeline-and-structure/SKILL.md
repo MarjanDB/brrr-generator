@@ -21,7 +21,7 @@ export files (XML strings)
 ```
 
 The site runs this in the browser (`packages/app/app/components/ibkr/IbkrUploadStep.vue`, `packages/app/app/components/export/SloveniaExportForm.vue`);
-the CLI runs it in Node (`packages/cli/main.ts`, through the same two registries).
+the CLI runs it in Node (`packages/cli/src/main.ts`, through the same two registries).
 
 ## Layers
 

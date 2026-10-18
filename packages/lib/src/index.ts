@@ -17,14 +17,12 @@ export type { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGro
 export { StagingFinancialGroupingProcessor } from "@brrr/Core/Services/StagingProcessing/StagingFinancialGroupingProcessor";
 
 // Info providers
-export {
-	type CompanyInfo,
-	type CompanyLocationInfo,
-	type Country,
-	IInfoProvider,
-	TreatyType,
-} from "@brrr/InfoProviders/IInfoProvider";
-export { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
+export { IInfoProvider } from "@brrr/InfoProviders/Interfaces/IInfoProvider";
+export type { CompanyInfo } from "@brrr/InfoProviders/Models/CompanyInfo";
+export type { CompanyLocationInfo } from "@brrr/InfoProviders/Models/CompanyLocationInfo";
+export type { Country } from "@brrr/InfoProviders/Models/Country";
+export { TreatyType } from "@brrr/InfoProviders/Models/TreatyType";
+export { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
 
 // Tax authorities
 export type {

@@ -1,6 +1,6 @@
 import { loadBrokersModule } from "@brrr/Brokers/BrokersModule";
 import { loadCoreModule } from "@brrr/Core/CoreModule";
-import { IInfoProvider } from "@brrr/InfoProviders/IInfoProvider";
+import { IInfoProvider } from "@brrr/InfoProviders/Interfaces/IInfoProvider";
 import { loadTaxAuthoritiesModule } from "@brrr/TaxAuthorities/TaxAuthoritiesModule";
 import { Container } from "inversify";
 

@@ -66,7 +66,7 @@ entity, `SP` sole trader), `name`, `address1`, `address2` (nullable), `city`, `p
 | DIV | `Doh_Div.xml` | `export-dividends.csv` |
 | IFI | `D_Ifi.xml` | `export-derivatives.csv` |
 
-The same names appear in `packages/cli/main.ts` (`OUTPUT_FILES`) and `SloveniaExportForm.vue` (`FILENAMES`). The site's upload
+The same names appear in `packages/cli/src/main.ts` (`OUTPUT_FILES`) and `SloveniaExportForm.vue` (`FILENAMES`). The site's upload
 instructions for eDavki are in `packages/app/app/components/download/taxAuthorityGuides.ts`.
 
 ## XSDs

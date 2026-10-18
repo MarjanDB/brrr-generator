@@ -22,7 +22,9 @@ import type { LotStock } from "@brrr/Brokers/Ibkr/Schemas/LotStock";
 import type { TradeStock } from "@brrr/Brokers/Ibkr/Schemas/TradeStock";
 import type { TransactionCash } from "@brrr/Brokers/Ibkr/Schemas/TransactionCash";
 import { CountryCode, CountryName } from "@brrr/Core/Models/Identifiers";
-import { type CompanyInfo, type Country, TreatyType } from "@brrr/InfoProviders/IInfoProvider";
+import type { CompanyInfo } from "@brrr/InfoProviders/Models/CompanyInfo";
+import type { Country } from "@brrr/InfoProviders/Models/Country";
+import { TreatyType } from "@brrr/InfoProviders/Models/TreatyType";
 import type { TaxpayerInfo } from "@brrr/TaxAuthorities/Schemas/TaxpayerConfigSchema";
 import { TaxpayerType } from "@brrr/TaxAuthorities/Schemas/TaxpayerType";
 
