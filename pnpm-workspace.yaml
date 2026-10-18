@@ -18,6 +18,7 @@ saveExact: true
 catalog:
   "@biomejs/biome": 2.5.15
   "@iconify-json/mdi": 1.2.3
+  "@nuxt/test-utils": 4.3.4
   "@nuxtjs/i18n": 10.6.0
   "@nuxtjs/seo": 5.3.16
   "@posthog/nuxt": 1.7.91
@@ -26,12 +27,14 @@ catalog:
   "@types/node": 24.19.2
   "@unocss/nuxt": 66.11.0
   "@vitest/coverage-v8": 5.0.5
+  "@vue/test-utils": 2.5.1
   "@vueuse/core": 15.0.0
   "@vueuse/nuxt": 15.0.0
   chart.js: 4.5.1
   commander: 15.0.0
   csv-stringify: 6.9.0
   fast-xml-parser: 5.11.2
+  happy-dom: 21.0.3
   inversify: 8.2.3
   js-yaml: 5.5.0
   luxon: 3.7.2
