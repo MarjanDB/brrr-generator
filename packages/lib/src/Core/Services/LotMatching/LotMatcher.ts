@@ -5,13 +5,19 @@ import type { LotLeg } from "@brrr/Core/Models/LotMatching/LotLeg";
 import type { MatchedLot } from "@brrr/Core/Models/LotMatching/MatchedLot";
 import type { Trade } from "@brrr/Core/Models/LotMatching/Trade";
 
+import { ProvenanceLabels } from "@brrr/Core/Utils/ProvenanceLabels";
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
+import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
+import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
+
+const STAGE = ProvenanceStage.Schema.parse("LotMatcher");
 
 export class LotMatcher {
 	public matchLots<T extends TradeEventBase>(
 		method: ILotMatchingMethod,
 		events: T[],
-		_provenance: IProvenanceRecorder,
+		provenance: IProvenanceRecorder,
 	): MatchedLot<T>[] {
 		const tradeEventMappings = new Map<TradeEventId, T>();
 		const tradeMappings = new Map<TradeEventId, Trade>();
@@ -30,10 +36,30 @@ export class LotMatcher {
 				throw new Error("Acquired Trade or Sold Trade is missing lookup");
 			}
 
-			return {
+			const matched = {
 				acquired: this.legOf(acquiredTrade, lot.quantity),
 				sold: this.legOf(soldTrade, -lot.quantity),
 			};
+
+			// The provided method has recorded its lots already; recording is idempotent.
+			provenance.node(
+				lot,
+				ProvenanceNodeKind.MATCHED_LOT,
+				ProvenanceLabels.matchedLot(acquiredTrade.id, soldTrade.id, lot.quantity),
+				{},
+			);
+			provenance.derive([acquiredTrade, soldTrade], lot, ProvenanceChange.MATCHED, STAGE, null);
+			for (const leg of [matched.acquired, matched.sold]) {
+				provenance.node(
+					leg,
+					ProvenanceNodeKind.LEG,
+					ProvenanceLabels.leg(leg.trade.id, leg.quantity),
+					{},
+				);
+				provenance.derive([lot], leg, ProvenanceChange.MATCHED, STAGE, null);
+			}
+
+			return matched;
 		});
 	}
 

@@ -46,6 +46,14 @@ export const ProvenanceLabels = {
 		return `${derivative ? "derivative grouping" : "grouping"} ${orDash(isin)} · ${orDash(ticker)}`;
 	},
 
+	matchedLot(acquiredId: TradeEventId, soldId: TradeEventId, quantity: number): string {
+		return `matched lot ${acquiredId} → ${soldId} · ${quantity}`;
+	},
+
+	leg(tradeId: TradeEventId, quantity: number): string {
+		return `leg ${tradeId} · ${quantity}`;
+	},
+
 	corporateActionHalf(
 		correlationKey: CorrelationKey,
 		fromSide: boolean,
