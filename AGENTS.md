@@ -130,7 +130,7 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
   A type built from another domain's adds a `From<X>` helper that goes through its `Schema` (`EDavkiIsin.FromIsin`), where its
   domain may depend on the other. Core can't know brokers, so `IbkrTransformService` turns IBKR values into core ones with the core type's
   `Schema`. Tests build ids the same way: `Isin.Schema.parse("US0378331005")`.
-  Lib's exports never make a caller (the site, the CLI) create one: `index.ts` exports enums but no nominal types, and the
+  Lib's exports never make a caller (the site, the CLI) create one: `index.ts` exports enums but no nominal types (the one exception is `ProvenanceStage`, exported only so the app's tests can build a graph by hand), and the
   public entry points (`TaxAuthorityRegistry.generateExports`, `PredefinedInfoProvider`, `NodeInfoProvider`) take plain strings
   and build the ids inside lib.
 - Dates and times use luxon. Models hold `ValidDateTime` (`DateTime<true>`); parse input with `zDateTimeFromISOString`
@@ -181,7 +181,7 @@ Read the **web-app** skill before changing `packages/app/`. Every user-facing st
 
 ### Tests
 
-Vitest in lib and in the app. Lib's tests use globals (`describe`, `it`, `expect`, `vi` need no import); the app's are unit tests of pure TypeScript and import Vitest explicitly. Tests sit in `__tests__/` next to the code they cover. A change in
+Vitest in lib and in the app. Lib's tests use globals (`describe`, `it`, `expect`, `vi` need no import); the app's test pure TypeScript (unit tests, and integration tests that run it on the test cases' real graphs) and import Vitest explicitly. Tests sit in `__tests__/` next to the code they cover. A change in
 behaviour gets a test that fails before it and passes after.
 
 Every test file names its kind:

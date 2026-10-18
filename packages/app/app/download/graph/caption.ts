@@ -31,17 +31,14 @@ export function captionOf(layout: GraphLayout): CaptionSegment[] {
 						}),
 					];
 		}
-		case GraphNodeKind.CORPORATE_ACTION:
-			return [
-				...segments,
-				segment({
-					kind: CaptionSegmentKind.ADJUSTED,
-					count: onPath.filter(
-						(node) =>
-							node.node.kind === GraphNodeKind.EVENT || node.node.kind === GraphNodeKind.LOT,
-					).length,
-				}),
-			];
+		case GraphNodeKind.CORPORATE_ACTION: {
+			// Trades only: a split also rescales broker lots, and a rename adjusts no trade at all
+			// (it only regroups), so it says nothing after its own name.
+			const trades = onPath.filter((node) => node.node.kind === GraphNodeKind.EVENT).length;
+			return trades === 0
+				? segments
+				: [...segments, segment({ kind: CaptionSegmentKind.ADJUSTED, count: trades })];
+		}
 		default:
 			return segments;
 	}

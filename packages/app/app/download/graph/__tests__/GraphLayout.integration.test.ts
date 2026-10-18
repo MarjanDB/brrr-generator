@@ -87,9 +87,9 @@ describe("the graph engine on what the stages really record", () => {
 			SlovenianReportTypeId.KDVP,
 		);
 		const reading = new ProvenanceReportReader().read(report.provenance);
-		const share = reading.shares[0];
-		assert(share !== undefined);
-		const sale = eventOfKind(share, ProvenanceEventKind.SOLD);
+		const stock = reading.stocks[0];
+		assert(stock !== undefined);
+		const sale = eventOfKind(stock, ProvenanceEventKind.SOLD);
 		const model = new GraphIndex(report.provenance, reading).model(false);
 		const file = report.provenance.nodes().find((node) => node.kind === ProvenanceNodeKind.FILE);
 		assert(file !== undefined);
@@ -124,9 +124,9 @@ describe("the graph engine on what the stages really record", () => {
 			SlovenianReportTypeId.KDVP,
 		);
 		const reading = new ProvenanceReportReader().read(report.provenance);
-		const share = reading.shares[0];
-		assert(share !== undefined);
-		const sale = eventOfKind(share, ProvenanceEventKind.SOLD);
+		const stock = reading.stocks[0];
+		assert(stock !== undefined);
+		const sale = eventOfKind(stock, ProvenanceEventKind.SOLD);
 		const model = new GraphIndex(report.provenance, reading).model(true);
 
 		const layout = layoutGraph(model, { focus: sale, expanded: new Set() });
@@ -141,9 +141,9 @@ describe("the graph engine on what the stages really record", () => {
 		const split = TestKit.ibkr.split;
 		const report = await reportOf(split.readInputs(), split.year, SlovenianReportTypeId.KDVP);
 		const reading = new ProvenanceReportReader().read(report.provenance);
-		const share = reading.shares[0];
-		assert(share !== undefined);
-		const rebuilt = share.events[0]?.node;
+		const stock = reading.stocks[0];
+		assert(stock !== undefined);
+		const rebuilt = stock.events[0]?.node;
 		assert(rebuilt !== undefined);
 		const walker = new ProvenanceWalker(report.provenance);
 		const before = walker
@@ -204,7 +204,7 @@ describe("the graph engine on what the stages really record", () => {
 		expect(layout.edges).toHaveLength(8);
 	});
 
-	test("an option contract's matched lot is a pair like a share's", async () => {
+	test("an option contract's matched lot is a pair like a stock's", async () => {
 		const optionTrade = TestKit.ibkr.optionTrade;
 		const report = await reportOf(
 			optionTrade.readInputs(),
@@ -234,9 +234,9 @@ describe("the graph engine on what the stages really record", () => {
 			SlovenianReportTypeId.KDVP,
 		);
 		const reading = new ProvenanceReportReader().read(report.provenance);
-		const share = reading.shares[0];
-		assert(share !== undefined);
-		const sale = eventOfKind(share, ProvenanceEventKind.SOLD);
+		const stock = reading.stocks[0];
+		assert(stock !== undefined);
+		const sale = eventOfKind(stock, ProvenanceEventKind.SOLD);
 		const model = new GraphIndex(report.provenance, reading).model(false);
 
 		const layout = layoutGraph(model, { focus: sale, expanded: new Set() });

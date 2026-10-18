@@ -64,7 +64,7 @@ export class GraphIndex {
 
 	private pairsOf(reading: ReportProvenance): GraphPair[] {
 		const instruments = [
-			...reading.shares,
+			...reading.stocks,
 			...reading.optionUnderlyings.flatMap((underlying) => underlying.contracts),
 			...reading.dividendPayers,
 			...reading.withoutLines,

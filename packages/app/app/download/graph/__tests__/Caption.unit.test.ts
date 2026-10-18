@@ -312,6 +312,57 @@ describe("the caption of a graph", () => {
 		expect(caption[1]?.count).toEqual(2);
 	});
 
+	test("a split's caption counts the trades it adjusted, not the broker lots it rescaled", () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "4",
+			price: "100",
+			currency: "USD",
+			label: "buy",
+		});
+		const split = b.split({
+			trade: buy,
+			instrument: acme,
+			before: "4",
+			after: "40",
+			date: "2024-06-10",
+		});
+		const rescaledLot = {};
+		b.graph.node(rescaledLot, ProvenanceNodeKind.LOT, "lot after split", {
+			[ProvenanceField.QUANTITY]: "40",
+		});
+		b.graph.derive([split.action], rescaledLot, ProvenanceChange.SPLIT, stage, null);
+		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const layout = layoutGraph(model, { focus: b.node(split.action), expanded: new Set() });
+
+		const caption = captionOf(layout);
+
+		expect(caption).toHaveLength(2);
+		expect(caption[1]?.kind).toEqual(CaptionSegmentKind.ADJUSTED);
+		expect(caption[1]?.count).toEqual(1);
+	});
+
+	test("a corporate action that adjusted no trade (a rename) is captioned by itself", () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const rename = {};
+		b.graph.node(rename, ProvenanceNodeKind.CORPORATE_ACTION, "RENAME OLD → NEW", {});
+		b.graph.derive([file], rename, ProvenanceChange.CONVERTED, stage, null);
+		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const layout = layoutGraph(model, { focus: b.node(rename), expanded: new Set() });
+
+		const caption = captionOf(layout);
+
+		expect(caption).toHaveLength(1);
+		expect(caption[0]?.kind).toEqual(CaptionSegmentKind.FOCUS);
+	});
+
 	test("a broker lot that was left out says why", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
