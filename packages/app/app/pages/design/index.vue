@@ -1,18 +1,34 @@
 <script setup lang="ts">
-const colorStops = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950];
+import { BadgeVariant } from "~/components/ui/BadgeVariant";
+import { ColorIntent } from "~/utils/ColorIntent";
 
-const colors = [
-	{ name: "primary",   filled: "button-filled-primary",   inverse: "button-inverse-primary"   },
-	{ name: "secondary", filled: "button-filled-secondary", inverse: "button-inverse-secondary" },
-	{ name: "accent",    filled: "button-filled-accent",    inverse: "button-inverse-accent"    },
-	{ name: "neutral",   filled: "button-filled-neutral",   inverse: "button-inverse-neutral"   },
-	{ name: "success",   filled: "button-filled-success",   inverse: "button-inverse-success"   },
-	{ name: "error",     filled: "button-filled-error",     inverse: "button-inverse-error"     },
-	{ name: "warning",   filled: "button-filled-warning",   inverse: "button-inverse-warning"   },
-	{ name: "info",      filled: "button-filled-info",      inverse: "button-inverse-info"      },
+const neutralRoles = [
+	"page",
+	"surface",
+	"surface-raised",
+	"surface-hover",
+	"surface-inverse",
+	"ink",
+	"ink-muted",
+	"ink-inverse",
+	"edge",
+	"edge-strong",
+	"edge-subtle",
+	"overlay",
 ];
 
-const badgeColors = ["primary", "secondary", "accent", "neutral", "success", "error", "warning", "info"] as const;
+const intentRoleSuffixes = ["", "-hover", "-on", "-soft", "-ink", "-edge"];
+
+// Class strings are written out in full, since UnoCSS only sees literal strings.
+const intents = [
+	{ name: ColorIntent.ACTION, filled: "button-filled-action" },
+	{ name: ColorIntent.ACCENT, filled: "button-filled-accent" },
+	{ name: ColorIntent.NEUTRAL, filled: "button-filled-neutral" },
+	{ name: ColorIntent.SUCCESS, filled: "button-filled-success" },
+	{ name: ColorIntent.WARNING, filled: "button-filled-warning" },
+	{ name: ColorIntent.DANGER, filled: "button-filled-danger" },
+	{ name: ColorIntent.INFO, filled: "button-filled-info" },
+];
 
 // Forms
 const formText = ref("");
@@ -59,29 +75,28 @@ function onFormSubmit(valid: boolean) {
 	<div class="flex flex-col gap-5 app-text py-5">
 		<div class="flex flex-col gap-4 border b-1 p-5">
 			<h2 class="text-h3">Colors</h2>
-			<div v-for="c in colors" :key="c.name" class="flex flex-row items-center gap-3">
-				<span class="text-xs app-text-muted w-20 shrink-0">{{ c.name }}</span>
-				<div class="flex flex-row flex-1">
-					<div
-						v-for="stop in colorStops"
-						:key="stop"
-						class="h-6 flex-1"
-						:style="{ backgroundColor: `var(--${c.name}-${stop})` }"
-					/>
+			<div class="flex flex-row flex-wrap gap-3">
+				<div v-for="role in neutralRoles" :key="role" class="flex flex-col gap-1 w-28">
+					<div class="h-10 border app-border-strong" :style="{ backgroundColor: `var(--color-${role})` }" />
+					<span class="text-xs app-text-muted">{{ role }}</span>
+				</div>
+			</div>
+			<div v-for="intent in intents" :key="intent.name" class="flex flex-row flex-wrap items-center gap-3">
+				<span class="text-xs app-text-muted w-20 shrink-0">{{ intent.name }}</span>
+				<div v-for="suffix in intentRoleSuffixes" :key="suffix" class="flex flex-col gap-1 w-24">
+					<div class="h-8 border app-border-strong" :style="{ backgroundColor: `var(--color-${intent.name}${suffix})` }" />
+					<span class="text-xs app-text-muted">{{ intent.name }}{{ suffix }}</span>
 				</div>
 			</div>
 		</div>
 
 		<div class="flex flex-col gap-4 border b-1 p-5">
 			<h2 class="text-h3">Buttons</h2>
-			<div v-for="c in colors" :key="c.name" class="flex flex-row gap-3 items-center flex-wrap">
-				<span class="text-xs app-text-muted w-20">{{ c.name }}</span>
-				<button type="button" :class="c.filled">filled</button>
-				<button type="button" disabled :class="c.filled">disabled</button>
-				<AppButton :class="c.filled" :loading="true">filled</AppButton>
-				<button type="button" :class="c.inverse">inverse</button>
-				<button type="button" disabled :class="c.inverse">disabled</button>
-				<AppButton :class="c.inverse" :loading="true">inverse</AppButton>
+			<div v-for="intent in intents" :key="intent.name" class="flex flex-row gap-3 items-center flex-wrap">
+				<span class="text-xs app-text-muted w-20">{{ intent.name }}</span>
+				<button type="button" :class="intent.filled">filled</button>
+				<button type="button" disabled :class="intent.filled">disabled</button>
+				<AppButton :class="intent.filled" :loading="true">filled</AppButton>
 			</div>
 		</div>
 
@@ -89,12 +104,12 @@ function onFormSubmit(valid: boolean) {
 			<h2 class="text-h3">Badges</h2>
 			<div class="flex flex-col gap-3">
 				<div class="flex flex-row gap-2 flex-wrap items-center">
-					<span class="text-xs app-text-muted w-16 shrink-0">inverse</span>
-					<AppBadge v-for="c in badgeColors" :key="c" :color="c" variant="inverse">{{ c }}</AppBadge>
+					<span class="text-xs app-text-muted w-16 shrink-0">soft</span>
+					<AppBadge v-for="intent in intents" :key="intent.name" :color="intent.name" :variant="BadgeVariant.SOFT">{{ intent.name }}</AppBadge>
 				</div>
 				<div class="flex flex-row gap-2 flex-wrap items-center">
-					<span class="text-xs app-text-muted w-16 shrink-0">filled</span>
-					<AppBadge v-for="c in badgeColors" :key="c" :color="c" variant="filled">{{ c }}</AppBadge>
+					<span class="text-xs app-text-muted w-16 shrink-0">solid</span>
+					<AppBadge v-for="intent in intents" :key="intent.name" :color="intent.name" :variant="BadgeVariant.SOLID">{{ intent.name }}</AppBadge>
 				</div>
 			</div>
 		</div>
@@ -106,7 +121,7 @@ function onFormSubmit(valid: boolean) {
 					<button type="button" class="button-filled-neutral">Hover me</button>
 				</AppTooltip>
 				<AppTooltip content="Appears on the right" side="right">
-					<AppBadge color="info" variant="inverse">Badge with tooltip</AppBadge>
+					<AppBadge :color="ColorIntent.INFO" :variant="BadgeVariant.SOFT">Badge with tooltip</AppBadge>
 				</AppTooltip>
 			</div>
 		</div>
@@ -148,7 +163,7 @@ function onFormSubmit(valid: boolean) {
 					:validate="validateCheckbox"
 				/>
 				<div class="flex items-center gap-3">
-					<AppButton class="button-filled-secondary" type="submit">Submit</AppButton>
+					<AppButton class="button-filled-accent" type="submit">Submit</AppButton>
 					<span v-if="formSubmitResult" class="text-sm app-text-muted">{{ formSubmitResult }}</span>
 				</div>
 			</AppForm>

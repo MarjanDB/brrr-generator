@@ -137,7 +137,7 @@ async function onSubmit(valid: boolean) {
 
 		<div v-if="error" class="alert-error">{{ error }}</div>
 
-		<AppButton class="button-filled-primary self-start" type="submit" :loading="loading">
+		<AppButton class="button-filled-action self-start" type="submit" :loading="loading">
 			{{ t('generate_report') }}
 		</AppButton>
 	</AppForm>

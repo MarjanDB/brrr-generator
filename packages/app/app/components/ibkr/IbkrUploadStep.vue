@@ -161,7 +161,7 @@ watch(xmlFiles, (v) => {
 
         <div v-if="error" class="alert-error">{{ error }}</div>
         <AppButton
-          class="button-filled-primary self-start"
+          class="button-filled-action self-start"
           type="submit"
           :loading="loading"
           :disabled="processedImport === null"

@@ -44,16 +44,16 @@ onUnmounted(revokeUrls);
   <div class="card card-padding-md flex flex-col gap-4">
     <h2 class="text-h5">{{ t('result_title') }}</h2>
     <div class="flex gap-3 flex-wrap">
-      <AppButton v-if="guide" class="button-filled-primary" @click="guideOpen = true">
+      <AppButton v-if="guide" class="button-filled-action" @click="guideOpen = true">
         {{ t('tax_authority_guide_button') }}
       </AppButton>
 
 
-      <a v-if="xmlUrl" :href="xmlUrl" :download="outputs.xmlFilename" class="button-filled-secondary">
+      <a v-if="xmlUrl" :href="xmlUrl" :download="outputs.xmlFilename" class="button-filled-accent">
         {{ t('download_xml_label') }}
       </a>
 
-      <a v-if="csvUrl" :href="csvUrl" :download="outputs.csvFilename" class="button-filled-secondary">
+      <a v-if="csvUrl" :href="csvUrl" :download="outputs.csvFilename" class="button-filled-accent">
         {{ t('download_csv_label') }}
       </a>
 

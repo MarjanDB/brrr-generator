@@ -64,10 +64,16 @@ as the guides hold keys, not text. Page meta goes through `useSeoMeta` with tran
 
 UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config.ts`:
 
-- Colours are theme names, not raw palette or hex: `primary`, `secondary`, `accent`, `neutral`, `stale`, `success`, `warning`, `error`,
-  `info`, each with stops 10–990 backed by CSS variables in `packages/app/app/assets/styles.css`.
-- Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`, `text-label`,
-  `text-caption`, `input-md`, `button-filled-<colour>`, `button-inverse-<colour>`, `button-ghost`, `alert-error`, …
+- Colours are roles, never palette names or hex. `styles.css` keeps the raw palette (`--stale-150`, …) and, below it, a role block of
+  `--color-*` variables; branding changes only that block. `unocss.config.ts` exposes only the roles, so a palette class such as
+  `bg-stale-100` compiles to nothing, silently. Neutral roles: `page`, `surface`, `surface-raised`, `surface-hover`, `surface-inverse`,
+  `ink`, `ink-muted`, `ink-inverse`, `edge`, `edge-strong`, `edge-subtle`, `overlay`. Each `ColorIntent` (`app/utils/ColorIntent.ts`:
+  action, accent, neutral, success, warning, danger, info) has `<intent>`, `-hover`, `-on` (text on the fill), `-soft`, `-ink` and
+  `-edge`: `bg-accent text-accent-on`, `border-danger-edge`.
+- Class names are written out in full (`AppBadge` maps `ColorIntent` x `BadgeVariant` to literal strings): UnoCSS only sees literals,
+  so `` `bg-${color}` `` renders nothing.
+- Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `app-surface-raised`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`,
+  `text-label`, `text-caption`, `input-md`, `button-filled-<intent>`, `button-ghost`, `alert-error`, …
 - There is one theme: no dark mode and no `dark:` classes.
 - Icons are classes: `i-mdi-<name>` (Material Design Icons via `@iconify-json/mdi`).
 

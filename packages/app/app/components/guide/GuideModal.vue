@@ -76,7 +76,7 @@ function isLink(segment: Segment): segment is LinkSegment {
                     :href="segment.url"
                     target="_blank"
                     rel="noopener"
-                    class="text-primary-600 hover:underline inline-flex items-center gap-0.5"
+                    class="text-action-ink hover:underline inline-flex items-center gap-0.5"
                   >{{ t(segment.textKey) }}<span class="i-mdi-open-in-new text-xs ml-0.5" /></a>
                   <template v-else>{{ t(segment.textKey) }}</template>
                 </template>

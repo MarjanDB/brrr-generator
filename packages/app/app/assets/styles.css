@@ -1,6 +1,6 @@
 /* --- Raw Color Palette --- */
 /* These are fixed hex values — no theming logic here. */
-/* Light/dark theming is handled entirely in unocss.config.ts. */
+/* Components use only the roles below the palette, so branding changes only that block. */
 /* 19 stops: 50–950 in steps of 50. Lightness range: 88% (50) → 12% (950). */
 /* Edge stops: 10–40 and 960–990 in steps of 10. Lightness range: 91.2% (10) → 88.8% (40) and 11.2% (960) → 8.8% (990). */
 
@@ -265,4 +265,79 @@
 	--info-970: #121b23;
 	--info-980: #111820;
 	--info-990: #0f161e;
+}
+
+/* --- Colour roles --- */
+/* Components use only these roles (unocss.config.ts exposes nothing else); branding changes only this block. */
+
+:root {
+	/* Neutral roles */
+	--color-page: var(--stale-50);
+	--color-surface: var(--stale-100);
+	--color-surface-raised: var(--stale-150);
+	--color-surface-hover: var(--stale-200);
+	--color-surface-inverse: var(--stale-900);
+	--color-ink: var(--stale-900);
+	--color-ink-muted: var(--stale-550);
+	--color-ink-inverse: var(--stale-50);
+	--color-edge: var(--stale-200);
+	--color-edge-strong: var(--stale-250);
+	--color-edge-subtle: var(--stale-100);
+	--color-overlay: rgb(0 0 0 / 0.4);
+
+	/* Intent: action */
+	--color-action: var(--primary-300);
+	--color-action-hover: var(--primary-350);
+	--color-action-on: var(--primary-990);
+	--color-action-soft: var(--primary-150);
+	--color-action-ink: var(--primary-700);
+	--color-action-edge: var(--primary-600);
+
+	/* Intent: accent */
+	--color-accent: var(--secondary-300);
+	--color-accent-hover: var(--secondary-350);
+	--color-accent-on: var(--secondary-990);
+	--color-accent-soft: var(--secondary-150);
+	--color-accent-ink: var(--secondary-700);
+	--color-accent-edge: var(--secondary-600);
+
+	/* Intent: neutral */
+	--color-neutral: var(--neutral-300);
+	--color-neutral-hover: var(--neutral-350);
+	--color-neutral-on: var(--neutral-990);
+	--color-neutral-soft: var(--neutral-150);
+	--color-neutral-ink: var(--neutral-700);
+	--color-neutral-edge: var(--neutral-600);
+
+	/* Intent: success */
+	--color-success: var(--success-300);
+	--color-success-hover: var(--success-350);
+	--color-success-on: var(--success-990);
+	--color-success-soft: var(--success-150);
+	--color-success-ink: var(--success-700);
+	--color-success-edge: var(--success-600);
+
+	/* Intent: warning */
+	--color-warning: var(--warning-300);
+	--color-warning-hover: var(--warning-350);
+	--color-warning-on: var(--warning-990);
+	--color-warning-soft: var(--warning-150);
+	--color-warning-ink: var(--warning-700);
+	--color-warning-edge: var(--warning-600);
+
+	/* Intent: danger */
+	--color-danger: var(--error-300);
+	--color-danger-hover: var(--error-350);
+	--color-danger-on: var(--error-990);
+	--color-danger-soft: var(--error-150);
+	--color-danger-ink: var(--error-700);
+	--color-danger-edge: var(--error-600);
+
+	/* Intent: info */
+	--color-info: var(--info-300);
+	--color-info-hover: var(--info-350);
+	--color-info-on: var(--info-990);
+	--color-info-soft: var(--info-150);
+	--color-info-ink: var(--info-700);
+	--color-info-edge: var(--info-600);
 }

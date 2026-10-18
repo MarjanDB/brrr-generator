@@ -1,27 +1,15 @@
 import { defineConfig, presetIcons, presetWind4 } from "unocss";
+import { ColorIntent } from "./app/utils/ColorIntent";
 
-function buttonShortcuts(colors: string[]) {
-	return colors.flatMap((color): [string, string][] => [
+function buttonShortcuts() {
+	return Object.values(ColorIntent).map((color): [string, string] => [
+		`button-filled-${color}`,
 		[
-			`button-filled-${color}`,
-			[
-				`button-md bg-${color}-300`,
-				`text-${color}-990`,
-				`hover:bg-${color}-350`,
-				`disabled:opacity-70`,
-				`disabled:hover:bg-${color}-300`,
-			].join(" "),
-		],
-		[
-			`button-inverse-${color}`,
-			[
-				`button-md bg-${color}-400`,
-				`text-${color}-10`,
-				`hover:bg-${color}-450`,
-				`disabled:opacity-70`,
-				`disabled:hover:bg-${color}-400`,
-			].join(" "),
-		],
+			`button-md bg-${color} text-${color}-on`,
+			`hover:bg-${color}-hover`,
+			`disabled:opacity-70`,
+			`disabled:hover:bg-${color}`,
+		].join(" "),
 	]);
 }
 
@@ -39,53 +27,54 @@ export default defineConfig({
 	],
 	shortcuts: [
 		// Layout
-		["app-container", "min-h-screen max-w-screen bg-stale-50"],
+		["app-container", "min-h-screen max-w-screen bg-page"],
 		["container-md", "max-w-screen-md mx-auto px-4"],
 
 		// Surfaces & overlays
-		["app-overlay", "bg-black/40"],
-		["app-surface-overlay", "bg-stale-50"],
-		["app-border", "border-stale-200"],
-		["app-border-strong", "border-stale-250"],
-		["app-border-subtle", "border-stale-100"],
-		["app-row-interactive", "cursor-pointer hover:bg-stale-100 transition-colors"],
+		["app-overlay", "bg-overlay"],
+		["app-surface-overlay", "bg-page"],
+		["app-surface-raised", "bg-surface-raised"],
+		["app-border", "border-edge"],
+		["app-border-strong", "border-edge-strong"],
+		["app-border-subtle", "border-edge-subtle"],
+		["app-row-interactive", "cursor-pointer hover:bg-surface-hover transition-colors"],
 
 		// Typography
-		["app-text", "text-stale-900"],
+		["app-text", "text-ink"],
 		["app-text-sm", "text-sm app-text"],
 		["app-text-md", "text-base app-text"],
 		["app-text-lg", "text-lg app-text"],
-		["app-text-muted", "text-stale-550"],
+		["app-text-muted", "text-ink-muted"],
 		["text-h1", "text-3xl font-bold app-text"],
 		["text-h3", "text-xl font-semibold app-text"],
 		["text-h5", "text-base font-semibold app-text"],
 		["text-body-sm", "text-sm app-text-muted"],
 		["text-label", "text-sm font-medium app-text"],
 		["text-caption", "text-xs app-text-muted"],
-		["text-error", "text-xs text-error-600"],
-		["text-icon-confirm", "text-secondary-600"],
+		["text-error", "text-xs text-danger-ink"],
+		["text-icon-confirm", "text-accent-edge"],
 
 		// Card
-		["card", "bg-stale-100 border app-border-strong rounded-md"],
+		["card", "bg-surface border app-border-strong rounded-md"],
 		["card-padding-md", "p-4"],
 
 		// Input base
 		[
 			"input-base",
-			"bg-stale-150 text-stale-900 border border-stale-250 transition-colors hover:bg-stale-200 focus:outline-none focus:ring-2 focus:ring-secondary-600 disabled:opacity-70 disabled:cursor-not-allowed",
+			"bg-surface-raised text-ink border border-edge-strong transition-colors hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-accent-edge disabled:opacity-70 disabled:cursor-not-allowed",
 		],
-		["input-error", "input-base border-error-500 focus:ring-error-500"],
+		["input-error", "input-base border-danger-edge focus:ring-danger-edge"],
 		["input-md", "input-base px-3 py-2 text-base rounded-md"],
 		["input-md-error", "input-error px-3 py-2 text-base rounded-md"],
 
 		// Checkbox
 		[
 			"checkbox-base",
-			"size-4.5 rounded-sm border border-stale-400 bg-stale-150 transition-colors cursor-pointer data-[state=checked]:bg-secondary-600 data-[state=checked]:border-secondary-600 focus:outline-none focus:ring-2 focus:ring-secondary-600 disabled:opacity-70 disabled:cursor-not-allowed",
+			"size-4.5 rounded-sm border border-edge-strong bg-surface-raised transition-colors cursor-pointer data-[state=checked]:bg-accent-edge data-[state=checked]:border-accent-edge focus:outline-none focus:ring-2 focus:ring-accent-edge disabled:opacity-70 disabled:cursor-not-allowed",
 		],
 		[
 			"checkbox-error",
-			"size-4.5 rounded-sm border border-error-500 bg-stale-150 transition-colors cursor-pointer data-[state=checked]:bg-error-600 data-[state=checked]:border-error-600 focus:outline-none focus:ring-2 focus:ring-error-500 disabled:opacity-70 disabled:cursor-not-allowed",
+			"size-4.5 rounded-sm border border-danger-edge bg-surface-raised transition-colors cursor-pointer data-[state=checked]:bg-danger-edge data-[state=checked]:border-danger-edge focus:outline-none focus:ring-2 focus:ring-danger-edge disabled:opacity-70 disabled:cursor-not-allowed",
 		],
 
 		// Buttons
@@ -94,45 +83,46 @@ export default defineConfig({
 		["button-md", "button px-4 py-2 text-base rounded-md"],
 		["button-lg", "button px-5 py-2 text-lg rounded-md"],
 
-		["button-ghost", "button rounded app-text-muted hover:app-text hover:bg-neutral-100/50"],
+		["button-ghost", "button rounded app-text-muted hover:app-text hover:bg-surface-hover/50"],
 
-		// Generated button variants
-		...buttonShortcuts([
-			"primary",
-			"secondary",
-			"accent",
-			"neutral",
-			"success",
-			"error",
-			"warning",
-			"info",
-		]),
+		// Generated button variants: button-filled-<intent>
+		...buttonShortcuts(),
 
 		// Misc
 		["state-loading", "opacity-70 cursor-wait"],
-		["alert-error", "p-4 rounded-md border bg-error-150 text-error-900 border-error-300"],
+		["alert-error", "p-4 rounded-md border bg-danger-soft text-danger-ink border-danger"],
 	],
 	theme: {
-		colors: Object.fromEntries(
-			[
-				"primary",
-				"secondary",
-				"accent",
-				"neutral",
-				"stale",
-				"success",
-				"warning",
-				"error",
-				"info",
-			].map((name) => [
-				name,
-				Object.fromEntries(
-					[
-						10, 20, 30, 40, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700,
-						750, 800, 850, 900, 950, 960, 970, 980, 990,
-					].map((stop) => [stop, `var(--${name}-${stop})`]),
-				),
-			]),
-		),
+		colors: {
+			page: "var(--color-page)",
+			surface: {
+				DEFAULT: "var(--color-surface)",
+				raised: "var(--color-surface-raised)",
+				hover: "var(--color-surface-hover)",
+				inverse: "var(--color-surface-inverse)",
+			},
+			ink: {
+				DEFAULT: "var(--color-ink)",
+				muted: "var(--color-ink-muted)",
+				inverse: "var(--color-ink-inverse)",
+			},
+			edge: {
+				DEFAULT: "var(--color-edge)",
+				strong: "var(--color-edge-strong)",
+				subtle: "var(--color-edge-subtle)",
+			},
+			overlay: "var(--color-overlay)",
+			...Object.fromEntries(
+				Object.values(ColorIntent).map((intent) => [
+					intent,
+					Object.fromEntries(
+						["DEFAULT", "hover", "on", "soft", "ink", "edge"].map((role) => [
+							role,
+							role === "DEFAULT" ? `var(--color-${intent})` : `var(--color-${intent}-${role})`,
+						]),
+					),
+				]),
+			),
+		},
 	},
 });
