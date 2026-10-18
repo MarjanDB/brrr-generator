@@ -29,6 +29,7 @@
 		"@takumi-rs/core": "catalog:"
 	},
 	"devDependencies": {
+		"@brrr/test-cases": "workspace:*",
 		"@types/luxon": "catalog:",
 		"@unocss/nuxt": "catalog:",
 		"unocss": "catalog:",

@@ -159,6 +159,9 @@ importers:
         specifier: 'catalog:'
         version: 4.6.7
     devDependencies:
+      '@brrr/test-cases':
+        specifier: workspace:*
+        version: link:../test-cases
       '@types/luxon':
         specifier: 'catalog:'
         version: 3.7.6
