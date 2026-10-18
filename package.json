@@ -9,7 +9,7 @@
 		"docker:build": "docker build -t brrr-tax-generator .",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
-		"test": "pnpm --filter @brrr/lib test",
+		"test": "pnpm --filter @brrr/lib build && pnpm --recursive --if-present test",
 		"typecheck": "pnpm --filter @brrr/lib build && pnpm --recursive typecheck"
 	},
 	"devDependencies": {

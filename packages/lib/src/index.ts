@@ -44,6 +44,8 @@ export type { ProvenanceDrop } from "@brrr/Provenance/Models/ProvenanceDrop";
 export type { ProvenanceEdge } from "@brrr/Provenance/Models/ProvenanceEdge";
 export { ProvenanceEventKind } from "@brrr/Provenance/Models/ProvenanceEventKind";
 export { ProvenanceField } from "@brrr/Provenance/Models/ProvenanceField";
+// For building graphs by hand in tests; no caller needs it to read one.
+export { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
 export { ProvenanceLegSide } from "@brrr/Provenance/Models/ProvenanceLegSide";
 export type { ProvenanceNode } from "@brrr/Provenance/Models/ProvenanceNode";
 export { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
@@ -78,6 +80,7 @@ export {
 	type TaxpayerInfo,
 } from "@brrr/TaxAuthorities/Schemas/TaxpayerConfigSchema";
 export { TaxpayerType } from "@brrr/TaxAuthorities/Schemas/TaxpayerType";
+export { EDavkiProvenanceField } from "@brrr/TaxAuthorities/Slovenia/Models/EDavkiProvenanceField";
 export { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Models/SlovenianReportTypeId";
 export { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
 

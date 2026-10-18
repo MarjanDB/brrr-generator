@@ -21,8 +21,8 @@ function mapValues<T extends FileNames, U>(
 	map: (value: string) => U,
 ): { [K in keyof T]: U } {
 	const result: Partial<{ [K in keyof T]: U }> = {};
-	for (const key of Object.keys(record) as (keyof T)[]) {
-		result[key] = map(record[key]);
+	for (const [key, value] of Object.entries(record) as [keyof T, string][]) {
+		result[key] = map(value);
 	}
 	return result as { [K in keyof T]: U };
 }

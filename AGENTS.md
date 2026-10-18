@@ -32,6 +32,7 @@ pnpm 11, pinned in the root `package.json` (`packageManager`). Always use `pnpm`
 | `pnpm --filter @brrr/lib typecheck`                                  | `tsc --noEmit`, lib                                    |
 | `pnpm --filter @brrr/lib build`                                      | tsdown, lib → `packages/lib/dist/`                     |
 | `pnpm --filter @brrr/app typecheck`                                  | `nuxt typecheck`                                       |
+| `pnpm --filter @brrr/app test`                                       | Vitest, app: the download step's graph logic           |
 | `pnpm --filter @brrr/app build`                                      | Nuxt build                                             |
 | `pnpm --filter @brrr/cli typecheck`                                  | Typecheck the CLI                                      |
 | `pnpm --filter @brrr/test-cases typecheck`                           | Typecheck the test cases package                       |
@@ -51,7 +52,7 @@ Run these for what you touched before calling a change done, and report failures
 
 - Anything: `pnpm lint:fix`
 - `packages/lib/`: `pnpm --filter @brrr/lib test` and `pnpm --filter @brrr/lib typecheck`
-- `packages/app/`: build lib, then `pnpm --filter @brrr/app typecheck`
+- `packages/app/`: build lib, then `pnpm --filter @brrr/app typecheck` and `pnpm --filter @brrr/app test`
 - `packages/cli/`: build lib, then `pnpm --filter @brrr/cli typecheck`
 - `packages/test-cases/`: `pnpm --filter @brrr/test-cases typecheck` and `pnpm --filter @brrr/lib test`
 
@@ -129,7 +130,7 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
   A type built from another domain's adds a `From<X>` helper that goes through its `Schema` (`EDavkiIsin.FromIsin`), where its
   domain may depend on the other. Core can't know brokers, so `IbkrTransformService` turns IBKR values into core ones with the core type's
   `Schema`. Tests build ids the same way: `Isin.Schema.parse("US0378331005")`.
-  Lib's exports never make a caller (the site, the CLI) create one: `index.ts` exports enums but no nominal types, and the
+  Lib's exports never make a caller (the site, the CLI) create one: `index.ts` exports enums but no nominal types (the one exception is `ProvenanceStage`, exported only so the app's tests can build a graph by hand), and the
   public entry points (`TaxAuthorityRegistry.generateExports`, `PredefinedInfoProvider`, `NodeInfoProvider`) take plain strings
   and build the ids inside lib.
 - Dates and times use luxon. Models hold `ValidDateTime` (`DateTime<true>`); parse input with `zDateTimeFromISOString`
@@ -180,7 +181,7 @@ Read the **web-app** skill before changing `packages/app/`. Every user-facing st
 
 ### Tests
 
-Vitest with globals (`describe`, `it`, `expect`, `vi` need no import). Tests sit in `__tests__/` next to the code they cover. A change in
+Vitest in lib and in the app. Lib's tests use globals (`describe`, `it`, `expect`, `vi` need no import); the app's test pure TypeScript (unit tests, and integration tests that run it on the test cases' real graphs) and import Vitest explicitly. Tests sit in `__tests__/` next to the code they cover. A change in
 behaviour gets a test that fails before it and passes after.
 
 Every test file names its kind:

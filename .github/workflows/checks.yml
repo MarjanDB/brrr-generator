@@ -31,3 +31,6 @@ jobs:
       # Builds lib first: the app and the CLI typecheck against packages/lib/dist/.
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: App tests
+        run: pnpm --filter @brrr/app test
