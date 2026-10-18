@@ -16,11 +16,11 @@ function buttonShortcuts() {
 export default defineConfig({
 	content: {
 		pipeline: {
-			// UnoCSS's default list plus the app's TypeScript, whose class maps (`utils/nodeLook.ts`,
-			// `graph/view/nodeLook.ts`) aren't in a .vue file.
+			// UnoCSS's default list plus the app's TypeScript, whose class maps (`utils/nodeLook.ts`)
+			// aren't in a .vue file.
 			include: [
 				/\.(vue|svelte|[jt]sx|mdx?|astro|elm|php|phtml|html)($|\?)/,
-				/app\/(download|utils|composables)\/.*\.ts($|\?)/,
+				/app\/(utils|composables)\/.*\.ts($|\?)/,
 			],
 		},
 	},

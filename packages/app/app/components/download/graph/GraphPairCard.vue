@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ProvenanceField, type ProvenanceNode } from "@brrr/lib";
 import { computed } from "vue";
-import { nodeTextOf, reportLineValueOf } from "~/download/graph/view/nodeValueOf";
 import { CardState, PairSide, type PlacedNode } from "~/types/provenanceGraph";
 
 const props = defineProps<{
@@ -17,6 +16,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const { reportLineText } = useGraphText();
 
 const pair = computed(() => props.placed.layoutNode.node.pair);
 const isStub = computed(() => props.placed.layoutNode.isStub);
@@ -30,7 +30,7 @@ const quantity = computed(() => {
 function lineText(line: ProvenanceNode | null | undefined): string {
 	return line === null || line === undefined
 		? "—"
-		: nodeTextOf(reportLineValueOf(line, props.locale), (key, params) => t(key, params));
+		: reportLineText(line);
 }
 
 const acquiredText = computed(() => lineText(pair.value?.acquired.line));

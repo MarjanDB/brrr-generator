@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { splitBadgeText } from "~/download/graph/view/splitBadgeText";
 import { CardState, type SplitFactor, SplitFactorKind } from "~/types/provenanceGraph";
 
 const props = defineProps<{
@@ -12,8 +11,9 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
+const { splitBadge } = useGraphText();
 
-const text = computed(() => splitBadgeText(props.factor, props.locale));
+const text = computed(() => splitBadge(props.factor));
 
 // The ratio as the corporate action chip writes it: 4 shares into 40 is 10 : 1.
 const hint = computed(() => {

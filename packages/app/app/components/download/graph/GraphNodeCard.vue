@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { nodeTextOf, nodeValueOf } from "~/download/graph/view/nodeValueOf";
 import { CardState, GraphDirection, GraphNodeKind, type PlacedNode } from "~/types/provenanceGraph";
 
 const props = defineProps<{
 	placed: PlacedNode;
 	state: CardState;
-	locale: string;
 }>();
 
 const emit = defineEmits<{
@@ -15,18 +13,15 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const { dropSentence, warningSentence } = useProvenanceText();
+const { warningSentence } = useProvenanceText();
+const { nodeText } = useGraphText();
 
 const node = computed(() => props.placed.layoutNode.node);
 const isStub = computed(() => props.placed.layoutNode.isStub);
 const look = computed(() => nodeLookOf(node.value));
 
 // What the node says: a left-out node its sentence, anything else its value.
-const text = computed(() =>
-	node.value.drop !== null
-		? dropSentence(node.value.drop)
-		: nodeTextOf(nodeValueOf(node.value, props.locale), (key, params) => t(key, params)),
-);
+const text = computed(() => nodeText(node.value));
 
 const warnings = computed(() =>
 	node.value.warnings.map((warning) => warningSentence(warning)),

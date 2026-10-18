@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { captionSentence } from "~/download/graph/view/captionSentence";
-import { type CaptionContext, captionTextOf } from "~/download/graph/view/captionTextOf";
+import type { CaptionContext } from "~/composables/useGraphText";
 import type { CaptionSegment } from "~/types/provenanceGraph";
 
 const props = defineProps<{
@@ -9,18 +8,14 @@ const props = defineProps<{
 	context: CaptionContext;
 }>();
 
-const { t } = useI18n();
-const { dropSentence } = useProvenanceText();
+const { captionText } = useGraphText();
 
 // All text is written at render, so switching language redraws it.
 const parts = computed(() =>
-	props.segments.map((segment) => {
-		const text = captionTextOf(segment, props.context);
-		return {
-			sentence: captionSentence(text, (key, params) => t(key, params), dropSentence),
-			look: text.node === null ? null : nodeLookOf(text.node.node),
-		};
-	}),
+	props.segments.map((segment) => ({
+		sentence: captionText(segment, props.context),
+		look: segment.node === null ? null : nodeLookOf(segment.node.node),
+	})),
 );
 </script>
 

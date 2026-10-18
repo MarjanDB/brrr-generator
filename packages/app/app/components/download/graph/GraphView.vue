@@ -8,7 +8,6 @@ import type {
 } from "@brrr/lib";
 import GraphCanvas from "~/components/download/graph/GraphCanvas.vue";
 import GraphToolbar from "~/components/download/graph/GraphToolbar.vue";
-import { popoverContentOf } from "~/download/graph/view/popoverContentOf";
 
 const props = defineProps<{
 	graph: ProvenanceGraph;
@@ -44,11 +43,7 @@ const {
 const captionContext = computed(() => ({
 	ticker: props.ticker,
 	lotMatchingMethod: props.lotMatchingMethod,
-	locale: props.locale,
 }));
-const popoverContent = computed(() =>
-	popover.value === null ? null : popoverContentOf(popover.value.node, props.walker),
-);
 </script>
 
 <template>
@@ -68,9 +63,9 @@ const popoverContent = computed(() =>
       :instrument-kind="instrumentKind"
       :lot-matching-method-key="lotMatchingKeys[lotMatchingMethod]"
       :locale="locale"
-      :popover="popoverContent"
-      :popover-anchor="popover?.anchor ?? null"
+      :popover="popover"
       :form-name="formName"
+      :walker="walker"
       @activate-node="activateNode"
       @refocus-node="refocusNode"
       @activate-line="activateLine"

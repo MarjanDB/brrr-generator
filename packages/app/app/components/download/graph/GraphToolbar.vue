@@ -2,7 +2,7 @@
 import GraphCaption from "~/components/download/graph/GraphCaption.vue";
 import AppButton from "~/components/ui/AppButton.vue";
 import AppTooltip from "~/components/ui/AppTooltip.vue";
-import type { CaptionContext } from "~/download/graph/view/captionTextOf";
+import type { CaptionContext } from "~/composables/useGraphText";
 import type { CaptionSegment } from "~/types/provenanceGraph";
 
 defineProps<{
