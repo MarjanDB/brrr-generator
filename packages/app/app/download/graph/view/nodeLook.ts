@@ -1,4 +1,4 @@
-import { ProvenanceEventKind, ProvenanceField } from "@brrr/lib";
+import { DropCategory, dropCategoryOf, ProvenanceEventKind, ProvenanceField } from "@brrr/lib";
 import type { GraphNode } from "~/download/graph/GraphNode";
 import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 
@@ -62,7 +62,9 @@ export function nodeLookOf(node: GraphNode): NodeLook {
 		case GraphNodeKind.REPORT_LINE:
 			return { icon: "i-mdi-file-document-outline", tint: success };
 		case GraphNodeKind.DROP:
-			return { icon: "i-mdi-cancel", tint: neutral };
+			return node.drop !== null && dropCategoryOf(node.drop.reason) === DropCategory.NEEDS_A_LOOK
+				? { icon: "i-mdi-alert-circle-outline", tint: warning }
+				: { icon: "i-mdi-cancel", tint: neutral };
 		case GraphNodeKind.STACK:
 			return { icon: "i-mdi-layers", tint: neutral };
 	}

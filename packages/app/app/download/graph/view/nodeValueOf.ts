@@ -1,4 +1,9 @@
-import { EDavkiProvenanceField, ProvenanceEventKind, ProvenanceField } from "@brrr/lib";
+import {
+	EDavkiProvenanceField,
+	ProvenanceEventKind,
+	ProvenanceField,
+	type ProvenanceNode,
+} from "@brrr/lib";
 import { DateTime } from "luxon";
 import { fieldOf } from "~/download/fields";
 import type { GraphNode } from "~/download/graph/GraphNode";
@@ -101,11 +106,8 @@ function corporateActionValue(node: GraphNode, locale: string): NodeValue {
 	}
 }
 
-function reportLineValue(node: GraphNode, locale: string): NodeValue {
-	const source = node.source;
-	if (source === null) {
-		return value(NodeValueKind.TEXT, { text: "" });
-	}
+// What a report line says. A pair card shows its two lines this way too.
+export function reportLineValueOf(source: ProvenanceNode, locale: string): NodeValue {
 	const boughtOn = source.fields[EDavkiProvenanceField.BOUGHT_ON];
 	const soldOn = source.fields[EDavkiProvenanceField.SOLD_ON];
 	const dateReceived = source.fields[EDavkiProvenanceField.DATE_RECEIVED];
@@ -169,7 +171,9 @@ export function nodeValueOf(node: GraphNode, locale: string): NodeValue {
 				amount: number(source?.fields[EDavkiProvenanceField.DIVIDEND_AMOUNT] ?? null, locale),
 			});
 		case GraphNodeKind.REPORT_LINE:
-			return reportLineValue(node, locale);
+			return source === null
+				? value(NodeValueKind.TEXT, { text: "" })
+				: reportLineValueOf(source, locale);
 		case GraphNodeKind.STACK:
 			return value(
 				NodeValueKind.STACK,

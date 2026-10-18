@@ -265,5 +265,10 @@
 	"download_popover_row_title": "Vrstica posrednika",
 	"download_popover_line_title": "Vrstica poročila",
 	"download_popover_from_file": "Iz {file}",
-	"download_popover_line_foot": "Kot jo prejme {form}"
+	"download_popover_line_foot": "Kot jo prejme {form}",
+	"download_graph_follow": "{value} · kliknite za sledenje",
+	"download_graph_spread": "Kliknite za razpiranje",
+	"download_graph_pair_hint": "Povezan lot in vrstici, v kateri je končal",
+	"download_graph_split_hint": "Delitev {before} : {after}: količina ×{n}, cena ÷{n}",
+	"download_graph_split_hint_reverse": "Združitev {before} : {after}: količina ÷{n}, cena ×{n}"
 }

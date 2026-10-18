@@ -265,5 +265,10 @@
 	"download_popover_row_title": "Broker row",
 	"download_popover_line_title": "Report line",
 	"download_popover_from_file": "From {file}",
-	"download_popover_line_foot": "As {form} gets it"
+	"download_popover_line_foot": "As {form} gets it",
+	"download_graph_follow": "{value} · click to follow",
+	"download_graph_spread": "Click to spread them out",
+	"download_graph_pair_hint": "A matched lot and the two lines it became",
+	"download_graph_split_hint": "Split {before} : {after}: quantity ×{n}, price ÷{n}",
+	"download_graph_split_hint_reverse": "Reverse split {before} : {after}: quantity ÷{n}, price ×{n}"
 }
