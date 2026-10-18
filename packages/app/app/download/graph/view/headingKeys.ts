@@ -30,7 +30,7 @@ export type LaneLabelKeys = {
 // The names of the two bands: buys and sells for trades, paid and withheld for dividends.
 export function laneLabelKeys(kind: ReportInstrumentKind): LaneLabelKeys {
 	switch (kind) {
-		case ReportInstrumentKind.SHARE:
+		case ReportInstrumentKind.STOCK:
 		case ReportInstrumentKind.OPTION_CONTRACT:
 			return { acquired: "download_lane_buys", sold: "download_lane_sells" };
 		case ReportInstrumentKind.DIVIDEND_PAYER:

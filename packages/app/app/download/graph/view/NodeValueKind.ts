@@ -25,4 +25,9 @@ export enum NodeValueKind {
 	LINE_OTHER = "LINE_OTHER",
 	// { count, kind }: kind is the key of the members' noun.
 	STACK = "STACK",
+	// A step shown only with every step on (a parsed record, a staging object): { kind } is the key
+	// of its noun.
+	STEP = "STEP",
+	// { side, quantity }: side is the key of the leg's side.
+	LEG = "LEG",
 }

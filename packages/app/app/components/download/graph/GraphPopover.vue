@@ -6,7 +6,7 @@ import { nodeLookOf } from "~/download/graph/view/nodeLook";
 import type { PopoverContent } from "~/download/graph/view/PopoverContent";
 import { PopoverKind } from "~/download/graph/view/PopoverKind";
 import { popoverPosition } from "~/download/graph/view/popoverPosition";
-import { formatNumber } from "~/download/labels/formatNumber";
+import { popoverValueText } from "~/download/graph/view/popoverValueText";
 
 const props = defineProps<{
 	content: PopoverContent;
@@ -67,7 +67,7 @@ const isRow = computed(() => props.content.kind === PopoverKind.ROW_ATTRIBUTES);
           {{ row.nameKey === null ? row.name : t(row.nameKey) }}
         </dt>
         <dd :class="isRow ? 'font-mono text-xs break-all' : ''">
-          {{ isRow ? row.value : formatNumber(row.value, locale) }}
+          {{ popoverValueText(row, content.kind, locale) }}
         </dd>
       </template>
     </dl>

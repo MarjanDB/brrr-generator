@@ -1,3 +1,4 @@
+import { ProvenanceLegSide } from "@brrr/lib";
 import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
 
@@ -17,6 +18,14 @@ export const nodeValueKeys: Record<NodeValueKind, string> = {
 	[NodeValueKind.LINE_DIVIDEND]: "download_node_line_dividend",
 	[NodeValueKind.LINE_OTHER]: "download_node_line_other",
 	[NodeValueKind.STACK]: "download_node_stack",
+	[NodeValueKind.STEP]: "download_node_step",
+	[NodeValueKind.LEG]: "download_node_leg",
+};
+
+// The side of a matched lot a leg is.
+export const legSideKeys: Record<ProvenanceLegSide, string> = {
+	[ProvenanceLegSide.ACQUIRED]: "download_leg_acquired",
+	[ProvenanceLegSide.SOLD]: "download_leg_sold",
 };
 
 // The noun for each kind of node, as in "6 × rows".

@@ -1,7 +1,9 @@
 import {
 	EDavkiProvenanceField,
+	IdentifierChangeType,
 	ProvenanceEventKind,
 	ProvenanceField,
+	ProvenanceLegSide,
 	type ProvenanceNode,
 } from "@brrr/lib";
 import { DateTime } from "luxon";
@@ -10,8 +12,7 @@ import type { GraphNode } from "~/download/graph/GraphNode";
 import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { NodeValue } from "~/download/graph/view/NodeValue";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
-import { nodeValueKeys, stackKindKeys } from "~/download/graph/view/nodeValueKeys";
-import { CorporateActionChipKind } from "~/download/labels/CorporateActionChipKind";
+import { legSideKeys, nodeValueKeys, stackKindKeys } from "~/download/graph/view/nodeValueKeys";
 import { formatNumber } from "~/download/labels/formatNumber";
 import { splitRatioOf } from "~/download/labels/instrumentLabels";
 import { SplitChip } from "~/download/labels/SplitChip";
@@ -75,12 +76,12 @@ function corporateActionValue(node: GraphNode, locale: string): NodeValue {
 	if (source === null) {
 		return value(NodeValueKind.TEXT, { text: "" });
 	}
-	const kind = Object.values(CorporateActionChipKind).find(
+	const kind = Object.values(IdentifierChangeType).find(
 		(candidate) => candidate === fieldOf(source, ProvenanceField.CORPORATE_ACTION_KIND),
 	);
 	switch (kind) {
-		case CorporateActionChipKind.SPLIT:
-		case CorporateActionChipKind.REVERSE_SPLIT: {
+		case IdentifierChangeType.SPLIT:
+		case IdentifierChangeType.REVERSE_SPLIT: {
 			const ratio = splitRatioOf(
 				new SplitChip({
 					kind,
@@ -92,11 +93,11 @@ function corporateActionValue(node: GraphNode, locale: string): NodeValue {
 				locale,
 			);
 			return value(
-				kind === CorporateActionChipKind.SPLIT ? NodeValueKind.SPLIT : NodeValueKind.REVERSE_SPLIT,
+				kind === IdentifierChangeType.SPLIT ? NodeValueKind.SPLIT : NodeValueKind.REVERSE_SPLIT,
 				{ before: ratio?.before ?? "", after: ratio?.after ?? "" },
 			);
 		}
-		case CorporateActionChipKind.RENAME:
+		case IdentifierChangeType.RENAME:
 			return value(NodeValueKind.RENAME, {
 				from: fieldOf(source, ProvenanceField.FROM_TICKER) ?? "",
 				to: fieldOf(source, ProvenanceField.TO_TICKER) ?? "",
@@ -104,6 +105,23 @@ function corporateActionValue(node: GraphNode, locale: string): NodeValue {
 		case undefined:
 			return value(NodeValueKind.TEXT, { text: source.label });
 	}
+}
+
+function legValue(node: GraphNode, locale: string): NodeValue {
+	const source = node.source;
+	const recorded = source === null ? null : fieldOf(source, ProvenanceField.LEG_SIDE);
+	const side = Object.values(ProvenanceLegSide).find((candidate) => candidate === recorded);
+	if (source === null || side === undefined) {
+		return value(NodeValueKind.STEP, { kind: stackKindKeys[GraphNodeKind.LEG] }, ["kind"]);
+	}
+	return value(
+		NodeValueKind.LEG,
+		{
+			side: legSideKeys[side],
+			quantity: number(fieldOf(source, ProvenanceField.QUANTITY), locale),
+		},
+		["side"],
+	);
 }
 
 // What a report line says. A pair card shows its two lines this way too.
@@ -137,12 +155,15 @@ export function nodeValueOf(node: GraphNode, locale: string): NodeValue {
 	switch (node.kind) {
 		case GraphNodeKind.FILE:
 		case GraphNodeKind.ROW:
+			return value(NodeValueKind.TEXT, { text: source?.label ?? "" });
 		case GraphNodeKind.RECORD:
 		case GraphNodeKind.STAGING_EVENT:
 		case GraphNodeKind.STAGING_LOT:
 		case GraphNodeKind.STAGING_CORPORATE_ACTION:
+			// These carry no facts of their own (their core twin does), so they say what step they are.
+			return value(NodeValueKind.STEP, { kind: stackKindKeys[node.kind] }, ["kind"]);
 		case GraphNodeKind.LEG:
-			return value(NodeValueKind.TEXT, { text: source?.label ?? "" });
+			return legValue(node, locale);
 		case GraphNodeKind.EVENT:
 			return eventValue(node, locale);
 		case GraphNodeKind.LOT:

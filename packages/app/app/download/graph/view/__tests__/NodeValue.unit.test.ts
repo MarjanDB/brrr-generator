@@ -1,4 +1,4 @@
-import { ProvenanceEventKind } from "@brrr/lib";
+import { ProvenanceEventKind, ProvenanceLegSide } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
 import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
 import { GraphDirection } from "~/download/graph/GraphDirection";
@@ -8,10 +8,75 @@ import { GraphNode } from "~/download/graph/GraphNode";
 import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { GraphStack } from "~/download/graph/GraphStack";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
-import { stackKindKeys } from "~/download/graph/view/nodeValueKeys";
+import { legSideKeys, stackKindKeys } from "~/download/graph/view/nodeValueKeys";
 import { nodeValueOf } from "~/download/graph/view/nodeValueOf";
 
 describe("what a graph node says", () => {
+	test("with every step shown, a parsed record says what kind of step it is, not lib's label", () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "3",
+			price: "600",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const model = new GraphIndex(b.graph, b.reading()).model(true);
+
+		const value = nodeValueOf(model.nodeFor(b.node(buy.record)), "en");
+
+		expect(value.kind).toEqual(NodeValueKind.STEP);
+		expect(value.params.kind).toEqual(stackKindKeys[GraphNodeKind.RECORD]);
+		expect(value.keyParams).toEqual(["kind"]);
+	});
+
+	test("with every step shown, a leg says its side and quantity", () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const sell = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-03-10",
+			quantity: "-10",
+			price: "6",
+			currency: "USD",
+			label: "sell ACME",
+		});
+		const match = b.match({
+			instrument: acme,
+			acquired: buy,
+			sold: sell,
+			quantity: "10",
+			boughtOn: "2024-01-10",
+			soldOn: "2024-03-10",
+		});
+		const model = new GraphIndex(b.graph, b.reading()).model(true);
+
+		const value = nodeValueOf(model.nodeFor(b.node(match.soldLeg)), "en");
+
+		expect(value.kind).toEqual(NodeValueKind.LEG);
+		expect(value.params.side).toEqual(legSideKeys[ProvenanceLegSide.SOLD]);
+		expect(value.params.quantity).toEqual("-10");
+		expect(value.keyParams).toEqual(["side"]);
+	});
+
 	test("a trade says its quantity, price and currency", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
