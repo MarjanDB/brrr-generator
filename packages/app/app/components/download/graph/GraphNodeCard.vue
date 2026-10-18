@@ -69,36 +69,36 @@ const classes = computed(() => [
 </script>
 
 <template>
-  <button
-    type="button"
-    :title="title"
-    :style="{
-      left: `${placed.x}px`,
-      top: `${placed.y}px`,
-      width: `${placed.width}px`,
-      height: `${placed.height}px`,
-    }"
-    class="absolute flex items-center gap-2 rounded-md border border-edge-strong bg-surface-raised px-1.5 text-left text-sm text-ink transition-opacity hover:border-action-edge"
-    :class="classes"
-    @click.stop="onClick"
-    @dblclick.stop="onDoubleClick"
-  >
-    <span class="size-6 shrink-0 rounded-sm grid place-items-center" :class="look.tint">
-      <span class="text-sm" :class="look.icon" aria-hidden="true" />
-    </span>
-    <span class="min-w-0 flex-1 truncate tabular-nums">{{ text }}</span>
-    <span
-      v-if="warnings.length > 0"
-      class="i-mdi-alert shrink-0 text-warning-ink"
-      aria-hidden="true"
-    />
-    <span
-      v-if="placed.layoutNode.hasMore"
-      class="absolute top-1.5 text-ink-muted"
-      :class="placed.layoutNode.direction === GraphDirection.UP ? '-left-4' : '-right-4'"
-      aria-hidden="true"
+  <AppTooltip :content="title">
+    <button
+      type="button"
+      :data-node-key="placed.layoutNode.node.key"
+      :style="{
+        left: `${placed.x}px`,
+        top: `${placed.y}px`,
+        width: `${placed.width}px`,
+        height: `${placed.height}px`,
+      }"
+      class="absolute flex items-center gap-2 rounded-md border border-edge-strong bg-surface-raised px-1.5 text-left text-sm text-ink transition-opacity hover:border-action-edge"
+      :class="classes"
+      @click.stop="onClick"
+      @dblclick.stop="onDoubleClick"
     >
-      ⋯
-    </span>
-  </button>
+      <NodeIcon :look="look" :small="false" />
+      <span class="min-w-0 flex-1 truncate tabular-nums">{{ text }}</span>
+      <span
+        v-if="warnings.length > 0"
+        class="i-mdi-alert shrink-0 text-warning-ink"
+        aria-hidden="true"
+      />
+      <span
+        v-if="placed.layoutNode.hasMore"
+        class="absolute top-1.5 text-ink-muted"
+        :class="placed.layoutNode.direction === GraphDirection.UP ? '-left-4' : '-right-4'"
+        aria-hidden="true"
+      >
+        ⋯
+      </span>
+    </button>
+  </AppTooltip>
 </template>

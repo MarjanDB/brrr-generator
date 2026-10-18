@@ -6,7 +6,7 @@ import {
 	ProvenanceNodeKind,
 	ProvenanceStage,
 } from "@brrr/lib";
-import { assert, describe, expect, test } from "vitest";
+import { assert, describe, expect, onTestFinished, test } from "vitest";
 import { nextTick } from "vue";
 import { mountComposableUnder } from "~/composables/__tests__/support/mountComposable";
 import { provideGraphFocus, useGraphFocus } from "~/composables/useGraphFocus";
@@ -376,6 +376,75 @@ describe("what a click in the graph does", () => {
 		document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
 
 		expect(focus.lit.value).toEqual(null);
+		expect(view.popover.value).toEqual(null);
+	});
+
+	test("Escape is left to an open popover or dialog elsewhere on the page", async () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const { focus, view } = await mountComposableUnder(
+			() => provideGraphFocus(),
+			() => ({
+				focus: useGraphFocus(),
+				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+			}),
+		);
+		focus.start(b.node(buy.event));
+		const row = layoutNodeOf(view.layout.value, b.node(buy.row));
+		assert(row !== null);
+		view.activateNode(row);
+		// What reka-ui puts on the page while one of its popovers or dialogs is open.
+		const layer = document.createElement("div");
+		layer.setAttribute("data-dismissable-layer", "");
+		document.body.append(layer);
+		onTestFinished(() => layer.remove());
+
+		document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+
+		expect(focus.lit.value).not.toEqual(null);
+		expect(view.popover.value?.node).toBe(row.node);
+	});
+
+	test("closing the popover keeps the chain lit", async () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const { focus, view } = await mountComposableUnder(
+			() => provideGraphFocus(),
+			() => ({
+				focus: useGraphFocus(),
+				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+			}),
+		);
+		focus.start(b.node(buy.event));
+		const row = layoutNodeOf(view.layout.value, b.node(buy.row));
+		assert(row !== null);
+		view.activateNode(row);
+
+		view.closePopover();
+
+		expect(focus.lit.value).not.toEqual(null);
 		expect(view.popover.value).toEqual(null);
 	});
 

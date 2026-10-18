@@ -7,6 +7,7 @@ import GraphNodeCard from "~/components/download/graph/GraphNodeCard.vue";
 import GraphPairCard from "~/components/download/graph/GraphPairCard.vue";
 import GraphPopover from "~/components/download/graph/GraphPopover.vue";
 import GraphStackCard from "~/components/download/graph/GraphStackCard.vue";
+import AppPopover from "~/components/ui/AppPopover.vue";
 import { CardState, type GraphChain, GraphLane, type GraphLayout, type GraphLayoutEdge, type GraphLayoutNode, type GraphNode, GraphNodeKind, type GraphPlacement, type PairSide } from "~/types/provenanceGraph";
 
 const props = defineProps<{
@@ -29,6 +30,7 @@ const emit = defineEmits<{
 	spread: [node: GraphLayoutNode];
 	activateEdge: [edge: GraphLayoutEdge];
 	clearLight: [];
+	closePopover: [];
 }>();
 
 const { t } = useI18n();
@@ -36,13 +38,11 @@ const { popoverOf } = useGraphText();
 
 // A wide graph shrinks to fit, but not below this: past it the canvas scrolls sideways.
 const minimumScale = 0.6;
-// Room for the popover below a short graph.
-const minimumHeight = 280;
 
 const wrapperRef = useTemplateRef<HTMLElement>("wrapper");
-const { width: wrapperWidth, height: wrapperHeight } = useElementSize(wrapperRef);
+const { width: wrapperWidth } = useElementSize(wrapperRef);
 
-// A click on empty canvas lets go of the lit chain. Cards, edges and the popover stop their clicks.
+// A click on empty canvas lets go of the lit chain. Cards and edges stop their clicks.
 useEventListener(wrapperRef, "click", () => emit("clearLight"));
 
 const scale = computed(() =>
@@ -53,7 +53,7 @@ const scale = computed(() =>
 const shift = computed(() =>
 	Math.max(0, (wrapperWidth.value - props.placement.width * scale.value) / 2),
 );
-const height = computed(() => Math.max(minimumHeight, props.placement.height * scale.value));
+const height = computed(() => props.placement.height * scale.value);
 
 function stateOf(node: GraphLayoutNode): CardState {
 	if (props.lit !== null && !props.lit.nodes.has(node)) {
@@ -65,9 +65,14 @@ function stateOf(node: GraphLayoutNode): CardState {
 	return props.lit !== null && !node.isStub ? CardState.LIT : CardState.NORMAL;
 }
 
-const anchor = computed(() =>
-	props.popover === null ? null : placedNodeOf(props.placement, props.popover.anchor),
-);
+// The drawn card the popover hangs on; each card carries its node's key.
+const anchorElement = computed(() => {
+	if (props.popover === null) {
+		return null;
+	}
+	const key = CSS.escape(props.popover.anchor.node.key);
+	return wrapperRef.value?.querySelector<HTMLElement>(`[data-node-key="${key}"]`) ?? null;
+});
 const popoverText = computed(() =>
 	props.popover === null ? null : popoverOf(props.popover.node, props.walker, props.formName),
 );
@@ -165,15 +170,18 @@ const headings = computed(() =>
       </template>
     </div>
 
-    <GraphPopover
-      v-if="popover !== null && popoverText !== null && anchor !== null"
-      :node="popover.node"
-      :content="popoverText"
-      :anchor="anchor"
-      :scale="scale"
-      :shift="shift"
-      :canvas-width="wrapperWidth"
-      :canvas-height="wrapperHeight"
-    />
+    <!-- A click outside closes the popover and keeps the chain lit; Escape lets go of both. -->
+    <AppPopover
+      v-if="popover !== null && popoverText !== null && anchorElement !== null"
+      :open="true"
+      :reference="anchorElement"
+      side="right"
+      :aria-label="popoverText.title"
+      class="w-65"
+      @update:open="(open) => open || emit('closePopover')"
+      @escape-key-down="emit('clearLight')"
+    >
+      <GraphPopover :node="popover.node" :content="popoverText" />
+    </AppPopover>
   </div>
 </template>

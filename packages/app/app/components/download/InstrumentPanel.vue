@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ReportInstrument } from "@brrr/lib";
+import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from "reka-ui";
 import { computed, ref } from "vue";
 import InstrumentPanelRow from "~/components/download/InstrumentPanelRow.vue";
 import type { PanelSections } from "~/types/instrumentPanel";
@@ -39,8 +40,11 @@ const isEmpty = computed(
 
 <template>
   <div class="flex flex-col gap-2">
-    <div class="flex items-center gap-2 rounded-md border border-edge-strong bg-surface-raised px-2.5 py-1.5 text-ink-muted">
-      <span class="i-mdi-magnify" />
+    <!-- The input's own outline is off, so the box shows its focus. -->
+    <div
+      class="input-base rounded-md flex items-center gap-2 px-2.5 py-1.5 text-ink-muted focus-within:ring-2 focus-within:ring-accent-edge"
+    >
+      <span class="i-mdi-magnify" aria-hidden="true" />
       <input
         v-model="query"
         type="search"
@@ -94,17 +98,20 @@ const isEmpty = computed(
       />
     </section>
 
-    <section v-if="shown.withoutLines.length > 0" class="flex flex-col gap-0.5">
-      <button
-        type="button"
-        :aria-expanded="withoutLinesVisible"
+    <CollapsibleRoot
+      v-if="shown.withoutLines.length > 0"
+      as="section"
+      :open="withoutLinesVisible"
+      class="flex flex-col gap-0.5"
+      @update:open="(open) => (withoutLinesOpen = open)"
+    >
+      <CollapsibleTrigger
         class="flex items-center gap-1 text-xs uppercase tracking-wide text-ink-muted px-1.5 pt-2 text-left"
-        @click="withoutLinesOpen = !withoutLinesOpen"
       >
         <span :class="withoutLinesVisible ? 'i-mdi-chevron-down' : 'i-mdi-chevron-right'" />
         {{ t('download_section_without_lines') }}
-      </button>
-      <template v-if="withoutLinesVisible">
+      </CollapsibleTrigger>
+      <CollapsibleContent class="flex flex-col gap-0.5">
         <InstrumentPanelRow
           v-for="entry in shown.withoutLines"
           :key="entry.instrument.node.id"
@@ -113,7 +120,7 @@ const isEmpty = computed(
           :compact="entry.contract !== null"
           @select="emit('select', entry.instrument)"
         />
-      </template>
-    </section>
+      </CollapsibleContent>
+    </CollapsibleRoot>
   </div>
 </template>

@@ -37,7 +37,8 @@ switches the locale starts by setting `en`. Graph tests build graphs with `utils
 1. **Upload** — `components/upload/UploadStep.vue`: reads the files, runs `ReportPipeline.read`, emits the `ImportResult`
    (detections, `FinancialEvents` and the provenance graph).
 2. **Review** — `components/review/ReviewStep.vue` and `components/review/instrument/` (per-instrument stocks, derivatives, dividends and
-   summary, each with a table and a chart); `InstrumentModal.vue`. `ReviewStep` takes the import's `provenance` graph and calls
+   summary, each with a table and a chart); `InstrumentModal.vue`, opened by a row (its name is the button a keyboard reaches,
+   and gets the focus back on close). `ReviewStep` takes the import's `provenance` graph and calls
    `provideImportSources` once; anything below it reads the rows behind an event with `useImportSources()`. Each trade and cash
    row has a "where from" popover (`components/review/source/`: `RowSourceButton`, mounted-when-open `RowSourcePopover`,
    `FileChip`) showing the export file(s), a "counted once" note for a deduplicated row, the row's key IBKR attributes and an "All
@@ -52,7 +53,7 @@ switches the locale starts by setting `en`. Graph tests build graphs with `utils
 **Download step graph.** Under the timeline, `<LazyGraphView>` (`components/download/graph/`) draws the focused item's provenance.
 Its shapes are plain types in `types/provenanceGraph.ts`. The engine is pure utils: `graphModelOf(graph, reading, showEveryStep)`
 (`utils/graphModel.ts`, with lookups such as `modelNodeFor`) → `layoutGraph(model, { focus, expanded })` →
-`placeGraph(layout, defaultGraphMetrics)` (`utils/graphLayout.ts`, with `popoverPosition`), and `captionOf` (`utils/graphCaption.ts`).
+`placeGraph(layout, defaultGraphMetrics)` (`utils/graphLayout.ts`), and `captionOf` (`utils/graphCaption.ts`).
 Three composables hold the rest:
 - `useGraphFocus()` (provided by `DownloadStep`): the focus, the back trail and the lit chain, with `start`, `refocus`, `back`,
   `lightNode`/`lightEdge` (the chain walk) and `remap`. The timeline lights its marks from the lit chain, and a mark click refocuses.
@@ -64,7 +65,11 @@ The interaction rules:
   are separate targets; its header opens nothing.
 - Only a stub, a double-click or a timeline mark moves the focus (the old one joins the back trail). A left-out node can be lit, never
   followed. A stack spreads on click, and spread stacks fold again when the focus changes.
-- A click on empty canvas or Escape clears the light and the popover; an edge's hit area lights the chain through it.
+- A click on empty canvas or Escape clears the light and the popover; an edge's hit area lights the chain through it. A click
+  elsewhere outside the popover closes it and keeps the chain lit. Escape is left to any other open reka layer (a header popover,
+  a tooltip, a dialog): the graph's `document` listener skips it while a `[data-dismissable-layer]` is on the page.
+- The popover is an `AppPopover` hung on the clicked card (`reference`, found by the card's `data-node-key`), portaled to the body,
+  so reka places it and keeps it on screen.
 - "Show every step" remaps the focus through `modelNodeFor`, so a focus on a hidden step lands on the visible node beside it.
 - The layout must depend on the focus alone: lighting a chain must not redraw the graph, because the chain holds that layout's nodes.
 Every icon and tint is a literal class string in `utils/nodeLook.ts` (UnoCSS cannot see a built name), numbers go through
@@ -75,7 +80,8 @@ the 700 kB limit.
 The page is full width; steps 1 and 3 cap their forms at `max-w-screen-md`.
 
 Guides (broker export instructions, tax authority submission instructions) are data (`utils/brokerGuides.ts`, `utils/taxAuthorityGuides.ts`):
-`GuideStep`s from `types/guide.ts`, shown by `GuideModal.vue`, with screenshots under `packages/app/public/screenshots/` and icons under `packages/app/public/icons/`.
+`GuideStep`s from `types/guide.ts`, shown by `GuideModal.vue` (its `trigger` slot holds the button that opens it: each broker in
+step 1, the guide button in the download header), with screenshots under `packages/app/public/screenshots/` and icons under `packages/app/public/icons/`.
 
 `pages/design/` is a design-system showcase (colours, buttons, badges, form controls). Check new shortcuts and components there.
 
@@ -99,10 +105,32 @@ Guides (broker export instructions, tax authority submission instructions) are d
   components and composables use them without import lines and their exported names must be unique.
 - Forms: wrap fields in `AppForm` (emits `submit` with `valid`) and use `AppTextInput`, `AppNumberInput`, `AppSelect`, `AppCheckbox`,
   `AppFileInput`. Each takes a `validate` function returning an error string or `null`, registers itself with the surrounding form, and
-  links its label through `useId()`.
-- Primitives (select, checkbox, dialog, tooltip) come from reka-ui. Composables from `@vueuse/core` before writing your own.
+  links its label through `useId()`. A select with no visible label (the language switch) takes `ariaLabel`.
+- Buttons are `AppButton`: `color` (a `ColorIntent`, filled) or `ghost`, plus `loading` and `disabled`; it renders the
+  `button-filled-<intent>` / `button-ghost` shortcut itself, so callers add only layout classes. The `button` shortcut carries
+  `app-focus-ring`. A link styled as a button (the downloads) uses the shortcut directly.
+- Tooltips, not `title`: `AppTooltip` (or `AppPopover`'s `tooltip`) for any hint, including on the graph's cards. `tooltip-box`
+  keeps line breaks and wraps at `max-w-80`.
+- Primitives (select, checkbox, dialog, tooltip, popover) come from reka-ui. Composables from `@vueuse/core` before writing your own.
+- `AppTooltip` has no provider of its own: `app.vue`'s `TooltipProvider` is shared, so moving between neighbouring tooltips
+  skips the delay. A reka trigger inside a tooltip takes the tooltip's `data-state`, so style such a trigger by its own ARIA
+  state (`aria-pressed:` on the "show every step" `Toggle`), never `data-[state=…]`.
+- Pick-one cards are a reka `RadioGroup` (`ConfigureStep` and `TaxAuthorityCard`), disclosures a `Collapsible`, pressed buttons
+  a `Toggle`, and `WizardStepper` a `Stepper` (keyboard and ARIA from reka, the look its own).
+- Anything that sets `outline-none` or draws its own look adds `app-focus-ring` (a 2px accent outline on `:focus-visible`). It is
+  not called `focus-ring`: UnoCSS would read that as the `focus:` variant plus `ring`. The running dev server doesn't reload
+  `unocss.config.ts`; restart it after changing a shortcut.
+- Dialogs go through `ui/AppDialog.vue`: a `title`, an optional `description` (or `description` slot) read out with it, a
+  `DialogSize`, an `icon` slot, a close button named by `dialog_close`, and a `trigger` slot. A dialog opened by code (the
+  instrument dialog, one for many rows) passes `returnFocus`, since reka only returns focus to a `DialogTrigger`. Without a
+  description, `aria-describedby` is left off, which is what reka's "Missing Description" warning asks for.
+- Popovers go through `ui/AppPopover.vue`: a `trigger` slot (or a `reference` element for one opened by code), an optional
+  `tooltip` for the trigger, and one box (`card`, `z-50`, collision padding, scrolling past 28rem); width and an `aria-label` pass
+  through to the box. Tooltips go through `ui/AppTooltip.vue`; both use the `tooltip-box` shortcut. A reka trigger inside a
+  tooltip anchors to the tooltip's popper, so `AppPopover` wraps a tooltip-and-trigger in its own `PopoverAnchor`.
 - Charts use chart.js; `composables/useChartTheme.ts` reads theme colours from CSS variables. The review step's charts use a time scale with a hand-written date adapter (`CumulativeLineChart.vue`). The download timeline (`InstrumentTimeline.vue`) needs no adapter: its x axis is a linear scale of epoch milliseconds, ticked by `timelineTicks`, and its arcs and marks are drawn by an inline plugin (`utils/timelineMarksPlugin.ts`, never registered globally) over one transparent scatter dataset that gives chart.js the hit-testing and tooltip. The canvas is not keyboard-reachable; the marks are reachable through the panel and `FocusFacts`.
-- A popover inside a reka `Dialog` needs `PopoverPortal` (the dialog is translated and clips overflow) and a z-index above the dialog's `z-50`.
+- A popover inside a reka `Dialog` needs `PopoverPortal` (the dialog is translated and clips overflow); `AppPopover` portals, and
+  its `z-50` sits above the dialog because it is appended to the body after it.
 - Biome lints `.vue` files. Pages are exempt from the multi-word component name rule; everything else needs multi-word names.
 
 ## Text (i18n)
@@ -121,12 +149,18 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
   `ink`, `ink-muted`, `ink-inverse`, `edge`, `edge-strong`, `edge-subtle`, `overlay`. Each `ColorIntent` (`app/types/ui.ts`:
   action, accent, neutral, success, warning, danger, info) has `<intent>`, `-hover`, `-on` (text on the fill), `-soft`, `-ink` and
   `-edge`: `bg-accent text-accent-on`, `border-danger-edge`.
-- Class names are written out in full (`AppBadge` maps `ColorIntent` x `BadgeVariant` to literal strings): UnoCSS only sees literals,
-  so `` `bg-${color}` `` renders nothing.
+- Class names are written out in full: UnoCSS only sees literals, so `` `bg-${color}` `` renders nothing. An intent's classes
+  come from `utils/intentClasses.ts` (`softIntentClasses`, `solidIntentClasses`, `edgeIntentClasses`), which `AppBadge`,
+  `AppCallout`, `InstrumentMonogram`, `nodeLook` and the rest read; don't write another `Record<ColorIntent, string>`.
 - UnoCSS scans `.vue` files and, through `content.pipeline.include` in `unocss.config.ts`, the TypeScript in `app/utils/` and
   `app/composables/`. A class or icon written only in a `.ts` file anywhere else is never generated.
 - Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `app-surface-raised`, `app-surface-sunken`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`,
-  `text-label`, `text-caption`, `input-md`, `button-filled-<intent>`, `button-ghost`, `alert-error`, …
+  `text-label`, `text-caption`, `input-md`, `button-filled-<intent>`, `button-ghost`, `alert-error`, `tooltip-box`,
+  `app-focus-ring`, and for tables `app-table`, `app-table-head-row`, `app-table-row`, `app-table-th`, `app-table-td` (with a
+  `-dense` set for the tables inside a dialog; cells leave alignment to the caller), …
+- Shared pieces before hand-written markup: `AppBadge` (`pill` for an outlined chip), `AppCallout` (a tinted line, `as="li"`
+  in a list), `StepSummaryCard` (a finished wizard step folded to one line), `InstrumentMonogram` and the graph's `NodeIcon`.
+  `pages/design/` shows each of them.
 - There is one theme: no dark mode and no `dark:` classes.
 - Icons are classes: `i-mdi-<name>` (Material Design Icons via `@iconify-json/mdi`).
 

@@ -67,7 +67,25 @@ export default defineConfig({
 
 		// Card
 		["card", "bg-surface border app-border-strong rounded-md"],
+
+		// Tables: a step's own tables, and the denser ones inside a dialog. Cells leave their alignment
+		// to the caller.
+		["app-table", "w-full text-sm"],
+		["app-table-head-row", "border-b app-border-strong"],
+		["app-table-row", "border-b app-border last:border-0"],
+		["app-table-th", "py-2 pr-4 font-medium app-text"],
+		["app-table-td", "py-2 pr-4 app-text"],
+		["app-table-head-row-dense", "border-b app-border"],
+		["app-table-row-dense", "border-b app-border-subtle last:border-0"],
+		["app-table-th-dense", "py-1.5 pr-3 font-medium app-text-muted"],
+		["app-table-td-dense", "py-1.5 pr-3 app-text text-xs"],
 		["card-padding-md", "p-4"],
+
+		// Floating layers (reka-ui portals them to the body)
+		[
+			"tooltip-box",
+			"z-50 max-w-80 whitespace-pre-line px-2.5 py-1.5 rounded-md text-xs bg-surface-inverse text-ink-inverse shadow-md select-none",
+		],
 
 		// Input base
 		[
@@ -88,8 +106,14 @@ export default defineConfig({
 			"size-4.5 rounded-sm border border-danger-edge bg-surface-raised transition-colors cursor-pointer data-[state=checked]:bg-danger-edge data-[state=checked]:border-danger-edge focus:outline-none focus:ring-2 focus:ring-danger-edge disabled:opacity-70 disabled:cursor-not-allowed",
 		],
 
+		// A visible ring for keyboard focus, on anything that sets outline-none or draws its own focus
+		[
+			"app-focus-ring",
+			"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-edge",
+		],
+
 		// Buttons
-		["button", "transition-colors cursor-pointer disabled:cursor-not-allowed"],
+		["button", "transition-colors cursor-pointer disabled:cursor-not-allowed app-focus-ring"],
 		["button-sm", "button px-3 py-1.5 text-sm rounded-sm"],
 		["button-md", "button px-4 py-2 text-base rounded-md"],
 		["button-lg", "button px-5 py-2 text-lg rounded-md"],

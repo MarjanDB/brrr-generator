@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Toggle } from "reka-ui";
 import GraphCaption from "~/components/download/graph/GraphCaption.vue";
 import AppButton from "~/components/ui/AppButton.vue";
 import AppTooltip from "~/components/ui/AppTooltip.vue";
@@ -23,7 +24,8 @@ const { t } = useI18n();
 <template>
   <div class="flex items-center gap-3 px-4 py-2 border-b border-edge-subtle">
     <AppButton
-      class="button-ghost size-8 shrink-0"
+      ghost
+      class="size-8 shrink-0"
       :disabled="!canGoBack"
       :aria-label="t('download_graph_back')"
       @click="emit('back')"
@@ -34,19 +36,14 @@ const { t } = useI18n();
       <GraphCaption :segments="segments" :context="context" />
     </div>
     <AppTooltip :content="t('download_graph_every_step_hint')">
-      <button
-        type="button"
-        :aria-pressed="showEveryStep"
-        class="shrink-0 rounded-md border px-2.5 py-1 text-sm transition-colors"
-        :class="
-          showEveryStep
-            ? 'border-action-edge bg-action-soft text-action-ink'
-            : 'border-edge-strong bg-surface-raised text-ink hover:bg-surface-hover'
-        "
-        @click="emit('toggleEveryStep')"
+      <!-- Styled by aria-pressed: the tooltip around it sets data-state to its own state. -->
+      <Toggle
+        :model-value="showEveryStep"
+        class="shrink-0 rounded-md border px-2.5 py-1 text-sm transition-colors border-edge-strong bg-surface-raised text-ink hover:bg-surface-hover aria-pressed:border-action-edge aria-pressed:bg-action-soft aria-pressed:text-action-ink"
+        @update:model-value="emit('toggleEveryStep')"
       >
         {{ t('download_graph_every_step') }}
-      </button>
+      </Toggle>
     </AppTooltip>
   </div>
 </template>

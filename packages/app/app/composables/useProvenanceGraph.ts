@@ -114,6 +114,11 @@ export function useProvenanceGraph(args: ProvenanceGraphArgs) {
 		popover.value = null;
 	}
 
+	// A click outside the popover closes it and keeps the chain lit.
+	function closePopover() {
+		popover.value = null;
+	}
+
 	function toggleEveryStep() {
 		const next = !showEveryStep.value;
 		const nextModel = next ? everyStepModel.value : foldedModel.value;
@@ -124,8 +129,10 @@ export function useProvenanceGraph(args: ProvenanceGraphArgs) {
 		popover.value = null;
 	}
 
+	// Escape lets go of the lit chain, unless an open popover, dialog or tooltip takes it first:
+	// reka-ui marks each open layer with data-dismissable-layer.
 	useEventListener(document, "keydown", (event: KeyboardEvent) => {
-		if (event.key === "Escape") {
+		if (event.key === "Escape" && document.querySelector("[data-dismissable-layer]") === null) {
 			clearLight();
 		}
 	});
@@ -143,6 +150,7 @@ export function useProvenanceGraph(args: ProvenanceGraphArgs) {
 		spread,
 		activateEdge,
 		clearLight,
+		closePopover,
 		toggleEveryStep,
 	};
 }

@@ -28,26 +28,26 @@ const stateClasses: Record<CardState, string> = {
 </script>
 
 <template>
-  <button
-    type="button"
-    :title="t('download_graph_spread')"
-    :style="{
-      left: `${placed.x}px`,
-      top: `${placed.y}px`,
-      width: `${placed.width}px`,
-      height: `${placed.height}px`,
-    }"
-    class="absolute isolate text-left text-sm text-ink transition-opacity"
-    :class="stateClasses[state]"
-    @click.stop="emit('spread')"
-  >
-    <span class="absolute inset-0 translate-x-2 translate-y-2 -z-20 rounded-md border border-edge bg-surface-raised" />
-    <span class="absolute inset-0 translate-x-1 translate-y-1 -z-10 rounded-md border border-edge-strong bg-surface-raised" />
-    <span class="absolute inset-0 flex items-center gap-2 rounded-md border border-edge-strong bg-surface-raised px-1.5">
-      <span class="size-6 shrink-0 rounded-sm grid place-items-center" :class="look.tint">
-        <span class="text-sm" :class="look.icon" aria-hidden="true" />
+  <AppTooltip :content="t('download_graph_spread')">
+    <button
+      type="button"
+      :data-node-key="placed.layoutNode.node.key"
+      :style="{
+        left: `${placed.x}px`,
+        top: `${placed.y}px`,
+        width: `${placed.width}px`,
+        height: `${placed.height}px`,
+      }"
+      class="absolute isolate text-left text-sm text-ink transition-opacity"
+      :class="stateClasses[state]"
+      @click.stop="emit('spread')"
+    >
+      <span class="absolute inset-0 translate-x-2 translate-y-2 -z-20 rounded-md border border-edge bg-surface-raised" />
+      <span class="absolute inset-0 translate-x-1 translate-y-1 -z-10 rounded-md border border-edge-strong bg-surface-raised" />
+      <span class="absolute inset-0 flex items-center gap-2 rounded-md border border-edge-strong bg-surface-raised px-1.5">
+        <NodeIcon :look="look" :small="false" />
+        <span class="min-w-0 flex-1 truncate tabular-nums">{{ text }}</span>
       </span>
-      <span class="min-w-0 flex-1 truncate tabular-nums">{{ text }}</span>
-    </span>
-  </button>
+    </button>
+  </AppTooltip>
 </template>

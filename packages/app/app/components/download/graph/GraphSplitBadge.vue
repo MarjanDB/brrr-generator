@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { CardState, type SplitFactor, SplitFactorKind } from "~/types/provenanceGraph";
+import { ColorIntent } from "~/types/ui";
 
 const props = defineProps<{
 	factor: SplitFactor;
@@ -25,13 +26,16 @@ const hint = computed(() => {
 </script>
 
 <template>
-  <span
-    :title="hint"
-    :style="{ left: `${x}px`, top: `${y}px` }"
-    class="absolute -translate-x-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 rounded-full border border-accent-edge bg-accent-soft px-1.5 text-xs leading-4 text-accent-ink transition-opacity"
-    :class="state === CardState.DIMMED ? 'opacity-15' : ''"
-  >
-    <span class="i-mdi-call-split" aria-hidden="true" />
-    {{ text }}
-  </span>
+  <AppTooltip :content="hint">
+    <AppBadge
+      :color="ColorIntent.ACCENT"
+      pill
+      :style="{ left: `${x}px`, top: `${y}px` }"
+      class="absolute -translate-x-1/2 -translate-y-1/2 gap-0.5 transition-opacity"
+      :class="state === CardState.DIMMED ? 'opacity-15' : ''"
+    >
+      <span class="i-mdi-call-split" aria-hidden="true" />
+      {{ text }}
+    </AppBadge>
+  </AppTooltip>
 </template>

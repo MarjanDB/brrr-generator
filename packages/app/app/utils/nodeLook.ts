@@ -1,6 +1,7 @@
 import { DropCategory, dropCategoryOf, ProvenanceEventKind, ProvenanceField } from "@brrr/lib";
 import { type GraphNode, GraphNodeKind } from "~/types/provenanceGraph";
 import { ColorIntent } from "~/types/ui";
+import { softIntentClasses } from "~/utils/intentClasses";
 
 const intents: ColorIntent[] = [
 	ColorIntent.ACTION,
@@ -30,21 +31,26 @@ export type NodeLook = {
 	tint: string;
 };
 
-// UnoCSS only sees class strings written out in full, so every icon and tint is a literal.
-const neutral = "bg-neutral-soft text-neutral-ink";
-const action = "bg-action-soft text-action-ink";
-const accent = "bg-accent-soft text-accent-ink";
-const success = "bg-success-soft text-success-ink";
-const danger = "bg-danger-soft text-danger-ink";
-const info = "bg-info-soft text-info-ink";
-const warning = "bg-warning-soft text-warning-ink";
+// UnoCSS only sees class strings written out in full, so every icon is a literal and every tint
+// comes from softIntentClasses.
+const neutral = softIntentClasses[ColorIntent.NEUTRAL];
+const action = softIntentClasses[ColorIntent.ACTION];
+const accent = softIntentClasses[ColorIntent.ACCENT];
+const success = softIntentClasses[ColorIntent.SUCCESS];
+const danger = softIntentClasses[ColorIntent.DANGER];
+const info = softIntentClasses[ColorIntent.INFO];
+const warning = softIntentClasses[ColorIntent.WARNING];
+
+// A buy and a sale, as an event card and a pair card's two rows show them.
+export const acquiredLook: NodeLook = { icon: "i-mdi-triangle", tint: success };
+export const soldLook: NodeLook = { icon: "i-mdi-triangle-down", tint: danger };
 
 function eventLook(node: GraphNode): NodeLook {
 	switch (node.source?.fields[ProvenanceField.EVENT_KIND]) {
 		case ProvenanceEventKind.ACQUIRED:
-			return { icon: "i-mdi-triangle", tint: success };
+			return acquiredLook;
 		case ProvenanceEventKind.SOLD:
-			return { icon: "i-mdi-triangle-down", tint: danger };
+			return soldLook;
 		case ProvenanceEventKind.DIVIDEND:
 		case ProvenanceEventKind.PAYMENT_IN_LIEU:
 			return { icon: "i-mdi-circle", tint: info };

@@ -12,27 +12,8 @@ const props = defineProps<{
 const { t, locale } = useI18n();
 const { splitRatio, date: dateText } = useProvenanceText();
 
-// UnoCSS only sees class strings written out in full.
-const monogramClasses: Record<ColorIntent, string> = {
-	[ColorIntent.ACTION]: "bg-action-soft text-action-ink",
-	[ColorIntent.ACCENT]: "bg-accent-soft text-accent-ink",
-	[ColorIntent.NEUTRAL]: "bg-neutral-soft text-neutral-ink",
-	[ColorIntent.SUCCESS]: "bg-success-soft text-success-ink",
-	[ColorIntent.WARNING]: "bg-warning-soft text-warning-ink",
-	[ColorIntent.DANGER]: "bg-danger-soft text-danger-ink",
-	[ColorIntent.INFO]: "bg-info-soft text-info-ink",
-};
-
-const monogram = computed(() => {
-	const contract = props.entry.contract;
-	return monogramText(contract === null ? props.entry.ticker : contract.underlyingSymbol);
-});
-const monogramClass = computed(() => {
-	const contract = props.entry.contract;
-	return monogramClasses[
-		monogramIntent(contract === null ? props.entry.ticker : contract.underlyingSymbol)
-	];
-});
+// An option wears its underlying's monogram.
+const monogramTicker = computed(() => props.entry.contract?.underlyingSymbol ?? props.entry.ticker);
 
 const title = computed(() => {
 	const contract = props.entry.contract;
@@ -73,37 +54,22 @@ function chipText(chip: SplitChip): string {
 
 <template>
   <div class="flex items-center gap-3 px-4 pt-3 pb-1 flex-wrap">
-    <span
-      class="size-10 shrink-0 rounded-lg grid place-items-center text-sm font-bold"
-      :class="monogramClass"
-    >
-      {{ monogram }}
-    </span>
+    <InstrumentMonogram :ticker="monogramTicker" :large="true" />
     <div class="min-w-0">
       <h3 class="text-lg font-bold text-ink leading-tight">{{ title }}</h3>
       <p class="text-sm text-ink-muted">{{ subtitle }}</p>
     </div>
     <div class="flex items-center gap-1.5 flex-wrap">
-      <span
-        v-if="identifier !== ''"
-        class="inline-flex items-center rounded-full border border-edge bg-surface-raised px-2 py-0.5 text-xs font-mono text-ink-muted"
-      >
+      <AppBadge v-if="identifier !== ''" pill class="font-mono">
         {{ identifier }}
-      </span>
-      <span
-        v-if="entry.contract !== null"
-        class="inline-flex items-center rounded-full border border-edge bg-surface-raised px-2 py-0.5 text-xs text-ink-muted"
-      >
+      </AppBadge>
+      <AppBadge v-if="entry.contract !== null" pill>
         {{ t('download_chip_option') }}
-      </span>
-      <span
-        v-for="(chip, index) in chips"
-        :key="index"
-        class="inline-flex items-center gap-1 rounded-full border border-accent-edge bg-accent-soft px-2 py-0.5 text-xs text-accent-ink"
-      >
-        <span class="i-mdi-call-split" />
+      </AppBadge>
+      <AppBadge v-for="(chip, index) in chips" :key="index" :color="ColorIntent.ACCENT" pill class="gap-1">
+        <span class="i-mdi-call-split" aria-hidden="true" />
         {{ chipText(chip) }}
-      </span>
+      </AppBadge>
     </div>
   </div>
 </template>

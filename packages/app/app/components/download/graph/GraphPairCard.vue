@@ -60,6 +60,7 @@ const classes = computed(() => [
 
 <template>
   <div
+    :data-node-key="placed.layoutNode.node.key"
     :style="{
       left: `${placed.x}px`,
       top: `${placed.y}px`,
@@ -69,23 +70,22 @@ const classes = computed(() => [
     class="absolute flex flex-col overflow-hidden rounded-md border border-edge-strong bg-surface-raised text-sm text-ink transition-opacity"
     :class="classes"
   >
-    <div
-      class="flex items-center gap-1.5 px-2 bg-action-soft text-action-ink text-xs shrink-0"
-      :style="{ height: `${defaultGraphMetrics.pairHeaderHeight}px` }"
-      :title="t('download_graph_pair_hint')"
-    >
-      <span class="i-mdi-link-variant" aria-hidden="true" />
-      <span class="tabular-nums">{{ quantity }}</span>
-      <span class="ml-auto">{{ t(lotMatchingMethodKey) }}</span>
-    </div>
+    <AppTooltip :content="t('download_graph_pair_hint')">
+      <div
+        class="flex items-center gap-1.5 px-2 bg-action-soft text-action-ink text-xs shrink-0"
+        :style="{ height: `${defaultGraphMetrics.pairHeaderHeight}px` }"
+      >
+        <span class="i-mdi-link-variant" aria-hidden="true" />
+        <span class="tabular-nums">{{ quantity }}</span>
+        <span class="ml-auto">{{ t(lotMatchingMethodKey) }}</span>
+      </div>
+    </AppTooltip>
     <button
       type="button"
       class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle hover:bg-surface-hover"
       @click.stop="onRow(PairSide.ACQUIRED)"
     >
-      <span class="size-4.5 shrink-0 rounded-sm grid place-items-center bg-success-soft text-success-ink">
-        <span class="i-mdi-triangle text-xs" aria-hidden="true" />
-      </span>
+      <NodeIcon :look="acquiredLook" :small="true" />
       <span class="truncate">{{ acquiredText }}</span>
     </button>
     <button
@@ -93,9 +93,7 @@ const classes = computed(() => [
       class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle hover:bg-surface-hover"
       @click.stop="onRow(PairSide.SOLD)"
     >
-      <span class="size-4.5 shrink-0 rounded-sm grid place-items-center bg-danger-soft text-danger-ink">
-        <span class="i-mdi-triangle-down text-xs" aria-hidden="true" />
-      </span>
+      <NodeIcon :look="soldLook" :small="true" />
       <span class="truncate">{{ soldText }}</span>
     </button>
   </div>

@@ -23,13 +23,7 @@ const parts = computed(() =>
   <ol class="flex min-w-0 flex-wrap items-center gap-1 text-sm text-ink" aria-live="polite">
     <li v-for="(part, index) in parts" :key="index" class="flex items-center gap-1">
       <span v-if="index > 0" class="i-mdi-chevron-right text-ink-muted" aria-hidden="true" />
-      <span
-        v-if="part.look !== null"
-        class="size-5 shrink-0 rounded-sm grid place-items-center"
-        :class="part.look.tint"
-      >
-        <span class="text-xs" :class="part.look.icon" aria-hidden="true" />
-      </span>
+      <NodeIcon v-if="part.look !== null" :look="part.look" :small="true" />
       <span>{{ part.sentence }}</span>
     </li>
   </ol>

@@ -87,12 +87,12 @@ function onRestart() {
           href="https://github.com/MarjanDB/brrr-generator"
           target="_blank"
           rel="noopener"
-          aria-label="GitHub repository"
+          :aria-label="t('github_link_label')"
           class="i-mdi-github text-2xl app-text-muted hover:app-text transition-colors"
         />
       </div>
       <div class="flex items-center gap-2">
-        <AppSelect v-model="currentLocale" :options="localeOptions" />
+        <AppSelect v-model="currentLocale" :options="localeOptions" :aria-label="t('language_label')" />
       </div>
     </div>
 

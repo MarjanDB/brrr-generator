@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import {
-	TooltipContent,
-	TooltipPortal,
-	TooltipProvider,
-	TooltipRoot,
-	TooltipTrigger,
-} from "reka-ui";
+import { TooltipContent, TooltipPortal, TooltipRoot, TooltipTrigger } from "reka-ui";
 
 withDefaults(defineProps<{
 	content: string;
@@ -20,20 +14,19 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-	<TooltipProvider :delay-duration="delayDuration">
-		<TooltipRoot>
-			<TooltipTrigger as-child>
-				<slot />
-			</TooltipTrigger>
-			<TooltipPortal>
-				<TooltipContent
-					:side="side"
-					:side-offset="sideOffset"
-					class="z-50 px-2.5 py-1.5 rounded-md text-xs bg-surface-inverse text-ink-inverse shadow-md select-none"
-				>
-					{{ content }}
-				</TooltipContent>
-			</TooltipPortal>
-		</TooltipRoot>
-	</TooltipProvider>
+	<!-- app.vue's TooltipProvider is shared, so moving between neighbouring tooltips skips the delay. -->
+	<TooltipRoot :delay-duration="delayDuration">
+		<TooltipTrigger as-child>
+			<slot />
+		</TooltipTrigger>
+		<TooltipPortal>
+			<TooltipContent
+				:side="side"
+				:side-offset="sideOffset"
+				class="tooltip-box"
+			>
+				{{ content }}
+			</TooltipContent>
+		</TooltipPortal>
+	</TooltipRoot>
 </template>

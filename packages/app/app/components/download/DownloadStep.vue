@@ -10,7 +10,6 @@ import FocusFacts from "~/components/download/FocusFacts.vue";
 import InstrumentHeader from "~/components/download/InstrumentHeader.vue";
 import InstrumentPanel from "~/components/download/InstrumentPanel.vue";
 import InstrumentTimeline from "~/components/download/InstrumentTimeline.vue";
-import GuideModal from "~/components/guide/GuideModal.vue";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
 
 const props = defineProps<{
@@ -23,7 +22,6 @@ const emit = defineEmits<{
 
 const { t, locale } = useI18n();
 
-const guideOpen = ref(false);
 const guide = computed(() =>
 	findTaxAuthorityGuide(props.outputs.authorityId, props.outputs.reportTypeId),
 );
@@ -82,7 +80,6 @@ const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
       :reading="reading"
       :sections="sections"
       :guide="guide"
-      @open-guide="guideOpen = true"
       @restart="emit('restart')"
     />
 
@@ -119,6 +116,4 @@ const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
       </div>
     </div>
   </div>
-
-  <GuideModal v-if="guide" :name-key="guide.nameKey" :steps="guide.steps" v-model:open="guideOpen" />
 </template>

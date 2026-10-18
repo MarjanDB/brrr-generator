@@ -87,13 +87,9 @@ watch(xmlFiles, (v) => {
 </script>
 
 <template>
-  <div v-if="collapsed" class="card p-3 flex items-center gap-3">
-    <span class="i-mdi-check-circle text-icon-confirm text-lg shrink-0" />
-    <div class="flex flex-col min-w-0">
-      <span class="text-h5">{{ t('ibkr_export_title') }}</span>
-      <span class="text-body-sm app-text-muted">{{ t('upload_summary', { n: fileCount }) }}</span>
-    </div>
-  </div>
+  <StepSummaryCard v-if="collapsed" :title="t('ibkr_export_title')">
+    {{ t('upload_summary', { n: fileCount }) }}
+  </StepSummaryCard>
 
   <div v-else class="card card-padding-md flex flex-col gap-3 w-full max-w-screen-md mx-auto">
     <h2 class="text-h5">{{ t('ibkr_export_title') }}</h2>
@@ -116,13 +112,13 @@ watch(xmlFiles, (v) => {
             {{ t('upload_summary', { n: detections.length }) }}
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="app-table">
               <thead>
-                <tr class="border-b app-border-strong">
-                  <th class="text-left py-2 pr-4 font-medium app-text">
+                <tr class="app-table-head-row">
+                  <th class="app-table-th text-left">
                     {{ t('upload_detection_file') }}
                   </th>
-                  <th class="text-left py-2 pr-2 font-medium app-text">
+                  <th class="app-table-th text-left">
                     {{ t('upload_detection_broker') }}
                   </th>
                 </tr>
@@ -131,10 +127,10 @@ watch(xmlFiles, (v) => {
                 <tr
                   v-for="row in detections"
                   :key="row.fileName"
-                  class="border-b app-border last:border-0"
+                  class="app-table-row"
                 >
-                  <td class="pl-2 py-2 pr-4 app-text font-mono text-xs">{{ row.fileName }}</td>
-                  <td class="py-2 pr-2">
+                  <td class="app-table-td pl-2 font-mono text-xs">{{ row.fileName }}</td>
+                  <td class="app-table-td">
                     <span v-if="row.detectedBroker" class="inline-flex items-center gap-2 app-text">
                       <img
                         v-if="brokerIconUrl(row.detectedBroker.id)"
@@ -160,7 +156,7 @@ watch(xmlFiles, (v) => {
 
         <div v-if="error" class="alert-error">{{ error }}</div>
         <AppButton
-          class="button-filled-action self-start"
+          class="self-start"
           type="submit"
           :loading="loading"
           :disabled="processedImport === null"
