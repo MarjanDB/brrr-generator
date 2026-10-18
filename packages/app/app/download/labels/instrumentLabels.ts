@@ -1,7 +1,27 @@
 import { ProvenanceField, type ReportInstrument } from "@brrr/lib";
 import { fieldOf } from "~/download/fields";
+import { SplitFactor, SplitFactorKind } from "~/download/graph/SplitFactor";
 import { CorporateActionChipKind } from "~/download/labels/CorporateActionChipKind";
+import { formatNumber } from "~/download/labels/formatNumber";
 import { SplitChip } from "~/download/labels/SplitChip";
+
+// A split's ratio in the usual form: 4 shares becoming 40 is 10 : 1, 10 becoming 1 is 1 : 10.
+export function splitRatioOf(
+	chip: SplitChip,
+	locale: string,
+): { before: string; after: string } | null {
+	if (chip.before === null || chip.after === null) {
+		return null;
+	}
+	const factor = SplitFactor.of(chip.before, chip.after);
+	if (factor === null) {
+		return null;
+	}
+	const amount = formatNumber(String(factor.amount), locale);
+	return factor.kind === SplitFactorKind.MULTIPLY
+		? { before: amount, after: "1" }
+		: { before: "1", after: amount };
+}
 
 function chipKindOf(value: string | null): CorporateActionChipKind | null {
 	return Object.values(CorporateActionChipKind).find((kind) => kind === value) ?? null;

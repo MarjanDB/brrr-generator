@@ -10,6 +10,7 @@ import {
 import { DateTime } from "luxon";
 import { computed } from "vue";
 import { fieldOf } from "~/download/fields";
+import { formatNumber } from "~/download/labels/formatNumber";
 import { dropSentence } from "~/download/sentences/dropSentence";
 import { dropCategoryKeys, eventKindKeys } from "~/download/sentences/sentenceKeys";
 import { warningSentence } from "~/download/sentences/warningSentence";
@@ -24,6 +25,13 @@ const { t, locale } = useI18n();
 const { translate, format } = useSentences();
 
 type Fact = { label: string; value: string };
+
+const cashKinds: ProvenanceEventKind[] = [
+	ProvenanceEventKind.DIVIDEND,
+	ProvenanceEventKind.PAYMENT_IN_LIEU,
+	ProvenanceEventKind.WITHHOLDING_TAX,
+	ProvenanceEventKind.WITHHOLDING_TAX_ON_PAYMENT_IN_LIEU,
+];
 
 const facts = computed<Fact[]>(() => {
 	const result: Fact[] = [];
@@ -42,13 +50,22 @@ const facts = computed<Fact[]>(() => {
 		});
 	}
 	const quantity = fieldOf(props.node, ProvenanceField.QUANTITY);
-	if (quantity !== null) {
-		result.push({ label: t("download_fact_quantity"), value: quantity });
-	}
 	const price = fieldOf(props.node, ProvenanceField.PRICE);
-	if (price !== null) {
-		const currency = fieldOf(props.node, ProvenanceField.CURRENCY) ?? "";
-		result.push({ label: t("download_fact_price"), value: `${price} ${currency}`.trim() });
+	const currency = fieldOf(props.node, ProvenanceField.CURRENCY) ?? "";
+	if (kind !== undefined && cashKinds.includes(kind)) {
+		// A cash transaction is one unit of its amount: show the amount, not a quantity and a price.
+		if (price !== null) {
+			const amount = formatNumber(String(Number(price) * Number(quantity ?? "1")), locale.value);
+			result.push({ label: t("download_fact_amount"), value: `${amount} ${currency}`.trim() });
+		}
+	} else {
+		if (quantity !== null) {
+			result.push({ label: t("download_fact_quantity"), value: formatNumber(quantity, locale.value) });
+		}
+		if (price !== null) {
+			const value = `${formatNumber(price, locale.value)} ${currency}`.trim();
+			result.push({ label: t("download_fact_price"), value });
+		}
 	}
 	const transaction = fieldOf(props.node, ProvenanceField.TRANSACTION_ID);
 	if (transaction !== null) {

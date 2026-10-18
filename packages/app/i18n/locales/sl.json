@@ -184,6 +184,7 @@
 	"download_fact_date": "Datum",
 	"download_fact_quantity": "Količina",
 	"download_fact_price": "Cena",
+	"download_fact_amount": "Znesek",
 	"download_fact_transaction_id": "Transakcija",
 	"download_fact_kind": "Vrsta",
 	"download_nothing": "V tem poročilu ni ničesar"

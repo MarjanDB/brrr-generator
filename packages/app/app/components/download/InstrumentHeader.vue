@@ -3,6 +3,7 @@ import { OptionRight } from "@brrr/lib";
 import { DateTime } from "luxon";
 import { computed } from "vue";
 import { CorporateActionChipKind } from "~/download/labels/CorporateActionChipKind";
+import { splitRatioOf } from "~/download/labels/instrumentLabels";
 import type { SplitChip } from "~/download/labels/SplitChip";
 import { monogramIntent, monogramText } from "~/download/panel/monogramIntent";
 import type { PanelEntry } from "~/download/panel/PanelEntry";
@@ -61,9 +62,10 @@ const subtitle = computed(() => {
 const identifier = computed(() => props.entry.contract?.occSymbol ?? props.entry.isin ?? "");
 
 function chipText(chip: SplitChip): string {
+	const ratio = splitRatioOf(chip, locale.value);
 	const params = {
-		before: chip.before ?? "",
-		after: chip.after ?? "",
+		before: ratio?.before ?? chip.before ?? "",
+		after: ratio?.after ?? chip.after ?? "",
 		isin: chip.fromIsin ?? "",
 		ticker: chip.fromTicker ?? "",
 	};

@@ -184,6 +184,7 @@
 	"download_fact_date": "Date",
 	"download_fact_quantity": "Quantity",
 	"download_fact_price": "Price",
+	"download_fact_amount": "Amount",
 	"download_fact_transaction_id": "Transaction",
 	"download_fact_kind": "Kind",
 	"download_nothing": "Nothing in this report"

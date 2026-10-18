@@ -66,7 +66,7 @@ describe("the data behind an instrument's timeline", () => {
 		expect(timeline.stackDepth).toEqual(1);
 	});
 
-	test("marks on the same day stack, the broker lot first", () => {
+	test("marks on the same day stack, the trade first so the arcs meet it, the broker lot below", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -111,9 +111,9 @@ describe("the data behind an instrument's timeline", () => {
 		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks).toHaveLength(3);
-		expect(timeline.marks[0]?.kind).toEqual(TimelineMarkKind.BROKER_LOT);
+		expect(timeline.marks[0]?.kind).toEqual(TimelineMarkKind.BOUGHT);
 		expect(timeline.marks[0]?.stack).toEqual(0);
-		expect(timeline.marks[1]?.kind).toEqual(TimelineMarkKind.BOUGHT);
+		expect(timeline.marks[1]?.kind).toEqual(TimelineMarkKind.BROKER_LOT);
 		expect(timeline.marks[1]?.stack).toEqual(1);
 		expect(timeline.marks[2]?.kind).toEqual(TimelineMarkKind.SOLD);
 		expect(timeline.marks[2]?.stack).toEqual(0);
