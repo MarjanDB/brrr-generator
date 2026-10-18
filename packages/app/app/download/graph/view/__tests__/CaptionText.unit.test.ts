@@ -8,12 +8,12 @@ import {
 	TaxAuthorityLotMatchingMethod,
 } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
-import { captionOf } from "~/download/graph/caption";
-import { GraphIndex } from "~/download/graph/GraphIndex";
-import { layoutGraph } from "~/download/graph/layoutGraph";
 import { captionTextOf } from "~/download/graph/view/captionTextOf";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
+import { captionOf } from "~/utils/graphCaption";
+import { layoutGraph } from "~/utils/graphLayout";
+import { graphModelOf } from "~/utils/graphModel";
 import { eventKindKeys, lotMatchingKeys, nodeValueKeys } from "~/utils/i18nKeys";
 
 const stage = ProvenanceStage.Schema.parse("Test");
@@ -57,7 +57,7 @@ describe("the words of a graph's caption", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
 		const [focus] = captionOf(layout);
 		assert(focus !== undefined);
@@ -104,7 +104,7 @@ describe("the words of a graph's caption", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
 		const [, matched] = captionOf(layout);
 		assert(matched !== undefined);
@@ -149,7 +149,7 @@ describe("the words of a graph's caption", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
 		const [, matched] = captionOf(layout);
 		assert(matched !== undefined);
@@ -192,7 +192,7 @@ describe("the words of a graph's caption", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
 		const [, , lines] = captionOf(layout);
 		assert(lines !== undefined);
@@ -217,7 +217,7 @@ describe("the words of a graph's caption", () => {
 			label: "dividend ACME",
 		});
 		b.sumInto({ instrument: acme, events: [dividend], dateReceived: "2024-02-01" });
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(dividend.event), expanded: new Set() });
 		const [focus, summed] = captionOf(layout);
 		assert(focus !== undefined);
@@ -249,7 +249,7 @@ describe("the words of a graph's caption", () => {
 			label: "buy ACME",
 		});
 		b.split({ trade: buy, instrument: acme, before: "4", after: "40", date: "2024-06-01" });
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
 		const [, splitInto] = captionOf(layout);
 		assert(splitInto !== undefined);
@@ -292,7 +292,7 @@ describe("the words of a graph's caption", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
 		const [focus, boughtAndSold] = captionOf(layout);
 		assert(focus !== undefined);
@@ -329,7 +329,7 @@ describe("the words of a graph's caption", () => {
 			after: "40",
 			date: "2024-06-01",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(split.action), expanded: new Set() });
 		const [focus, adjusted] = captionOf(layout);
 		assert(focus !== undefined);
@@ -354,7 +354,7 @@ describe("the words of a graph's caption", () => {
 			kind: ProvenanceDetailKind.FORM_IGNORES_BROKER_LOTS,
 			values: {},
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(lot), expanded: new Set() });
 		const [, leftOut] = captionOf(layout);
 		assert(leftOut !== undefined);

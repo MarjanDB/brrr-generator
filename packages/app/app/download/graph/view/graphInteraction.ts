@@ -1,15 +1,19 @@
 import { chainOfEdge, chainOfNode } from "~/download/graph/chain";
 import type { FocusState } from "~/download/graph/FocusState";
-import { GraphNodeKey, type StackKey } from "~/download/graph/GraphIdentifiers";
-import type { GraphLayout } from "~/download/graph/GraphLayout";
-import type { GraphLayoutEdge } from "~/download/graph/GraphLayoutEdge";
-import type { GraphLayoutNode } from "~/download/graph/GraphLayoutNode";
-import type { GraphModel } from "~/download/graph/GraphModel";
-import { GraphNode } from "~/download/graph/GraphNode";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { InteractionKind } from "~/download/graph/view/InteractionKind";
 import { InteractionResult } from "~/download/graph/view/InteractionResult";
-import { PairSide } from "~/download/graph/view/PairSide";
+import {
+	type GraphLayout,
+	type GraphLayoutEdge,
+	type GraphLayoutNode,
+	type GraphModel,
+	type GraphNode,
+	GraphNodeKey,
+	GraphNodeKind,
+	PairSide,
+	type StackKey,
+} from "~/types/provenanceGraph";
+import { modelNodeFor } from "~/utils/graphModel";
 
 export type InteractionArgs = {
 	layout: GraphLayout;
@@ -35,7 +39,7 @@ function lineNodeOf(node: GraphNode, side: PairSide): GraphNode | null {
 	if (line === null || line === undefined) {
 		return null;
 	}
-	return new GraphNode({
+	return {
 		key: GraphNodeKey.Schema.parse(`${node.key}:${side}`),
 		kind: GraphNodeKind.REPORT_LINE,
 		source: line,
@@ -43,7 +47,7 @@ function lineNodeOf(node: GraphNode, side: PairSide): GraphNode | null {
 		drop: null,
 		stack: null,
 		warnings: [],
-	});
+	};
 }
 
 // The one place that decides what a click does. A click on a node lights its chain and keeps the
@@ -99,5 +103,5 @@ export function interact(args: InteractionArgs): InteractionResult {
 // The focus and the trail in the other mode's graph: a step that mode hides becomes the visible
 // node next to it.
 export function remapForModel(focusState: FocusState, next: GraphModel): FocusState {
-	return focusState.remap((source) => next.nodeFor(source).source ?? source);
+	return focusState.remap((source) => modelNodeFor(next, source).source ?? source);
 }

@@ -1,6 +1,5 @@
 import type { FocusState } from "~/download/graph/FocusState";
-import type { StackKey } from "~/download/graph/GraphIdentifiers";
-import type { GraphNode } from "~/download/graph/GraphNode";
+import type { GraphNode, StackKey } from "~/types/provenanceGraph";
 
 export type InteractionResultArgs = {
 	focusState: FocusState;

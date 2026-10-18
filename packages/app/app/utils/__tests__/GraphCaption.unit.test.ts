@@ -8,11 +8,11 @@ import {
 	ProvenanceStage,
 } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
-import { CaptionSegmentKind } from "~/download/graph/CaptionSegmentKind";
-import { captionOf } from "~/download/graph/caption";
-import { GraphIndex } from "~/download/graph/GraphIndex";
-import { layoutGraph } from "~/download/graph/layoutGraph";
+import { CaptionSegmentKind } from "~/types/provenanceGraph";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
+import { captionOf } from "~/utils/graphCaption";
+import { layoutGraph } from "~/utils/graphLayout";
+import { graphModelOf } from "~/utils/graphModel";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -67,7 +67,7 @@ describe("the caption of a graph", () => {
 			boughtOn: "2024-01-11",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
 
 		const caption = captionOf(layout);
@@ -133,7 +133,7 @@ describe("the caption of a graph", () => {
 			boughtOn: "2024-01-11",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(true);
+		const model = graphModelOf(b.graph, b.reading(), true);
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
 
 		const caption = captionOf(layout);
@@ -179,7 +179,7 @@ describe("the caption of a graph", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
 
 		const caption = captionOf(layout);
@@ -230,7 +230,7 @@ describe("the caption of a graph", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-09-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
 
 		const caption = captionOf(layout);
@@ -272,7 +272,7 @@ describe("the caption of a graph", () => {
 			events: [dividend, tax],
 			dateReceived: "2024-04-02",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(dividend.event), expanded: new Set() });
 
 		const caption = captionOf(layout);
@@ -316,7 +316,7 @@ describe("the caption of a graph", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
 
 		const caption = captionOf(layout);
@@ -365,7 +365,7 @@ describe("the caption of a graph", () => {
 		});
 		b.graph.derive([secondBuy.event], secondRebuilt, ProvenanceChange.SPLIT, stage, null);
 		b.graph.derive([split.action], secondRebuilt, ProvenanceChange.SPLIT, stage, null);
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(split.action), expanded: new Set() });
 
 		const caption = captionOf(layout);
@@ -402,7 +402,7 @@ describe("the caption of a graph", () => {
 			[ProvenanceField.QUANTITY]: "40",
 		});
 		b.graph.derive([split.action], rescaledLot, ProvenanceChange.SPLIT, stage, null);
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(split.action), expanded: new Set() });
 
 		const caption = captionOf(layout);
@@ -418,7 +418,7 @@ describe("the caption of a graph", () => {
 		const rename = {};
 		b.graph.node(rename, ProvenanceNodeKind.CORPORATE_ACTION, "RENAME OLD → NEW", {});
 		b.graph.derive([file], rename, ProvenanceChange.CONVERTED, stage, null);
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(rename), expanded: new Set() });
 
 		const caption = captionOf(layout);
@@ -437,7 +437,7 @@ describe("the caption of a graph", () => {
 			kind: ProvenanceDetailKind.FORM_IGNORES_BROKER_LOTS,
 			values: {},
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(lot), expanded: new Set() });
 
 		const caption = captionOf(layout);

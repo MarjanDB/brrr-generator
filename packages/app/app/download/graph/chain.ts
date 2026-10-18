@@ -1,9 +1,11 @@
 import type { ProvenanceNode } from "@brrr/lib";
-import { GraphChain } from "~/download/graph/GraphChain";
-import type { GraphLayout } from "~/download/graph/GraphLayout";
-import type { GraphLayoutEdge } from "~/download/graph/GraphLayoutEdge";
-import type { GraphLayoutNode } from "~/download/graph/GraphLayoutNode";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
+import {
+	type GraphChain,
+	type GraphLayout,
+	type GraphLayoutEdge,
+	type GraphLayoutNode,
+	GraphNodeKind,
+} from "~/types/provenanceGraph";
 
 // Everything on the path through a node: what it came from and what it went into, over the drawn
 // edges only. Stubs and stacks are never in a chain.
@@ -26,11 +28,11 @@ function chainOf(
 		...walk(upFrom, (node) => drawn.filter((edge) => edge.to === node).map((edge) => edge.from)),
 		...walk(downFrom, (node) => drawn.filter((edge) => edge.from === node).map((edge) => edge.to)),
 	]);
-	return new GraphChain({
+	return {
 		nodes,
 		edges: new Set(drawn.filter((edge) => nodes.has(edge.from) && nodes.has(edge.to))),
 		sources: new Set([...nodes].flatMap(sourcesOf)),
-	});
+	};
 }
 
 function walk(

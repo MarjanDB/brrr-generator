@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import GraphSplitBadge from "~/components/download/graph/GraphSplitBadge.vue";
-import type { GraphChain } from "~/download/graph/GraphChain";
-import type { GraphLayoutEdge } from "~/download/graph/GraphLayoutEdge";
-import type { GraphPlacement } from "~/download/graph/GraphPlacement";
-import type { PlacedEdge } from "~/download/graph/PlacedEdge";
-import { CardState } from "~/download/graph/view/CardState";
+import { CardState, type GraphChain, type GraphLayoutEdge, type GraphPlacement, type PlacedEdge } from "~/types/provenanceGraph";
 
 const props = defineProps<{
 	placement: GraphPlacement;

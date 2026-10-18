@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { CaptionSegment } from "~/download/graph/CaptionSegment";
 import { captionSentence } from "~/download/graph/view/captionSentence";
 import { type CaptionContext, captionTextOf } from "~/download/graph/view/captionTextOf";
-import { nodeLookOf } from "~/download/graph/view/nodeLook";
+import type { CaptionSegment } from "~/types/provenanceGraph";
 
 const props = defineProps<{
 	segments: CaptionSegment[];

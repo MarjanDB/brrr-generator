@@ -7,10 +7,10 @@ import {
 	ProvenanceWalker,
 } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
-import { GraphIndex } from "~/download/graph/GraphIndex";
 import { PopoverKind } from "~/download/graph/view/PopoverKind";
 import { popoverContentOf } from "~/download/graph/view/popoverContentOf";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
+import { graphModelOf, modelNodeFor } from "~/utils/graphModel";
 import { edavkiFieldKeys } from "~/utils/i18nKeys";
 
 describe("what a popover shows", () => {
@@ -26,8 +26,8 @@ describe("what a popover shows", () => {
 			ProvenanceStage.Schema.parse("Test"),
 			null,
 		);
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
-		const node = model.nodeFor(b.node(row));
+		const model = graphModelOf(b.graph, b.reading(), false);
+		const node = modelNodeFor(model, b.node(row));
 
 		const content = popoverContentOf(node, new ProvenanceWalker(b.graph));
 
@@ -74,8 +74,8 @@ describe("what a popover shows", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(true);
-		const node = model.nodeFor(b.node(match.acquiredLine));
+		const model = graphModelOf(b.graph, b.reading(), true);
+		const node = modelNodeFor(model, b.node(match.acquiredLine));
 
 		const content = popoverContentOf(node, new ProvenanceWalker(b.graph));
 
@@ -102,10 +102,10 @@ describe("what a popover shows", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
 		const content = popoverContentOf(
-			model.nodeFor(b.node(buy.event)),
+			modelNodeFor(model, b.node(buy.event)),
 			new ProvenanceWalker(b.graph),
 		);
 

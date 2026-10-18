@@ -12,7 +12,6 @@ import {
 	type ReportMatchedLot,
 	type ReportProvenance,
 } from "@brrr/lib";
-import { SplitFactor, SplitFactorKind } from "~/download/graph/SplitFactor";
 import type {
 	PanelContract,
 	PanelEntry,
@@ -20,6 +19,8 @@ import type {
 	SplitChip,
 	WarningItem,
 } from "~/types/instrumentPanel";
+import { SplitFactorKind } from "~/types/provenanceGraph";
+import { splitFactorOf } from "~/utils/graphModel";
 import { fieldOf, formatNumber } from "~/utils/provenanceFields";
 
 function optionRightOf(value: string | null): OptionRight {
@@ -218,7 +219,7 @@ export function splitRatioOf(
 	if (chip.before === null || chip.after === null) {
 		return null;
 	}
-	const factor = SplitFactor.of(chip.before, chip.after);
+	const factor = splitFactorOf(chip.before, chip.after);
 	if (factor === null) {
 		return null;
 	}

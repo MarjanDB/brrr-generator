@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { type SplitFactor, SplitFactorKind } from "~/download/graph/SplitFactor";
-import { CardState } from "~/download/graph/view/CardState";
 import { splitBadgeText } from "~/download/graph/view/splitBadgeText";
+import { CardState, type SplitFactor, SplitFactorKind } from "~/types/provenanceGraph";
 
 const props = defineProps<{
 	factor: SplitFactor;

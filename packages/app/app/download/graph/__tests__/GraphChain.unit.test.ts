@@ -1,10 +1,10 @@
 import { ProvenanceEventKind } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
 import { chainOfEdge, chainOfNode } from "~/download/graph/chain";
-import { GraphIndex } from "~/download/graph/GraphIndex";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
-import { layoutGraph } from "~/download/graph/layoutGraph";
+import { GraphNodeKind } from "~/types/provenanceGraph";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
+import { layoutGraph, layoutNodeOf } from "~/utils/graphLayout";
+import { graphModelOf } from "~/utils/graphModel";
 
 describe("highlight chains", () => {
 	test("the chain of a row is its file, itself, its trade and the pair, and nothing faded", () => {
@@ -39,9 +39,9 @@ describe("highlight chains", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
-		const sellRow = layout.layoutNodeOf(b.node(sell.row));
+		const sellRow = layoutNodeOf(layout, b.node(sell.row));
 		assert(sellRow !== null);
 
 		const chain = chainOfNode(layout, sellRow);
@@ -109,7 +109,7 @@ describe("highlight chains", () => {
 			boughtOn: "2024-01-11",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
 		const toFirstPair = layout.edges.find(
 			(edge) => edge.to.node.source === b.node(firstMatch.lot) && !edge.isStub,
@@ -171,7 +171,7 @@ describe("highlight chains", () => {
 			currency: "USD",
 			label: "buy 3",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
 		const stack = layout.nodes.find((n) => n.node.kind === GraphNodeKind.STACK);
 		assert(stack !== undefined);

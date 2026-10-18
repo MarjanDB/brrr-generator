@@ -5,13 +5,15 @@ import {
 	type ProvenanceNode,
 	type TaxAuthorityLotMatchingMethod,
 } from "@brrr/lib";
-import type { CaptionSegment } from "~/download/graph/CaptionSegment";
-import { CaptionSegmentKind } from "~/download/graph/CaptionSegmentKind";
-import type { GraphLayoutNode } from "~/download/graph/GraphLayoutNode";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { CaptionText } from "~/download/graph/view/CaptionText";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
 import { nodeValueOf } from "~/download/graph/view/nodeValueOf";
+import {
+	type CaptionSegment,
+	CaptionSegmentKind,
+	type GraphLayoutNode,
+	GraphNodeKind,
+} from "~/types/provenanceGraph";
 import { eventKindKeys, lotMatchingKeys, nodeValueKeys, stackKindKeys } from "~/utils/i18nKeys";
 import { fieldOf, formatNumber } from "~/utils/provenanceFields";
 

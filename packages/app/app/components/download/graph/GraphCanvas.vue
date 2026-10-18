@@ -7,17 +7,8 @@ import GraphNodeCard from "~/components/download/graph/GraphNodeCard.vue";
 import GraphPairCard from "~/components/download/graph/GraphPairCard.vue";
 import GraphPopover from "~/components/download/graph/GraphPopover.vue";
 import GraphStackCard from "~/components/download/graph/GraphStackCard.vue";
-import type { GraphChain } from "~/download/graph/GraphChain";
-import { GraphLane } from "~/download/graph/GraphLane";
-import type { GraphLayout } from "~/download/graph/GraphLayout";
-import type { GraphLayoutEdge } from "~/download/graph/GraphLayoutEdge";
-import type { GraphLayoutNode } from "~/download/graph/GraphLayoutNode";
-import { defaultGraphMetrics } from "~/download/graph/GraphMetrics";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
-import type { GraphPlacement } from "~/download/graph/GraphPlacement";
-import { CardState } from "~/download/graph/view/CardState";
-import type { PairSide } from "~/download/graph/view/PairSide";
 import type { PopoverContent } from "~/download/graph/view/PopoverContent";
+import { CardState, type GraphChain, GraphLane, type GraphLayout, type GraphLayoutEdge, type GraphLayoutNode, GraphNodeKind, type GraphPlacement, type PairSide } from "~/types/provenanceGraph";
 
 const props = defineProps<{
 	layout: GraphLayout;
@@ -75,7 +66,7 @@ function stateOf(node: GraphLayoutNode): CardState {
 }
 
 const anchor = computed(() =>
-	props.popoverAnchor === null ? null : props.placement.placedNodeOf(props.popoverAnchor),
+	props.popoverAnchor === null ? null : placedNodeOf(props.placement, props.popoverAnchor),
 );
 
 // UnoCSS only sees class strings written out in full: a band is tinted by what its lane holds.

@@ -1,5 +1,5 @@
 import type { ProvenanceDrop } from "@brrr/lib";
-import type { GraphLayoutNode } from "~/download/graph/GraphLayoutNode";
+import type { GraphLayoutNode } from "~/types/provenanceGraph";
 
 export type CaptionTextArgs = {
 	key: string;

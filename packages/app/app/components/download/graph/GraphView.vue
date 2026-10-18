@@ -1,30 +1,25 @@
 <script setup lang="ts">
 import type {
+	ProvenanceGraph,
 	ProvenanceWalker,
 	ReportInstrumentKind,
+	ReportProvenance,
 	TaxAuthorityLotMatchingMethod,
 } from "@brrr/lib";
 import { useEventListener } from "@vueuse/core";
 import { computed, ref, shallowRef, watch } from "vue";
 import GraphCanvas from "~/components/download/graph/GraphCanvas.vue";
 import GraphToolbar from "~/components/download/graph/GraphToolbar.vue";
-import { captionOf } from "~/download/graph/caption";
 import type { FocusState } from "~/download/graph/FocusState";
-import type { StackKey } from "~/download/graph/GraphIdentifiers";
-import type { GraphIndex } from "~/download/graph/GraphIndex";
-import type { GraphLayoutEdge } from "~/download/graph/GraphLayoutEdge";
-import type { GraphLayoutNode } from "~/download/graph/GraphLayoutNode";
-import { defaultGraphMetrics } from "~/download/graph/GraphMetrics";
-import { layoutGraph } from "~/download/graph/layoutGraph";
-import { placeGraph } from "~/download/graph/placeGraph";
 import { interact, remapForModel } from "~/download/graph/view/graphInteraction";
 import { InteractionKind } from "~/download/graph/view/InteractionKind";
-import type { PairSide } from "~/download/graph/view/PairSide";
 import type { PopoverContent } from "~/download/graph/view/PopoverContent";
 import { popoverContentOf } from "~/download/graph/view/popoverContentOf";
+import type { GraphLayoutEdge, GraphLayoutNode, PairSide, StackKey } from "~/types/provenanceGraph";
 
 const props = defineProps<{
-	index: GraphIndex;
+	graph: ProvenanceGraph;
+	reading: ReportProvenance;
 	// For the popovers: where a broker row came from.
 	walker: ProvenanceWalker;
 	focusState: FocusState;
@@ -51,7 +46,10 @@ const popover = shallowRef<OpenPopover | null>(null);
 // The layout depends on the focus alone: lighting a chain must not draw the graph again, or the
 // chain would point at nodes that no longer exist.
 const focus = computed(() => props.focusState.focus);
-const model = computed(() => props.index.model(showEveryStep.value));
+// One model per mode, each built the first time it is read.
+const foldedModel = computed(() => graphModelOf(props.graph, props.reading, false));
+const everyStepModel = computed(() => graphModelOf(props.graph, props.reading, true));
+const model = computed(() => (showEveryStep.value ? everyStepModel.value : foldedModel.value));
 const layout = computed(() =>
 	layoutGraph(model.value, { focus: focus.value, expanded: expanded.value }),
 );
@@ -117,7 +115,7 @@ function clearLight() {
 function toggleEveryStep() {
 	const next = !showEveryStep.value;
 	// The new mode may hide the focused step, so the focus is moved first, in the same tick.
-	emit("update:focusState", remapForModel(props.focusState, props.index.model(next)));
+	emit("update:focusState", remapForModel(props.focusState, next ? everyStepModel.value : foldedModel.value));
 	showEveryStep.value = next;
 	expanded.value = new Set();
 	popover.value = null;

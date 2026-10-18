@@ -8,8 +8,8 @@ import {
 	ProvenanceWalker,
 } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
 import { TimelineMarkKind } from "~/types/timeline";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
 import { buildTimeline } from "~/utils/instrumentTimeline";
 
 const stage = ProvenanceStage.Schema.parse("Test");

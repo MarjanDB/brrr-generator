@@ -7,17 +7,14 @@ import {
 	ProvenanceStage,
 } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
 import { chainOfNode } from "~/download/graph/chain";
 import { FocusState } from "~/download/graph/FocusState";
-import { GraphDirection } from "~/download/graph/GraphDirection";
-import { StackKey } from "~/download/graph/GraphIdentifiers";
-import { GraphIndex } from "~/download/graph/GraphIndex";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
-import { layoutGraph } from "~/download/graph/layoutGraph";
 import { interact, remapForModel } from "~/download/graph/view/graphInteraction";
 import { InteractionKind } from "~/download/graph/view/InteractionKind";
-import { PairSide } from "~/download/graph/view/PairSide";
+import { GraphDirection, GraphNodeKind, PairSide, StackKey } from "~/types/provenanceGraph";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
+import { layoutGraph, layoutNodeOf } from "~/utils/graphLayout";
+import { graphModelOf } from "~/utils/graphModel";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -54,9 +51,9 @@ describe("what a click in the graph does", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
-		const sellRow = layout.layoutNodeOf(b.node(sell.row));
+		const sellRow = layoutNodeOf(layout, b.node(sell.row));
 		assert(sellRow !== null);
 
 		const result = interact({
@@ -89,7 +86,7 @@ describe("what a click in the graph does", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
 
 		const result = interact({
@@ -138,9 +135,9 @@ describe("what a click in the graph does", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
-		const buyStub = layout.layoutNodeOf(b.node(buy.event));
+		const buyStub = layoutNodeOf(layout, b.node(buy.event));
 		assert(buyStub !== null);
 		const lit = FocusState.start(b.node(sell.event)).light(chainOfNode(layout, layout.focus));
 
@@ -215,7 +212,7 @@ describe("what a click in the graph does", () => {
 			currency: "USD",
 			label: "buy 2024-01-14",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(first.event), expanded: new Set() });
 		const stack = layout.nodes.find((node) => node.node.kind === GraphNodeKind.STACK);
 		assert(stack !== undefined);
@@ -250,7 +247,7 @@ describe("what a click in the graph does", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
 		const rowToEvent = layout.edges.find((edge) => edge.to === layout.focus && !edge.isStub);
 		assert(rowToEvent !== undefined);
@@ -302,9 +299,9 @@ describe("what a click in the graph does", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
-		const pair = layout.layoutNodeOf(b.node(match.lot));
+		const pair = layoutNodeOf(layout, b.node(match.lot));
 		assert(pair !== null);
 
 		const result = interact({
@@ -336,7 +333,7 @@ describe("what a click in the graph does", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
 		const lit = FocusState.start(b.node(buy.event)).light(chainOfNode(layout, layout.focus));
 
@@ -369,7 +366,7 @@ describe("what a click in the graph does", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
 		const lit = FocusState.start(b.node(buy.event)).light(chainOfNode(layout, layout.focus));
 
@@ -397,7 +394,7 @@ describe("what a click in the graph does", () => {
 			kind: ProvenanceDetailKind.FORM_IGNORES_BROKER_LOTS,
 			values: {},
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(lot), expanded: new Set() });
 		const dropped = layout.nodes.find((node) => node.node.kind === GraphNodeKind.DROP);
 		assert(dropped !== undefined);
@@ -448,9 +445,9 @@ describe("what a click in the graph does", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
-		const buyStub = layout.layoutNodeOf(b.node(buy.event));
+		const buyStub = layoutNodeOf(layout, b.node(buy.event));
 		assert(buyStub !== null);
 		const spread = new Set([
 			StackKey.of(layout.focus.node.key, GraphDirection.UP, GraphNodeKind.ROW),
@@ -495,11 +492,10 @@ describe("switching which steps the graph shows", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const index = new GraphIndex(b.graph, b.reading());
 		const onRecord = FocusState.start(b.node(buy.record));
 
-		const simple = remapForModel(onRecord, index.model(false));
-		const everyStep = remapForModel(simple, index.model(true));
+		const simple = remapForModel(onRecord, graphModelOf(b.graph, b.reading(), false));
+		const everyStep = remapForModel(simple, graphModelOf(b.graph, b.reading(), true));
 
 		expect(simple.focus).toBe(b.node(buy.event));
 		expect(everyStep.focus).toBe(b.node(buy.event));

@@ -1,14 +1,16 @@
 import { ProvenanceEventKind, ProvenanceLegSide } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
-import { GraphDirection } from "~/download/graph/GraphDirection";
-import { GraphNodeKey, StackKey } from "~/download/graph/GraphIdentifiers";
-import { GraphIndex } from "~/download/graph/GraphIndex";
-import { GraphNode } from "~/download/graph/GraphNode";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
-import { GraphStack } from "~/download/graph/GraphStack";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
 import { nodeValueOf } from "~/download/graph/view/nodeValueOf";
+import {
+	GraphDirection,
+	type GraphNode,
+	GraphNodeKey,
+	GraphNodeKind,
+	StackKey,
+} from "~/types/provenanceGraph";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
+import { graphModelOf, modelNodeFor } from "~/utils/graphModel";
 import { legSideKeys, stackKindKeys } from "~/utils/i18nKeys";
 
 describe("what a graph node says", () => {
@@ -26,9 +28,9 @@ describe("what a graph node says", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(true);
+		const model = graphModelOf(b.graph, b.reading(), true);
 
-		const value = nodeValueOf(model.nodeFor(b.node(buy.record)), "en");
+		const value = nodeValueOf(modelNodeFor(model, b.node(buy.record)), "en");
 
 		expect(value.kind).toEqual(NodeValueKind.STEP);
 		expect(value.params.kind).toEqual(stackKindKeys[GraphNodeKind.RECORD]);
@@ -67,9 +69,9 @@ describe("what a graph node says", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(true);
+		const model = graphModelOf(b.graph, b.reading(), true);
 
-		const value = nodeValueOf(model.nodeFor(b.node(match.soldLeg)), "en");
+		const value = nodeValueOf(modelNodeFor(model, b.node(match.soldLeg)), "en");
 
 		expect(value.kind).toEqual(NodeValueKind.LEG);
 		expect(value.params.side).toEqual(legSideKeys[ProvenanceLegSide.SOLD]);
@@ -91,9 +93,9 @@ describe("what a graph node says", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const value = nodeValueOf(model.nodeFor(b.node(buy.event)), "en");
+		const value = nodeValueOf(modelNodeFor(model, b.node(buy.event)), "en");
 
 		expect(value.kind).toEqual(NodeValueKind.TRADE);
 		expect(value.params.quantity).toEqual("3");
@@ -114,9 +116,9 @@ describe("what a graph node says", () => {
 			currency: "USD",
 			label: "dividend ACME",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const value = nodeValueOf(model.nodeFor(b.node(dividend.event)), "en");
+		const value = nodeValueOf(modelNodeFor(model, b.node(dividend.event)), "en");
 
 		expect(value.kind).toEqual(NodeValueKind.CASH);
 		expect(value.params.amount).toEqual("12.5");
@@ -144,9 +146,9 @@ describe("what a graph node says", () => {
 			after: "40",
 			date: "2024-06-01",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const value = nodeValueOf(model.nodeFor(b.node(split.action)), "en");
+		const value = nodeValueOf(modelNodeFor(model, b.node(split.action)), "en");
 
 		expect(value.kind).toEqual(NodeValueKind.SPLIT);
 		expect(value.params.before).toEqual("10");
@@ -185,9 +187,9 @@ describe("what a graph node says", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(true);
+		const model = graphModelOf(b.graph, b.reading(), true);
 
-		const value = nodeValueOf(model.nodeFor(b.node(match.lot)), "en");
+		const value = nodeValueOf(modelNodeFor(model, b.node(match.lot)), "en");
 
 		expect(value.kind).toEqual(NodeValueKind.MATCHED);
 		expect(value.params.quantity).toEqual("10");
@@ -225,10 +227,10 @@ describe("what a graph node says", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(true);
+		const model = graphModelOf(b.graph, b.reading(), true);
 
-		const bought = nodeValueOf(model.nodeFor(b.node(match.acquiredLine)), "en");
-		const sold = nodeValueOf(model.nodeFor(b.node(match.soldLine)), "en");
+		const bought = nodeValueOf(modelNodeFor(model, b.node(match.acquiredLine)), "en");
+		const sold = nodeValueOf(modelNodeFor(model, b.node(match.soldLine)), "en");
 
 		expect(bought.kind).toEqual(NodeValueKind.LINE_BOUGHT);
 		expect(bought.params.date).toEqual("Jan 10");
@@ -252,9 +254,9 @@ describe("what a graph node says", () => {
 			label: "dividend ACME",
 		});
 		const sums = b.sumInto({ instrument: acme, events: [dividend], dateReceived: "2024-02-01" });
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const value = nodeValueOf(model.nodeFor(b.node(sums.line)), "en");
+		const value = nodeValueOf(modelNodeFor(model, b.node(sums.line)), "en");
 
 		expect(value.kind).toEqual(NodeValueKind.LINE_DIVIDEND);
 		expect(value.params.date).toEqual("Feb 1");
@@ -295,27 +297,27 @@ describe("what a graph node says", () => {
 			currency: "USD",
 			label: "third",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
-		const owner = model.nodeFor(b.node(first.event));
-		const stack = new GraphNode({
+		const model = graphModelOf(b.graph, b.reading(), false);
+		const owner = modelNodeFor(model, b.node(first.event));
+		const stack: GraphNode = {
 			key: GraphNodeKey.Schema.parse("stack"),
 			kind: GraphNodeKind.STACK,
 			source: null,
 			pair: null,
 			drop: null,
-			stack: new GraphStack({
+			stack: {
 				key: StackKey.of(owner.key, GraphDirection.UP, GraphNodeKind.ROW),
 				owner,
 				direction: GraphDirection.UP,
 				memberKind: GraphNodeKind.ROW,
 				members: [
-					model.nodeFor(b.node(first.row)),
-					model.nodeFor(b.node(second.row)),
-					model.nodeFor(b.node(third.row)),
+					modelNodeFor(model, b.node(first.row)),
+					modelNodeFor(model, b.node(second.row)),
+					modelNodeFor(model, b.node(third.row)),
 				],
-			}),
+			},
 			warnings: [],
-		});
+		};
 
 		const value = nodeValueOf(stack, "en");
 
@@ -338,10 +340,10 @@ describe("what a graph node says", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const fileValue = nodeValueOf(model.nodeFor(b.node(file)), "en");
-		const rowValue = nodeValueOf(model.nodeFor(b.node(buy.row)), "en");
+		const fileValue = nodeValueOf(modelNodeFor(model, b.node(file)), "en");
+		const rowValue = nodeValueOf(modelNodeFor(model, b.node(buy.row)), "en");
 
 		expect(fileValue.kind).toEqual(NodeValueKind.TEXT);
 		expect(fileValue.params.text).toEqual("U1.xml");
@@ -362,9 +364,9 @@ describe("what a graph node says", () => {
 			currency: "USD",
 			label: "a trade recorded without a quantity",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const value = nodeValueOf(model.nodeFor(b.node(odd.event)), "en");
+		const value = nodeValueOf(modelNodeFor(model, b.node(odd.event)), "en");
 
 		expect(value.kind).toEqual(NodeValueKind.TRADE);
 		expect(value.params.quantity).toEqual("");

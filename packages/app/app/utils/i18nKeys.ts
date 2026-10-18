@@ -9,9 +9,8 @@ import {
 	ReportInstrumentKind,
 	TaxAuthorityLotMatchingMethod,
 } from "@brrr/lib";
-import { GraphHeading } from "~/download/graph/GraphHeading";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
+import { GraphHeading, GraphNodeKind } from "~/types/provenanceGraph";
 import { TimelineMarkKind } from "~/types/timeline";
 
 // The i18n key of each enum value the download step writes out. Record<Enum, string> makes a new

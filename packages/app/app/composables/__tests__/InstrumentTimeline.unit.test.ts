@@ -2,8 +2,8 @@ import { ProvenanceEventKind, ProvenanceWalker, type ReportInstrument } from "@b
 import { assert, describe, expect, test } from "vitest";
 import { mountComposable } from "~/composables/__tests__/support/mountComposable";
 import { useInstrumentTimeline } from "~/composables/useInstrumentTimeline";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
 import { TickGranularity, TimelineMarkKind } from "~/types/timeline";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
 
 // The timeline composable and the i18n locale it reads, so a test can switch the language. The app
 // is shared between tests, so each starts in English.

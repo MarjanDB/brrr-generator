@@ -1,9 +1,11 @@
 import { type ProvenanceDrop, ProvenanceEventKind, ProvenanceField } from "@brrr/lib";
-import { CaptionSegment } from "~/download/graph/CaptionSegment";
-import { CaptionSegmentKind } from "~/download/graph/CaptionSegmentKind";
-import type { GraphLayout } from "~/download/graph/GraphLayout";
-import type { GraphLayoutNode } from "~/download/graph/GraphLayoutNode";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
+import {
+	type CaptionSegment,
+	CaptionSegmentKind,
+	type GraphLayout,
+	type GraphLayoutNode,
+	GraphNodeKind,
+} from "~/types/provenanceGraph";
 
 // What the graph shows, as the parts of one line: the focus, then what it became. The view writes
 // the sentence. Only the main path counts: the faded stubs are not part of what is shown.
@@ -107,11 +109,11 @@ type SegmentParts = {
 };
 
 function segment(parts: SegmentParts): CaptionSegment {
-	return new CaptionSegment({
+	return {
 		kind: parts.kind,
 		node: parts.node ?? null,
 		count: parts.count ?? null,
 		opposite: parts.opposite ?? null,
 		drop: parts.drop ?? null,
-	});
+	};
 }

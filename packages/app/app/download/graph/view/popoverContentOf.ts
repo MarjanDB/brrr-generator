@@ -1,9 +1,8 @@
 import { EDavkiProvenanceField, ProvenanceNodeKind, type ProvenanceWalker } from "@brrr/lib";
-import type { GraphNode } from "~/download/graph/GraphNode";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { PopoverContent } from "~/download/graph/view/PopoverContent";
 import { PopoverKind } from "~/download/graph/view/PopoverKind";
 import { PopoverRow } from "~/download/graph/view/PopoverRow";
+import { type GraphNode, GraphNodeKind } from "~/types/provenanceGraph";
 import { edavkiFieldKeys } from "~/utils/i18nKeys";
 
 // What the popover of a node lists: a broker row's attributes or a report line's values. Every

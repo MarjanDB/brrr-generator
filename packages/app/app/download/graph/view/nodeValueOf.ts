@@ -7,10 +7,9 @@ import {
 	type ProvenanceNode,
 } from "@brrr/lib";
 import { DateTime } from "luxon";
-import type { GraphNode } from "~/download/graph/GraphNode";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { NodeValue } from "~/download/graph/view/NodeValue";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
+import { type GraphNode, GraphNodeKind } from "~/types/provenanceGraph";
 import { legSideKeys, nodeValueKeys, stackKindKeys } from "~/utils/i18nKeys";
 import { splitRatioOf } from "~/utils/instrumentPanel";
 import { fieldOf, formatNumber } from "~/utils/provenanceFields";

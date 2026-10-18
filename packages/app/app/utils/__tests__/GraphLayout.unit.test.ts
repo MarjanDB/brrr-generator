@@ -1,11 +1,9 @@
 import { ProvenanceEventKind } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
-import { GraphDirection } from "~/download/graph/GraphDirection";
-import { StackKey } from "~/download/graph/GraphIdentifiers";
-import { GraphIndex } from "~/download/graph/GraphIndex";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
-import { layoutGraph } from "~/download/graph/layoutGraph";
+import { GraphDirection, GraphNodeKind, StackKey } from "~/types/provenanceGraph";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
+import { layoutGraph, layoutNodeOf } from "~/utils/graphLayout";
+import { graphModelOf, modelNodeFor } from "~/utils/graphModel";
 
 describe("the main path, stubs and stacks of a graph layout", () => {
 	test("a sale's main path runs from its file to the pair, and what else touches it is only a stub", () => {
@@ -40,22 +38,22 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
 
 		expect(layout.focus.node.source).toBe(b.node(sell.event));
-		expect(layout.layoutNodeOf(b.node(file))?.isStub).toEqual(false);
-		expect(layout.layoutNodeOf(b.node(sell.row))?.isStub).toEqual(false);
-		expect(layout.layoutNodeOf(b.node(match.lot))?.isStub).toEqual(false);
-		expect(layout.layoutNodeOf(b.node(match.lot))?.node.kind).toEqual(GraphNodeKind.PAIR);
-		expect(layout.layoutNodeOf(b.node(buy.row))?.isStub).toEqual(true);
-		expect(layout.layoutNodeOf(b.node(buy.row))?.direction).toEqual(GraphDirection.DOWN);
-		expect(layout.layoutNodeOf(b.node(buy.row))?.hasMore).toEqual(true);
-		expect(layout.layoutNodeOf(b.node(buy.event))?.isStub).toEqual(true);
-		expect(layout.layoutNodeOf(b.node(buy.event))?.direction).toEqual(GraphDirection.UP);
-		expect(layout.layoutNodeOf(b.node(acme))).toBeNull();
-		expect(layout.layoutNodeOf(b.node(buy.record))).toBeNull();
+		expect(layoutNodeOf(layout, b.node(file))?.isStub).toEqual(false);
+		expect(layoutNodeOf(layout, b.node(sell.row))?.isStub).toEqual(false);
+		expect(layoutNodeOf(layout, b.node(match.lot))?.isStub).toEqual(false);
+		expect(layoutNodeOf(layout, b.node(match.lot))?.node.kind).toEqual(GraphNodeKind.PAIR);
+		expect(layoutNodeOf(layout, b.node(buy.row))?.isStub).toEqual(true);
+		expect(layoutNodeOf(layout, b.node(buy.row))?.direction).toEqual(GraphDirection.DOWN);
+		expect(layoutNodeOf(layout, b.node(buy.row))?.hasMore).toEqual(true);
+		expect(layoutNodeOf(layout, b.node(buy.event))?.isStub).toEqual(true);
+		expect(layoutNodeOf(layout, b.node(buy.event))?.direction).toEqual(GraphDirection.UP);
+		expect(layoutNodeOf(layout, b.node(acme))).toBeNull();
+		expect(layoutNodeOf(layout, b.node(buy.record))).toBeNull();
 		expect(layout.nodes).toHaveLength(6);
 		expect(layout.edges).toHaveLength(5);
 	});
@@ -92,16 +90,16 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
 		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
 
 		expect(layout.focus.node.kind).toEqual(GraphNodeKind.PAIR);
-		expect(layout.layoutNodeOf(b.node(file))?.isStub).toEqual(false);
-		expect(layout.layoutNodeOf(b.node(buy.row))?.isStub).toEqual(false);
-		expect(layout.layoutNodeOf(b.node(sell.row))?.isStub).toEqual(false);
-		expect(layout.layoutNodeOf(b.node(buy.event))?.isStub).toEqual(false);
-		expect(layout.layoutNodeOf(b.node(sell.event))?.isStub).toEqual(false);
+		expect(layoutNodeOf(layout, b.node(file))?.isStub).toEqual(false);
+		expect(layoutNodeOf(layout, b.node(buy.row))?.isStub).toEqual(false);
+		expect(layoutNodeOf(layout, b.node(sell.row))?.isStub).toEqual(false);
+		expect(layoutNodeOf(layout, b.node(buy.event))?.isStub).toEqual(false);
+		expect(layoutNodeOf(layout, b.node(sell.event))?.isStub).toEqual(false);
 		expect(layout.nodes).toHaveLength(6);
 		expect(layout.edges).toHaveLength(6);
 	});
@@ -156,16 +154,16 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 			boughtOn: "2024-01-11",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
 		const layout = layoutGraph(model, { focus: b.node(firstBuy.event), expanded: new Set() });
 
-		expect(layout.layoutNodeOf(b.node(firstMatch.lot))?.isStub).toEqual(false);
-		expect(layout.layoutNodeOf(b.node(sell.event))?.isStub).toEqual(true);
-		expect(layout.layoutNodeOf(b.node(sell.event))?.direction).toEqual(GraphDirection.UP);
-		expect(layout.layoutNodeOf(b.node(sell.event))?.hasMore).toEqual(true);
-		expect(layout.layoutNodeOf(b.node(secondMatch.lot))).toBeNull();
-		expect(layout.layoutNodeOf(b.node(secondBuy.event))).toBeNull();
+		expect(layoutNodeOf(layout, b.node(firstMatch.lot))?.isStub).toEqual(false);
+		expect(layoutNodeOf(layout, b.node(sell.event))?.isStub).toEqual(true);
+		expect(layoutNodeOf(layout, b.node(sell.event))?.direction).toEqual(GraphDirection.UP);
+		expect(layoutNodeOf(layout, b.node(sell.event))?.hasMore).toEqual(true);
+		expect(layoutNodeOf(layout, b.node(secondMatch.lot))).toBeNull();
+		expect(layoutNodeOf(layout, b.node(secondBuy.event))).toBeNull();
 	});
 
 	test("more than two siblings of one kind fold into one stack, which spreads out when asked", () => {
@@ -212,8 +210,8 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 			currency: "USD",
 			label: "buy 3",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
-		const fileKey = model.nodeFor(b.node(file)).key;
+		const model = graphModelOf(b.graph, b.reading(), false);
+		const fileKey = modelNodeFor(model, b.node(file)).key;
 
 		const folded = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
 		const stack = folded.nodes.find((n) => n.node.kind === GraphNodeKind.STACK);
@@ -222,7 +220,7 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 		expect(stack?.node.stack?.members).toHaveLength(3);
 		expect(stack?.direction).toEqual(GraphDirection.DOWN);
 		expect(stack?.isStub).toEqual(true);
-		expect(folded.layoutNodeOf(b.node(one.row))).toBeNull();
+		expect(layoutNodeOf(folded, b.node(one.row))).toBeNull();
 
 		const key = StackKey.of(fileKey, GraphDirection.DOWN, GraphNodeKind.ROW);
 		const spread = layoutGraph(model, {
@@ -231,9 +229,9 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 		});
 
 		expect(spread.nodes.find((n) => n.node.kind === GraphNodeKind.STACK)).toBeUndefined();
-		expect(spread.layoutNodeOf(b.node(one.row))?.isStub).toEqual(true);
-		expect(spread.layoutNodeOf(b.node(two.row))?.isStub).toEqual(true);
-		expect(spread.layoutNodeOf(b.node(three.row))?.isStub).toEqual(true);
+		expect(layoutNodeOf(spread, b.node(one.row))?.isStub).toEqual(true);
+		expect(layoutNodeOf(spread, b.node(two.row))?.isStub).toEqual(true);
+		expect(layoutNodeOf(spread, b.node(three.row))?.isStub).toEqual(true);
 	});
 
 	test("exactly two siblings of one kind are not folded", () => {
@@ -270,13 +268,13 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 			currency: "USD",
 			label: "buy 2",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
 
 		expect(layout.nodes.find((n) => n.node.kind === GraphNodeKind.STACK)).toBeUndefined();
-		expect(layout.layoutNodeOf(b.node(one.row))?.isStub).toEqual(true);
-		expect(layout.layoutNodeOf(b.node(two.row))?.isStub).toEqual(true);
+		expect(layoutNodeOf(layout, b.node(one.row))?.isStub).toEqual(true);
+		expect(layoutNodeOf(layout, b.node(two.row))?.isStub).toEqual(true);
 	});
 
 	test("a stack hangs on the node whose neighbours it folds", () => {
@@ -323,7 +321,7 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 			currency: "USD",
 			label: "buy 3",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
 		const stack = layout.nodes.find((n) => n.node.kind === GraphNodeKind.STACK);
@@ -346,7 +344,7 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
 		const layout = layoutGraph(model, { focus: b.node(buy.record), expanded: new Set() });
 
@@ -356,7 +354,7 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 	test("a graph of one node lays out", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "empty.xml" });
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 
 		const layout = layoutGraph(model, { focus: b.node(file), expanded: new Set() });
 		const [only] = layout.nodes;

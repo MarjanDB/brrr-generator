@@ -1,6 +1,6 @@
-import type { GraphNode } from "~/download/graph/GraphNode";
 import type { PopoverKind } from "~/download/graph/view/PopoverKind";
 import type { PopoverRow } from "~/download/graph/view/PopoverRow";
+import type { GraphNode } from "~/types/provenanceGraph";
 
 export type PopoverContentArgs = {
 	kind: PopoverKind;

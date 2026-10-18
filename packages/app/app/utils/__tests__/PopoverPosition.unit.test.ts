@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { popoverPosition } from "~/download/graph/view/popoverPosition";
+import { popoverPosition } from "~/utils/graphLayout";
 
 describe("where a popover opens", () => {
 	test("it opens to the right of its node when there is room", () => {

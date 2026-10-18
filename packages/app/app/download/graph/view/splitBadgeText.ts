@@ -1,4 +1,4 @@
-import { type SplitFactor, SplitFactorKind } from "~/download/graph/SplitFactor";
+import { type SplitFactor, SplitFactorKind } from "~/types/provenanceGraph";
 import { formatNumber } from "~/utils/provenanceFields";
 
 // The multiplier on a split badge: ×10 when the quantity grew tenfold, ÷4 when it shrank by four.

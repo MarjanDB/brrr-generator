@@ -1,9 +1,13 @@
 import { ProvenanceNodeKind } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
-import { GraphDirection } from "~/download/graph/GraphDirection";
-import { GraphNodeKey, StackKey } from "~/download/graph/GraphIdentifiers";
-import { GraphNodeKind, graphNodeKindOf, isHiddenStep } from "~/download/graph/GraphNodeKind";
-import { GraphStage, stageOf } from "~/download/graph/GraphStage";
+import {
+	GraphDirection,
+	GraphNodeKey,
+	GraphNodeKind,
+	GraphStage,
+	StackKey,
+} from "~/types/provenanceGraph";
+import { graphNodeKindOf, isHiddenStep, stageOf } from "~/utils/graphModel";
 
 describe("the graph's kinds and stages", () => {
 	test("the instrument kinds are context and have no graph kind", () => {

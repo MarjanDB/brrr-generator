@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { ProvenanceField, type ProvenanceNode } from "@brrr/lib";
 import { computed } from "vue";
-import { defaultGraphMetrics } from "~/download/graph/GraphMetrics";
-import type { PlacedNode } from "~/download/graph/PlacedNode";
-import { CardState } from "~/download/graph/view/CardState";
 import { nodeTextOf, reportLineValueOf } from "~/download/graph/view/nodeValueOf";
-import { PairSide } from "~/download/graph/view/PairSide";
+import { CardState, PairSide, type PlacedNode } from "~/types/provenanceGraph";
 
 const props = defineProps<{
 	placed: PlacedNode;

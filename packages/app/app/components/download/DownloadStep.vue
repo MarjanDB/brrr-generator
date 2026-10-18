@@ -13,7 +13,6 @@ import InstrumentPanel from "~/components/download/InstrumentPanel.vue";
 import InstrumentTimeline from "~/components/download/InstrumentTimeline.vue";
 import GuideModal from "~/components/guide/GuideModal.vue";
 import { FocusState } from "~/download/graph/FocusState";
-import { GraphIndex } from "~/download/graph/GraphIndex";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
 
 const props = defineProps<{
@@ -31,10 +30,9 @@ const guide = computed(() =>
 	findTaxAuthorityGuide(props.outputs.authorityId, props.outputs.reportTypeId),
 );
 
-// The report is read once. The graph index is held for the graph view.
+// The report is read once.
 const reading = computed(() => new ProvenanceReportReader().read(props.outputs.provenance));
 const walker = computed(() => new ProvenanceWalker(props.outputs.provenance));
-const index = computed(() => new GraphIndex(props.outputs.provenance, reading.value));
 const sections = computed(() => buildPanel(reading.value));
 
 const selected = shallowRef<ReportInstrument | null>(
@@ -79,8 +77,6 @@ const timelineName = computed(
 );
 // The form as the graph's popovers name it: the report type's own id.
 const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
-
-defineExpose({ index });
 </script>
 
 <template>
@@ -117,7 +113,8 @@ defineExpose({ index });
         </div>
         <LazyGraphView
           v-if="selected !== null"
-          :index="index"
+          :graph="outputs.provenance"
+          :reading="reading"
           :walker="walker"
           :focus-state="focusState"
           :instrument-kind="selected.kind"

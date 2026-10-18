@@ -11,8 +11,8 @@ import {
 import { assert, describe, expect, test } from "vitest";
 import { mountComposable } from "~/composables/__tests__/support/mountComposable";
 import { useProvenanceText } from "~/composables/useProvenanceText";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
 import type { SplitChip } from "~/types/instrumentPanel";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 

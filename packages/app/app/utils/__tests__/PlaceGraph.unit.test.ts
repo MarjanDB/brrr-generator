@@ -1,11 +1,9 @@
 import { ProvenanceEventKind } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
-import { GraphIndex } from "~/download/graph/GraphIndex";
-import { GraphLane } from "~/download/graph/GraphLane";
-import type { GraphMetrics } from "~/download/graph/GraphMetrics";
-import { layoutGraph } from "~/download/graph/layoutGraph";
-import { placeGraph } from "~/download/graph/placeGraph";
+import { GraphLane, type GraphMetrics } from "~/types/provenanceGraph";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
+import { layoutGraph, layoutNodeOf, placedNodeOf, placeGraph } from "~/utils/graphLayout";
+import { graphModelOf } from "~/utils/graphModel";
 
 // Round numbers, so every position below can be worked out by hand: a column is 150 wide with its
 // gap, a pair card is 20 + 2 * 20 = 60 tall.
@@ -54,11 +52,11 @@ describe("placing a graph layout in pixels", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
 
 		const placement = placeGraph(layout, metrics);
-		const pair = placement.placedNodeOf(layout.focus);
+		const pair = placedNodeOf(placement, layout.focus);
 		const fromBuy = placement.edges.find((e) => e.edge.from.node.source === b.node(buy.event));
 		const fromSell = placement.edges.find((e) => e.edge.from.node.source === b.node(sell.event));
 
@@ -101,7 +99,7 @@ describe("placing a graph layout in pixels", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
 
 		const placement = placeGraph(layout, metrics);
@@ -159,16 +157,16 @@ describe("placing a graph layout in pixels", () => {
 			currency: "USD",
 			label: "buy 2",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
-		const oneLayout = layout.layoutNodeOf(b.node(one.row));
-		const twoLayout = layout.layoutNodeOf(b.node(two.row));
+		const oneLayout = layoutNodeOf(layout, b.node(one.row));
+		const twoLayout = layoutNodeOf(layout, b.node(two.row));
 		assert(oneLayout !== null);
 		assert(twoLayout !== null);
 
 		const placement = placeGraph(layout, metrics);
-		const first = placement.placedNodeOf(oneLayout);
-		const second = placement.placedNodeOf(twoLayout);
+		const first = placedNodeOf(placement, oneLayout);
+		const second = placedNodeOf(placement, twoLayout);
 
 		expect(first.x).toEqual(150);
 		expect(first.y).toEqual(0);
@@ -197,7 +195,7 @@ describe("placing a graph layout in pixels", () => {
 			after: "40",
 			date: "2024-06-10",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
 
 		// The acquired band holds two nodes in the trades' column (the trade and the faded action),
@@ -232,7 +230,7 @@ describe("placing a graph layout in pixels", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = new GraphIndex(b.graph, b.reading()).model(false);
+		const model = graphModelOf(b.graph, b.reading(), false);
 		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
 
 		const placement = placeGraph(layout, { ...metrics, columnGap: 10 });

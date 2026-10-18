@@ -20,14 +20,16 @@ import {
 } from "@brrr/lib";
 import { TestKit } from "@brrr/test-cases";
 import { assert, describe, expect, test } from "vitest";
-import { CaptionSegmentKind } from "~/download/graph/CaptionSegmentKind";
-import { captionOf } from "~/download/graph/caption";
-import { GraphDirection } from "~/download/graph/GraphDirection";
-import { GraphIndex } from "~/download/graph/GraphIndex";
-import { GraphLane } from "~/download/graph/GraphLane";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
-import { layoutGraph } from "~/download/graph/layoutGraph";
-import { SplitFactorKind } from "~/download/graph/SplitFactor";
+import {
+	CaptionSegmentKind,
+	GraphDirection,
+	GraphLane,
+	GraphNodeKind,
+	SplitFactorKind,
+} from "~/types/provenanceGraph";
+import { captionOf } from "~/utils/graphCaption";
+import { layoutGraph, layoutNodeOf } from "~/utils/graphLayout";
+import { graphModelOf } from "~/utils/graphModel";
 
 // The taxpayer the expected files were generated for.
 const taxpayer = TaxpayerConfigSchema.parse({
@@ -90,7 +92,7 @@ describe("the graph engine on what the stages really record", () => {
 		const stock = reading.stocks[0];
 		assert(stock !== undefined);
 		const sale = eventOfKind(stock, ProvenanceEventKind.SOLD);
-		const model = new GraphIndex(report.provenance, reading).model(false);
+		const model = graphModelOf(report.provenance, reading, false);
 		const file = report.provenance.nodes().find((node) => node.kind === ProvenanceNodeKind.FILE);
 		assert(file !== undefined);
 
@@ -101,7 +103,7 @@ describe("the graph engine on what the stages really record", () => {
 			layout.nodes.find((n) => n.node.source?.kind === ProvenanceNodeKind.GROUPING),
 		).toBeUndefined();
 		expect(layout.nodes.find((n) => n.node.kind === GraphNodeKind.PAIR)).toBeDefined();
-		expect(layout.layoutNodeOf(file)?.column).toEqual(0);
+		expect(layoutNodeOf(layout, file)?.column).toEqual(0);
 		expect(layout.focus.column).toEqual(2);
 		expect(layout.columns).toHaveLength(4);
 		expect(layout.nodes).toHaveLength(7);
@@ -127,7 +129,7 @@ describe("the graph engine on what the stages really record", () => {
 		const stock = reading.stocks[0];
 		assert(stock !== undefined);
 		const sale = eventOfKind(stock, ProvenanceEventKind.SOLD);
-		const model = new GraphIndex(report.provenance, reading).model(true);
+		const model = graphModelOf(report.provenance, reading, true);
 
 		const layout = layoutGraph(model, { focus: sale, expanded: new Set() });
 
@@ -154,7 +156,7 @@ describe("the graph engine on what the stages really record", () => {
 			.find((edge) => edge.from.kind === ProvenanceNodeKind.CORPORATE_ACTION)?.from;
 		assert(before !== undefined);
 		assert(action !== undefined);
-		const model = new GraphIndex(report.provenance, reading).model(false);
+		const model = graphModelOf(report.provenance, reading, false);
 
 		const layout = layoutGraph(model, { focus: before, expanded: new Set() });
 		const splitEdge = layout.edges.find((edge) => edge.split !== null);
@@ -163,11 +165,11 @@ describe("the graph engine on what the stages really record", () => {
 		expect(splitEdge?.to.node.source).toBe(rebuilt);
 		expect(splitEdge?.split?.kind).toEqual(SplitFactorKind.MULTIPLY);
 		expect(splitEdge?.split?.amount).toEqual(10);
-		expect(layout.layoutNodeOf(action)?.isStub).toEqual(true);
-		expect(layout.layoutNodeOf(action)?.direction).toEqual(GraphDirection.UP);
-		expect(layout.layoutNodeOf(action)?.column).toEqual(2);
-		expect(layout.layoutNodeOf(before)?.column).toEqual(2);
-		expect(layout.layoutNodeOf(rebuilt)?.column).toEqual(3);
+		expect(layoutNodeOf(layout, action)?.isStub).toEqual(true);
+		expect(layoutNodeOf(layout, action)?.direction).toEqual(GraphDirection.UP);
+		expect(layoutNodeOf(layout, action)?.column).toEqual(2);
+		expect(layoutNodeOf(layout, before)?.column).toEqual(2);
+		expect(layoutNodeOf(layout, rebuilt)?.column).toEqual(3);
 		expect(layout.columns).toHaveLength(5);
 		expect(layout.nodes).toHaveLength(8);
 		expect(layout.edges).toHaveLength(7);
@@ -187,18 +189,18 @@ describe("the graph engine on what the stages really record", () => {
 		assert(line !== undefined);
 		const daySum = new ProvenanceWalker(report.provenance).parents(line)[0]?.from;
 		assert(daySum !== undefined);
-		const model = new GraphIndex(report.provenance, reading).model(false);
+		const model = graphModelOf(report.provenance, reading, false);
 
 		const layout = layoutGraph(model, { focus: daySum, expanded: new Set() });
 
 		expect(layout.nodes.find((n) => n.node.kind === GraphNodeKind.PAIR)).toBeUndefined();
-		expect(layout.layoutNodeOf(eventOfKind(payer, ProvenanceEventKind.DIVIDEND))?.lane).toEqual(
+		expect(layoutNodeOf(layout, eventOfKind(payer, ProvenanceEventKind.DIVIDEND))?.lane).toEqual(
 			GraphLane.ACQUIRED,
 		);
 		expect(
-			layout.layoutNodeOf(eventOfKind(payer, ProvenanceEventKind.WITHHOLDING_TAX))?.lane,
+			layoutNodeOf(layout, eventOfKind(payer, ProvenanceEventKind.WITHHOLDING_TAX))?.lane,
 		).toEqual(GraphLane.SOLD);
-		expect(layout.layoutNodeOf(line)?.column).toEqual(5);
+		expect(layoutNodeOf(layout, line)?.column).toEqual(5);
 		expect(layout.columns).toHaveLength(6);
 		expect(layout.nodes).toHaveLength(8);
 		expect(layout.edges).toHaveLength(8);
@@ -216,7 +218,7 @@ describe("the graph engine on what the stages really record", () => {
 		assert(contract !== undefined);
 		const lot = contract.matchedLots[0]?.node;
 		assert(lot !== undefined);
-		const model = new GraphIndex(report.provenance, reading).model(false);
+		const model = graphModelOf(report.provenance, reading, false);
 
 		const layout = layoutGraph(model, { focus: lot, expanded: new Set() });
 
@@ -237,7 +239,7 @@ describe("the graph engine on what the stages really record", () => {
 		const stock = reading.stocks[0];
 		assert(stock !== undefined);
 		const sale = eventOfKind(stock, ProvenanceEventKind.SOLD);
-		const model = new GraphIndex(report.provenance, reading).model(false);
+		const model = graphModelOf(report.provenance, reading, false);
 
 		const layout = layoutGraph(model, { focus: sale, expanded: new Set() });
 		const rows = layout.nodes.filter((n) => n.node.kind === GraphNodeKind.ROW && !n.isStub);

@@ -1,10 +1,10 @@
 import { ProvenanceEventKind } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
 import { FocusState } from "~/download/graph/FocusState";
-import { GraphChain } from "~/download/graph/GraphChain";
+import type { GraphChain } from "~/types/provenanceGraph";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
 
-const emptyChain = new GraphChain({ nodes: new Set(), edges: new Set(), sources: new Set() });
+const emptyChain: GraphChain = { nodes: new Set(), edges: new Set(), sources: new Set() };
 
 describe("the download step's focus state", () => {
 	test("a new state has its focus, an empty trail and nothing lit", () => {

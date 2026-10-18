@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { useElementSize, useEventListener } from "@vueuse/core";
 import { computed, useTemplateRef } from "vue";
-import type { PlacedNode } from "~/download/graph/PlacedNode";
-import { nodeLookOf } from "~/download/graph/view/nodeLook";
 import type { PopoverContent } from "~/download/graph/view/PopoverContent";
 import { PopoverKind } from "~/download/graph/view/PopoverKind";
-import { popoverPosition } from "~/download/graph/view/popoverPosition";
 import { popoverValueText } from "~/download/graph/view/popoverValueText";
+import type { PlacedNode } from "~/types/provenanceGraph";
 
 const props = defineProps<{
 	content: PopoverContent;

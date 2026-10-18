@@ -7,7 +7,7 @@ import {
 	ProvenanceStage,
 } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
 import { buildPanel, warningItemsOf } from "~/utils/instrumentPanel";
 
 const stage = ProvenanceStage.Schema.parse("Test");

@@ -11,8 +11,8 @@ import {
 	ReportInstrumentKind,
 } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
 import { ColorIntent } from "~/types/ui";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
 import {
 	buildPanel,
 	chipsOf,

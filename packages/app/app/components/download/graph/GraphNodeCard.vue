@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { GraphDirection } from "~/download/graph/GraphDirection";
-import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
-import type { PlacedNode } from "~/download/graph/PlacedNode";
-import { CardState } from "~/download/graph/view/CardState";
-import { nodeLookOf } from "~/download/graph/view/nodeLook";
 import { nodeTextOf, nodeValueOf } from "~/download/graph/view/nodeValueOf";
+import { CardState, GraphDirection, GraphNodeKind, type PlacedNode } from "~/types/provenanceGraph";
 
 const props = defineProps<{
 	placed: PlacedNode;

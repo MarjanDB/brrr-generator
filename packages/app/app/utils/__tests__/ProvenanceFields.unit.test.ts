@@ -1,6 +1,6 @@
 import { ProvenanceEventKind, ProvenanceField } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
-import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
+import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
 import { fieldOf, formatNumber } from "~/utils/provenanceFields";
 
 describe("a node's fields", () => {

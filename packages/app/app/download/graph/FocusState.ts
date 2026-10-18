@@ -1,5 +1,5 @@
 import type { ProvenanceNode } from "@brrr/lib";
-import type { GraphChain } from "~/download/graph/GraphChain";
+import type { GraphChain } from "~/types/provenanceGraph";
 
 export type FocusStateArgs = {
 	focus: ProvenanceNode;
