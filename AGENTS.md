@@ -115,7 +115,8 @@ Where a name comes from depends on the layer it sits in. We only take the indust
 
 - **Brokers and tax authorities use their source's names and codes.** `Brokers/Ibkr/` mirrors the Flex Query
   (`IbkrAssetClass.STOCK = "STK"`), and `TaxAuthorities/Slovenia/` mirrors eDavki (`EDavkiTradeReportGainType`, `"PLVP"`), because
-  those values are read from or written to someone else's file.
+  those values are read from or written to someone else's file. Their enums and identifiers carry a prefix naming their domain
+  (`IbkrAssetClass`, `EDavkiIsin`, `SlovenianReportTypeId`). Core's carry none (`AssetClass`, `Isin`).
 - **Core uses our own words, chosen to read well.** Industry codes don't become Core names or values (`SPLIT`, not `SPLF`).
   Where a Core enum has an industry counterpart, a comment above it names the standard and each member gives its code:
 
