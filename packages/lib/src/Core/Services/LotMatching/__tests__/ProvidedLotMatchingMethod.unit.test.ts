@@ -2,6 +2,7 @@ import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { CurrencyCode, TaxLotId, TradeEventId } from "@brrr/Core/Models/Identifiers";
 import { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/Services/LotMatching/ProvidedLotMatchingMethod";
+import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
 
 const { build } = Scenario;
 
@@ -59,7 +60,7 @@ const underUtilizedLot = build.stockTaxLot({
 });
 
 test("simple single lot generation", () => {
-	const method = new ProvidedLotMatchingMethod([simpleLot]);
+	const method = new ProvidedLotMatchingMethod([simpleLot], new NullProvenanceRecorder());
 	const lots = method.performMatching([]);
 
 	expect(lots.length).toEqual(1);
@@ -69,7 +70,7 @@ test("simple single lot generation", () => {
 });
 
 test("under-utilized lot generation", () => {
-	const method = new ProvidedLotMatchingMethod([underUtilizedLot]);
+	const method = new ProvidedLotMatchingMethod([underUtilizedLot], new NullProvenanceRecorder());
 	const lots = method.performMatching([]);
 
 	expect(lots.length).toEqual(1);
@@ -79,7 +80,10 @@ test("under-utilized lot generation", () => {
 });
 
 test("two lots can share the same trades up to their quantity", () => {
-	const method = new ProvidedLotMatchingMethod([underUtilizedLot, underUtilizedLot]);
+	const method = new ProvidedLotMatchingMethod(
+		[underUtilizedLot, underUtilizedLot],
+		new NullProvenanceRecorder(),
+	);
 	const lots = method.performMatching([]);
 
 	expect(lots.length).toEqual(2);
@@ -87,17 +91,19 @@ test("two lots can share the same trades up to their quantity", () => {
 });
 
 test("lots that use more than a trade's quantity throw", () => {
-	const method = new ProvidedLotMatchingMethod([
-		underUtilizedLot,
-		underUtilizedLot,
-		underUtilizedLot,
-	]);
+	const method = new ProvidedLotMatchingMethod(
+		[underUtilizedLot, underUtilizedLot, underUtilizedLot],
+		new NullProvenanceRecorder(),
+	);
 
 	expect(() => method.performMatching([])).toThrow(Error);
 });
 
 test("matching twice with the same method gives the same lots", () => {
-	const method = new ProvidedLotMatchingMethod([underUtilizedLot, underUtilizedLot]);
+	const method = new ProvidedLotMatchingMethod(
+		[underUtilizedLot, underUtilizedLot],
+		new NullProvenanceRecorder(),
+	);
 
 	expect(method.performMatching([])).toEqual(method.performMatching([]));
 });

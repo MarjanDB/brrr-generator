@@ -5,6 +5,7 @@ import type { Lot } from "@brrr/Core/Models/LotMatching/Lot";
 import type { Trade } from "@brrr/Core/Models/LotMatching/Trade";
 import { FifoLotMatchingMethod } from "@brrr/Core/Services/LotMatching/FifoLotMatchingMethod";
 import { LotMatcher } from "@brrr/Core/Services/LotMatching/LotMatcher";
+import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
 
 const { build } = Scenario;
 
@@ -30,7 +31,7 @@ test("provided method is called with the converted trades", () => {
 		fxRateToBase: 1,
 	});
 
-	const lots = new LotMatcher().matchLots(fakeMethod, [event]);
+	const lots = new LotMatcher().matchLots(fakeMethod, [event], new NullProvenanceRecorder());
 
 	expect(fakeMethod.receivedTrades).toEqual([{ id: "ID", quantity: 1, date: event.date }]);
 	expect(lots).toEqual([]);
@@ -58,7 +59,11 @@ test("a matched lot's legs point at the original trades and cover the lot's quan
 		fxRateToBase: 1,
 	});
 
-	const lots = new LotMatcher().matchLots(new FifoLotMatchingMethod(), [bought, sold]);
+	const lots = new LotMatcher().matchLots(
+		new FifoLotMatchingMethod(),
+		[bought, sold],
+		new NullProvenanceRecorder(),
+	);
 
 	expect(lots).toHaveLength(1);
 	const [lot] = lots;

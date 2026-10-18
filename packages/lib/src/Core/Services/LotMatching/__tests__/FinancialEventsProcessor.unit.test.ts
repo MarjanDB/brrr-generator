@@ -11,6 +11,7 @@ import { Category } from "@brrr/Core/Models/Instrument/Category";
 import { FinancialIdentifier } from "@brrr/Core/Models/Instrument/FinancialIdentifier";
 import { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/Services/LotMatching/ProvidedLotMatchingMethod";
+import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
 
 const { build, pipeline } = Scenario;
 
@@ -65,9 +66,10 @@ test("single stock lot matching", () => {
 		.eventsProcessor()
 		.stockLotLegsClosedInPeriod(
 			grouping,
-			new ProvidedLotMatchingMethod(grouping.stockTaxLots),
+			new ProvidedLotMatchingMethod(grouping.stockTaxLots, new NullProvenanceRecorder()),
 			build.date("2023-01-01"),
 			build.date("2023-01-02"),
+			new NullProvenanceRecorder(),
 		);
 
 	expect(legs.length).toEqual(2);
@@ -78,9 +80,10 @@ test("simple filtering trades of lots closed in period", () => {
 		.eventsProcessor()
 		.stockLotLegsClosedInPeriod(
 			grouping,
-			new ProvidedLotMatchingMethod(grouping.stockTaxLots),
+			new ProvidedLotMatchingMethod(grouping.stockTaxLots, new NullProvenanceRecorder()),
 			build.date("2022-01-01"),
 			build.date("2022-01-02"),
+			new NullProvenanceRecorder(),
 		);
 
 	expect(legs.length).toEqual(0);
@@ -101,9 +104,10 @@ test("no stock trades matching when no lots", () => {
 		.eventsProcessor()
 		.stockLotLegsClosedInPeriod(
 			groupingNoLots,
-			new ProvidedLotMatchingMethod(groupingNoLots.stockTaxLots),
+			new ProvidedLotMatchingMethod(groupingNoLots.stockTaxLots, new NullProvenanceRecorder()),
 			build.date("2023-01-01"),
 			build.date("2023-01-02"),
+			new NullProvenanceRecorder(),
 		);
 
 	expect(legs.length).toEqual(0);

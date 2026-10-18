@@ -6,6 +6,7 @@ import type { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGro
 import type { LotLeg } from "@brrr/Core/Models/LotMatching/LotLeg";
 import type { MatchedLot } from "@brrr/Core/Models/LotMatching/MatchedLot";
 import type { LotMatcher } from "@brrr/Core/Services/LotMatching/LotMatcher";
+import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 
 // Matches an instrument's trades into lots and keeps the legs of the lots closed in a period:
@@ -18,9 +19,10 @@ export class FinancialEventsProcessor {
 		method: ILotMatchingMethod,
 		fromDate: ValidDateTime,
 		toDate: ValidDateTime,
+		provenance: IProvenanceRecorder,
 	): LotLeg<TradeEventStock>[] {
 		return legsOfLotsClosedInPeriod(
-			this.lotMatcher.matchLots(method, grouping.stockTrades),
+			this.lotMatcher.matchLots(method, grouping.stockTrades, provenance),
 			fromDate,
 			toDate,
 		);
@@ -31,9 +33,10 @@ export class FinancialEventsProcessor {
 		method: ILotMatchingMethod,
 		fromDate: ValidDateTime,
 		toDate: ValidDateTime,
+		provenance: IProvenanceRecorder,
 	): LotLeg<TradeEventDerivative>[] {
 		return legsOfLotsClosedInPeriod(
-			this.lotMatcher.matchLots(method, grouping.derivativeTrades),
+			this.lotMatcher.matchLots(method, grouping.derivativeTrades, provenance),
 			fromDate,
 			toDate,
 		);

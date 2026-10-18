@@ -8,6 +8,7 @@ import type { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGro
 import { type CashActionId, Isin } from "@brrr/Core/Models/Identifiers";
 import type { IInfoProvider } from "@brrr/InfoProviders/Interfaces/IInfoProvider";
 import { TreatyType } from "@brrr/InfoProviders/Models/TreatyType";
+import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
 import type { TaxpayerInfo } from "@brrr/TaxAuthorities/Schemas/TaxpayerConfigSchema";
 import { EDavkiDividendReportLine } from "@brrr/TaxAuthorities/Slovenia/Models/Div/EDavkiDividendReportLine";
@@ -159,6 +160,7 @@ export class DivReportGenerator {
 	public async convert(
 		config: TaxAuthorityConfiguration,
 		groupings: FinancialGrouping[],
+		_provenance: IProvenanceRecorder,
 	): Promise<EDavkiDividendReportLine[]> {
 		const allLines: EDavkiDividendReportLine[] = [];
 		for (const grouping of groupings) {

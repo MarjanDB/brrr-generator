@@ -15,6 +15,7 @@ import { FinancialIdentifier } from "@brrr/Core/Models/Instrument/FinancialIdent
 import { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/Services/IdentifierRelationships/ApplyIdentifierRelationshipsService";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
+import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
 import { ReportTypeId } from "@brrr/TaxAuthorities/Models/TaxAuthorityIdentifiers";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Models/TaxAuthorityLotMatchingMethod";
 import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Models/SlovenianTaxAuthorityReportTypes";
@@ -155,6 +156,7 @@ test("KDVP lines: the buy and the sale with their quantities", () => {
 	const items = new KdvpReportGenerator(pipeline.eventsProcessor()).convert(
 		config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		testData.groupings,
+		new NullProvenanceRecorder(),
 	);
 	const events = items.flatMap((item) => item.items.flatMap((line) => line.events));
 
@@ -167,6 +169,7 @@ test("IFI lines: the buy and the sale with their quantities", () => {
 	const items = new IfiReportGenerator(pipeline.eventsProcessor()).convert(
 		config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		testData.groupings,
+		new NullProvenanceRecorder(),
 	);
 	const rows = items.flatMap((item) => item.items);
 
@@ -180,6 +183,7 @@ test("DIV lines: the dividend with its withholding tax", async () => {
 	const rows = await generator.convert(
 		config.report(2023, TaxAuthorityLotMatchingMethod.NONE),
 		testData.groupings,
+		new NullProvenanceRecorder(),
 	);
 
 	expect(rows.length).toEqual(1);
@@ -198,6 +202,7 @@ test("generate applies identifier relationships once", async () => {
 		taxpayerInfo: Fixtures.taxpayer,
 		reportConfig: config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		events: testData,
+		provenance: new NullProvenanceRecorder(),
 	});
 
 	expect(applySpy).toHaveBeenCalledTimes(1);
@@ -212,6 +217,7 @@ test("DIV looks each company up once", async () => {
 		taxpayerInfo: Fixtures.taxpayer,
 		reportConfig: config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		events: testData,
+		provenance: new NullProvenanceRecorder(),
 	});
 
 	expect(lookupSpy).toHaveBeenCalledTimes(1);
@@ -225,6 +231,7 @@ test("unknown report type id is rejected", async () => {
 			taxpayerInfo: Fixtures.taxpayer,
 			reportConfig: config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 			events: testData,
+			provenance: new NullProvenanceRecorder(),
 		}),
 	).rejects.toThrow("Unsupported report type 'nope' for tax authority: slovenia");
 });

@@ -3,6 +3,7 @@ import { TradeEventDerivativeAcquired } from "@brrr/Core/Models/Events/Derivativ
 import type { TradeEventDerivativeSold } from "@brrr/Core/Models/Events/Derivative/TradeEventDerivativeSold";
 import type { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGrouping";
 import type { FinancialEventsProcessor } from "@brrr/Core/Services/LotMatching/FinancialEventsProcessor";
+import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
 import { createLotMatchingMethod } from "@brrr/TaxAuthorities/Services/LotMatchingMethodFactory";
 import {
@@ -87,6 +88,7 @@ export class IfiReportGenerator {
 	public convert(
 		config: TaxAuthorityConfiguration,
 		groupings: FinancialGrouping[],
+		provenance: IProvenanceRecorder,
 	): EDavkiGenericDerivativeReportItem[] {
 		const converted: EDavkiGenericDerivativeReportItem[] = [];
 		const periodStart = config.fromDate;
@@ -97,9 +99,10 @@ export class IfiReportGenerator {
 			for (const derivativeGrouping of financialGrouping.derivativeGroupings) {
 				const legs = this.processor.derivativeLotLegsClosedInPeriod(
 					derivativeGrouping,
-					createLotMatchingMethod(config.lotMatchingMethod, []),
+					createLotMatchingMethod(config.lotMatchingMethod, [], provenance),
 					periodStart,
 					periodEnd,
+					provenance,
 				);
 
 				if (legs.length === 0) {

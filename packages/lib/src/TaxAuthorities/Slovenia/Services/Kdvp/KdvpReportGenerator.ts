@@ -4,6 +4,7 @@ import type { TradeEventStockSold } from "@brrr/Core/Models/Events/Stock/TradeEv
 import type { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGrouping";
 import { Category } from "@brrr/Core/Models/Instrument/Category";
 import type { FinancialEventsProcessor } from "@brrr/Core/Services/LotMatching/FinancialEventsProcessor";
+import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
 import type { TaxpayerInfo } from "@brrr/TaxAuthorities/Schemas/TaxpayerConfigSchema";
 import { createLotMatchingMethod } from "@brrr/TaxAuthorities/Services/LotMatchingMethodFactory";
@@ -91,6 +92,7 @@ export class KdvpReportGenerator {
 	public convert(
 		config: TaxAuthorityConfiguration,
 		groupings: FinancialGrouping[],
+		provenance: IProvenanceRecorder,
 	): EDavkiGenericTradeReportItem[] {
 		const converted: EDavkiGenericTradeReportItem[] = [];
 		const periodStart = config.fromDate;
@@ -101,9 +103,10 @@ export class KdvpReportGenerator {
 
 			const legs = this.processor.stockLotLegsClosedInPeriod(
 				isinGrouping,
-				createLotMatchingMethod(config.lotMatchingMethod, isinGrouping.stockTaxLots),
+				createLotMatchingMethod(config.lotMatchingMethod, isinGrouping.stockTaxLots, provenance),
 				periodStart,
 				periodEnd,
+				provenance,
 			);
 
 			if (legs.length === 0) {

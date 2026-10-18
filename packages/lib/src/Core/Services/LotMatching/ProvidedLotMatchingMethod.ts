@@ -4,11 +4,15 @@ import type { Lot } from "@brrr/Core/Models/LotMatching/Lot";
 import type { Trade } from "@brrr/Core/Models/LotMatching/Trade";
 import type { TaxLot } from "@brrr/Core/Models/Lots/TaxLot";
 import { TradeAssociationTracker } from "@brrr/Core/Services/LotMatching/TradeAssociationTracker";
+import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 
 export class ProvidedLotMatchingMethod implements ILotMatchingMethod {
 	private predefinedLots: TaxLot<TradeEvent, TradeEvent>[];
 
-	public constructor(predefinedLots: TaxLot<TradeEvent, TradeEvent>[]) {
+	public constructor(
+		predefinedLots: TaxLot<TradeEvent, TradeEvent>[],
+		_provenance: IProvenanceRecorder,
+	) {
 		this.predefinedLots = predefinedLots;
 	}
 

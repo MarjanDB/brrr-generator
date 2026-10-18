@@ -5,10 +5,13 @@ import type { LotLeg } from "@brrr/Core/Models/LotMatching/LotLeg";
 import type { MatchedLot } from "@brrr/Core/Models/LotMatching/MatchedLot";
 import type { Trade } from "@brrr/Core/Models/LotMatching/Trade";
 
+import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
+
 export class LotMatcher {
 	public matchLots<T extends TradeEventBase>(
 		method: ILotMatchingMethod,
 		events: T[],
+		_provenance: IProvenanceRecorder,
 	): MatchedLot<T>[] {
 		const tradeEventMappings = new Map<TradeEventId, T>();
 		const tradeMappings = new Map<TradeEventId, Trade>();

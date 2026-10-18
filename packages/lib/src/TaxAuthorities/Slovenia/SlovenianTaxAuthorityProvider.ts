@@ -83,15 +83,15 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider {
 		ctx: TaxAuthorityRunContext,
 	): Promise<GeneratedExports> {
 		const { reportConfig, taxpayerInfo } = ctx;
-		const groupings = this.applyIdentifierRelationshipsService.apply(ctx.events, [
-			IdentifierChangeType.RENAME,
-			IdentifierChangeType.SPLIT,
-			IdentifierChangeType.REVERSE_SPLIT,
-		]).groupings;
+		const groupings = this.applyIdentifierRelationshipsService.apply(
+			ctx.events,
+			[IdentifierChangeType.RENAME, IdentifierChangeType.SPLIT, IdentifierChangeType.REVERSE_SPLIT],
+			ctx.provenance,
+		).groupings;
 
 		switch (reportType) {
 			case SlovenianTaxAuthorityReportTypes.DOH_KDVP: {
-				const items = this.kdvpGenerator.convert(reportConfig, groupings);
+				const items = this.kdvpGenerator.convert(reportConfig, groupings, ctx.provenance);
 				return {
 					xml: this.kdvpGenerator.toXml(
 						reportConfig,
@@ -103,7 +103,7 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider {
 				};
 			}
 			case SlovenianTaxAuthorityReportTypes.DOH_DIV: {
-				const lines = await this.divGenerator.convert(reportConfig, groupings);
+				const lines = await this.divGenerator.convert(reportConfig, groupings, ctx.provenance);
 				return {
 					xml: this.divGenerator.toXml(
 						reportConfig,
@@ -115,7 +115,7 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider {
 				};
 			}
 			case SlovenianTaxAuthorityReportTypes.D_IFI: {
-				const items = this.ifiGenerator.convert(reportConfig, groupings);
+				const items = this.ifiGenerator.convert(reportConfig, groupings, ctx.provenance);
 				return {
 					xml: this.ifiGenerator.toXml(reportConfig, items),
 					csv: this.ifiGenerator.toCsv(items),

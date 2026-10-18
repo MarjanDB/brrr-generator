@@ -48,6 +48,7 @@ export class ReportPipeline {
 		const { xml, csv } = await this.taxAuthorities.generateExports({
 			...request,
 			events: imported.events,
+			provenance: layer,
 		});
 		return { xml, csv, provenance: layer };
 	}
