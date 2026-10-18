@@ -16,11 +16,10 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const { translate } = useSentences();
 
 const node = computed(() => props.placed.layoutNode.node);
 const look = computed(() => nodeLookOf(node.value));
-const text = computed(() => nodeTextOf(nodeValueOf(node.value, props.locale), translate));
+const text = computed(() => nodeTextOf(nodeValueOf(node.value, props.locale), (key, params) => t(key, params)));
 
 // UnoCSS only sees class strings written out in full.
 const stateClasses: Record<CardState, string> = {

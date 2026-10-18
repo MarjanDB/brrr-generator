@@ -4,7 +4,7 @@ import {
 	type ProvenanceNode,
 	type ReportInstrument,
 } from "@brrr/lib";
-import { fieldOf } from "~/download/fields";
+import { fieldOf } from "~/utils/provenanceFields";
 
 // The item an instrument opens on: its first sale (the sketch opens on a sale, which has the
 // richest graph), else its first dividend, else its first event, broker lot or corporate action.

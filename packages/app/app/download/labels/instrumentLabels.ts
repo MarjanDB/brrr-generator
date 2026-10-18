@@ -1,8 +1,7 @@
 import { IdentifierChangeType, ProvenanceField, type ReportInstrument } from "@brrr/lib";
-import { fieldOf } from "~/download/fields";
 import { SplitFactor, SplitFactorKind } from "~/download/graph/SplitFactor";
-import { formatNumber } from "~/download/labels/formatNumber";
 import { SplitChip } from "~/download/labels/SplitChip";
+import { fieldOf, formatNumber } from "~/utils/provenanceFields";
 
 // A split's ratio in the usual form: 4 shares becoming 40 is 10 : 1, 10 becoming 1 is 1 : 10.
 export function splitRatioOf(

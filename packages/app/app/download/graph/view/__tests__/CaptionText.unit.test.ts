@@ -14,8 +14,7 @@ import { GraphIndex } from "~/download/graph/GraphIndex";
 import { layoutGraph } from "~/download/graph/layoutGraph";
 import { captionTextOf } from "~/download/graph/view/captionTextOf";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
-import { nodeValueKeys } from "~/download/graph/view/nodeValueKeys";
-import { eventKindKeys, lotMatchingKeys } from "~/download/sentences/sentenceKeys";
+import { eventKindKeys, lotMatchingKeys, nodeValueKeys } from "~/utils/i18nKeys";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 

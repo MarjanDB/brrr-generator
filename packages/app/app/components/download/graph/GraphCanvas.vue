@@ -16,7 +16,6 @@ import { defaultGraphMetrics } from "~/download/graph/GraphMetrics";
 import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import type { GraphPlacement } from "~/download/graph/GraphPlacement";
 import { CardState } from "~/download/graph/view/CardState";
-import { headingKeys, laneLabelKeys } from "~/download/graph/view/headingKeys";
 import type { PairSide } from "~/download/graph/view/PairSide";
 import type { PopoverContent } from "~/download/graph/view/PopoverContent";
 

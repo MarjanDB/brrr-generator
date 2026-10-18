@@ -6,8 +6,6 @@ import type { PlacedNode } from "~/download/graph/PlacedNode";
 import { CardState } from "~/download/graph/view/CardState";
 import { nodeLookOf } from "~/download/graph/view/nodeLook";
 import { nodeTextOf, nodeValueOf } from "~/download/graph/view/nodeValueOf";
-import { dropSentence } from "~/download/sentences/dropSentence";
-import { warningSentence } from "~/download/sentences/warningSentence";
 
 const props = defineProps<{
 	placed: PlacedNode;
@@ -21,7 +19,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const { translate, format } = useSentences();
+const { dropSentence, warningSentence } = useProvenanceText();
 
 const node = computed(() => props.placed.layoutNode.node);
 const isStub = computed(() => props.placed.layoutNode.isStub);
@@ -30,12 +28,12 @@ const look = computed(() => nodeLookOf(node.value));
 // What the node says: a left-out node its sentence, anything else its value.
 const text = computed(() =>
 	node.value.drop !== null
-		? dropSentence(node.value.drop, translate, format)
-		: nodeTextOf(nodeValueOf(node.value, props.locale), translate),
+		? dropSentence(node.value.drop)
+		: nodeTextOf(nodeValueOf(node.value, props.locale), (key, params) => t(key, params)),
 );
 
 const warnings = computed(() =>
-	node.value.warnings.map((warning) => warningSentence(warning, translate, format)),
+	node.value.warnings.map((warning) => warningSentence(warning)),
 );
 
 // Files and rows say the broker's own words; a stub says it can be followed.

@@ -1,7 +1,7 @@
 import { EDavkiProvenanceField } from "@brrr/lib";
 import { PopoverKind } from "~/download/graph/view/PopoverKind";
 import type { PopoverRow } from "~/download/graph/view/PopoverRow";
-import { formatNumber } from "~/download/labels/formatNumber";
+import { formatNumber } from "~/utils/provenanceFields";
 
 // The report-line fields that are amounts or quantities. Dates, ids and codes are shown unchanged,
 // so a tracking id never gets thousands separators.

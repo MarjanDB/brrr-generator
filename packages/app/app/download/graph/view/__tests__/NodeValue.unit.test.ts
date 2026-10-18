@@ -8,8 +8,8 @@ import { GraphNode } from "~/download/graph/GraphNode";
 import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { GraphStack } from "~/download/graph/GraphStack";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
-import { legSideKeys, stackKindKeys } from "~/download/graph/view/nodeValueKeys";
 import { nodeValueOf } from "~/download/graph/view/nodeValueOf";
+import { legSideKeys, stackKindKeys } from "~/utils/i18nKeys";
 
 describe("what a graph node says", () => {
 	test("with every step shown, a parsed record says what kind of step it is, not lib's label", () => {

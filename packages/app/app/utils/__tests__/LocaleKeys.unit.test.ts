@@ -1,16 +1,19 @@
 import { ReportInstrumentKind } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
-import { edavkiFieldKeys } from "~/download/graph/view/edavkiFieldKeys";
-import { headingKeys, laneLabelKeys } from "~/download/graph/view/headingKeys";
-import { legSideKeys, nodeValueKeys, stackKindKeys } from "~/download/graph/view/nodeValueKeys";
 import {
 	detailKindKeys,
 	dropCategoryKeys,
 	dropReasonKeys,
+	edavkiFieldKeys,
 	eventKindKeys,
+	headingKeys,
+	laneLabelKeys,
+	legSideKeys,
 	lotMatchingKeys,
-} from "~/download/sentences/sentenceKeys";
-import { markKeys } from "~/download/timeline/markKeys";
+	markKeys,
+	nodeValueKeys,
+	stackKindKeys,
+} from "~/utils/i18nKeys";
 import en from "~~/i18n/locales/en.json";
 import sl from "~~/i18n/locales/sl.json";
 

@@ -5,17 +5,15 @@ import {
 	type ProvenanceNode,
 	type TaxAuthorityLotMatchingMethod,
 } from "@brrr/lib";
-import { fieldOf } from "~/download/fields";
 import type { CaptionSegment } from "~/download/graph/CaptionSegment";
 import { CaptionSegmentKind } from "~/download/graph/CaptionSegmentKind";
 import type { GraphLayoutNode } from "~/download/graph/GraphLayoutNode";
 import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { CaptionText } from "~/download/graph/view/CaptionText";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
-import { nodeValueKeys, stackKindKeys } from "~/download/graph/view/nodeValueKeys";
 import { nodeValueOf } from "~/download/graph/view/nodeValueOf";
-import { formatNumber } from "~/download/labels/formatNumber";
-import { eventKindKeys, lotMatchingKeys } from "~/download/sentences/sentenceKeys";
+import { eventKindKeys, lotMatchingKeys, nodeValueKeys, stackKindKeys } from "~/utils/i18nKeys";
+import { fieldOf, formatNumber } from "~/utils/provenanceFields";
 
 export type CaptionContext = {
 	ticker: string;

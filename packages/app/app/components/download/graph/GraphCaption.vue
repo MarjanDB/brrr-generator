@@ -10,14 +10,15 @@ const props = defineProps<{
 	context: CaptionContext;
 }>();
 
-const { translate, format } = useSentences();
+const { t } = useI18n();
+const { dropSentence } = useProvenanceText();
 
 // All text is written at render, so switching language redraws it.
 const parts = computed(() =>
 	props.segments.map((segment) => {
 		const text = captionTextOf(segment, props.context);
 		return {
-			sentence: captionSentence(text, translate, format),
+			sentence: captionSentence(text, (key, params) => t(key, params), dropSentence),
 			look: text.node === null ? null : nodeLookOf(text.node.node),
 		};
 	}),

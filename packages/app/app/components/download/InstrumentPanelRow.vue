@@ -4,7 +4,6 @@ import { DateTime } from "luxon";
 import { computed } from "vue";
 import AppBadge from "~/components/ui/AppBadge.vue";
 import AppTooltip from "~/components/ui/AppTooltip.vue";
-import { formatNumber } from "~/download/labels/formatNumber";
 import { monogramIntent, monogramText } from "~/download/panel/monogramIntent";
 import type { PanelEntry } from "~/download/panel/PanelEntry";
 import { ColorIntent } from "~/types/ui";

@@ -5,11 +5,11 @@ import {
 	ReportInstrumentKind,
 	type ReportProvenance,
 } from "@brrr/lib";
-import { fieldOf } from "~/download/fields";
 import { PanelContract } from "~/download/panel/PanelContract";
 import { PanelEntry } from "~/download/panel/PanelEntry";
 import { PanelSections } from "~/download/panel/PanelSections";
 import { PanelUnderlying } from "~/download/panel/PanelUnderlying";
+import { fieldOf } from "~/utils/provenanceFields";
 
 function optionRightOf(value: string | null): OptionRight {
 	const right = Object.values(OptionRight).find((candidate) => candidate === value);

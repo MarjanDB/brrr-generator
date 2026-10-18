@@ -7,13 +7,7 @@ import {
 	type ProvenanceWarning,
 	type ReportLeftOut,
 } from "@brrr/lib";
-import { DateTime } from "luxon";
 import { computed } from "vue";
-import { fieldOf } from "~/download/fields";
-import { formatNumber } from "~/download/labels/formatNumber";
-import { dropSentence } from "~/download/sentences/dropSentence";
-import { dropCategoryKeys, eventKindKeys } from "~/download/sentences/sentenceKeys";
-import { warningSentence } from "~/download/sentences/warningSentence";
 
 const props = defineProps<{
 	node: ProvenanceNode;
@@ -22,7 +16,7 @@ const props = defineProps<{
 }>();
 
 const { t, locale } = useI18n();
-const { translate, format } = useSentences();
+const { dropSentence, warningSentence, date: dateText } = useProvenanceText();
 
 type Fact = { label: string; value: string };
 
@@ -46,7 +40,7 @@ const facts = computed<Fact[]>(() => {
 	if (date !== null) {
 		result.push({
 			label: t("download_fact_date"),
-			value: DateTime.fromISO(date).setLocale(locale.value).toLocaleString(DateTime.DATE_MED),
+			value: dateText(date),
 		});
 	}
 	const quantity = fieldOf(props.node, ProvenanceField.QUANTITY);
@@ -99,7 +93,7 @@ const categoryClasses: Record<DropCategory, string> = {
         :class="categoryClasses[item.category]"
       >
         <span class="font-medium">{{ t(dropCategoryKeys[item.category]) }}</span>
-        <span>{{ dropSentence(item.drop, translate, format) }}</span>
+        <span>{{ dropSentence(item.drop) }}</span>
       </li>
       <li
         v-for="(warning, index) in warnings"
@@ -107,7 +101,7 @@ const categoryClasses: Record<DropCategory, string> = {
         class="flex items-center gap-2 rounded-sm bg-warning-soft text-warning-ink px-2 py-1 text-sm"
       >
         <span class="i-mdi-alert-outline" />
-        {{ warningSentence(warning, translate, format) }}
+        {{ warningSentence(warning) }}
       </li>
     </ul>
   </div>

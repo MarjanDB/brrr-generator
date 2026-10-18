@@ -22,7 +22,6 @@ import { InteractionKind } from "~/download/graph/view/InteractionKind";
 import type { PairSide } from "~/download/graph/view/PairSide";
 import type { PopoverContent } from "~/download/graph/view/PopoverContent";
 import { popoverContentOf } from "~/download/graph/view/popoverContentOf";
-import { lotMatchingKeys } from "~/download/sentences/sentenceKeys";
 
 const props = defineProps<{
 	index: GraphIndex;

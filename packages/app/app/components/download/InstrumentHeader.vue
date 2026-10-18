@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { IdentifierChangeType, OptionRight } from "@brrr/lib";
-import { DateTime } from "luxon";
 import { computed } from "vue";
-import { formatNumber } from "~/download/labels/formatNumber";
-import { splitRatioOf } from "~/download/labels/instrumentLabels";
 import type { SplitChip } from "~/download/labels/SplitChip";
 import { monogramIntent, monogramText } from "~/download/panel/monogramIntent";
 import type { PanelEntry } from "~/download/panel/PanelEntry";
@@ -15,6 +12,7 @@ const props = defineProps<{
 }>();
 
 const { t, locale } = useI18n();
+const { splitRatio, date: dateText } = useProvenanceText();
 
 // UnoCSS only sees class strings written out in full.
 const monogramClasses: Record<ColorIntent, string> = {
@@ -53,16 +51,13 @@ const subtitle = computed(() => {
 	if (contract === null) {
 		return props.entry.isin ?? "";
 	}
-	const date = DateTime.fromISO(contract.expiry)
-		.setLocale(locale.value)
-		.toLocaleString(DateTime.DATE_MED);
-	return t("download_option_expires", { date });
+	return t("download_option_expires", { date: dateText(contract.expiry) });
 });
 
 const identifier = computed(() => props.entry.contract?.occSymbol ?? props.entry.isin ?? "");
 
 function chipText(chip: SplitChip): string {
-	const ratio = splitRatioOf(chip, locale.value);
+	const ratio = splitRatio(chip);
 	const params = {
 		before: ratio?.before ?? chip.before ?? "",
 		after: ratio?.after ?? chip.after ?? "",

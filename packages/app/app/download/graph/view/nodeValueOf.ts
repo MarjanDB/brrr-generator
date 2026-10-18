@@ -7,16 +7,14 @@ import {
 	type ProvenanceNode,
 } from "@brrr/lib";
 import { DateTime } from "luxon";
-import { fieldOf } from "~/download/fields";
 import type { GraphNode } from "~/download/graph/GraphNode";
 import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { NodeValue } from "~/download/graph/view/NodeValue";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
-import { legSideKeys, nodeValueKeys, stackKindKeys } from "~/download/graph/view/nodeValueKeys";
-import { formatNumber } from "~/download/labels/formatNumber";
 import { splitRatioOf } from "~/download/labels/instrumentLabels";
 import { SplitChip } from "~/download/labels/SplitChip";
-import type { Translate } from "~/download/sentences/Translate";
+import { legSideKeys, nodeValueKeys, stackKindKeys } from "~/utils/i18nKeys";
+import { fieldOf, formatNumber } from "~/utils/provenanceFields";
 
 const cashKinds: ProvenanceEventKind[] = [
 	ProvenanceEventKind.DIVIDEND,
@@ -211,7 +209,10 @@ export function nodeValueOf(node: GraphNode, locale: string): NodeValue {
 }
 
 // The text of a node value: its i18n text, with the params that are keys translated first.
-export function nodeTextOf(nodeValue: NodeValue, translate: Translate): string {
+export function nodeTextOf(
+	nodeValue: NodeValue,
+	translate: (key: string, params: Record<string, string>) => string,
+): string {
 	const params: Record<string, string> = {};
 	for (const [name, text] of Object.entries(nodeValue.params)) {
 		params[name] = nodeValue.keyParams.includes(name) ? translate(text, {}) : text;

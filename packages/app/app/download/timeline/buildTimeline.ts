@@ -7,11 +7,11 @@ import {
 	type ReportInstrument,
 } from "@brrr/lib";
 import { DateTime } from "luxon";
-import { fieldOf } from "~/download/fields";
 import { Timeline } from "~/download/timeline/Timeline";
 import { TimelineArc } from "~/download/timeline/TimelineArc";
 import { TimelineMark } from "~/download/timeline/TimelineMark";
 import { TimelineMarkKind } from "~/download/timeline/TimelineMarkKind";
+import { fieldOf } from "~/utils/provenanceFields";
 
 const eventMarkKinds: Record<ProvenanceEventKind, TimelineMarkKind> = {
 	[ProvenanceEventKind.ACQUIRED]: TimelineMarkKind.BOUGHT,

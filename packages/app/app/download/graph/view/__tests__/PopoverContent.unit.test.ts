@@ -9,9 +9,9 @@ import {
 import { describe, expect, test } from "vitest";
 import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
 import { GraphIndex } from "~/download/graph/GraphIndex";
-import { edavkiFieldKeys } from "~/download/graph/view/edavkiFieldKeys";
 import { PopoverKind } from "~/download/graph/view/PopoverKind";
 import { popoverContentOf } from "~/download/graph/view/popoverContentOf";
+import { edavkiFieldKeys } from "~/utils/i18nKeys";
 
 describe("what a popover shows", () => {
 	test("a broker row shows its attributes by name, with the file it came from", () => {

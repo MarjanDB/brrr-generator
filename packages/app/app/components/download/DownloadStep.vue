@@ -14,7 +14,6 @@ import InstrumentHeader from "~/components/download/InstrumentHeader.vue";
 import InstrumentPanel from "~/components/download/InstrumentPanel.vue";
 import InstrumentTimeline from "~/components/download/InstrumentTimeline.vue";
 import GuideModal from "~/components/guide/GuideModal.vue";
-import { fieldOf } from "~/download/fields";
 import { leftOutOf, warningsOf } from "~/download/focusItems";
 import { FocusState } from "~/download/graph/FocusState";
 import { GraphIndex } from "~/download/graph/GraphIndex";
@@ -24,7 +23,6 @@ import { defaultFocus } from "~/download/panel/defaultFocus";
 import { findEntry } from "~/download/panel/findEntry";
 import { firstEntry } from "~/download/panel/firstEntry";
 import { buildTimeline } from "~/download/timeline/buildTimeline";
-import { markKeys } from "~/download/timeline/markKeys";
 import type { TimelineMark } from "~/download/timeline/TimelineMark";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
 
