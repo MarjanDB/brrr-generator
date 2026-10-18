@@ -1,6 +1,6 @@
 import type { TradeEventBase } from "@brrr/Core/Models/Events/TradeEventBase";
 import type { IdentifierRelationship } from "@brrr/Core/Models/IdentifierRelationships/IdentifierRelationship";
-import type { IdentifierRelationshipSplit } from "@brrr/Core/Models/IdentifierRelationships/IdentifierRelationshipSplit";
+import { IdentifierRelationshipSplit } from "@brrr/Core/Models/IdentifierRelationships/IdentifierRelationshipSplit";
 import { AssetClass } from "@brrr/Core/Models/Instrument/AssetClass";
 import type { FinancialIdentifier } from "@brrr/Core/Models/Instrument/FinancialIdentifier";
 import type { OptionContract } from "@brrr/Core/Models/Instrument/OptionContract";
@@ -79,7 +79,7 @@ export const ProvenanceFields = {
 		if (toIdentifier.isin !== null) fields[ProvenanceField.TO_ISIN] = toIdentifier.isin;
 		if (fromIdentifier.ticker !== null) fields[ProvenanceField.FROM_TICKER] = fromIdentifier.ticker;
 		if (toIdentifier.ticker !== null) fields[ProvenanceField.TO_TICKER] = toIdentifier.ticker;
-		if ("quantityBefore" in relationship) {
+		if (relationship instanceof IdentifierRelationshipSplit) {
 			fields[ProvenanceField.SPLIT_BEFORE] = String(relationship.quantityBefore);
 			fields[ProvenanceField.SPLIT_AFTER] = String(relationship.quantityAfter);
 		}

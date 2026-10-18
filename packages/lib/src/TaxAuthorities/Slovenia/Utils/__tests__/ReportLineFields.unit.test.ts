@@ -142,7 +142,7 @@ test("a dividend sum's fields are its day, type, tracking id and unrounded amoun
 		dateReceived: Scenario.build.date("2022-04-02"),
 		dividendType: EDavkiDividendType.ORDINARY,
 		tracking: EDavkiDividendTrackingId.Schema.parse("102869793"),
-		dividendAmount: 2.6400000000000001,
+		dividendAmount: 2.64,
 		foreignTaxPaid: -0.6600000000000001,
 	});
 
