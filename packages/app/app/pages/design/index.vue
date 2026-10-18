@@ -1,6 +1,4 @@
 <script setup lang="ts">
-const { $toggleTheme } = useNuxtApp();
-
 const colorStops = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950];
 
 const colors = [
@@ -59,10 +57,6 @@ function onFormSubmit(valid: boolean) {
 
 <template>
 	<div class="flex flex-col gap-5 app-text py-5">
-		<div>
-			<button type="button" class="button-filled-neutral" @click="$toggleTheme()">Toggle Theme</button>
-		</div>
-
 		<div class="flex flex-col gap-4 border b-1 p-5">
 			<h2 class="text-h3">Colors</h2>
 			<div v-for="c in colors" :key="c.name" class="flex flex-row items-center gap-3">

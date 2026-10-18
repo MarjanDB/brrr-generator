@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 
 export type ChartThemeColors = {
 	line: string;
@@ -33,18 +33,9 @@ function readColors(): ChartThemeColors {
 export function useChartTheme() {
 	const colors = ref<ChartThemeColors>(readColors());
 
-	if (typeof window !== "undefined") {
-		const observer = new MutationObserver(() => {
-			colors.value = readColors();
-		});
-
-		onMounted(() => {
-			observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-			colors.value = readColors();
-		});
-
-		onUnmounted(() => observer.disconnect());
-	}
+	onMounted(() => {
+		colors.value = readColors();
+	});
 
 	return { colors };
 }

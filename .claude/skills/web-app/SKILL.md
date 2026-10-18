@@ -51,7 +51,7 @@ shown by `GuideModal.vue`, with screenshots under `packages/app/public/screensho
   `AppFileInput`. Each takes a `validate` function returning an error string or `null`, registers itself with the surrounding form, and
   links its label through `useId()`.
 - Primitives (select, checkbox, dialog, tooltip) come from reka-ui. Composables from `@vueuse/core` before writing your own.
-- Charts use chart.js; `composables/useChartTheme.ts` reads theme colours from CSS variables and follows dark mode.
+- Charts use chart.js; `composables/useChartTheme.ts` reads theme colours from CSS variables.
 - Biome lints `.vue` files. Pages are exempt from the multi-word component name rule; everything else needs multi-word names.
 
 ## Text (i18n)
@@ -68,8 +68,7 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
   `info`, each with stops 10–990 backed by CSS variables in `packages/app/app/assets/styles.css`.
 - Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`, `text-label`,
   `text-caption`, `input-md`, `button-filled-<colour>`, `button-inverse-<colour>`, `button-ghost`, `alert-error`, …
-- Dark mode is the `dark` class on `<html>`, set from a `color-scheme` cookie by the inline script in `nuxt.config.ts` and
-  `plugins/theme.ts` (`$theme`, `$toggleTheme`). Every colour needs its `dark:` counterpart; the shortcuts already have them.
+- There is one theme: no dark mode and no `dark:` classes.
 - Icons are classes: `i-mdi-<name>` (Material Design Icons via `@iconify-json/mdi`).
 
 ## Build and deploy

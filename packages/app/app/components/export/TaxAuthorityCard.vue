@@ -19,7 +19,7 @@ const emit = defineEmits<{
 		:class="
 			selected
 				? 'ring-secondary-500'
-				: 'ring-transparent hover:ring-stale-300 dark:hover:ring-stale-700'
+				: 'ring-transparent hover:ring-stale-300'
 		"
 		@click="emit('select', card.authorityId)"
 	>

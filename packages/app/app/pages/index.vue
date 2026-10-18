@@ -2,7 +2,6 @@
 import type { ImportResult } from "@brrr/lib";
 import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
 
-const { $toggleTheme, $theme } = useNuxtApp();
 const { locale, setLocale, locales, t } = useI18n();
 
 useSeoMeta({
@@ -94,9 +93,6 @@ function onRestart() {
       </div>
       <div class="flex items-center gap-2">
         <AppSelect v-model="currentLocale" :options="localeOptions" />
-        <AppButton class="button-filled-neutral" @click="$toggleTheme()">
-          {{ $theme === 'dark' ? t('theme_light') : t('theme_dark') }}
-        </AppButton>
       </div>
     </div>
 

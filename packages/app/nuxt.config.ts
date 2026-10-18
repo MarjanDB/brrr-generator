@@ -30,17 +30,6 @@ export default defineNuxtConfig({
 
 	css: ["~/assets/styles.css"],
 
-	app: {
-		head: {
-			script: [
-				{
-					innerHTML: `(function(){var m=document.cookie.match(/(?:^|;\\s*)color-scheme=([^;]*)/);var s=m?m[1]:null;var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;if(s==='dark'||(s!=='light'&&prefersDark)){document.documentElement.classList.add('dark')}})()`,
-					tagPosition: "head",
-				},
-			],
-		},
-	},
-
 	i18n: {
 		strategy: "prefix",
 		locales: [

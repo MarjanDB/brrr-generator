@@ -1,8 +1,6 @@
 {
 	"app_title": "BRRR Generator",
 	"site_description": "Generirajte uvozne obrazce za slovensko davčno upravo (KDVP, DIV, IFI) iz XML izvozov posrednikov",
-	"theme_dark": "Temni način",
-	"theme_light": "Svetli način",
 	"ibkr_export_title": "Izberi datoteke",
 	"ibkr_export_hint": "izberite vse izvoze vašega posrednika za leto, ki ga prijavljate, in vsa predhodna leta",
 	"xml_files_label": "XML datoteka(e)",
