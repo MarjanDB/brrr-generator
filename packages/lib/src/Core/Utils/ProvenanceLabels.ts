@@ -1,4 +1,13 @@
+import type { IdentifierChangeType } from "@brrr/Core/Models/IdentifierRelationships/IdentifierChangeType";
+import type {
+	CorrelationKey,
+	Isin,
+	TaxLotId,
+	Ticker,
+	TradeEventId,
+} from "@brrr/Core/Models/Identifiers";
 import { AssetClass } from "@brrr/Core/Models/Instrument/AssetClass";
+import type { StagingIdentifierChangeType } from "@brrr/Core/Models/Staging/IdentifierRelationships/StagingIdentifierChangeType";
 
 export enum CashTransactionLabel {
 	DIVIDEND = "dividend",
@@ -17,34 +26,38 @@ export const ProvenanceLabels = {
 	trade(
 		assetClass: AssetClass,
 		acquired: boolean,
-		id: string,
+		id: TradeEventId,
 		quantity: number,
-		ticker: string | null,
+		ticker: Ticker | null,
 	): string {
 		const kind = assetClass === AssetClass.OPTION ? "option" : "stock";
 		return `${kind} ${acquired ? "bought" : "sold"} ${id} · ${quantity} ${orDash(ticker)}`;
 	},
 
-	cash(kind: CashTransactionLabel, id: string, ticker: string | null): string {
+	cash(kind: CashTransactionLabel, id: TradeEventId, ticker: Ticker | null): string {
 		return `${kind} ${id} · ${orDash(ticker)}`;
 	},
 
-	lot(id: string, quantity: number, ticker: string | null): string {
+	lot(id: TaxLotId, quantity: number, ticker: Ticker | null): string {
 		return `lot ${id} · ${quantity} ${orDash(ticker)}`;
 	},
 
-	grouping(derivative: boolean, isin: string | null, ticker: string | null): string {
+	grouping(derivative: boolean, isin: Isin | null, ticker: Ticker | null): string {
 		return `${derivative ? "derivative grouping" : "grouping"} ${orDash(isin)} · ${orDash(ticker)}`;
 	},
 
-	corporateActionHalf(correlationKey: string, fromSide: boolean, ticker: string | null): string {
+	corporateActionHalf(
+		correlationKey: CorrelationKey,
+		fromSide: boolean,
+		ticker: Ticker | null,
+	): string {
 		return `corporate action ${correlationKey} · ${fromSide ? "from" : "to"} ${orDash(ticker)}`;
 	},
 
 	corporateAction(
-		changeType: string,
-		fromTicker: string | null,
-		toTicker: string | null,
+		changeType: StagingIdentifierChangeType | IdentifierChangeType,
+		fromTicker: Ticker | null,
+		toTicker: Ticker | null,
 		split: { before: number; after: number } | null,
 	): string {
 		const base = `${changeType} ${orDash(fromTicker)} → ${orDash(toTicker)}`;
