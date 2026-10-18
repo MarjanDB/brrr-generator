@@ -1,3 +1,4 @@
+import type { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
 import type { ProvenanceDrop } from "@brrr/Provenance/Models/ProvenanceDrop";
 import type { ProvenanceEdge } from "@brrr/Provenance/Models/ProvenanceEdge";
 import type { ProvenanceNode } from "@brrr/Provenance/Models/ProvenanceNode";
@@ -20,11 +21,14 @@ export class ProvenanceWalker {
 	private readonly outgoing = new Map<ProvenanceNode, ProvenanceEdge[]>();
 	private readonly dropsByNode = new Map<ProvenanceNode, ProvenanceDrop[]>();
 
-	public constructor(graph: ProvenanceGraph) {
+	public constructor(graph: ProvenanceGraph, ignoring: ProvenanceChange[] = []) {
 		this.allNodes = graph.nodes();
 		this.nodeSet = new Set(this.allNodes);
 		this.allDrops = graph.drops();
 		for (const edge of graph.edges()) {
+			if (ignoring.includes(edge.change)) {
+				continue;
+			}
 			this.append(this.outgoing, edge.from, edge);
 			this.append(this.incoming, edge.to, edge);
 		}
