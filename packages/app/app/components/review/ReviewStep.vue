@@ -105,12 +105,12 @@ function openModal(row: InstrumentRow) {
         </tbody>
       </table>
     </div>
-    <AppButton class="button-filled-primary self-start" @click="emit('confirmed')">
+    <AppButton class="button-filled-action self-start" @click="emit('confirmed')">
       {{ t('review_confirm_button') }}
     </AppButton>
   </div>
 
-  <IbkrGroupingModal
+  <InstrumentModal
     v-if="modalRow"
     v-model:open="modalOpen"
     :name="modalRow.name"

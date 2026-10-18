@@ -69,23 +69,23 @@ if (form) {
 					'w-full flex items-center justify-between gap-2',
 				]"
 			>
-				<span :class="selectedLabel ? '' : 'text-stale-500'">
+				<span :class="selectedLabel ? '' : 'text-ink-muted'">
 					{{ selectedLabel ?? placeholder ?? 'Select...' }}
 				</span>
-				<span class="i-mdi-chevron-down text-stale-500 shrink-0" />
+				<span class="i-mdi-chevron-down text-ink-muted shrink-0" />
 			</SelectTrigger>
 			<SelectPortal>
 				<SelectContent
 					position="popper"
 					:side-offset="4"
-					class="z-50 min-w-[var(--reka-select-trigger-width)] bg-stale-100 dark:bg-stale-900 border app-border-strong rounded-md shadow-md overflow-hidden"
+					class="z-50 min-w-[var(--reka-select-trigger-width)] bg-surface border app-border-strong rounded-md shadow-md overflow-hidden"
 				>
 					<SelectViewport class="p-1">
 						<SelectItem
 							v-for="opt in options"
 							:key="opt.value"
 							:value="opt.value"
-							class="flex items-center gap-2 px-3 py-2 text-base app-text rounded-sm cursor-pointer select-none outline-none hover:bg-stale-200 dark:hover:bg-stale-800 data-[highlighted]:bg-stale-200 dark:data-[highlighted]:bg-stale-800 data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed"
+							class="flex items-center gap-2 px-3 py-2 text-base app-text rounded-sm cursor-pointer select-none outline-none hover:bg-surface-hover data-[highlighted]:bg-surface-hover data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed"
 						>
 							<SelectItemIndicator>
 								<span class="i-mdi-check text-icon-confirm" />

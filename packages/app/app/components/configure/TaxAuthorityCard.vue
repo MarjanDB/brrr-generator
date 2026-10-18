@@ -18,8 +18,8 @@ const emit = defineEmits<{
 		class="card card-padding-md flex flex-col items-center gap-3 text-center cursor-pointer transition-colors outline-none ring-2"
 		:class="
 			selected
-				? 'ring-secondary-500'
-				: 'ring-transparent hover:ring-stale-300 dark:hover:ring-stale-700'
+				? 'ring-accent-edge'
+				: 'ring-transparent hover:ring-edge-strong'
 		"
 		@click="emit('select', card.authorityId)"
 	>

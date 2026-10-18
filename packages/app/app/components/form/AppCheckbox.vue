@@ -40,7 +40,7 @@ if (form) {
 				@update:model-value="onChange"
 			>
 				<CheckboxIndicator class="flex items-center justify-center w-full h-full">
-					<span class="i-mdi-check text-white dark:text-stale-950 text-xs" />
+					<span class="i-mdi-check text-ink-inverse text-xs" />
 				</CheckboxIndicator>
 			</CheckboxRoot>
 			<span v-if="label" class="text-sm app-text select-none">{{ label }}</span>

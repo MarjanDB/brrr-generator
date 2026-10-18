@@ -9,7 +9,7 @@ import {
 	TaxpayerConfigSchema,
 	zDateTimeFromISOString,
 } from "@brrr/lib";
-import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
+import type { GeneratedOutputs } from "~/components/download/generatedOutputs";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
 const props = defineProps<{
@@ -91,7 +91,7 @@ async function onSubmit(valid: boolean) {
 			lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 		};
 
-		const { xml, csv } = await pipeline.generate(props.imported, {
+		const { xml, csv, provenance } = await pipeline.generate(props.imported, {
 			authorityId: TaxAuthorityId.SLOVENIA,
 			reportTypeId: reportType.value,
 			taxpayerInfo,
@@ -99,7 +99,7 @@ async function onSubmit(valid: boolean) {
 		});
 
 		const filenames = FILENAMES[reportType.value] ?? { xml: "export.xml", csv: "export.csv" };
-		emit("generated", { xml, csv, xmlFilename: filenames.xml, csvFilename: filenames.csv, authorityId: TaxAuthorityId.SLOVENIA, reportTypeId: reportType.value });
+		emit("generated", { xml, csv, xmlFilename: filenames.xml, csvFilename: filenames.csv, authorityId: TaxAuthorityId.SLOVENIA, reportTypeId: reportType.value, provenance, imported: props.imported });
 	} catch (e) {
 		error.value = e instanceof Error ? e.message : String(e);
 	} finally {
@@ -137,7 +137,7 @@ async function onSubmit(valid: boolean) {
 
 		<div v-if="error" class="alert-error">{{ error }}</div>
 
-		<AppButton class="button-filled-primary self-start" type="submit" :loading="loading">
+		<AppButton class="button-filled-action self-start" type="submit" :loading="loading">
 			{{ t('generate_report') }}
 		</AppButton>
 	</AppForm>

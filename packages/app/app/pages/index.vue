@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { ImportResult } from "@brrr/lib";
-import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
+import type { GeneratedOutputs } from "~/components/download/generatedOutputs";
 
-const { $toggleTheme, $theme } = useNuxtApp();
 const { locale, setLocale, locales, t } = useI18n();
 
 useSeoMeta({
@@ -27,7 +26,7 @@ const currentLocale = computed({
 const currentStep = ref<1 | 2 | 3 | 4>(1);
 const xmlFiles = ref<FileList | null>(null);
 const imported = shallowRef<ImportResult | null>(null);
-const generatedOutputs = ref<GeneratedOutputs | null>(null);
+const generatedOutputs = shallowRef<GeneratedOutputs | null>(null);
 // Tracks whether the user has confirmed step 2 (unlocks step 3 component)
 const step3Unlocked = ref(false);
 
@@ -94,9 +93,6 @@ function onRestart() {
       </div>
       <div class="flex items-center gap-2">
         <AppSelect v-model="currentLocale" :options="localeOptions" />
-        <AppButton class="button-filled-neutral" @click="$toggleTheme()">
-          {{ $theme === 'dark' ? t('theme_light') : t('theme_dark') }}
-        </AppButton>
       </div>
     </div>
 
@@ -104,14 +100,14 @@ function onRestart() {
     <WizardStepper :steps="stepLabels" :current-step="currentStep" :max-step="maxStep" @navigate="onNavigate" />
 
     <!-- Step 1: Upload (always visible; collapses after completion) -->
-    <IbkrUploadStep
+    <UploadStep
       :collapsed="currentStep > 1"
       :file-count="xmlFiles?.length ?? 0"
       @processed="onProcessed"
     />
 
     <!-- Step 2: Review (mounted only after parsing completes) -->
-    <IbkrReviewStep
+    <ReviewStep
       v-if="imported !== null"
       :financial-events="imported.events"
       :collapsed="currentStep > 2"
@@ -119,7 +115,7 @@ function onRestart() {
     />
 
     <!-- Step 3: Configure (mounted once review is confirmed; stays mounted during back-navigation) -->
-    <ExportConfigStep
+    <ConfigureStep
       v-if="imported !== null && step3Unlocked"
       :imported="imported"
       :collapsed="currentStep > 3"
@@ -127,7 +123,7 @@ function onRestart() {
     />
 
     <!-- Step 4: Download (mounted only after generation completes) -->
-    <ExportDownloadStep
+    <DownloadStep
       v-if="generatedOutputs !== null && currentStep === 4"
       :outputs="generatedOutputs"
       @restart="onRestart"

@@ -20,13 +20,15 @@ company and country lookups. Nuxt's source directory is `packages/app/app/`.
 
 `packages/app/app/pages/index.vue` is the whole product: one page holding the state of four steps, each a component that emits to move on.
 
-1. **Upload** — `components/ibkr/IbkrUploadStep.vue`: reads the files, runs `ReportPipeline.read`, emits the `ImportResult`
+1. **Upload** — `components/upload/UploadStep.vue`: reads the files, runs `ReportPipeline.read`, emits the `ImportResult`
    (detections, `FinancialEvents` and the provenance graph).
-2. **Review** — `components/ibkr/IbkrReviewStep.vue` and `components/ibkr/instrument/` (per-instrument stocks, derivatives, dividends and
-   summary, each with a table and a chart); `IbkrGroupingModal.vue`.
-3. **Configure** — `components/export/ExportConfigStep.vue`: tax authority cards (`taxAuthorityCards.ts`), then that authority's form
+2. **Review** — `components/review/ReviewStep.vue` and `components/review/instrument/` (per-instrument stocks, derivatives, dividends and
+   summary, each with a table and a chart); `InstrumentModal.vue`.
+3. **Configure** — `components/configure/ConfigureStep.vue`: tax authority cards (`taxAuthorityCards.ts`), then that authority's form
    from `authorityForms` (`SloveniaExportForm.vue`), which takes the `ImportResult` and calls `ReportPipeline.generate`.
-4. **Download** — `components/export/ExportDownloadStep.vue`, plus the submission guide from `components/download/taxAuthorityGuides.ts`.
+4. **Download** — `components/download/DownloadStep.vue`, receiving `GeneratedOutputs` (the files plus the report's provenance graph and the import), plus the submission guide from `components/download/taxAuthorityGuides.ts`.
+
+The page is full width; steps 1 and 3 cap their forms at `max-w-screen-md`.
 
 Guides (broker export instructions, tax authority submission instructions) are data: `GuideStep`s in `components/guide/guideTypes.ts`,
 shown by `GuideModal.vue`, with screenshots under `packages/app/public/screenshots/` and icons under `packages/app/public/icons/`.
@@ -46,12 +48,12 @@ shown by `GuideModal.vue`, with screenshots under `packages/app/public/screensho
 
 - `components: [{ path: "~/components", pathPrefix: false }]`: components auto-register by file name, without their folder as a prefix,
   so names must be unique across folders. Explicit `~/components/...` imports are also used.
-- Folders by area: `upload/`, `ibkr/`, `export/`, `download/`, `guide/`, `form/`, `ui/`.
+- Folders by area: `upload/`, `review/`, `configure/`, `download/`, `guide/`, `form/`, `ui/`.
 - Forms: wrap fields in `AppForm` (emits `submit` with `valid`) and use `AppTextInput`, `AppNumberInput`, `AppSelect`, `AppCheckbox`,
   `AppFileInput`. Each takes a `validate` function returning an error string or `null`, registers itself with the surrounding form, and
   links its label through `useId()`.
 - Primitives (select, checkbox, dialog, tooltip) come from reka-ui. Composables from `@vueuse/core` before writing your own.
-- Charts use chart.js; `composables/useChartTheme.ts` reads theme colours from CSS variables and follows dark mode.
+- Charts use chart.js; `composables/useChartTheme.ts` reads theme colours from CSS variables.
 - Biome lints `.vue` files. Pages are exempt from the multi-word component name rule; everything else needs multi-word names.
 
 ## Text (i18n)
@@ -64,12 +66,17 @@ as the guides hold keys, not text. Page meta goes through `useSeoMeta` with tran
 
 UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config.ts`:
 
-- Colours are theme names, not raw palette or hex: `primary`, `secondary`, `accent`, `neutral`, `stale`, `success`, `warning`, `error`,
-  `info`, each with stops 10–990 backed by CSS variables in `packages/app/app/assets/styles.css`.
-- Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`, `text-label`,
-  `text-caption`, `input-md`, `button-filled-<colour>`, `button-inverse-<colour>`, `button-ghost`, `alert-error`, …
-- Dark mode is the `dark` class on `<html>`, set from a `color-scheme` cookie by the inline script in `nuxt.config.ts` and
-  `plugins/theme.ts` (`$theme`, `$toggleTheme`). Every colour needs its `dark:` counterpart; the shortcuts already have them.
+- Colours are roles, never palette names or hex. `styles.css` keeps the raw palette (`--stale-150`, …) and, below it, a role block of
+  `--color-*` variables; branding changes only that block. `unocss.config.ts` exposes only the roles, so a palette class such as
+  `bg-stale-100` compiles to nothing, silently. Neutral roles: `page`, `surface`, `surface-raised`, `surface-hover`, `surface-inverse`,
+  `ink`, `ink-muted`, `ink-inverse`, `edge`, `edge-strong`, `edge-subtle`, `overlay`. Each `ColorIntent` (`app/utils/ColorIntent.ts`:
+  action, accent, neutral, success, warning, danger, info) has `<intent>`, `-hover`, `-on` (text on the fill), `-soft`, `-ink` and
+  `-edge`: `bg-accent text-accent-on`, `border-danger-edge`.
+- Class names are written out in full (`AppBadge` maps `ColorIntent` x `BadgeVariant` to literal strings): UnoCSS only sees literals,
+  so `` `bg-${color}` `` renders nothing.
+- Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `app-surface-raised`, `app-surface-sunken`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`,
+  `text-label`, `text-caption`, `input-md`, `button-filled-<intent>`, `button-ghost`, `alert-error`, …
+- There is one theme: no dark mode and no `dark:` classes.
 - Icons are classes: `i-mdi-<name>` (Material Design Icons via `@iconify-json/mdi`).
 
 ## Build and deploy
