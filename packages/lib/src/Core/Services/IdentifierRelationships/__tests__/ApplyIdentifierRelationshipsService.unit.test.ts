@@ -1178,3 +1178,178 @@ test("a split records each rebuilt lot, from the old one and the corporate actio
 	expect(parents[0].detail).toEqual("2 → 20");
 	expect(parents[1].from).toBe(graph.nodeOf(rel));
 });
+
+test("a split records the rebuilt and the merged grouping as made from the trade it rebuilt, not the original", () => {
+	const idFrom = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US86800U1043"),
+		ticker: Ticker.Schema.parse("SMCI.OLD"),
+		name: "Old",
+	});
+	const idTo = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US86800U3023"),
+		ticker: Ticker.Schema.parse("SMCI"),
+		name: "New",
+	});
+	const rel = new IdentifierRelationshipSplit({
+		fromIdentifier: idFrom,
+		toIdentifier: idTo,
+		changeType: IdentifierChangeType.SPLIT,
+		effectiveDate: build.date("2024-10-01"),
+		quantityBefore: 4.0,
+		quantityAfter: 40.0,
+	});
+	const trade = build.stockBought({
+		id: TradeEventId.Schema.parse("t1"),
+		date: "2024-09-01",
+		quantity: 4.0,
+		price: 10.0,
+		currency: CurrencyCode.Schema.parse("USD"),
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+	});
+	const grouping = build.grouping({
+		identifier: idFrom,
+		countryOfOrigin: CountryCode.Schema.parse("US"),
+		category: Category.REGULAR,
+		stockTrades: [trade],
+		stockTaxLots: [],
+		derivativeGroupings: [],
+		cashTransactions: [],
+	});
+	const events = new FinancialEvents({ groupings: [grouping], identifierRelationships: [rel] });
+	const graph = new ProvenanceGraph({ parent: null });
+	graph.node(trade, ProvenanceNodeKind.EVENT, "stock bought t1 · 4 SMCI.OLD", {});
+	graph.node(rel, ProvenanceNodeKind.CORPORATE_ACTION, "SPLIT SMCI.OLD → SMCI (4 → 40)", {});
+	graph.node(grouping, ProvenanceNodeKind.GROUPING, "grouping US86800U1043 · SMCI.OLD", {});
+
+	const result = new ApplyIdentifierRelationshipsService().apply(
+		events,
+		[IdentifierChangeType.SPLIT],
+		graph,
+	);
+
+	const walker = new ProvenanceWalker(graph);
+	const scaledTrade = graph.nodeOf(result.groupings[0].stockTrades[0]);
+	const mergedParents = walker.parents(graph.nodeOf(result.groupings[0]));
+	expect(mergedParents).toHaveLength(3);
+	expect(mergedParents[0].change).toEqual(ProvenanceChange.SPLIT);
+	expect(mergedParents[1].change).toEqual(ProvenanceChange.SPLIT);
+	expect(mergedParents[2].from).toBe(scaledTrade);
+	expect(mergedParents[2].change).toEqual(ProvenanceChange.GROUPED);
+	expect(mergedParents[2].by).toEqual("ApplyIdentifierRelationshipsService");
+	const scaledFromParents = walker.parents(mergedParents[0].from);
+	expect(scaledFromParents).toHaveLength(3);
+	expect(scaledFromParents[0].from).toBe(graph.nodeOf(grouping));
+	expect(scaledFromParents[1].from).toBe(graph.nodeOf(rel));
+	expect(scaledFromParents[2].from).toBe(scaledTrade);
+	expect(scaledFromParents[2].change).toEqual(ProvenanceChange.GROUPED);
+});
+
+test("a rename records a rebuilt derivative grouping as made from the old one, the rename and its items", () => {
+	const idA = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US111"),
+		ticker: Ticker.Schema.parse("OLD"),
+		name: "Old Co",
+	});
+	const idB = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US222"),
+		ticker: Ticker.Schema.parse("NEW"),
+		name: "New Co",
+	});
+	const idOption = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US111"),
+		ticker: Ticker.Schema.parse("OLD  240621C00100000"),
+		name: "OLD 21JUN24 100 C",
+	});
+	const bought = build.optionBought({
+		id: TradeEventId.Schema.parse("o1"),
+		date: "2024-01-02",
+		quantity: 1,
+		price: 2,
+		currency: CurrencyCode.Schema.parse("USD"),
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+		multiplier: 100,
+	});
+	const sold = build.optionSold({
+		id: TradeEventId.Schema.parse("o2"),
+		date: "2024-02-02",
+		quantity: -1,
+		price: 3,
+		currency: CurrencyCode.Schema.parse("USD"),
+		commission: 0,
+		tax: 0,
+		fxRateToBase: 1,
+		multiplier: 100,
+	});
+	const optionLot = build.derivativeTaxLot({
+		id: TaxLotId.Schema.parse("ol1"),
+		quantity: 1,
+		shortLongType: ShortLong.LONG,
+		acquired: bought,
+		sold,
+	});
+	const derivative = build.derivativeGrouping({
+		identifier: idOption,
+		trades: [bought, sold],
+		taxLots: [optionLot],
+	});
+	const groupingA = build.grouping({
+		identifier: idA,
+		countryOfOrigin: CountryCode.Schema.parse("US"),
+		category: Category.REGULAR,
+		stockTrades: [],
+		stockTaxLots: [],
+		derivativeGroupings: [derivative],
+		cashTransactions: [],
+	});
+	const groupingB = build.grouping({
+		identifier: idB,
+		countryOfOrigin: CountryCode.Schema.parse("US"),
+		category: Category.REGULAR,
+		stockTrades: [],
+		stockTaxLots: [],
+		derivativeGroupings: [],
+		cashTransactions: [],
+	});
+	const rel = new IdentifierRelationship({
+		fromIdentifier: idA,
+		toIdentifier: idB,
+		changeType: IdentifierChangeType.RENAME,
+		effectiveDate: build.date("2024-06-01"),
+	});
+	const events = new FinancialEvents({
+		groupings: [groupingA, groupingB],
+		identifierRelationships: [rel],
+	});
+	const graph = new ProvenanceGraph({ parent: null });
+	graph.node(bought, ProvenanceNodeKind.EVENT, "option bought o1 · 1 OLD", {});
+	graph.node(sold, ProvenanceNodeKind.EVENT, "option sold o2 · -1 OLD", {});
+	graph.node(optionLot, ProvenanceNodeKind.LOT, "lot ol1 · 1 OLD", {});
+	graph.node(derivative, ProvenanceNodeKind.GROUPING, "derivative grouping US111 · OLD", {});
+	graph.node(groupingA, ProvenanceNodeKind.GROUPING, "grouping US111 · OLD", {});
+	graph.node(groupingB, ProvenanceNodeKind.GROUPING, "grouping US222 · NEW", {});
+	graph.node(rel, ProvenanceNodeKind.CORPORATE_ACTION, "RENAME OLD → NEW", {});
+
+	const result = new ApplyIdentifierRelationshipsService().apply(
+		events,
+		[IdentifierChangeType.RENAME],
+		graph,
+	);
+
+	const rebuilt = graph.nodeOf(result.groupings[0].derivativeGroupings[0]);
+	const parents = new ProvenanceWalker(graph).parents(rebuilt);
+	expect(parents).toHaveLength(5);
+	expect(parents[0].from).toBe(graph.nodeOf(derivative));
+	expect(parents[0].change).toEqual(ProvenanceChange.RENAMED);
+	expect(parents[1].from).toBe(graph.nodeOf(rel));
+	expect(parents[1].change).toEqual(ProvenanceChange.RENAMED);
+	expect(parents[2].from).toBe(graph.nodeOf(bought));
+	expect(parents[2].change).toEqual(ProvenanceChange.GROUPED);
+	expect(parents[3].from).toBe(graph.nodeOf(sold));
+	expect(parents[3].change).toEqual(ProvenanceChange.GROUPED);
+	expect(parents[4].from).toBe(graph.nodeOf(optionLot));
+	expect(parents[4].change).toEqual(ProvenanceChange.GROUPED);
+});

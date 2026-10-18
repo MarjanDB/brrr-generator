@@ -35,6 +35,10 @@ n17 STAGING_LOT lot 241234985 · 5 EDF
 n18 STAGING_LOT lot 241234985 · 5 EDF
   ← n14 TRANSFORMED by IbkrTransformService
 n19 STAGING_GROUPING grouping FR0010242511 · EDF
+  ← n15 GROUPED by IbkrTransformService
+  ← n16 GROUPED by IbkrTransformService
+  ← n17 GROUPED by IbkrTransformService
+  ← n18 GROUPED by IbkrTransformService
 n20 EVENT stock bought 241234985 · 5 EDF
   ← n15 CONVERTED by StagingToCore
 n21 EVENT stock sold 262720557 · -5 EDF
@@ -45,6 +49,10 @@ n23 LOT lot 241234985 · 5 EDF
   ← n18 CONVERTED by StagingToCore
 n24 GROUPING grouping FR0010242511 · EDF
   ← n19 CONVERTED by StagingFinancialGroupingProcessor
+  ← n20 GROUPED by StagingFinancialGroupingProcessor
+  ← n21 GROUPED by StagingFinancialGroupingProcessor
+  ← n22 GROUPED by StagingFinancialGroupingProcessor
+  ← n23 GROUPED by StagingFinancialGroupingProcessor
 
 Dropped:
 (none)

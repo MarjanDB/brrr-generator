@@ -138,6 +138,19 @@ export class IbkrTransformService {
 				ProvenanceLabels.grouping(false, identifier.isin, identifier.ticker),
 				{},
 			);
+			provenance.derive(
+				[
+					...grouping.stockTrades,
+					...grouping.stockTaxLots,
+					...grouping.derivativeTrades,
+					...grouping.derivativeTaxLots,
+					...grouping.cashTransactions,
+				],
+				grouping,
+				ProvenanceChange.GROUPED,
+				STAGE,
+				null,
+			);
 			groupings.push(grouping);
 		}
 
