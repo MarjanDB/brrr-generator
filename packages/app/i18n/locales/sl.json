@@ -62,6 +62,7 @@
 	"export_summary": "{type} / {year}",
 	"restart_button": "Začni znova",
 	"dialog_close": "Zapri",
+	"wizard_steps_label": "Koraki",
 	"download_xml_label": "Prenesi XML (eDavki)",
 	"download_csv_label": "Prenesi CSV",
 	"modal_stock_trades_title": "Trgovanje z delnicami",

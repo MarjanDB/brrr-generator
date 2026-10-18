@@ -94,6 +94,12 @@ export default defineConfig({
 			"size-4.5 rounded-sm border border-danger-edge bg-surface-raised transition-colors cursor-pointer data-[state=checked]:bg-danger-edge data-[state=checked]:border-danger-edge focus:outline-none focus:ring-2 focus:ring-danger-edge disabled:opacity-70 disabled:cursor-not-allowed",
 		],
 
+		// A visible ring for keyboard focus, on anything that sets outline-none or draws its own focus
+		[
+			"app-focus-ring",
+			"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-edge",
+		],
+
 		// Buttons
 		["button", "transition-colors cursor-pointer disabled:cursor-not-allowed"],
 		["button-sm", "button px-3 py-1.5 text-sm rounded-sm"],

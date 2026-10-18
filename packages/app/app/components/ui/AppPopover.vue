@@ -40,7 +40,7 @@ const emit = defineEmits<{
 		<!-- A trigger inside a tooltip would hang the popover on the tooltip's anchor, so the popover
 		     gets an anchor of its own around both. -->
 		<PopoverAnchor v-if="$slots.trigger && tooltip" as="span" class="inline-flex">
-			<TooltipRoot>
+			<TooltipRoot :delay-duration="500">
 				<TooltipTrigger as-child>
 					<PopoverTrigger as-child>
 						<slot name="trigger" />

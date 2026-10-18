@@ -107,6 +107,14 @@ step 1, the guide button in the download header), with screenshots under `packag
   `AppFileInput`. Each takes a `validate` function returning an error string or `null`, registers itself with the surrounding form, and
   links its label through `useId()`.
 - Primitives (select, checkbox, dialog, tooltip, popover) come from reka-ui. Composables from `@vueuse/core` before writing your own.
+- `AppTooltip` has no provider of its own: `app.vue`'s `TooltipProvider` is shared, so moving between neighbouring tooltips
+  skips the delay. A reka trigger inside a tooltip takes the tooltip's `data-state`, so style such a trigger by its own ARIA
+  state (`aria-pressed:` on the "show every step" `Toggle`), never `data-[state=…]`.
+- Pick-one cards are a reka `RadioGroup` (`ConfigureStep` and `TaxAuthorityCard`), disclosures a `Collapsible`, pressed buttons
+  a `Toggle`, and `WizardStepper` a `Stepper` (keyboard and ARIA from reka, the look its own).
+- Anything that sets `outline-none` or draws its own look adds `app-focus-ring` (a 2px accent outline on `:focus-visible`). It is
+  not called `focus-ring`: UnoCSS would read that as the `focus:` variant plus `ring`. The running dev server doesn't reload
+  `unocss.config.ts`; restart it after changing a shortcut.
 - Dialogs go through `ui/AppDialog.vue`: a `title`, an optional `description` (or `description` slot) read out with it, a
   `DialogSize`, an `icon` slot, a close button named by `dialog_close`, and a `trigger` slot. A dialog opened by code (the
   instrument dialog, one for many rows) passes `returnFocus`, since reka only returns focus to a `DialogTrigger`. Without a

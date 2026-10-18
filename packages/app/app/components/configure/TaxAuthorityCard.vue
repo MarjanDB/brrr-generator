@@ -1,27 +1,17 @@
 <script setup lang="ts">
-import type { TaxAuthorityId } from "@brrr/lib";
+import { RadioGroupItem } from "reka-ui";
 import type { TaxAuthorityCard } from "~/utils/taxAuthorityCards";
 
 defineProps<{
 	card: TaxAuthorityCard;
-	selected: boolean;
-}>();
-
-const emit = defineEmits<{
-	select: [authorityId: TaxAuthorityId];
 }>();
 </script>
 
 <template>
-	<button
-		type="button"
-		class="card card-padding-md flex flex-col items-center gap-3 text-center cursor-pointer transition-colors outline-none ring-2"
-		:class="
-			selected
-				? 'ring-accent-edge'
-				: 'ring-transparent hover:ring-edge-strong'
-		"
-		@click="emit('select', card.authorityId)"
+	<!-- One option of the tax authority radio group in ConfigureStep. -->
+	<RadioGroupItem
+		:value="card.authorityId"
+		class="card card-padding-md flex flex-col items-center gap-3 text-center cursor-pointer transition-colors ring-2 ring-transparent hover:ring-edge-strong data-[state=checked]:ring-accent-edge app-focus-ring"
 	>
 		<img
 			:src="card.iconUrl"
@@ -32,5 +22,5 @@ const emit = defineEmits<{
 			<span class="text-h5 leading-snug">{{ card.name }}</span>
 			<span class="text-body-sm app-text-muted">{{ card.country }}</span>
 		</div>
-	</button>
+	</RadioGroupItem>
 </template>

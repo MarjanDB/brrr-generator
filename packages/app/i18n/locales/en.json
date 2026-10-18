@@ -62,6 +62,7 @@
 	"export_summary": "{type} / {year}",
 	"restart_button": "Start Over",
 	"dialog_close": "Close",
+	"wizard_steps_label": "Steps",
 	"download_xml_label": "Download XML (eDavki)",
 	"download_csv_label": "Download CSV",
 	"modal_stock_trades_title": "Stock Trades",
