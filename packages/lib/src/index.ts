@@ -37,7 +37,7 @@ export { ReportPipeline } from "@brrr/Pipeline/ReportPipeline";
 export { DropCategory } from "@brrr/Provenance/Models/DropCategory";
 export { DropReason } from "@brrr/Provenance/Models/DropReason";
 export { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
-export type { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
+export { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
 export { ProvenanceDetailKind } from "@brrr/Provenance/Models/ProvenanceDetailKind";
 export { ProvenanceDetailValue } from "@brrr/Provenance/Models/ProvenanceDetailValue";
 export type { ProvenanceDrop } from "@brrr/Provenance/Models/ProvenanceDrop";
