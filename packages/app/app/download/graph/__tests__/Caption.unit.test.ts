@@ -83,6 +83,70 @@ describe("the caption of a graph", () => {
 		expect(caption[2]?.count).toEqual(4);
 	});
 
+	test("with every step shown, a sale's caption still says what it was matched with", () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const firstBuy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "5",
+			price: "5",
+			currency: "USD",
+			label: "first buy",
+		});
+		const secondBuy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-11",
+			quantity: "5",
+			price: "5",
+			currency: "USD",
+			label: "second buy",
+		});
+		const sell = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-03-10",
+			quantity: "-10",
+			price: "6",
+			currency: "USD",
+			label: "sell ACME",
+		});
+		const firstMatch = b.match({
+			instrument: acme,
+			acquired: firstBuy,
+			sold: sell,
+			quantity: "5",
+			boughtOn: "2024-01-10",
+			soldOn: "2024-03-10",
+		});
+		b.match({
+			instrument: acme,
+			acquired: secondBuy,
+			sold: sell,
+			quantity: "5",
+			boughtOn: "2024-01-11",
+			soldOn: "2024-03-10",
+		});
+		const model = new GraphIndex(b.graph, b.reading()).model(true);
+		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+
+		const caption = captionOf(layout);
+
+		expect(caption).toHaveLength(3);
+		expect(caption[1]?.kind).toEqual(CaptionSegmentKind.MATCHED_WITH);
+		expect(caption[1]?.count).toEqual(2);
+		expect(caption[1]?.opposite).toEqual(ProvenanceEventKind.ACQUIRED);
+		expect(caption[1]?.node?.node.source).toBe(b.node(firstMatch.lot));
+		expect(caption[2]?.kind).toEqual(CaptionSegmentKind.REPORT_LINES);
+		expect(caption[2]?.count).toEqual(4);
+	});
+
 	test("a purchase's caption says it was matched with sales", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });

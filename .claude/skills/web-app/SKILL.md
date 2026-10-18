@@ -36,6 +36,24 @@ never bundled.
    from `authorityForms` (`SloveniaExportForm.vue`), which takes the `ImportResult` and calls `ReportPipeline.generate`.
 4. **Download** — `components/download/DownloadStep.vue`, receiving `GeneratedOutputs` (the files, the year and lot-matching method, the report's provenance graph and the import). It reads the graph once (`ProvenanceReportReader`) and lays out `DownloadHeader` (form and year, counts, the needs-a-look popover (each item with the file or row it is about) and the warnings popover (each warning with its instrument), guide, downloads, start over), `InstrumentPanel` (the report's instruments by asset type, with search, and an amber badge on a row whose instrument has warnings), `InstrumentHeader`, `InstrumentTimeline` and `FocusFacts` (the focused item's facts and the sentences about it). The logic is plain TypeScript under `app/download/`, tested; the components under `components/download/` only draw. The submission guide comes from `components/download/taxAuthorityGuides.ts`. The step reads facts from node `fields` and sentences from `ProvenanceDetail` and `DropReason`, never from a node's label.
 
+**Download step graph.** Under the timeline, `<LazyGraphView>` (`components/download/graph/`) draws the focused item's provenance. The
+engine is plain TypeScript in `app/download/graph/`: `GraphIndex.model(showEveryStep)` → `layoutGraph(model, { focus, expanded })` →
+`placeGraph(layout, defaultGraphMetrics)`, with `chainOfNode`/`chainOfEdge` (what a click lights), `captionOf` and `FocusState` (focus,
+back trail, lit chain). What a node, caption segment or popover says is built in `app/download/graph/view/` as i18n keys and
+parameters (`nodeValueOf`, `captionTextOf`, `popoverContentOf`), and what a click does is `interact()` there, so none of it needs Vue
+to be tested. `GraphView` is the only stateful component (`showEveryStep`, the spread stacks, the open popover); the focus lives in
+`DownloadStep` as a `FocusState`, which also lights the timeline from the lit chain. The interaction rules:
+- A click on a node lights its chain and keeps the focus; a broker row or a report line also opens its popover. A pair card's two rows
+  are separate targets; its header opens nothing.
+- Only a stub, a double-click or a timeline mark moves the focus (the old one joins the back trail). A left-out node can be lit, never
+  followed. A stack spreads on click, and spread stacks fold again when the focus changes.
+- A click on empty canvas or Escape clears the light and the popover; an edge's hit area lights the chain through it.
+- "Show every step" remaps the focus through `model.nodeFor`, so a focus on a hidden step lands on the visible node beside it.
+- The layout must depend on the focus alone: lighting a chain must not redraw the graph, because the chain holds that layout's nodes.
+Every icon and tint is a literal class string in `view/nodeLook.ts` (UnoCSS cannot see a built name), numbers go through
+`formatNumber`, and all text is built at render with `t()` so a language switch redraws it. A change to the graph starts with a unit
+test in `app/download/graph/__tests__/` (or `view/__tests__/`). `GraphView` stays lazy, or the page chunk passes the 700 kB limit.
+
 The page is full width; steps 1 and 3 cap their forms at `max-w-screen-md`.
 
 Guides (broker export instructions, tax authority submission instructions) are data: `GuideStep`s in `components/guide/guideTypes.ts`,
@@ -68,7 +86,7 @@ shown by `GuideModal.vue`, with screenshots under `packages/app/public/screensho
 
 `@nuxtjs/i18n` with `strategy: "prefix"` (`/en/…`, `/sl/…`). Messages are flat snake_case keys in `packages/app/i18n/locales/en.json` and
 `sl.json`; every key goes into both files, in Slovenian too. Use `const { t } = useI18n()` and `t("key")` in components; data files such
-as the guides hold keys, not text. Page meta goes through `useSeoMeta` with translated strings. Sentences about enum values (drop reasons, detail kinds, event kinds, categories, lot-matching methods) use `Record<Enum, string>` key maps in `app/download/sentences/sentenceKeys.ts`, so a new enum value fails to compile until it has a key; `LocaleKeys.unit.test.ts` checks that both locale files have the same keys and that every mapped key exists.
+as the guides hold keys, not text. Page meta goes through `useSeoMeta` with translated strings. Sentences about enum values (drop reasons, detail kinds, event kinds, categories, lot-matching methods) use `Record<Enum, string>` key maps in `app/download/sentences/sentenceKeys.ts`, so a new enum value fails to compile until it has a key; `LocaleKeys.unit.test.ts` checks that both locale files have the same keys and that every mapped key exists. vue-i18n takes a bare `@` to start a linked message and then fails to compile the whole locale file in the browser, so a literal `@` is written `{'@'}`; the same test rejects a bare one.
 
 ## Styling
 
@@ -82,6 +100,8 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
   `-edge`: `bg-accent text-accent-on`, `border-danger-edge`.
 - Class names are written out in full (`AppBadge` maps `ColorIntent` x `BadgeVariant` to literal strings): UnoCSS only sees literals,
   so `` `bg-${color}` `` renders nothing.
+- UnoCSS scans `.vue` files and, through `content.pipeline.include` in `unocss.config.ts`, the TypeScript under `app/download/`.
+  A class or icon written only in a `.ts` file anywhere else is never generated.
 - Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `app-surface-raised`, `app-surface-sunken`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`,
   `text-label`, `text-caption`, `input-md`, `button-filled-<intent>`, `button-ghost`, `alert-error`, …
 - There is one theme: no dark mode and no `dark:` classes.

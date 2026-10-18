@@ -1,0 +1,108 @@
+<script setup lang="ts">
+import { ProvenanceField, type ProvenanceNode } from "@brrr/lib";
+import { computed } from "vue";
+import { fieldOf } from "~/download/fields";
+import { defaultGraphMetrics } from "~/download/graph/GraphMetrics";
+import type { PlacedNode } from "~/download/graph/PlacedNode";
+import { CardState } from "~/download/graph/view/CardState";
+import { nodeTextOf, reportLineValueOf } from "~/download/graph/view/nodeValueOf";
+import { PairSide } from "~/download/graph/view/PairSide";
+import { formatNumber } from "~/download/labels/formatNumber";
+
+const props = defineProps<{
+	placed: PlacedNode;
+	state: CardState;
+	lotMatchingMethodKey: string;
+	locale: string;
+}>();
+
+const emit = defineEmits<{
+	activateLine: [side: PairSide];
+	refocus: [];
+}>();
+
+const { t } = useI18n();
+const { translate } = useSentences();
+
+const pair = computed(() => props.placed.layoutNode.node.pair);
+const isStub = computed(() => props.placed.layoutNode.isStub);
+
+const quantity = computed(() => {
+	const lotQuantity = pair.value === null ? null : fieldOf(pair.value.lot, ProvenanceField.QUANTITY);
+	return lotQuantity === null ? "" : formatNumber(lotQuantity, props.locale);
+});
+
+// A side whose line was left out has nothing to say.
+function lineText(line: ProvenanceNode | null | undefined): string {
+	return line === null || line === undefined
+		? "—"
+		: nodeTextOf(reportLineValueOf(line, props.locale), translate);
+}
+
+const acquiredText = computed(() => lineText(pair.value?.acquired.line));
+const soldText = computed(() => lineText(pair.value?.sold.line));
+
+function onRow(side: PairSide) {
+	if (isStub.value) {
+		emit("refocus");
+	} else {
+		emit("activateLine", side);
+	}
+}
+
+// UnoCSS only sees class strings written out in full.
+const stateClasses: Record<CardState, string> = {
+	[CardState.NORMAL]: "",
+	[CardState.FOCUS]: "ring-2 ring-accent-edge",
+	[CardState.LIT]: "ring-2 ring-action-edge",
+	[CardState.DIMMED]: "opacity-15",
+};
+
+const classes = computed(() => [
+	stateClasses[props.state],
+	isStub.value && props.state !== CardState.DIMMED ? "opacity-60 border-dashed" : "",
+]);
+</script>
+
+<template>
+  <div
+    :style="{
+      left: `${placed.x}px`,
+      top: `${placed.y}px`,
+      width: `${placed.width}px`,
+      height: `${placed.height}px`,
+    }"
+    class="absolute flex flex-col overflow-hidden rounded-md border border-edge-strong bg-surface-raised text-sm text-ink transition-opacity"
+    :class="classes"
+  >
+    <div
+      class="flex items-center gap-1.5 px-2 bg-action-soft text-action-ink text-xs shrink-0"
+      :style="{ height: `${defaultGraphMetrics.pairHeaderHeight}px` }"
+      :title="t('download_graph_pair_hint')"
+    >
+      <span class="i-mdi-link-variant" aria-hidden="true" />
+      <span class="tabular-nums">{{ quantity }}</span>
+      <span class="ml-auto">{{ t(lotMatchingMethodKey) }}</span>
+    </div>
+    <button
+      type="button"
+      class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle hover:bg-surface-hover"
+      @click.stop="onRow(PairSide.ACQUIRED)"
+    >
+      <span class="size-4.5 shrink-0 rounded-sm grid place-items-center bg-success-soft text-success-ink">
+        <span class="i-mdi-triangle text-xs" aria-hidden="true" />
+      </span>
+      <span class="truncate">{{ acquiredText }}</span>
+    </button>
+    <button
+      type="button"
+      class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle hover:bg-surface-hover"
+      @click.stop="onRow(PairSide.SOLD)"
+    >
+      <span class="size-4.5 shrink-0 rounded-sm grid place-items-center bg-danger-soft text-danger-ink">
+        <span class="i-mdi-triangle-down text-xs" aria-hidden="true" />
+      </span>
+      <span class="truncate">{{ soldText }}</span>
+    </button>
+  </div>
+</template>

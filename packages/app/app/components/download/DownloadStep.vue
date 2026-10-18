@@ -93,6 +93,8 @@ const warnings = computed(() =>
 const timelineName = computed(
 	() => selectedEntry.value?.contract?.occSymbol ?? selectedEntry.value?.ticker ?? "",
 );
+// The form as the graph's popovers name it: the report type's own id.
+const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
 
 function describeMark(mark: TimelineMark): string {
 	const date = fieldOf(mark.node, ProvenanceField.DATE) ?? fieldOf(mark.node, ProvenanceField.ACQUIRED_DATE);
@@ -145,6 +147,18 @@ defineExpose({ index });
             @select="focus"
           />
         </div>
+        <LazyGraphView
+          v-if="selected !== null"
+          :index="index"
+          :walker="walker"
+          :focus-state="focusState"
+          :instrument-kind="selected.kind"
+          :ticker="timelineName"
+          :lot-matching-method="outputs.lotMatchingMethod"
+          :locale="locale"
+          :form-name="formName"
+          @update:focus-state="(next) => (focusState = next)"
+        />
         <FocusFacts :node="focusState.focus" :left-out="leftOut" :warnings="warnings" />
       </div>
     </div>

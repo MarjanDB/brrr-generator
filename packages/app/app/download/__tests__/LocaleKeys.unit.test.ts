@@ -1,4 +1,8 @@
+import { ReportInstrumentKind } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
+import { edavkiFieldKeys } from "~/download/graph/view/edavkiFieldKeys";
+import { headingKeys, laneLabelKeys } from "~/download/graph/view/headingKeys";
+import { legSideKeys, nodeValueKeys, stackKindKeys } from "~/download/graph/view/nodeValueKeys";
 import {
 	detailKindKeys,
 	dropCategoryKeys,
@@ -17,6 +21,14 @@ const englishKeys = new Set(Object.keys(en));
 describe("the locale files", () => {
 	test("English and Slovenian have the same keys", () => {
 		expect(Object.keys(en).sort()).toEqual(Object.keys(sl).sort());
+	});
+
+	// vue-i18n takes a bare @ to start a linked message and fails to compile the whole file in the
+	// browser; a literal @ is written {'@'}.
+	test("no message has a bare @", () => {
+		const bare = /@(?!'\})/;
+		expect(Object.entries(en).filter(([, text]) => bare.test(text))).toEqual([]);
+		expect(Object.entries(sl).filter(([, text]) => bare.test(text))).toEqual([]);
 	});
 
 	test("every drop reason has a key in the locale files", () => {
@@ -53,5 +65,45 @@ describe("the locale files", () => {
 		for (const key of Object.values(lotMatchingKeys)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
+	});
+
+	test("every kind of node value has a key in the locale files", () => {
+		for (const key of Object.values(nodeValueKeys)) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
+	});
+
+	test("every side of a leg has a key in the locale files", () => {
+		for (const key of Object.values(legSideKeys)) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
+	});
+
+	test("every kind of node has a noun in the locale files", () => {
+		for (const key of Object.values(stackKindKeys)) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
+	});
+
+	test("every report line field has a key in the locale files", () => {
+		for (const key of Object.values(edavkiFieldKeys)) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
+	});
+
+	test("every column heading has a key in the locale files", () => {
+		for (const key of Object.values(headingKeys)) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
+	});
+
+	test("the lane labels for trades and for dividends have keys in the locale files", () => {
+		const trades = laneLabelKeys(ReportInstrumentKind.STOCK);
+		const dividends = laneLabelKeys(ReportInstrumentKind.DIVIDEND_PAYER);
+
+		expect(englishKeys.has(trades.acquired)).toEqual(true);
+		expect(englishKeys.has(trades.sold)).toEqual(true);
+		expect(englishKeys.has(dividends.acquired)).toEqual(true);
+		expect(englishKeys.has(dividends.sold)).toEqual(true);
 	});
 });
