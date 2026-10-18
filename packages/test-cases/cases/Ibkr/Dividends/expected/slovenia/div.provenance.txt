@@ -1,0 +1,33 @@
+n1 FILE SimpleCashTransactionOfDividends.xml
+n2 ROW CashTransaction 269176073 · TTE
+  ← n1 CONTAINS by IbkrExtractService
+n3 RECORD TransactionCash 269176073
+  ← n2 PARSED by IbkrExtractService
+n4 ROW CashTransaction 323614082 · TTE
+  ← n1 CONTAINS by IbkrExtractService
+n5 RECORD TransactionCash 323614082
+  ← n4 PARSED by IbkrExtractService
+n6 STAGING_EVENT dividend 269176073 · TTE
+  ← n3 TRANSFORMED by IbkrTransformService
+n7 STAGING_EVENT withholding tax 323614082 · TTE
+  ← n5 TRANSFORMED by IbkrTransformService
+n8 STAGING_GROUPING grouping FR0000120271 · TTE
+n9 EVENT dividend 269176073 · TTE
+  ← n6 CONVERTED by StagingToCore
+n10 EVENT withholding tax 323614082 · TTE
+  ← n7 CONVERTED by StagingToCore
+n11 GROUPING grouping FR0000120271 · TTE
+  ← n8 CONVERTED by StagingFinancialGroupingProcessor
+n12 SUM action sum 102869793
+  ← n9 SUMMED by DivReportGenerator
+  ← n10 SUMMED by DivReportGenerator
+n13 SUM day sum 2022-04-02 · 1
+  ← n12 MERGED by DivReportGenerator
+n14 REPORT_LINE DOH_DIV 2022-04-02 · FR0000120271 · 2.64
+  ← n13 REPORTED by DivReportGenerator
+
+Dropped:
+(none)
+
+Warnings:
+(none)

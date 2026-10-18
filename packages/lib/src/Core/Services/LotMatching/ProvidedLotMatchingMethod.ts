@@ -4,12 +4,24 @@ import type { Lot } from "@brrr/Core/Models/LotMatching/Lot";
 import type { Trade } from "@brrr/Core/Models/LotMatching/Trade";
 import type { TaxLot } from "@brrr/Core/Models/Lots/TaxLot";
 import { TradeAssociationTracker } from "@brrr/Core/Services/LotMatching/TradeAssociationTracker";
+import { ProvenanceLabels } from "@brrr/Core/Utils/ProvenanceLabels";
+import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
+import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
+import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
+
+const STAGE = ProvenanceStage.Schema.parse("ProvidedLotMatchingMethod");
 
 export class ProvidedLotMatchingMethod implements ILotMatchingMethod {
 	private predefinedLots: TaxLot<TradeEvent, TradeEvent>[];
+	private readonly provenance: IProvenanceRecorder;
 
-	public constructor(predefinedLots: TaxLot<TradeEvent, TradeEvent>[]) {
+	public constructor(
+		predefinedLots: TaxLot<TradeEvent, TradeEvent>[],
+		provenance: IProvenanceRecorder,
+	) {
 		this.predefinedLots = predefinedLots;
+		this.provenance = provenance;
 	}
 
 	public performMatching(_events: Trade[]): Lot[] {
@@ -47,11 +59,19 @@ export class ProvidedLotMatchingMethod implements ILotMatchingMethod {
 				date: lot.sold.date,
 			};
 
-			processedLots.push({
+			const matched: Lot = {
 				quantity: lot.quantity,
 				acquired: { relation: acquiredTrade },
 				sold: { relation: soldTrade },
-			});
+			};
+			this.provenance.node(
+				matched,
+				ProvenanceNodeKind.MATCHED_LOT,
+				ProvenanceLabels.matchedLot(acquiredTrade.id, soldTrade.id, lot.quantity),
+				{},
+			);
+			this.provenance.derive([lot], matched, ProvenanceChange.MATCHED, STAGE, null);
+			processedLots.push(matched);
 		}
 
 		return processedLots;

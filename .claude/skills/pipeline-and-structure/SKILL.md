@@ -18,8 +18,9 @@ export files (ImportFile: name + XML string)
   → StagingFinancialGroupingProcessor.processStagingFinancialEvents
   → FinancialEvents                                core groupings + resolved identifier relationships
   → ImportResult { detections, events, provenance }
-  → ReportPipeline.generate                        takes a layer of the graph; TaxAuthorityRegistry.generateExports picks the
-                                                   country provider, which picks the report generator
+  → ReportPipeline.generate                        takes a layer of the graph and passes it in TaxAuthorityRunContext.provenance;
+                                                   TaxAuthorityRegistry.generateExports picks the country provider, which picks
+                                                   the report generator, and everything after records into that layer
   → { xml, csv, provenance }
 ```
 
@@ -74,7 +75,9 @@ before checking them.
    `Schemas/`, a report generator per report type in `Services/` (`convert` → lines, `toXml`, `toCsv`), and at the folder's top a
    provider implementing `ITaxAuthorityProvider` that holds the
    `TaxAuthorityDescriptor`, maps report type IDs to the enum and generates `{ xml, csv }` from one `convert`. Apply identifier
-   relationships through `ApplyIdentifierRelationshipsService` before generating.
+   relationships through `ApplyIdentifierRelationshipsService` before generating. Pass `ctx.provenance` to the relationships
+   service, the lot matching and each `convert`, and have `convert` record each line it builds as a `REPORT_LINE` made from what's
+   behind it, plus a drop for anything the report leaves out (see the Slovenian generators).
 2. Bind everything in `<Country>Module.ts`, load it from `TaxAuthoritiesModule.ts`, and add the provider to `TaxAuthorityRegistry`
    (constructor, `listAuthorities`, `generateExports`).
 3. If the country needs taxpayer fields `TaxpayerConfigSchema` lacks, extend the schema; the CLI and `config/userConfig.example.yml`
@@ -87,4 +90,5 @@ before checking them.
 
 Add the enum member, a generator under `Services/<Type>/` (generator class + `Xml*.ts` + `Csv*.ts`), its report line classes under `Models/<Type>/`, the XSD under `Schemas/`,
 a case in the provider's `generate`, the ID in the report type ID enum and the provider's `REPORT_TYPES` table, the CLI's
-`OUTPUT_FILES`, and the site form's report type options and file names.
+`OUTPUT_FILES`, and the site form's report type options and file names. The generator records its lines into the provenance it's
+given, as the existing ones do, and each expected report of a test case gets a `<name>.provenance.txt` beside it.

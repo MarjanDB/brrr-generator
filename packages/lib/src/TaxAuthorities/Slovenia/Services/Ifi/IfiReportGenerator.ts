@@ -3,6 +3,11 @@ import { TradeEventDerivativeAcquired } from "@brrr/Core/Models/Events/Derivativ
 import type { TradeEventDerivativeSold } from "@brrr/Core/Models/Events/Derivative/TradeEventDerivativeSold";
 import type { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGrouping";
 import type { FinancialEventsProcessor } from "@brrr/Core/Services/LotMatching/FinancialEventsProcessor";
+import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
+import { DropReason } from "@brrr/Provenance/Models/DropReason";
+import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
+import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
 import { createLotMatchingMethod } from "@brrr/TaxAuthorities/Services/LotMatchingMethodFactory";
 import {
@@ -18,6 +23,9 @@ import { EDavkiGenericDerivativeReportItem } from "@brrr/TaxAuthorities/Slovenia
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/Services/Ifi/CsvDIfi";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/Services/Ifi/XmlDIfi";
 import { foreignTaxOf, toOriginalCurrency } from "@brrr/TaxAuthorities/Slovenia/Utils/Amounts";
+import { ReportLineLabels } from "@brrr/TaxAuthorities/Slovenia/Utils/ReportLineLabels";
+
+const STAGE = ProvenanceStage.Schema.parse("IfiReportGenerator");
 
 const GAIN_MAPPINGS: Record<AcquisitionMethod, EDavkiDerivativeReportGainType> = {
 	[AcquisitionMethod.BOUGHT]: EDavkiDerivativeReportGainType.BOUGHT,
@@ -87,6 +95,7 @@ export class IfiReportGenerator {
 	public convert(
 		config: TaxAuthorityConfiguration,
 		groupings: FinancialGrouping[],
+		provenance: IProvenanceRecorder,
 	): EDavkiGenericDerivativeReportItem[] {
 		const converted: EDavkiGenericDerivativeReportItem[] = [];
 		const periodStart = config.fromDate;
@@ -95,21 +104,50 @@ export class IfiReportGenerator {
 		for (const financialGrouping of groupings) {
 			// TODO: Figure out how to get lots (currently only trade events are used, not predefined lots)
 			for (const derivativeGrouping of financialGrouping.derivativeGroupings) {
+				for (const lot of derivativeGrouping.derivativeTaxLots) {
+					provenance.drop(
+						lot,
+						DropReason.NOT_USED,
+						STAGE,
+						"IFI matches derivative trades without the broker's lots",
+					);
+				}
+
 				const legs = this.processor.derivativeLotLegsClosedInPeriod(
 					derivativeGrouping,
-					createLotMatchingMethod(config.lotMatchingMethod, []),
+					createLotMatchingMethod(config.lotMatchingMethod, [], provenance),
 					periodStart,
 					periodEnd,
+					provenance,
 				);
 
 				if (legs.length === 0) {
 					continue;
 				}
 
-				const convertedLines = legs.map(({ trade, quantity, commission }) => {
-					if (trade instanceof TradeEventDerivativeAcquired)
-						return convertBuy(trade, quantity, commission);
-					return convertSell(trade, quantity, commission);
+				const { ticker, isin } = derivativeGrouping.financialIdentifier;
+				const code = ticker === null ? null : EDavkiSecurityCode.FromTicker(ticker);
+
+				const convertedLines = legs.map((leg) => {
+					const { trade, quantity, commission } = leg;
+					const bought = trade instanceof TradeEventDerivativeAcquired;
+					const line = bought
+						? convertBuy(trade, quantity, commission)
+						: convertSell(trade, quantity, commission);
+					provenance.node(
+						line,
+						ProvenanceNodeKind.REPORT_LINE,
+						ReportLineLabels.ifiLine(bought, trade.date, quantity, code),
+						{},
+					);
+					provenance.derive(
+						[leg, derivativeGrouping],
+						line,
+						ProvenanceChange.REPORTED,
+						STAGE,
+						null,
+					);
+					return line;
 				});
 
 				// Counts a trade's whole tax once for every lot it falls into; kept so the reports don't change.
@@ -117,11 +155,10 @@ export class IfiReportGenerator {
 					legs.map((leg) => leg.trade),
 				);
 
-				const { ticker, isin } = derivativeGrouping.financialIdentifier;
 				const isinEntry = new EDavkiGenericDerivativeReportItem({
 					inventoryListType: EDavkiDerivativeSecurityType.OPTION_OR_CERTIFICATE,
 					itemType: EDavkiDerivativeReportItemType.DERIVATIVE,
-					code: ticker === null ? null : EDavkiSecurityCode.FromTicker(ticker),
+					code,
 					isin: isin === null ? null : EDavkiIsin.FromIsin(isin),
 					name: derivativeGrouping.financialIdentifier.name,
 					hasForeignTax,

@@ -15,13 +15,20 @@ import { FinancialIdentifier } from "@brrr/Core/Models/Instrument/FinancialIdent
 import { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/Services/IdentifierRelationships/ApplyIdentifierRelationshipsService";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
+import { DropReason } from "@brrr/Provenance/Models/DropReason";
+import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
+import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
+import { ProvenanceWalker } from "@brrr/Provenance/Services/ProvenanceWalker";
 import { ReportTypeId } from "@brrr/TaxAuthorities/Models/TaxAuthorityIdentifiers";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Models/TaxAuthorityLotMatchingMethod";
+import { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Models/SlovenianReportTypeId";
 import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Models/SlovenianTaxAuthorityReportTypes";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/Services/Div/DivReportGenerator";
 import { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/Services/Ifi/IfiReportGenerator";
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/Services/Kdvp/KdvpReportGenerator";
 import { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider";
+import { TestKit } from "@brrr/test-cases";
 
 const { build, config, pipeline } = Scenario;
 
@@ -155,6 +162,7 @@ test("KDVP lines: the buy and the sale with their quantities", () => {
 	const items = new KdvpReportGenerator(pipeline.eventsProcessor()).convert(
 		config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		testData.groupings,
+		new NullProvenanceRecorder(),
 	);
 	const events = items.flatMap((item) => item.items.flatMap((line) => line.events));
 
@@ -167,6 +175,7 @@ test("IFI lines: the buy and the sale with their quantities", () => {
 	const items = new IfiReportGenerator(pipeline.eventsProcessor()).convert(
 		config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		testData.groupings,
+		new NullProvenanceRecorder(),
 	);
 	const rows = items.flatMap((item) => item.items);
 
@@ -180,6 +189,7 @@ test("DIV lines: the dividend with its withholding tax", async () => {
 	const rows = await generator.convert(
 		config.report(2023, TaxAuthorityLotMatchingMethod.NONE),
 		testData.groupings,
+		new NullProvenanceRecorder(),
 	);
 
 	expect(rows.length).toEqual(1);
@@ -198,6 +208,7 @@ test("generate applies identifier relationships once", async () => {
 		taxpayerInfo: Fixtures.taxpayer,
 		reportConfig: config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		events: testData,
+		provenance: new NullProvenanceRecorder(),
 	});
 
 	expect(applySpy).toHaveBeenCalledTimes(1);
@@ -212,6 +223,7 @@ test("DIV looks each company up once", async () => {
 		taxpayerInfo: Fixtures.taxpayer,
 		reportConfig: config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 		events: testData,
+		provenance: new NullProvenanceRecorder(),
 	});
 
 	expect(lookupSpy).toHaveBeenCalledTimes(1);
@@ -225,6 +237,60 @@ test("unknown report type id is rejected", async () => {
 			taxpayerInfo: Fixtures.taxpayer,
 			reportConfig: config.report(2023, TaxAuthorityLotMatchingMethod.FIFO),
 			events: testData,
+			provenance: new NullProvenanceRecorder(),
 		}),
 	).rejects.toThrow("Unsupported report type 'nope' for tax authority: slovenia");
+});
+
+test("each KDVP line is recorded from its leg and its grouping (StockTrade, FIFO)", async () => {
+	const stockTrade = TestKit.ibkr.stockTrade;
+	const imported = Scenario.pipeline.run(stockTrade.readInputs());
+
+	const report = await Scenario.pipeline.generate(imported, {
+		report: SlovenianReportTypeId.KDVP,
+		year: stockTrade.year,
+		lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
+		taxpayer: Fixtures.taxpayer,
+		info: Scenario.config.infoProvider(Fixtures.lookups),
+	});
+
+	const walker = new ProvenanceWalker(report.provenance);
+	const lines = report.provenance
+		.nodes()
+		.filter((node) => node.kind === ProvenanceNodeKind.REPORT_LINE);
+	expect(lines).toHaveLength(2);
+	expect(lines[0].label).toEqual("DOH_KDVP bought 2022-02-22 · 5 FR0010242511");
+	expect(lines[1].label).toEqual("DOH_KDVP sold 2022-03-24 · -5 FR0010242511");
+	const parents = walker.parents(lines[0]);
+	expect(parents).toHaveLength(2);
+	expect(parents[0].from.kind).toEqual(ProvenanceNodeKind.LEG);
+	expect(parents[0].change).toEqual(ProvenanceChange.REPORTED);
+	expect(parents[0].by).toEqual("KdvpReportGenerator");
+	expect(parents[1].from.kind).toEqual(ProvenanceNodeKind.GROUPING);
+});
+
+test("IFI records its lines, and drops the broker's derivative lots as not used (OptionTrade, FIFO)", async () => {
+	const optionTrade = TestKit.ibkr.optionTrade;
+	const imported = Scenario.pipeline.run(optionTrade.readInputs());
+
+	const report = await Scenario.pipeline.generate(imported, {
+		report: SlovenianReportTypeId.IFI,
+		year: optionTrade.year,
+		lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
+		taxpayer: Fixtures.taxpayer,
+		info: Scenario.config.infoProvider(Fixtures.lookups),
+	});
+
+	const walker = new ProvenanceWalker(report.provenance);
+	const lines = report.provenance
+		.nodes()
+		.filter((node) => node.kind === ProvenanceNodeKind.REPORT_LINE);
+	expect(lines).toHaveLength(2);
+	expect(lines[0].label).toEqual("D_IFI bought 2023-12-14 · 1 AAPL  231222C00202500");
+	expect(walker.parents(lines[0])[0].from.kind).toEqual(ProvenanceNodeKind.LEG);
+	expect(walker.parents(lines[0])[1].from.kind).toEqual(ProvenanceNodeKind.GROUPING);
+	const notUsed = report.provenance.drops().filter((drop) => drop.reason === DropReason.NOT_USED);
+	expect(notUsed).toHaveLength(1);
+	expect(notUsed[0].node.label).toEqual("lot 635331370 · 1 AAPL  231222C00202500");
+	expect(notUsed[0].detail).toEqual("IFI matches derivative trades without the broker's lots");
 });

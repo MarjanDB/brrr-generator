@@ -4,6 +4,10 @@ import type { TradeEventStockSold } from "@brrr/Core/Models/Events/Stock/TradeEv
 import type { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGrouping";
 import { Category } from "@brrr/Core/Models/Instrument/Category";
 import type { FinancialEventsProcessor } from "@brrr/Core/Services/LotMatching/FinancialEventsProcessor";
+import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
+import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
+import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
 import type { TaxpayerInfo } from "@brrr/TaxAuthorities/Schemas/TaxpayerConfigSchema";
 import { createLotMatchingMethod } from "@brrr/TaxAuthorities/Services/LotMatchingMethodFactory";
@@ -21,6 +25,9 @@ import { EDavkiTradeSecurityType } from "@brrr/TaxAuthorities/Slovenia/Models/Kd
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/Services/Kdvp/CsvDohKdvp";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/Services/Kdvp/XmlDohKdvp";
 import { foreignTaxOf, toOriginalCurrency } from "@brrr/TaxAuthorities/Slovenia/Utils/Amounts";
+import { ReportLineLabels } from "@brrr/TaxAuthorities/Slovenia/Utils/ReportLineLabels";
+
+const STAGE = ProvenanceStage.Schema.parse("KdvpReportGenerator");
 
 const GAIN_MAPPINGS: Record<AcquisitionMethod, EDavkiTradeReportGainType> = {
 	[AcquisitionMethod.BOUGHT]: EDavkiTradeReportGainType.BOUGHT,
@@ -91,6 +98,7 @@ export class KdvpReportGenerator {
 	public convert(
 		config: TaxAuthorityConfiguration,
 		groupings: FinancialGrouping[],
+		provenance: IProvenanceRecorder,
 	): EDavkiGenericTradeReportItem[] {
 		const converted: EDavkiGenericTradeReportItem[] = [];
 		const periodStart = config.fromDate;
@@ -101,25 +109,38 @@ export class KdvpReportGenerator {
 
 			const legs = this.processor.stockLotLegsClosedInPeriod(
 				isinGrouping,
-				createLotMatchingMethod(config.lotMatchingMethod, isinGrouping.stockTaxLots),
+				createLotMatchingMethod(config.lotMatchingMethod, isinGrouping.stockTaxLots, provenance),
 				periodStart,
 				periodEnd,
+				provenance,
 			);
 
 			if (legs.length === 0) {
 				continue;
 			}
 
-			const convertedLines = legs.map(({ trade, quantity, commission }) => {
-				if (trade instanceof TradeEventStockAcquired)
-					return convertStockBuy(trade, quantity, commission);
-				return convertStockSell(trade, quantity, commission);
+			const reportedIsin = isin === null ? EDavkiIsin.Schema.parse("") : EDavkiIsin.FromIsin(isin);
+
+			const convertedLines = legs.map((leg) => {
+				const { trade, quantity, commission } = leg;
+				const bought = trade instanceof TradeEventStockAcquired;
+				const line = bought
+					? convertStockBuy(trade, quantity, commission)
+					: convertStockSell(trade, quantity, commission);
+				provenance.node(
+					line,
+					ProvenanceNodeKind.REPORT_LINE,
+					ReportLineLabels.kdvpLine(bought, trade.date, quantity, reportedIsin),
+					{},
+				);
+				provenance.derive([leg, isinGrouping], line, ProvenanceChange.REPORTED, STAGE, null);
+				return line;
 			});
 
 			const isTrustFund = isinGrouping.underlyingCategory === Category.TRUST_FUND;
 
 			const reportItem = new EDavkiTradeReportSecurityLineEvent({
-				isin: isin === null ? EDavkiIsin.Schema.parse("") : EDavkiIsin.FromIsin(isin),
+				isin: reportedIsin,
 				code: ticker === null ? null : EDavkiSecurityCode.FromTicker(ticker),
 				name: null,
 				isFund: isTrustFund,

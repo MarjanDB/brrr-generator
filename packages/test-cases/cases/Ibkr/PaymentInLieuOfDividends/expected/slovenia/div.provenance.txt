@@ -1,0 +1,33 @@
+n1 FILE SimpleCashTransactionOfPaymentInLieuOfDividends.xml
+n2 ROW CashTransaction 814208300 · MCD
+  ← n1 CONTAINS by IbkrExtractService
+n3 RECORD TransactionCash 814208300
+  ← n2 PARSED by IbkrExtractService
+n4 ROW CashTransaction 814208301 · MCD
+  ← n1 CONTAINS by IbkrExtractService
+n5 RECORD TransactionCash 814208301
+  ← n4 PARSED by IbkrExtractService
+n6 STAGING_EVENT payment in lieu of dividend 814208300 · MCD
+  ← n3 TRANSFORMED by IbkrTransformService
+n7 STAGING_EVENT withholding tax on payment in lieu 814208301 · MCD
+  ← n5 TRANSFORMED by IbkrTransformService
+n8 STAGING_GROUPING grouping US5801351017 · MCD
+n9 EVENT payment in lieu of dividend 814208300 · MCD
+  ← n6 CONVERTED by StagingToCore
+n10 EVENT withholding tax on payment in lieu 814208301 · MCD
+  ← n7 CONVERTED by StagingToCore
+n11 GROUPING grouping US5801351017 · MCD
+  ← n8 CONVERTED by StagingFinancialGroupingProcessor
+n12 SUM action sum 141244396
+  ← n9 SUMMED by DivReportGenerator
+  ← n10 SUMMED by DivReportGenerator
+n13 SUM day sum 2024-09-18 · 1
+  ← n12 MERGED by DivReportGenerator
+n14 REPORT_LINE DOH_DIV 2024-09-18 · US5801351017 · 13.52
+  ← n13 REPORTED by DivReportGenerator
+
+Dropped:
+(none)
+
+Warnings:
+(none)
