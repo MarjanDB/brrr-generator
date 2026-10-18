@@ -271,6 +271,7 @@ export class ApplyIdentifierRelationshipsService {
 				g.derivativeGroupings.map((dg) => {
 					const rebuilt = new DerivativeGrouping({
 						financialIdentifier: properId,
+						contract: dg.contract,
 						derivativeTrades: dg.derivativeTrades,
 						derivativeTaxLots: dg.derivativeTaxLots,
 					});

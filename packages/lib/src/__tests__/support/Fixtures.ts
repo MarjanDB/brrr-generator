@@ -21,7 +21,9 @@ import {
 import type { LotStock } from "@brrr/Brokers/Ibkr/Schemas/LotStock";
 import type { TradeStock } from "@brrr/Brokers/Ibkr/Schemas/TradeStock";
 import type { TransactionCash } from "@brrr/Brokers/Ibkr/Schemas/TransactionCash";
-import { CountryCode, CountryName } from "@brrr/Core/Models/Identifiers";
+import { CountryCode, CountryName, Ticker } from "@brrr/Core/Models/Identifiers";
+import { OptionContract } from "@brrr/Core/Models/Instrument/OptionContract";
+import { OptionRight } from "@brrr/Core/Models/Instrument/OptionRight";
 import type { CompanyInfo } from "@brrr/InfoProviders/Models/CompanyInfo";
 import type { Country } from "@brrr/InfoProviders/Models/Country";
 import { TreatyType } from "@brrr/InfoProviders/Models/TreatyType";
@@ -253,10 +255,20 @@ const ibkrSmciSplitOldRow: CorporateAction = {
 	weight: 0.0,
 };
 
+// The AAPL call of the OptionTrade case, for tests that don't care which contract they use.
+const optionContract = new OptionContract({
+	underlyingSymbol: Ticker.Schema.parse("AAPL"),
+	expiry: Values.date("2023-12-22"),
+	strike: 202.5,
+	optionRight: OptionRight.CALL,
+	multiplier: 100,
+});
+
 // Named test data, looked up on purpose. Nothing here fills in values a test didn't ask for.
 export const Fixtures = {
 	taxpayer,
 	lookups,
+	optionContract,
 	// Raw IBKR Flex Query rows, the way the extract step parses them. A test that needs a variant
 	// spreads one and lists what it changes.
 	ibkr: {

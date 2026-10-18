@@ -77,6 +77,7 @@ export class StagingFinancialGroupingProcessor {
 				financialIdentifier: FinancialIdentifier.fromStagingIdentifier(
 					stagingTrades[0].financialIdentifier,
 				),
+				contract: stagingTrades[0].contract,
 				derivativeTrades: trades,
 				derivativeTaxLots: lots.map((lot) => toCoreDerivativeLot(lot, trades, provenance)),
 			});

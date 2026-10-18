@@ -14,6 +14,7 @@ import type { TransactionCash } from "@brrr/Brokers/Ibkr/Schemas/TransactionCash
 import { IbkrExtractService } from "@brrr/Brokers/Ibkr/Services/IbkrExtractService";
 import { IbkrTransformService } from "@brrr/Brokers/Ibkr/Services/IbkrTransformService";
 import { CorrelationKey } from "@brrr/Core/Models/Identifiers";
+import { OptionRight } from "@brrr/Core/Models/Instrument/OptionRight";
 import { StagingTradeEventCashTransactionDividend } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransactionDividend";
 import { StagingTradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransactionPaymentInLieuOfDividend";
 import { StagingTradeEventCashTransactionWithholdingTax } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransactionWithholdingTax";
@@ -329,4 +330,23 @@ test("each corporate action row becomes one half of a staging corporate action",
 	expect(graph.nodeOf(halves[0]).kind).toEqual(ProvenanceNodeKind.STAGING_CORPORATE_ACTION);
 	expect(graph.nodeOf(halves[0]).label).toEqual("corporate action 141913764 · to SMCI");
 	expect(graph.nodeOf(halves[1]).label).toEqual("corporate action 141913764 · from SMCI.OLD");
+});
+
+test("an option trade's staging events carry the contract terms of their row", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const file = TestKit.ibkr.optionTrade.inputs.simpleOptionTrade.read();
+	graph.node(file, ProvenanceNodeKind.FILE, file.fileName, {});
+	const segmented = new IbkrExtractService().extractFromXML(file, graph);
+
+	const staged = service.convertSegmentedTradesToStagingEvents(segmented, graph);
+
+	const bought = staged.groupings[0].derivativeTrades[0];
+	expect(bought.contract.underlyingSymbol).toEqual("AAPL");
+	expect(bought.contract.expiry.toFormat("yyyy-MM-dd")).toEqual("2023-12-22");
+	expect(bought.contract.strike).toEqual(202.5);
+	expect(bought.contract.optionRight).toEqual(OptionRight.CALL);
+	expect(bought.contract.multiplier).toEqual(100);
+	const sold = staged.groupings[0].derivativeTrades[1];
+	expect(sold.contract.underlyingSymbol).toEqual("AAPL");
+	expect(sold.contract.optionRight).toEqual(OptionRight.CALL);
 });

@@ -141,6 +141,7 @@ const testData = build.events(
 			derivativeGroupings: [
 				build.derivativeGrouping({
 					identifier: new FinancialIdentifier({ isin: Isin.Schema.parse("ISIN") }),
+					contract: Fixtures.optionContract,
 					trades: [optionBought, optionSold],
 					taxLots: [
 						build.derivativeTaxLot({
