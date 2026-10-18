@@ -15,13 +15,13 @@ import { FinancialIdentifier } from "@brrr/Core/Models/Instrument/FinancialIdent
 import { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/Services/IdentifierRelationships/ApplyIdentifierRelationshipsService";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
-import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
-import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";
-import { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator";
-import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
-import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
+import { ReportTypeId } from "@brrr/TaxAuthorities/Models/TaxAuthorityIdentifiers";
+import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Models/TaxAuthorityLotMatchingMethod";
+import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Models/SlovenianTaxAuthorityReportTypes";
+import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/Services/Div/DivReportGenerator";
+import { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/Services/Ifi/IfiReportGenerator";
+import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/Services/Kdvp/KdvpReportGenerator";
 import { SlovenianTaxAuthorityProvider } from "@brrr/TaxAuthorities/Slovenia/SlovenianTaxAuthorityProvider";
-import { ReportTypeId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
 
 const { build, config, pipeline } = Scenario;
 

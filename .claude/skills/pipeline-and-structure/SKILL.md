@@ -32,10 +32,10 @@ the CLI runs it in Node (`packages/cli/main.ts`, through the same two registries
 | Staging → core | `Core/Services/StagingProcessing/` | `IdentifierRelationshipResolution` pairs partial relationships (a "from" side and a "to" side sharing a `correlationKey`) into whole ones; `StagingToCore.ts` turns each staging event and lot into its core counterpart. |
 | Core model | `Core/Models/` | `FinancialEvents` = `FinancialGrouping[]` + `IdentifierRelationshipAny[]`. A `FinancialGrouping` holds one instrument's stock trades, stock tax lots, derivative groupings and cash transactions. The instrument is the grouping's `financialIdentifier`; core events and lots don't repeat it. |
 | Relationships | `Core/Services/IdentifierRelationships/ApplyIdentifierRelationshipsService.ts` | Merges groupings across `RENAME`, keeping the original events, and rescales across `SPLIT` / `REVERSE_SPLIT` by building new trades and lots through their constructors (`scaleTradeForSplit`, `scaleLotForSplit`) with a `provenance` step recording what they were. Tax authorities call it with the change types they want applied. |
-| Lot matching | `Core/Services/LotMatching/`, `Core/Models/LotMatching/` | `ILotMatchingMethod` (`Core/Interfaces/`) implementations (stateless, one `performMatching(trades)`): `FifoLotMatchingMethod`, `ProvidedLotMatchingMethod` (uses the broker's lots). `TaxAuthorityLotMatchingMethod` (`NONE` / `FIFO` / `PROVIDED`) is chosen per report in `TaxAuthorityConfiguration` and turned into a method by `TaxAuthorities/LotMatchingMethodFactory.ts`. `LotMatcher.matchLots` returns `MatchedLot`s whose two `LotLeg`s point at the original trades, with the lot's quantity and its share of the commission. |
+| Lot matching | `Core/Services/LotMatching/`, `Core/Models/LotMatching/` | `ILotMatchingMethod` (`Core/Interfaces/`) implementations (stateless, one `performMatching(trades)`): `FifoLotMatchingMethod`, `ProvidedLotMatchingMethod` (uses the broker's lots). `TaxAuthorityLotMatchingMethod` (`NONE` / `FIFO` / `PROVIDED`) is chosen per report in `TaxAuthorityConfiguration` and turned into a method by `TaxAuthorities/Services/LotMatchingMethodFactory.ts`. `LotMatcher.matchLots` returns `MatchedLot`s whose two `LotLeg`s point at the original trades, with the lot's quantity and its share of the commission. |
 | Tax authority | `TaxAuthorities/<Country>/` | A provider implementing `ITaxAuthorityProvider` holds the `TaxAuthorityDescriptor`, maps report type IDs (`"kdvp"`) to its own report types, and turns `FinancialEvents` into XML and CSV through one generator per report type. |
 | Lookups | `InfoProviders/` | See the **infoproviders-lookup-data** skill. |
-| Config | `TaxAuthorities/ConfigurationProvider.ts` | `TaxpayerConfigSchema` / `TaxpayerInfo`, `TaxAuthorityConfiguration` (`fromDate`, `toDate`, `lotMatchingMethod`). |
+| Config | `TaxAuthorities/Schemas/`, `TaxAuthorities/Models/` | `TaxpayerConfigSchema` / `TaxpayerInfo` (`Schemas/TaxpayerConfigSchema.ts`), `TaxAuthorityConfiguration` (`fromDate`, `toDate`, `lotMatchingMethod`; `Models/TaxAuthorityConfiguration.ts`). |
 
 ## Wiring
 
@@ -66,8 +66,9 @@ before checking them.
 
 ## Adding a tax authority
 
-1. Create `TaxAuthorities/<Country>/` with its report types (an `enum`), schemas for the report lines, a report generator per report type
-   (`convert` → lines, `toXml`, `toCsv`), and a provider implementing `ITaxAuthorityProvider` that holds the
+1. Create `TaxAuthorities/<Country>/` with its report types (an `enum`) and report line classes in `Models/`, the forms' XSDs in
+   `Schemas/`, a report generator per report type in `Services/` (`convert` → lines, `toXml`, `toCsv`), and at the folder's top a
+   provider implementing `ITaxAuthorityProvider` that holds the
    `TaxAuthorityDescriptor`, maps report type IDs to the enum and generates `{ xml, csv }` from one `convert`. Apply identifier
    relationships through `ApplyIdentifierRelationshipsService` before generating.
 2. Bind everything in `<Country>Module.ts`, load it from `TaxAuthoritiesModule.ts`, and add the provider to `TaxAuthorityRegistry`
@@ -80,6 +81,6 @@ before checking them.
 
 ## Adding a report type to an existing country
 
-Add the enum member, a generator under `ReportGeneration/<Type>/` (generator class + `Xml*.ts` + `Csv*.ts`), the XSD under `XmlSchemas/`,
+Add the enum member, a generator under `Services/<Type>/` (generator class + `Xml*.ts` + `Csv*.ts`), its report line classes under `Models/<Type>/`, the XSD under `Schemas/`,
 a case in the provider's `generate`, the ID in the report type ID enum and the provider's `REPORT_TYPES` table, the CLI's
 `OUTPUT_FILES`, and the site form's report type options and file names.

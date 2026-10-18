@@ -1,21 +1,19 @@
 import { IdentifierChangeType } from "@brrr/Core/Models/IdentifierRelationships/IdentifierChangeType";
 import type { ApplyIdentifierRelationshipsService } from "@brrr/Core/Services/IdentifierRelationships/ApplyIdentifierRelationshipsService";
-import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type {
 	GeneratedExports,
 	ITaxAuthorityProvider,
-	TaxAuthorityDescriptor,
 	TaxAuthorityRunContext,
 } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
-import type { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";
-import type { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator";
-import type { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
-import {
-	EDavkiDocumentWorkflowType,
-	SlovenianReportTypeId,
-	SlovenianTaxAuthorityReportTypes,
-} from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
-import { ReportTypeId, TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
+import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
+import type { TaxAuthorityDescriptor } from "@brrr/TaxAuthorities/Models/TaxAuthorityDescriptor";
+import { ReportTypeId, TaxAuthorityId } from "@brrr/TaxAuthorities/Models/TaxAuthorityIdentifiers";
+import { EDavkiDocumentWorkflowType } from "@brrr/TaxAuthorities/Slovenia/Models/EDavkiDocumentWorkflowType";
+import { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Models/SlovenianReportTypeId";
+import { SlovenianTaxAuthorityReportTypes } from "@brrr/TaxAuthorities/Slovenia/Models/SlovenianTaxAuthorityReportTypes";
+import type { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/Services/Div/DivReportGenerator";
+import type { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/Services/Ifi/IfiReportGenerator";
+import type { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/Services/Kdvp/KdvpReportGenerator";
 import { DateTime } from "luxon";
 
 const REPORT_TYPES: {

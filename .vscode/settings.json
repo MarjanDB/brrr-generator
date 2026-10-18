@@ -2,15 +2,15 @@
 	"xml.fileAssociations": [
 		{
 			"pattern": "exports/Doh_Div.xml",
-			"systemId": "packages/lib/src/TaxAuthorities/Slovenia/XmlSchemas/Doh_Div_3.xsd"
+			"systemId": "packages/lib/src/TaxAuthorities/Slovenia/Schemas/Doh_Div_3.xsd"
 		},
 		{
 			"pattern": "exports/Doh_KDVP.xml",
-			"systemId": "packages/lib/src/TaxAuthorities/Slovenia/XmlSchemas/Doh_KDVP_9.xsd"
+			"systemId": "packages/lib/src/TaxAuthorities/Slovenia/Schemas/Doh_KDVP_9.xsd"
 		},
 		{
 			"pattern": "exports/D_Ifi.xml",
-			"systemId": "packages/lib/src/TaxAuthorities/Slovenia/XmlSchemas/D_IFI_4.xsd"
+			"systemId": "packages/lib/src/TaxAuthorities/Slovenia/Schemas/D_IFI_4.xsd"
 		}
 	],
 	"editor.defaultFormatter": "biomejs.biome",

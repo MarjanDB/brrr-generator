@@ -1,16 +1,14 @@
-import { generateCsvReport as generateDivCsv } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/CsvDohDiv";
-import { generateCsvReport as generateIfiCsv } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/CsvDIfi";
-import { generateCsvReport as generateKdvpCsv } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/CsvDohKdvp";
+import { EDavkiDividendReportLine } from "@brrr/TaxAuthorities/Slovenia/Models/Div/EDavkiDividendReportLine";
+import { EDavkiDividendType } from "@brrr/TaxAuthorities/Slovenia/Models/Div/EDavkiDividendType";
 import {
 	EDavkiCountryCode,
 	EDavkiDividendTrackingId,
 	EDavkiPayerIdentificationNumber,
 	EDavkiTaxNumber,
-} from "@brrr/TaxAuthorities/Slovenia/Schemas/EDavkiIdentifiers";
-import {
-	EDavkiDividendReportLine,
-	EDavkiDividendType,
-} from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
+} from "@brrr/TaxAuthorities/Slovenia/Models/EDavkiIdentifiers";
+import { generateCsvReport as generateDivCsv } from "@brrr/TaxAuthorities/Slovenia/Services/Div/CsvDohDiv";
+import { generateCsvReport as generateIfiCsv } from "@brrr/TaxAuthorities/Slovenia/Services/Ifi/CsvDIfi";
+import { generateCsvReport as generateKdvpCsv } from "@brrr/TaxAuthorities/Slovenia/Services/Kdvp/CsvDohKdvp";
 import { DateTime } from "luxon";
 
 // The web app runs the CSV generators in the browser, where Node's global Buffer doesn't exist.

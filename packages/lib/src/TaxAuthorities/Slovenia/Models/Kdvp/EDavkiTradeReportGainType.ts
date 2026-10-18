@@ -1,0 +1,10 @@
+export enum EDavkiTradeReportGainType {
+	CAPITAL_INVESTMENT = "A",
+	BOUGHT = "B",
+	CAPITAL_RAISE = "C",
+	CAPITAL_ASSET_RAISE = "D",
+	CAPITALIZATION_CHANGE = "E",
+	INHERITANCE = "F",
+	GIFT = "G",
+	OTHER = "H",
+}

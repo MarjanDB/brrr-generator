@@ -76,8 +76,8 @@ file's folder says what it is:
 - `Utils/` — helpers that hold no state.
 
 `Models/` and `Services/` split into a folder per concern where an area has several (`Core/Models/Events/Stock/`,
-`Core/Services/LotMatching/`). Core and Brokers follow this layout; TaxAuthorities and InfoProviders are being moved to it one area
-at a time, so don't move their files in passing.
+`Core/Services/LotMatching/`). Core, Brokers and TaxAuthorities follow this layout; InfoProviders is still to be moved to it, so
+don't move its files in passing.
 
 The **pipeline-and-structure** skill has the details and the steps for adding a broker, tax authority or report type.
 
@@ -103,8 +103,8 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
 - `enum` for fixed sets of values, not string-literal unions or `as const` objects.
 - Identifiers (ISINs, transaction IDs, report type IDs, …) get a nominal type from `@brrr/Utils/NominalType`, never a bare `string`.
   Each domain owns its own, even for the same concept: IBKR's in `Brokers/Ibkr/Schemas/IbkrIdentifiers.ts`, core's (staging and
-  the lookups included) in `Core/Models/Identifiers.ts`, eDavki's in `TaxAuthorities/Slovenia/Schemas/EDavkiIdentifiers.ts`, the
-  registries' in `TaxAuthorities/TaxAuthorityIdentifiers.ts` and `Brokers/Models/BrokerIdentifiers.ts` (enums where the set is fixed).
+  the lookups included) in `Core/Models/Identifiers.ts`, eDavki's in `TaxAuthorities/Slovenia/Models/EDavkiIdentifiers.ts`, the
+  registries' in `TaxAuthorities/Models/TaxAuthorityIdentifiers.ts` and `Brokers/Models/BrokerIdentifiers.ts` (enums where the set is fixed).
   A value changes type only where it crosses into the next domain. Declare the type, then a same-named const whose `Schema` holds
   the one cast; the brand names the domain:
 

@@ -11,8 +11,8 @@ import {
 import { Category } from "@brrr/Core/Models/Instrument/Category";
 import { FinancialIdentifier } from "@brrr/Core/Models/Instrument/FinancialIdentifier";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
-import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
-import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";
+import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Models/TaxAuthorityLotMatchingMethod";
+import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/Services/Div/DivReportGenerator";
 
 const { build, config } = Scenario;
 

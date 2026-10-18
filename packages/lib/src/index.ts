@@ -27,21 +27,21 @@ export {
 export { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 
 // Tax authorities
-export {
-	type TaxAuthorityConfiguration,
-	TaxAuthorityLotMatchingMethod,
-	TaxpayerConfigSchema,
-	type TaxpayerInfo,
-	TaxpayerType,
-} from "@brrr/TaxAuthorities/ConfigurationProvider";
 export type {
 	GeneratedExports,
 	ITaxAuthorityProvider,
-	TaxAuthorityDescriptor,
 	TaxAuthorityRunContext,
 } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
-export { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
-export { TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
+export type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
+export type { TaxAuthorityDescriptor } from "@brrr/TaxAuthorities/Models/TaxAuthorityDescriptor";
+export { TaxAuthorityId } from "@brrr/TaxAuthorities/Models/TaxAuthorityIdentifiers";
+export { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Models/TaxAuthorityLotMatchingMethod";
+export {
+	TaxpayerConfigSchema,
+	type TaxpayerInfo,
+} from "@brrr/TaxAuthorities/Schemas/TaxpayerConfigSchema";
+export { TaxpayerType } from "@brrr/TaxAuthorities/Schemas/TaxpayerType";
+export { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Models/SlovenianReportTypeId";
 export { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
 
 // Utils
