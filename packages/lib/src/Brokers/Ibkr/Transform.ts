@@ -1,6 +1,6 @@
 import {
-	CashTransactionType,
 	type CorporateAction,
+	IbkrCashTransactionType,
 	type LotDerivative,
 	type LotStock,
 	type TradeDerivative,
@@ -9,13 +9,13 @@ import {
 } from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
 import type { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
 import {
-	GenericAssetClass,
-	GenericCategory,
+	AssetClass,
+	Category,
 	GenericDerivativeReportItemGainType,
 	GenericDividendType,
 	GenericMonetaryExchangeInformation,
-	GenericShortLong,
 	GenericTradeReportItemGainType,
+	ShortLong,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
 	CashActionId,
@@ -121,7 +121,7 @@ export class IbkrTransformService {
 				new StagingFinancialGrouping({
 					financialIdentifier: identifier,
 					countryOfOrigin: null,
-					underlyingCategory: GenericCategory.REGULAR,
+					underlyingCategory: Category.REGULAR,
 					stockTrades: stocksMap.get(key)?.items ?? [],
 					stockTaxLots: stockLotsMap.get(key)?.items ?? [],
 					derivativeTrades: derivativesMap.get(key)?.items ?? [],
@@ -171,7 +171,7 @@ export class IbkrTransformService {
 			const base = {
 				id: TradeEventId.Schema.parse(transaction.transactionID),
 				financialIdentifier,
-				assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+				assetClass: AssetClass.CASH_AND_CASH_EQUIVALENTS,
 				date: transaction.dateTime,
 				multiplier: 1,
 				exchangedMoney,
@@ -180,19 +180,22 @@ export class IbkrTransformService {
 				listingExchange: ListingExchange.Schema.parse(transaction.listingExchange),
 			};
 
-			if (transaction.type === CashTransactionType.DIVIDEND) {
+			if (transaction.type === IbkrCashTransactionType.DIVIDEND) {
 				return new StagingTradeEventCashTransactionDividend({ ...base, dividendType });
 			}
 
-			if (transaction.type === CashTransactionType.WITHHOLDING_TAX && isPaymentInLieuWithholding) {
+			if (
+				transaction.type === IbkrCashTransactionType.WITHHOLDING_TAX &&
+				isPaymentInLieuWithholding
+			) {
 				return new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend(base);
 			}
 
-			if (transaction.type === CashTransactionType.WITHHOLDING_TAX) {
+			if (transaction.type === IbkrCashTransactionType.WITHHOLDING_TAX) {
 				return new StagingTradeEventCashTransactionWithholdingTax(base);
 			}
 
-			if (transaction.type === CashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS) {
+			if (transaction.type === IbkrCashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS) {
 				return new StagingTradeEventCashTransactionPaymentInLieuOfDividend({
 					...base,
 					dividendType,
@@ -222,7 +225,7 @@ export class IbkrTransformService {
 			const base = {
 				id: TradeEventId.Schema.parse(trade.transactionID),
 				financialIdentifier,
-				assetClass: GenericAssetClass.STOCK,
+				assetClass: AssetClass.STOCK,
 				date: trade.dateTime,
 				multiplier: 1,
 				exchangedMoney,
@@ -253,7 +256,7 @@ export class IbkrTransformService {
 						dateTime: null,
 					}),
 					sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
-					shortLongType: GenericShortLong.LONG,
+					shortLongType: ShortLong.LONG,
 				}),
 		);
 	}
@@ -280,7 +283,7 @@ export class IbkrTransformService {
 			const base = {
 				id: TradeEventId.Schema.parse(trade.transactionID),
 				financialIdentifier,
-				assetClass: GenericAssetClass.OPTION,
+				assetClass: AssetClass.OPTION,
 				multiplier: trade.multiplier,
 				date: trade.dateTime,
 				exchangedMoney,
@@ -312,7 +315,7 @@ export class IbkrTransformService {
 						dateTime: null,
 					}),
 					sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
-					shortLongType: GenericShortLong.LONG,
+					shortLongType: ShortLong.LONG,
 				}),
 		);
 	}

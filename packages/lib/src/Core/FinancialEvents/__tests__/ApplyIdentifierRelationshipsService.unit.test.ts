@@ -1,6 +1,6 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
-import { GenericCategory, GenericShortLong } from "@brrr/Core/Schemas/CommonFormats";
+import { Category, ShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
@@ -39,7 +39,7 @@ test("two groupings with rename produce one merged grouping", () => {
 			build.grouping({
 				identifier: idA,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [
 					build.stockBought({
 						id: TradeEventId.Schema.parse("t1"),
@@ -59,7 +59,7 @@ test("two groupings with rename produce one merged grouping", () => {
 			build.grouping({
 				identifier: idB,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [
 					build.stockSold({
 						id: TradeEventId.Schema.parse("t2"),
@@ -134,7 +134,7 @@ test("a rename merge keeps the original trades", () => {
 			build.grouping({
 				identifier: idA,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [bought],
 				stockTaxLots: [],
 				derivativeGroupings: [],
@@ -143,7 +143,7 @@ test("a rename merge keeps the original trades", () => {
 			build.grouping({
 				identifier: idB,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [sold],
 				stockTaxLots: [],
 				derivativeGroupings: [],
@@ -179,7 +179,7 @@ test("empty relationships leaves groupings unchanged", () => {
 			build.grouping({
 				identifier: idA,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [],
 				stockTaxLots: [],
 				derivativeGroupings: [],
@@ -210,7 +210,7 @@ test("no rename in change types leaves unchanged", () => {
 			build.grouping({
 				identifier: idA,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [],
 				stockTaxLots: [],
 				derivativeGroupings: [],
@@ -253,7 +253,7 @@ test("chain A to B to C produces one grouping with C", () => {
 			build.grouping({
 				identifier: idA,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [
 					build.stockBought({
 						id: TradeEventId.Schema.parse("t1"),
@@ -273,7 +273,7 @@ test("chain A to B to C produces one grouping with C", () => {
 			build.grouping({
 				identifier: idB,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [
 					build.stockBought({
 						id: TradeEventId.Schema.parse("t2"),
@@ -293,7 +293,7 @@ test("chain A to B to C produces one grouping with C", () => {
 			build.grouping({
 				identifier: idC,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [],
 				stockTaxLots: [],
 				derivativeGroupings: [],
@@ -349,7 +349,7 @@ test("sink grouping with different instance merges into one", () => {
 			build.grouping({
 				identifier: idOld,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [
 					build.stockBought({
 						id: TradeEventId.Schema.parse("t1"),
@@ -369,7 +369,7 @@ test("sink grouping with different instance merges into one", () => {
 			build.grouping({
 				identifier: idNewInGrouping,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [
 					build.stockSold({
 						id: TradeEventId.Schema.parse("t2"),
@@ -425,7 +425,7 @@ test("same ISIN different ticker matches rename chain", () => {
 			build.grouping({
 				identifier: idInGrouping,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [
 					build.stockBought({
 						id: TradeEventId.Schema.parse("t1"),
@@ -485,7 +485,7 @@ test("apply split scales trades before effective date and merges into to", () =>
 			build.grouping({
 				identifier: idFrom,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [
 					build.stockBought({
 						id: TradeEventId.Schema.parse("t1"),
@@ -560,7 +560,7 @@ test("apply split builds new trades and leaves the originals untouched", () => {
 			build.grouping({
 				identifier: idFrom,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [bought, sold],
 				stockTaxLots: [],
 				derivativeGroupings: [],
@@ -616,7 +616,7 @@ test("apply split scales underlying trade price", () => {
 			build.grouping({
 				identifier: idFrom,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [
 					build.stockBought({
 						id: TradeEventId.Schema.parse("t1"),
@@ -668,7 +668,7 @@ test("apply split does not scale trades on or after effective date", () => {
 			build.grouping({
 				identifier: idFrom,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [
 					build.stockBought({
 						id: TradeEventId.Schema.parse("t1"),
@@ -736,7 +736,7 @@ test("apply split scales lots before effective date", () => {
 	const lot = build.stockTaxLot({
 		id: TaxLotId.Schema.parse("lot1"),
 		quantity: 2.0,
-		shortLongType: GenericShortLong.LONG,
+		shortLongType: ShortLong.LONG,
 		acquired,
 		sold,
 	});
@@ -745,7 +745,7 @@ test("apply split scales lots before effective date", () => {
 			build.grouping({
 				identifier: idFrom,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [],
 				stockTaxLots: [lot],
 				derivativeGroupings: [],
@@ -789,7 +789,7 @@ test("apply reverse split scales by ratio", () => {
 			build.grouping({
 				identifier: idFrom,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [
 					build.stockBought({
 						id: TradeEventId.Schema.parse("t1"),
@@ -841,7 +841,7 @@ test("apply split merges from into existing to grouping", () => {
 			build.grouping({
 				identifier: idFrom,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [
 					build.stockBought({
 						id: TradeEventId.Schema.parse("t1"),
@@ -861,7 +861,7 @@ test("apply split merges from into existing to grouping", () => {
 			build.grouping({
 				identifier: idTo,
 				countryOfOrigin: CountryCode.Schema.parse("US"),
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [
 					build.stockBought({
 						id: TradeEventId.Schema.parse("t2"),

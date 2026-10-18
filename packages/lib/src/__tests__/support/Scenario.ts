@@ -5,12 +5,12 @@ import { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
 import {
-	GenericAssetClass,
-	type GenericCategory,
+	AssetClass,
+	type Category,
 	GenericDerivativeReportItemGainType,
 	type GenericDividendType,
-	type GenericShortLong,
 	GenericTradeReportItemGainType,
+	type ShortLong,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
 	type TradeEventCashTransaction,
@@ -44,7 +44,7 @@ import type { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schema
 import { TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
 import { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
 
-type LotFields = { id: TaxLotStock["id"]; quantity: number; shortLongType: GenericShortLong };
+type LotFields = { id: TaxLotStock["id"]; quantity: number; shortLongType: ShortLong };
 
 // Builders for lib's objects. Each fixes only what its name says (a stock buy is a STOCK bought
 // with multiplier 1; everything built has no provenance yet); every other value is required.
@@ -54,7 +54,7 @@ const build = {
 	stockBought(fields: TradeFields): TradeEventStockAcquired {
 		return new TradeEventStockAcquired({
 			id: fields.id,
-			assetClass: GenericAssetClass.STOCK,
+			assetClass: AssetClass.STOCK,
 			date: Values.date(fields.date),
 			multiplier: 1,
 			exchangedMoney: Values.tradeMoney(fields),
@@ -66,7 +66,7 @@ const build = {
 	stockSold(fields: TradeFields): TradeEventStockSold {
 		return new TradeEventStockSold({
 			id: fields.id,
-			assetClass: GenericAssetClass.STOCK,
+			assetClass: AssetClass.STOCK,
 			date: Values.date(fields.date),
 			multiplier: 1,
 			exchangedMoney: Values.tradeMoney(fields),
@@ -77,7 +77,7 @@ const build = {
 	optionBought(fields: TradeFields & { multiplier: number }): TradeEventDerivativeAcquired {
 		return new TradeEventDerivativeAcquired({
 			id: fields.id,
-			assetClass: GenericAssetClass.OPTION,
+			assetClass: AssetClass.OPTION,
 			date: Values.date(fields.date),
 			multiplier: fields.multiplier,
 			exchangedMoney: Values.tradeMoney(fields),
@@ -89,7 +89,7 @@ const build = {
 	optionSold(fields: TradeFields & { multiplier: number }): TradeEventDerivativeSold {
 		return new TradeEventDerivativeSold({
 			id: fields.id,
-			assetClass: GenericAssetClass.OPTION,
+			assetClass: AssetClass.OPTION,
 			date: Values.date(fields.date),
 			multiplier: fields.multiplier,
 			exchangedMoney: Values.tradeMoney(fields),
@@ -153,7 +153,7 @@ const build = {
 	grouping(fields: {
 		identifier: FinancialIdentifier;
 		countryOfOrigin: FinancialGrouping["countryOfOrigin"];
-		category: GenericCategory;
+		category: Category;
 		stockTrades: TradeEventStock[];
 		stockTaxLots: TaxLotStock[];
 		derivativeGroupings: DerivativeGrouping[];
@@ -192,7 +192,7 @@ const build = {
 function cashEvent(fields: CashFields) {
 	return {
 		id: fields.id,
-		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+		assetClass: AssetClass.CASH_AND_CASH_EQUIVALENTS,
 		date: Values.date(fields.date),
 		multiplier: 1,
 		exchangedMoney: Values.cashMoney(fields),

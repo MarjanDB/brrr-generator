@@ -1,5 +1,5 @@
 import type {
-	GenericAssetClass,
+	AssetClass,
 	GenericDerivativeReportItemGainType,
 	GenericDividendType,
 	GenericMonetaryExchangeInformation,
@@ -17,7 +17,7 @@ import type { ValidDateTime } from "@brrr/Utils/DateTime";
 type StagingTradeEventArgs = {
 	id: TradeEventId;
 	financialIdentifier: StagingFinancialIdentifier;
-	assetClass: GenericAssetClass;
+	assetClass: AssetClass;
 	date: ValidDateTime;
 	multiplier: number;
 	exchangedMoney: GenericMonetaryExchangeInformation;
@@ -32,7 +32,7 @@ type StagingCashTransactionArgs = StagingTradeEventArgs & {
 abstract class StagingTradeEventBase {
 	public readonly id: TradeEventId;
 	public readonly financialIdentifier: StagingFinancialIdentifier;
-	public readonly assetClass: GenericAssetClass;
+	public readonly assetClass: AssetClass;
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;

@@ -1,8 +1,8 @@
 import type { IbkrTransactionId } from "@brrr/Brokers/Ibkr/Schemas/IbkrIdentifiers";
 import {
-	AssetClass,
 	CorporateAction,
 	FlexQueryResponseSchema,
+	IbkrAssetClass,
 	LotDerivative,
 	LotStock,
 	TradeDerivative,
@@ -35,16 +35,16 @@ export class IbkrExtractService {
 			const allLots = s.Trades.Lot;
 
 			const stockTrades = allTrades
-				.filter((t) => t.assetCategory === AssetClass.STOCK)
+				.filter((t) => t.assetCategory === IbkrAssetClass.STOCK)
 				.map((a) => TradeStock.Schema.parse(a));
 			const stockLots = allLots
-				.filter((t) => t.assetCategory === AssetClass.STOCK)
+				.filter((t) => t.assetCategory === IbkrAssetClass.STOCK)
 				.map((a) => LotStock.Schema.parse(a));
 			const derivativeTrades = allTrades
-				.filter((t) => t.assetCategory === AssetClass.OPTION)
+				.filter((t) => t.assetCategory === IbkrAssetClass.OPTION)
 				.map((a) => TradeDerivative.Schema.parse(a));
 			const derivativeLots = allLots
-				.filter((t) => t.assetCategory === AssetClass.OPTION)
+				.filter((t) => t.assetCategory === IbkrAssetClass.OPTION)
 				.map((a) => LotDerivative.Schema.parse(a));
 			const cashTransactions = s.CashTransactions.CashTransaction.map((a) =>
 				TransactionCash.Schema.parse(a),

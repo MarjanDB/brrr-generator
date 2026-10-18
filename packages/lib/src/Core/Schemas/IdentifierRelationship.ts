@@ -1,10 +1,11 @@
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 
+// ISO 15022/20022 corporate action event codes (CAEV).
 export enum IdentifierChangeType {
-	RENAME = "RENAME",
-	SPLIT = "SPLIT",
-	REVERSE_SPLIT = "REVERSE_SPLIT",
+	RENAME = "RENAME", // CHAN
+	SPLIT = "SPLIT", // SPLF
+	REVERSE_SPLIT = "REVERSE_SPLIT", // SPLR
 }
 
 type IdentifierRelationshipArgs = {

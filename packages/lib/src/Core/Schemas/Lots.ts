@@ -1,4 +1,4 @@
-import type { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats";
+import type { ShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import type {
 	TradeEventDerivativeAcquired,
 	TradeEventDerivativeSold,
@@ -13,16 +13,18 @@ type TaxLotArgs<A, S> = {
 	quantity: number;
 	acquired: A;
 	sold: S;
-	shortLongType: GenericShortLong;
+	shortLongType: ShortLong;
 	provenance: AnyProvenanceStep[];
 };
 
+// The sides are named by direction, not by which one opens the position: on a short lot the sale
+// comes first and opens it, and `acquired` is the later buy that closes it.
 export class TaxLot<A, S> {
 	public readonly id: TaxLotId;
 	public readonly quantity: number;
 	public readonly acquired: A;
 	public readonly sold: S;
-	public readonly shortLongType: GenericShortLong;
+	public readonly shortLongType: ShortLong;
 	public readonly provenance: AnyProvenanceStep[];
 
 	constructor(args: TaxLotArgs<A, S>) {

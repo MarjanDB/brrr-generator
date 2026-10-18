@@ -1,6 +1,6 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod";
-import { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats";
+import { ShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import { CurrencyCode, TaxLotId, TradeEventId } from "@brrr/Core/Schemas/Identifiers";
 
 const { build } = Scenario;
@@ -8,7 +8,7 @@ const { build } = Scenario;
 const simpleLot = build.stockTaxLot({
 	id: TaxLotId.Schema.parse("ID"),
 	quantity: 1,
-	shortLongType: GenericShortLong.LONG,
+	shortLongType: ShortLong.LONG,
 	acquired: build.stockBought({
 		id: TradeEventId.Schema.parse("ID"),
 		date: "2023-01-01",
@@ -35,7 +35,7 @@ const simpleLot = build.stockTaxLot({
 const underUtilizedLot = build.stockTaxLot({
 	id: TaxLotId.Schema.parse("ID"),
 	quantity: 1,
-	shortLongType: GenericShortLong.LONG,
+	shortLongType: ShortLong.LONG,
 	acquired: build.stockBought({
 		id: TradeEventId.Schema.parse("ID"),
 		date: "2023-01-01",
