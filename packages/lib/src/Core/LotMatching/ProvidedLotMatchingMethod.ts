@@ -21,14 +21,14 @@ export class ProvidedLotMatchingMethod implements ILotMatchingMethod {
 		for (const lot of lots) {
 			const acquiredTrade: Trade = {
 				id: lot.acquired.id,
-				quantity: lot.acquired.exchangedMoney.underlyingQuantity,
+				quantity: lot.acquired.exchangedMoney.quantity,
 				date: lot.acquired.date,
 			};
 			tracker.trackAcquiredQuantity(acquiredTrade, lot.quantity);
 
 			const soldTrade: Trade = {
 				id: lot.sold.id,
-				quantity: lot.sold.exchangedMoney.underlyingQuantity,
+				quantity: lot.sold.exchangedMoney.quantity,
 				date: lot.sold.date,
 			};
 			tracker.trackSoldQuantity(soldTrade, -lot.quantity); // NOTE: Lots subtract, as sells remove from holding
@@ -38,12 +38,12 @@ export class ProvidedLotMatchingMethod implements ILotMatchingMethod {
 		for (const lot of lots) {
 			const acquiredTrade: Trade = {
 				id: lot.acquired.id,
-				quantity: lot.acquired.exchangedMoney.underlyingQuantity,
+				quantity: lot.acquired.exchangedMoney.quantity,
 				date: lot.acquired.date,
 			};
 			const soldTrade: Trade = {
 				id: lot.sold.id,
-				quantity: lot.sold.exchangedMoney.underlyingQuantity,
+				quantity: lot.sold.exchangedMoney.quantity,
 				date: lot.sold.date,
 			};
 

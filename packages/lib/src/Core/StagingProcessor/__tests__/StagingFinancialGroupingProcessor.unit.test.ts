@@ -173,9 +173,9 @@ test("simple stock lot matching", () => {
 	const results = processor.generateGenericGroupings(groupings);
 	expect(results.length).toEqual(1);
 	expect(results[0].stockTaxLots[0].acquired).toEqual(results[0].stockTrades[0]);
-	expect(results[0].stockTaxLots[0].acquired.exchangedMoney.underlyingQuantity).toEqual(1);
+	expect(results[0].stockTaxLots[0].acquired.exchangedMoney.quantity).toEqual(1);
 	expect(results[0].stockTaxLots[0].sold).toEqual(results[0].stockTrades[1]);
-	expect(results[0].stockTaxLots[0].sold.exchangedMoney.underlyingQuantity).toEqual(-1);
+	expect(results[0].stockTaxLots[0].sold.exchangedMoney.quantity).toEqual(-1);
 });
 
 test("partial stock lot matching throws", () => {
@@ -243,14 +243,13 @@ test("simple derivative lot matching", () => {
 		results[0].derivativeGroupings[0].derivativeTrades[0],
 	);
 	expect(
-		results[0].derivativeGroupings[0].derivativeTaxLots[0].acquired.exchangedMoney
-			.underlyingQuantity,
+		results[0].derivativeGroupings[0].derivativeTaxLots[0].acquired.exchangedMoney.quantity,
 	).toEqual(1);
 	expect(results[0].derivativeGroupings[0].derivativeTaxLots[0].sold).toEqual(
 		results[0].derivativeGroupings[0].derivativeTrades[1],
 	);
 	expect(
-		results[0].derivativeGroupings[0].derivativeTaxLots[0].sold.exchangedMoney.underlyingQuantity,
+		results[0].derivativeGroupings[0].derivativeTaxLots[0].sold.exchangedMoney.quantity,
 	).toEqual(-1);
 });
 
@@ -272,10 +271,10 @@ test("dividend with withholding tax", () => {
 	expect(results.length).toEqual(1);
 	expect(results[0].cashTransactions[0].id).toEqual(simpleStagingDividend.id);
 	expect(results[0].cashTransactions[1].id).toEqual(simpleStagingDividendWithholdingTax.id);
-	expect(results[0].cashTransactions[0].exchangedMoney.underlyingQuantity).toEqual(1);
-	expect(results[0].cashTransactions[1].exchangedMoney.underlyingQuantity).toEqual(1);
-	expect(results[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(10);
-	expect(results[0].cashTransactions[1].exchangedMoney.underlyingTradePrice).toEqual(-5);
+	expect(results[0].cashTransactions[0].exchangedMoney.quantity).toEqual(1);
+	expect(results[0].cashTransactions[1].exchangedMoney.quantity).toEqual(1);
+	expect(results[0].cashTransactions[0].exchangedMoney.priceInBase).toEqual(10);
+	expect(results[0].cashTransactions[1].exchangedMoney.priceInBase).toEqual(-5);
 });
 
 test("payment in lieu of dividend with withholding tax", () => {
@@ -301,10 +300,10 @@ test("payment in lieu of dividend with withholding tax", () => {
 	expect(results[0].cashTransactions[1].id).toEqual(
 		simpleStagingPaymentInLieuOfDividendWithholdingTax.id,
 	);
-	expect(results[0].cashTransactions[0].exchangedMoney.underlyingQuantity).toEqual(1);
-	expect(results[0].cashTransactions[1].exchangedMoney.underlyingQuantity).toEqual(1);
-	expect(results[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(5);
-	expect(results[0].cashTransactions[1].exchangedMoney.underlyingTradePrice).toEqual(-2.5);
+	expect(results[0].cashTransactions[0].exchangedMoney.quantity).toEqual(1);
+	expect(results[0].cashTransactions[1].exchangedMoney.quantity).toEqual(1);
+	expect(results[0].cashTransactions[0].exchangedMoney.priceInBase).toEqual(5);
+	expect(results[0].cashTransactions[1].exchangedMoney.priceInBase).toEqual(-2.5);
 });
 
 test("processStagingFinancialEvents returns FinancialEvents with converted relationships", () => {

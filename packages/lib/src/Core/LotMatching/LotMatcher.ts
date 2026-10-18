@@ -31,7 +31,7 @@ export class LotMatcher {
 	}
 
 	private convertTradeEvent(event: TradeEventBase): Trade {
-		return { id: event.id, quantity: event.exchangedMoney.underlyingQuantity, date: event.date };
+		return { id: event.id, quantity: event.exchangedMoney.quantity, date: event.date };
 	}
 
 	// The commission is split in proportion to the quantity the lot takes from the trade.
@@ -40,9 +40,7 @@ export class LotMatcher {
 			trade,
 			quantity,
 			commission:
-				(1 / trade.exchangedMoney.underlyingQuantity) *
-				quantity *
-				trade.exchangedMoney.commissionTotal,
+				(1 / trade.exchangedMoney.quantity) * quantity * trade.exchangedMoney.commissionInBase,
 		};
 	}
 }

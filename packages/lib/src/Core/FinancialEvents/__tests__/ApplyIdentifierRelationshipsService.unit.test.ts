@@ -512,8 +512,8 @@ test("apply split scales trades before effective date and merges into to", () =>
 	expect(merged.financialIdentifier.isTheSameAs(idTo)).toEqual(true);
 	expect(merged.stockTrades.length).toEqual(1);
 	const trade = merged.stockTrades[0];
-	expect(trade.exchangedMoney.underlyingQuantity).toEqual(40.0);
-	expect(trade.exchangedMoney.underlyingTradePrice).toEqual(1.0);
+	expect(trade.exchangedMoney.quantity).toEqual(40.0);
+	expect(trade.exchangedMoney.priceInBase).toEqual(1.0);
 	expect(trade.provenance.length).toEqual(1);
 	expect(trade.provenance[0]).toBeInstanceOf(SplitProvenanceStep);
 	expect(trade.provenance[0]).toMatchObject({
@@ -585,10 +585,10 @@ test("apply split builds new trades and leaves the originals untouched", () => {
 
 	expect(merged.stockTrades[0]).toBeInstanceOf(TradeEventStockAcquired);
 	expect(merged.stockTrades[1]).toBeInstanceOf(TradeEventStockSold);
-	expect(merged.stockTrades.map((t) => t.exchangedMoney.underlyingQuantity)).toEqual([40, -20]);
-	expect(bought.exchangedMoney.underlyingQuantity).toEqual(4.0);
+	expect(merged.stockTrades.map((t) => t.exchangedMoney.quantity)).toEqual([40, -20]);
+	expect(bought.exchangedMoney.quantity).toEqual(4.0);
 	expect(bought.provenance).toEqual([]);
-	expect(sold.exchangedMoney.underlyingQuantity).toEqual(-2.0);
+	expect(sold.exchangedMoney.quantity).toEqual(-2.0);
 	expect(sold.provenance).toEqual([]);
 });
 
@@ -640,8 +640,8 @@ test("apply split scales underlying trade price", () => {
 	const result = service.apply(events, [IdentifierChangeType.SPLIT]);
 	expect(result.groupings.length).toEqual(1);
 	const trade = result.groupings[0].stockTrades[0];
-	expect(trade.exchangedMoney.underlyingQuantity).toEqual(10.0);
-	expect(trade.exchangedMoney.underlyingTradePrice).toEqual(10.0);
+	expect(trade.exchangedMoney.quantity).toEqual(10.0);
+	expect(trade.exchangedMoney.priceInBase).toEqual(10.0);
 });
 
 test("apply split does not scale trades on or after effective date", () => {
@@ -691,7 +691,7 @@ test("apply split does not scale trades on or after effective date", () => {
 	const service = new ApplyIdentifierRelationshipsService();
 	const result = service.apply(events, [IdentifierChangeType.SPLIT]);
 	expect(result.groupings.length).toEqual(1);
-	expect(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity).toEqual(5.0);
+	expect(result.groupings[0].stockTrades[0].exchangedMoney.quantity).toEqual(5.0);
 });
 
 test("apply split scales lots before effective date", () => {
@@ -813,8 +813,8 @@ test("apply reverse split scales by ratio", () => {
 	const result = service.apply(events, [IdentifierChangeType.REVERSE_SPLIT]);
 	expect(result.groupings.length).toEqual(1);
 	expect(result.groupings[0].financialIdentifier.isTheSameAs(idTo)).toEqual(true);
-	expect(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity).toEqual(1.0);
-	expect(result.groupings[0].stockTrades[0].exchangedMoney.underlyingTradePrice).toEqual(100.0);
+	expect(result.groupings[0].stockTrades[0].exchangedMoney.quantity).toEqual(1.0);
+	expect(result.groupings[0].stockTrades[0].exchangedMoney.priceInBase).toEqual(100.0);
 });
 
 test("apply split merges from into existing to grouping", () => {
@@ -887,9 +887,7 @@ test("apply split merges from into existing to grouping", () => {
 	const merged = result.groupings[0];
 	expect(merged.financialIdentifier.isTheSameAs(idTo)).toEqual(true);
 	expect(merged.stockTrades.length).toEqual(2);
-	const qtys = [...merged.stockTrades.map((t) => t.exchangedMoney.underlyingQuantity)].sort(
-		(a, b) => a - b,
-	);
+	const qtys = [...merged.stockTrades.map((t) => t.exchangedMoney.quantity)].sort((a, b) => a - b);
 	expect(qtys[0]).toEqual(5.0);
 	expect(qtys[1]).toEqual(10.0);
 });

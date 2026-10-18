@@ -51,19 +51,19 @@ function toCumulative(
 }
 
 function tradeValueInBase(money: {
-	underlyingQuantity: number;
-	underlyingTradePrice: number;
+	quantity: number;
+	priceInBase: number;
 	fxRateToBase: number;
 }): number {
-	return money.underlyingQuantity * money.underlyingTradePrice * money.fxRateToBase;
+	return money.quantity * money.priceInBase * money.fxRateToBase;
 }
 
 function firstCurrency(groupings: FinancialGrouping[]): string {
 	for (const g of groupings) {
-		for (const t of g.stockTrades) return t.exchangedMoney.underlyingCurrency;
-		for (const t of g.cashTransactions) return t.exchangedMoney.underlyingCurrency;
+		for (const t of g.stockTrades) return t.exchangedMoney.currency;
+		for (const t of g.cashTransactions) return t.exchangedMoney.currency;
 		for (const dg of g.derivativeGroupings) {
-			for (const t of dg.derivativeTrades) return t.exchangedMoney.underlyingCurrency;
+			for (const t of dg.derivativeTrades) return t.exchangedMoney.currency;
 		}
 	}
 	return "";

@@ -1,8 +1,8 @@
 import type {
 	AssetClass,
+	ExchangedMoney,
 	GenericDerivativeReportItemGainType,
 	GenericDividendType,
-	GenericMonetaryExchangeInformation,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
 import type {
@@ -20,7 +20,7 @@ type StagingTradeEventArgs = {
 	assetClass: AssetClass;
 	date: ValidDateTime;
 	multiplier: number;
-	exchangedMoney: GenericMonetaryExchangeInformation;
+	exchangedMoney: ExchangedMoney;
 };
 
 type StagingCashTransactionArgs = StagingTradeEventArgs & {
@@ -35,7 +35,7 @@ abstract class StagingTradeEventBase {
 	public readonly assetClass: AssetClass;
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
-	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
+	public readonly exchangedMoney: ExchangedMoney;
 
 	constructor(args: StagingTradeEventArgs) {
 		this.id = args.id;

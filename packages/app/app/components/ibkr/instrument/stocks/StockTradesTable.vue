@@ -42,15 +42,15 @@ function formatAmount(amount: number, currency: string) {
           <td class="py-1.5 pr-3 app-text text-xs">
             {{ trade instanceof TradeEventStockAcquired ? t("modal_trade_buy") : t("modal_trade_sell") }}
           </td>
-          <td class="py-1.5 pr-3 text-right app-text text-xs">{{ trade.exchangedMoney.underlyingQuantity }}</td>
+          <td class="py-1.5 pr-3 text-right app-text text-xs">{{ trade.exchangedMoney.quantity }}</td>
           <td class="py-1.5 pr-3 text-right app-text text-xs">
-            {{ formatAmount(trade.exchangedMoney.underlyingTradePrice, trade.exchangedMoney.underlyingCurrency) }}
+            {{ formatAmount(trade.exchangedMoney.priceInBase, trade.exchangedMoney.currency) }}
           </td>
           <td class="py-1.5 text-right app-text text-xs">
             {{
               formatAmount(
-                trade.exchangedMoney.underlyingQuantity * trade.exchangedMoney.underlyingTradePrice,
-                trade.exchangedMoney.underlyingCurrency,
+                trade.exchangedMoney.quantity * trade.exchangedMoney.priceInBase,
+                trade.exchangedMoney.currency,
               )
             }}
           </td>

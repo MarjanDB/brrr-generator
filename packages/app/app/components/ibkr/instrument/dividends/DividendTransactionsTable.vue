@@ -52,8 +52,8 @@ function cashTxLabel(tx: CashTx): string {
           <td class="py-1.5 text-right app-text text-xs">
             {{
               formatAmount(
-                tx.exchangedMoney.underlyingQuantity * tx.exchangedMoney.underlyingTradePrice,
-                tx.exchangedMoney.underlyingCurrency,
+                tx.exchangedMoney.quantity * tx.exchangedMoney.priceInBase,
+                tx.exchangedMoney.currency,
               )
             }}
           </td>

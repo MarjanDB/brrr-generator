@@ -46,14 +46,14 @@ function convertBuy(
 		boughtOn: trade.date,
 		gainType: GAIN_MAPPINGS[trade.acquiredReason] ?? EDavkiDerivativeReportGainType.OTHER,
 		quantity: quantity,
-		pricePerUnit: trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+		pricePerUnit: trade.exchangedMoney.priceInBase * trade.multiplier,
 		pricePerUnitInOriginalCurrency: toOriginalCurrency(
-			trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+			trade.exchangedMoney.priceInBase * trade.multiplier,
 			trade.exchangedMoney.fxRateToBase,
 		),
-		totalPrice: quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+		totalPrice: quantity * trade.exchangedMoney.priceInBase * trade.multiplier,
 		totalPriceInOriginalCurrency: toOriginalCurrency(
-			quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+			quantity * trade.exchangedMoney.priceInBase * trade.multiplier,
 			trade.exchangedMoney.fxRateToBase,
 		),
 		commissions: commission,
@@ -73,14 +73,14 @@ function convertSell(
 	return new EDavkiDerivativeReportSecurityLineGenericEventSold({
 		soldOn: trade.date,
 		quantity: quantity,
-		pricePerUnit: trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+		pricePerUnit: trade.exchangedMoney.priceInBase * trade.multiplier,
 		pricePerUnitInOriginalCurrency: toOriginalCurrency(
-			trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+			trade.exchangedMoney.priceInBase * trade.multiplier,
 			trade.exchangedMoney.fxRateToBase,
 		),
-		totalPrice: quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+		totalPrice: quantity * trade.exchangedMoney.priceInBase * trade.multiplier,
 		totalPriceInOriginalCurrency: toOriginalCurrency(
-			quantity * trade.exchangedMoney.underlyingTradePrice * trade.multiplier,
+			quantity * trade.exchangedMoney.priceInBase * trade.multiplier,
 			trade.exchangedMoney.fxRateToBase,
 		),
 		commissions: commission,

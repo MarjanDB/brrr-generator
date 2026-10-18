@@ -93,7 +93,7 @@ test("transform: single stock trade buy", () => {
 	expect(result.groupings.length).toEqual(1);
 	expect(result.groupings[0].financialIdentifier.isin).toEqual("US21212112");
 	expect(result.groupings[0].stockTrades[0].financialIdentifier.isin).toEqual("US21212112");
-	expect(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity).toEqual(2);
+	expect(result.groupings[0].stockTrades[0].exchangedMoney.quantity).toEqual(2);
 });
 
 test("transform: single stock trade sell", () => {
@@ -108,7 +108,7 @@ test("transform: single stock trade sell", () => {
 		}),
 	);
 	expect(result.groupings.length).toEqual(1);
-	expect(result.groupings[0].stockTrades[0].exchangedMoney.underlyingQuantity).toEqual(-2);
+	expect(result.groupings[0].stockTrades[0].exchangedMoney.quantity).toEqual(-2);
 });
 
 test("transform: single stock lot", () => {
@@ -143,10 +143,10 @@ test("transform: single dividend", () => {
 	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(
 		StagingTradeEventCashTransactionDividend,
 	);
-	expect(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(
+	expect(result.groupings[0].cashTransactions[0].exchangedMoney.priceInBase).toEqual(
 		dividend.amount * dividend.fxRateToBase,
 	);
-	expect(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingQuantity).toEqual(1);
+	expect(result.groupings[0].cashTransactions[0].exchangedMoney.quantity).toEqual(1);
 });
 
 test("transform: single payment in lieu of dividend", () => {
@@ -163,7 +163,7 @@ test("transform: single payment in lieu of dividend", () => {
 	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(
 		StagingTradeEventCashTransactionPaymentInLieuOfDividend,
 	);
-	expect(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(
+	expect(result.groupings[0].cashTransactions[0].exchangedMoney.priceInBase).toEqual(
 		paymentInLieuOfDividend.amount * paymentInLieuOfDividend.fxRateToBase,
 	);
 });
@@ -182,7 +182,7 @@ test("transform: single withholding tax", () => {
 	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(
 		StagingTradeEventCashTransactionWithholdingTax,
 	);
-	expect(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(
+	expect(result.groupings[0].cashTransactions[0].exchangedMoney.priceInBase).toEqual(
 		withholdingTaxForDividend.amount * withholdingTaxForDividend.fxRateToBase,
 	);
 });
