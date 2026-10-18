@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ProvenanceNode, ProvenanceWalker, ReportInstrument } from "@brrr/lib";
+import type { ProvenanceWalker, ReportInstrument } from "@brrr/lib";
 import { Chart, type ChartConfiguration } from "chart.js/auto";
 import { DateTime } from "luxon";
 import { computed, onMounted, onUnmounted, useTemplateRef, watch } from "vue";
@@ -10,18 +10,13 @@ import { type TimelineMarksPlugin, timelineMarksPlugin } from "~/utils/timelineM
 const props = defineProps<{
 	instrument: ReportInstrument;
 	walker: ProvenanceWalker;
-	focus: ProvenanceNode;
-	lit: ReadonlySet<ProvenanceNode> | null;
 	locale: string;
 	// The instrument's name for the screen reader
 	name: string;
 }>();
 
-const emit = defineEmits<{
-	select: [node: ProvenanceNode];
-}>();
-
 const { t } = useI18n();
+const focus = useGraphFocus();
 const { timeline, ticks, describeMark } = useInstrumentTimeline(
 	() => props.instrument,
 	() => props.walker,
@@ -102,7 +97,7 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 				if (element !== undefined) {
 					const mark = drawn.marks[element.index];
 					if (mark !== undefined) {
-						emit("select", mark.node);
+						focus.refocus(mark.node);
 					}
 					return;
 				}
@@ -111,7 +106,7 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 				}
 				const arc = plugin.arcAt({ x: event.x, y: event.y }, arcTolerance);
 				if (arc !== null) {
-					emit("select", arc.lot);
+					focus.refocus(arc.lot);
 				}
 			},
 			onHover: (event, elements, hovered) => {
@@ -157,8 +152,8 @@ function rebuild() {
 	}
 	const plugin = timelineMarksPlugin(() => ({
 		timeline: timeline.value,
-		focus: props.focus,
-		lit: props.lit,
+		focus: focus.node.value,
+		lit: focus.lit.value?.sources ?? null,
 		colors: colors.value,
 	}));
 	chart = new Chart(canvasRef.value, buildConfig(plugin));
@@ -171,7 +166,7 @@ onUnmounted(() => {
 });
 
 watch(
-  () => [props.focus, props.lit],
+  () => [focus.node.value, focus.lit.value],
   () => chart?.update("none"),
 );
 watch(timeline, rebuild);

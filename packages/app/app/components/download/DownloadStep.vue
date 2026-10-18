@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-	type ProvenanceNode,
 	ProvenanceReportReader,
 	ProvenanceWalker,
 	type ReportInstrument,
@@ -12,7 +11,6 @@ import InstrumentHeader from "~/components/download/InstrumentHeader.vue";
 import InstrumentPanel from "~/components/download/InstrumentPanel.vue";
 import InstrumentTimeline from "~/components/download/InstrumentTimeline.vue";
 import GuideModal from "~/components/guide/GuideModal.vue";
-import { FocusState } from "~/download/graph/FocusState";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
 
 const props = defineProps<{
@@ -35,42 +33,40 @@ const reading = computed(() => new ProvenanceReportReader().read(props.outputs.p
 const walker = computed(() => new ProvenanceWalker(props.outputs.provenance));
 const sections = computed(() => buildPanel(reading.value));
 
+const focus = provideGraphFocus();
 const selected = shallowRef<ReportInstrument | null>(
 	firstEntry(sections.value)?.instrument ?? null,
 );
-const focusState = shallowRef<FocusState | null>(
-	selected.value === null ? null : FocusState.start(defaultFocus(selected.value)),
-);
+if (selected.value !== null) {
+	focus.start(defaultFocus(selected.value));
+}
 
 function select(instrument: ReportInstrument) {
 	selected.value = instrument;
-	focusState.value = FocusState.start(defaultFocus(instrument));
-}
-
-function focus(node: ProvenanceNode) {
-	focusState.value = focusState.value?.refocus(node) ?? null;
+	focus.start(defaultFocus(instrument));
 }
 
 // A new report starts again from its first instrument.
 watch(sections, (next) => {
 	const first = firstEntry(next)?.instrument ?? null;
 	selected.value = first;
-	focusState.value = first === null ? null : FocusState.start(defaultFocus(first));
+	if (first !== null) {
+		focus.start(defaultFocus(first));
+	}
 });
 
 const selectedEntry = computed(() =>
 	selected.value === null ? null : findEntry(sections.value, selected.value),
 );
-const lit = computed(() => focusState.value?.lit?.sources ?? null);
 const leftOut = computed(() =>
-	selected.value === null || focusState.value === null
+	selected.value === null || focus.node.value === null
 		? []
-		: leftOutOf(selected.value, focusState.value.focus),
+		: leftOutOf(selected.value, focus.node.value),
 );
 const warnings = computed(() =>
-	selected.value === null || focusState.value === null
+	selected.value === null || focus.node.value === null
 		? []
-		: warningsOf(selected.value, focusState.value.focus),
+		: warningsOf(selected.value, focus.node.value),
 );
 const timelineName = computed(
 	() => selectedEntry.value?.contract?.occSymbol ?? selectedEntry.value?.ticker ?? "",
@@ -96,7 +92,7 @@ const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
       <InstrumentPanel :sections="sections" :selected="selected" @select="select" />
 
       <div
-        v-if="selectedEntry !== null && selected !== null && focusState !== null"
+        v-if="selectedEntry !== null && selected !== null && focus.node.value !== null"
         class="flex flex-col min-w-0 rounded-md border border-edge"
       >
         <InstrumentHeader :entry="selectedEntry" :chips="chipsOf(selectedEntry.instrument)" />
@@ -104,11 +100,8 @@ const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
           <InstrumentTimeline
             :instrument="selected"
             :walker="walker"
-            :focus="focusState.focus"
-            :lit="lit"
             :locale="locale"
             :name="timelineName"
-            @select="focus"
           />
         </div>
         <LazyGraphView
@@ -116,15 +109,13 @@ const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
           :graph="outputs.provenance"
           :reading="reading"
           :walker="walker"
-          :focus-state="focusState"
           :instrument-kind="selected.kind"
           :ticker="timelineName"
           :lot-matching-method="outputs.lotMatchingMethod"
           :locale="locale"
           :form-name="formName"
-          @update:focus-state="(next) => (focusState = next)"
         />
-        <FocusFacts :node="focusState.focus" :left-out="leftOut" :warnings="warnings" />
+        <FocusFacts :left-out="leftOut" :warnings="warnings" />
       </div>
     </div>
   </div>

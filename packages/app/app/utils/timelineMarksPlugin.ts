@@ -17,7 +17,7 @@ import { arcGeometry, arcHit, markStateOf } from "~/utils/instrumentTimeline";
 
 export type TimelineDrawState = {
 	timeline: Timeline;
-	focus: ProvenanceNode;
+	focus: ProvenanceNode | null;
 	lit: ReadonlySet<ProvenanceNode> | null;
 	colors: ChartThemeColors;
 };

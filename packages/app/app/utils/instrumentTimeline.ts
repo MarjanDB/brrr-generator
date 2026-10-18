@@ -174,7 +174,7 @@ export function timelineTicks(first: number, last: number): TimelineTick[] {
 // `lit` is the set of nodes in the chain the user picked, or null when none is picked.
 export function markStateOf(
 	node: ProvenanceNode,
-	focus: ProvenanceNode,
+	focus: ProvenanceNode | null,
 	lit: ReadonlySet<ProvenanceNode> | null,
 ): MarkState {
 	if (node === focus) {
