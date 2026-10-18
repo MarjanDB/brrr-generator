@@ -1,0 +1,33 @@
+name: Lint and typecheck
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  checks:
+    name: Lint and typecheck
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+
+      - uses: pnpm/action-setup@v6
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint
+        run: pnpm lint
+
+      # Builds lib first: the app and the CLI typecheck against packages/lib/dist/.
+      - name: Typecheck
+        run: pnpm typecheck

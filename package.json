@@ -3,11 +3,14 @@
 	"private": true,
 	"packageManager": "pnpm@11.28.6",
 	"scripts": {
+		"check": "pnpm lint && pnpm typecheck && pnpm test",
 		"cli": "pnpm --filter @brrr/cli start",
-		"dev": "pnpm --filter @brrr/app dev",
+		"dev": "pnpm --filter @brrr/lib build && pnpm --parallel --filter @brrr/lib --filter @brrr/app dev",
 		"docker:build": "docker build -t brrr-tax-generator .",
 		"lint": "biome check .",
-		"lint:fix": "biome check --write ."
+		"lint:fix": "biome check --write .",
+		"test": "pnpm --filter @brrr/lib test",
+		"typecheck": "pnpm --filter @brrr/lib build && pnpm --recursive typecheck"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "catalog:"
