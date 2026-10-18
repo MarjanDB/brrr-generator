@@ -1,14 +1,16 @@
 import type { CurrencyCode } from "@brrr/Core/Schemas/Identifiers";
+// ISO 10962 CFI categories (the code's first letter; TC is category T, group C).
 export enum GenericAssetClass {
-	STOCK = "STOCK",
-	OPTION = "OPTION",
-	CASH_AND_CASH_EQUIVALENTS = "CASH_AND_CASH_EQUIVALENTS",
-	BOND = "BOND",
+	STOCK = "STOCK", // E
+	OPTION = "OPTION", // O
+	CASH_AND_CASH_EQUIVALENTS = "CASH_AND_CASH_EQUIVALENTS", // TC
+	BOND = "BOND", // D
 }
 
+// ISO 10962 CFI categories.
 export enum GenericCategory {
-	REGULAR = "REGULAR",
-	TRUST_FUND = "TRUST_FUND",
+	REGULAR = "REGULAR", // E
+	TRUST_FUND = "TRUST_FUND", // C
 }
 
 export enum GenericShortLong {

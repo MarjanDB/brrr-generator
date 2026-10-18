@@ -17,6 +17,8 @@ type TaxLotArgs<A, S> = {
 	provenance: AnyProvenanceStep[];
 };
 
+// The sides are named by direction, not by which one opens the position: on a short lot the sale
+// comes first and opens it, and `acquired` is the later buy that closes it.
 export class TaxLot<A, S> {
 	public readonly id: TaxLotId;
 	public readonly quantity: number;
