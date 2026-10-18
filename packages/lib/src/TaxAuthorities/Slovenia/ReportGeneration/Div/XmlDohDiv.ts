@@ -1,13 +1,13 @@
 import type {
 	TaxAuthorityConfiguration,
-	TaxPayerInfo,
+	TaxpayerInfo,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type { EDavkiDividendReportLine } from "@brrr/TaxAuthorities/Slovenia/Schemas/Schemas";
 import { XMLBuilder } from "fast-xml-parser";
 
 export function generateXmlReport(
 	reportConfig: TaxAuthorityConfiguration,
-	userConfig: TaxPayerInfo,
+	userConfig: TaxpayerInfo,
 	selfReport: boolean,
 	divLines: EDavkiDividendReportLine[],
 ): string {

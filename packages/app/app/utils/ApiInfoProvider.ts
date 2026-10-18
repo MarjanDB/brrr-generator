@@ -1,10 +1,10 @@
-import type { CompanyInfo, Country, InfoProvider } from "@brrr/lib";
+import type { CompanyInfo, Country, IInfoProvider } from "@brrr/lib";
 import { PredefinedInfoProvider, type TreatyType } from "@brrr/lib";
 
 // The country route's JSON: a Country with its treaties as a plain object.
 type SerializedCountry = Omit<Country, "treaties"> & { treaties: Record<string, string> };
 
-export class ApiInfoProvider implements InfoProvider {
+export class ApiInfoProvider implements IInfoProvider {
 	private readonly predefined = new PredefinedInfoProvider();
 
 	async getCompanyInfo(isin: string): Promise<CompanyInfo | null> {

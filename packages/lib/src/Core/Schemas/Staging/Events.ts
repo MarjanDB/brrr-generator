@@ -109,7 +109,7 @@ export class StagingTradeEventCashTransactionDividend extends StagingCashTransac
 
 export class StagingTradeEventCashTransactionWithholdingTax extends StagingCashTransactionBase {}
 
-export class StagingTradeEventCashTransactionPaymentInLieuOfDividends extends StagingCashTransactionBase {
+export class StagingTradeEventCashTransactionPaymentInLieuOfDividend extends StagingCashTransactionBase {
 	public readonly dividendType: GenericDividendType;
 
 	constructor(args: StagingDividendArgs) {
@@ -118,10 +118,10 @@ export class StagingTradeEventCashTransactionPaymentInLieuOfDividends extends St
 	}
 }
 
-export class StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends extends StagingCashTransactionBase {}
+export class StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend extends StagingCashTransactionBase {}
 
-export type StagingTransactionCash =
+export type StagingTradeEventCashTransaction =
 	| StagingTradeEventCashTransactionDividend
 	| StagingTradeEventCashTransactionWithholdingTax
-	| StagingTradeEventCashTransactionPaymentInLieuOfDividends
-	| StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends;
+	| StagingTradeEventCashTransactionPaymentInLieuOfDividend
+	| StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend;

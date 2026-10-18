@@ -6,7 +6,7 @@ import {
 	TaxAuthorityId,
 	TaxAuthorityLotMatchingMethod,
 	TaxAuthorityRegistry,
-	TaxPayerConfigSchema,
+	TaxpayerConfigSchema,
 	zDateTimeFromISOString,
 } from "@brrr/lib";
 import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
@@ -65,7 +65,7 @@ async function onSubmit(valid: boolean) {
 	error.value = null;
 	loading.value = true;
 	try {
-		const taxPayerInfo = TaxPayerConfigSchema.parse({
+		const taxpayerInfo = TaxpayerConfigSchema.parse({
 			taxNumber: taxNumber.value,
 			taxpayerType: "FO",
 			name: fullName.value,
@@ -94,7 +94,7 @@ async function onSubmit(valid: boolean) {
 		const { xml, csv } = await registry.generateExports({
 			authorityId: TaxAuthorityId.SLOVENIA,
 			reportTypeId: reportType.value,
-			taxPayerInfo,
+			taxpayerInfo,
 			reportConfig,
 			events: props.financialEvents,
 		});

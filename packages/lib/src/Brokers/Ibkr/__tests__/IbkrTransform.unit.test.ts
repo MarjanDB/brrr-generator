@@ -17,9 +17,9 @@ import { IbkrTransformService } from "@brrr/Brokers/Ibkr/Transform";
 import { CorrelationKey } from "@brrr/Core/Schemas/Identifiers";
 import {
 	StagingTradeEventCashTransactionDividend,
-	StagingTradeEventCashTransactionPaymentInLieuOfDividends,
+	StagingTradeEventCashTransactionPaymentInLieuOfDividend,
 	StagingTradeEventCashTransactionWithholdingTax,
-	StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends,
+	StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
 } from "@brrr/Core/Schemas/Staging/Events";
 import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
@@ -161,7 +161,7 @@ test("transform: single payment in lieu of dividend", () => {
 		}),
 	);
 	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(
-		StagingTradeEventCashTransactionPaymentInLieuOfDividends,
+		StagingTradeEventCashTransactionPaymentInLieuOfDividend,
 	);
 	expect(result.groupings[0].cashTransactions[0].exchangedMoney.underlyingTradePrice).toEqual(
 		paymentInLieuOfDividend.amount * paymentInLieuOfDividend.fxRateToBase,
@@ -199,7 +199,7 @@ test("transform: withholding tax for payment in lieu", () => {
 		}),
 	);
 	expect(result.groupings[0].cashTransactions[0]).toBeInstanceOf(
-		StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends,
+		StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
 	);
 });
 

@@ -1,6 +1,6 @@
 ---
 name: infoproviders-lookup-data
-description: Company, country and treaty lookups (InfoProvider, PredefinedInfoProvider, NodeInfoProvider, the site's ApiInfoProvider) and the JSON fallback files in packages/lib/src/InfoProviders/Node. Use when a dividend report has a blank or wrong payer name, address, country or treaty paragraph, when Yahoo Finance can't resolve an ISIN, or when adding fallback data.
+description: Company, country and treaty lookups (IInfoProvider, PredefinedInfoProvider, NodeInfoProvider, the site's ApiInfoProvider) and the JSON fallback files in packages/lib/src/InfoProviders/Node. Use when a dividend report has a blank or wrong payer name, address, country or treaty paragraph, when Yahoo Finance can't resolve an ISIN, or when adding fallback data.
 ---
 
 # InfoProviders and lookup data
@@ -12,7 +12,7 @@ payer's name, address, country and treaty paragraph from the ISIN.
 
 | Class | Where | Behaviour |
 | --- | --- | --- |
-| `InfoProvider` | `InfoProvider.ts` | The interface: `getCompanyInfo(isin)`, `getCountry(name)`, plus add/update/remove/list overrides. `InfoProvider.Token` is its Inversify key. Also defines `CompanyInfo`, `CompanyLocationInfo`, `Country` and `TreatyType`. |
+| `IInfoProvider` | `IInfoProvider.ts` | The interface: `getCompanyInfo(isin)`, `getCountry(name)`, plus add/update/remove/list overrides. `IInfoProvider.Token` is its Inversify key. Also defines `CompanyInfo`, `CompanyLocationInfo`, `Country` and `TreatyType`. |
 | `PredefinedInfoProvider` | `PredefinedInfoProvider.ts` | In-memory maps only. Use it in tests, filled with exactly the data the test needs. |
 | `NodeInfoProvider` | `Node/NodeInfoProvider.ts`, exported as `@brrr/lib/info/node` | The real lookup, Node-only (uses `yahoo-finance2`). Used by the CLI and by the site's server routes. |
 | `ApiInfoProvider` | `packages/app/app/utils/ApiInfoProvider.ts` | The browser side: asks `/api/isin/[isin]` and `/api/country/[name]` (`packages/app/server/api/`, which run `NodeInfoProvider`) and caches the answers. |

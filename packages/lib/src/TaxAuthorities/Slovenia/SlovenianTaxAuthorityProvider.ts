@@ -84,7 +84,7 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider {
 		reportType: SlovenianTaxAuthorityReportTypes,
 		ctx: TaxAuthorityRunContext,
 	): Promise<GeneratedExports> {
-		const { reportConfig, taxPayerInfo } = ctx;
+		const { reportConfig, taxpayerInfo } = ctx;
 		const groupings = this.applyIdentifierRelationshipsService.apply(ctx.events, [
 			IdentifierChangeType.RENAME,
 			IdentifierChangeType.SPLIT,
@@ -97,7 +97,7 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider {
 				return {
 					xml: this.kdvpGenerator.toXml(
 						reportConfig,
-						taxPayerInfo,
+						taxpayerInfo,
 						EDavkiDocumentWorkflowType.ORIGINAL,
 						items,
 					),
@@ -109,7 +109,7 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider {
 				return {
 					xml: this.divGenerator.toXml(
 						reportConfig,
-						taxPayerInfo,
+						taxpayerInfo,
 						this.isSelfReport(DateTime.now(), reportConfig),
 						lines,
 					),

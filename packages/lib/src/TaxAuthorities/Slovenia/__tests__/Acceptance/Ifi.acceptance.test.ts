@@ -14,7 +14,7 @@ describe("Slovenia, D-IFI", () => {
 			report: SlovenianReportTypeId.IFI,
 			year: optionTrade.year,
 			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
-			taxPayer: Fixtures.taxPayer,
+			taxpayer: Fixtures.taxpayer,
 			info: Scenario.config.infoProvider(Fixtures.lookups),
 		});
 

@@ -30,17 +30,17 @@ import {
 	TradeEventId,
 } from "@brrr/Core/Schemas/Identifiers";
 import {
+	type StagingTradeEventCashTransaction,
 	StagingTradeEventCashTransactionDividend,
-	StagingTradeEventCashTransactionPaymentInLieuOfDividends,
+	StagingTradeEventCashTransactionPaymentInLieuOfDividend,
 	StagingTradeEventCashTransactionWithholdingTax,
-	StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends,
+	StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
 	type StagingTradeEventDerivative,
 	StagingTradeEventDerivativeAcquired,
 	StagingTradeEventDerivativeSold,
 	type StagingTradeEventStock,
 	StagingTradeEventStockAcquired,
 	StagingTradeEventStockSold,
-	type StagingTransactionCash,
 } from "@brrr/Core/Schemas/Staging/Events";
 import { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping";
 import {
@@ -140,7 +140,9 @@ export class IbkrTransformService {
 		return new StagingFinancialEvents({ groupings, identifierRelationships });
 	}
 
-	private convertToCashTransactions(cashTransactions: TransactionCash[]): StagingTransactionCash[] {
+	private convertToCashTransactions(
+		cashTransactions: TransactionCash[],
+	): StagingTradeEventCashTransaction[] {
 		return cashTransactions.map((transaction) => {
 			const descLower = transaction.description.toLowerCase();
 			const isOrdinaryDividend = descLower.includes("ordinary dividend");
@@ -183,7 +185,7 @@ export class IbkrTransformService {
 			}
 
 			if (transaction.type === CashTransactionType.WITHHOLDING_TAX && isPaymentInLieuWithholding) {
-				return new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividends(base);
+				return new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend(base);
 			}
 
 			if (transaction.type === CashTransactionType.WITHHOLDING_TAX) {
@@ -191,7 +193,7 @@ export class IbkrTransformService {
 			}
 
 			if (transaction.type === CashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS) {
-				return new StagingTradeEventCashTransactionPaymentInLieuOfDividends({
+				return new StagingTradeEventCashTransactionPaymentInLieuOfDividend({
 					...base,
 					dividendType,
 				});

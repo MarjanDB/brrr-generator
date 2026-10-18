@@ -10,7 +10,7 @@ import {
 	TaxAuthorityId,
 	TaxAuthorityLotMatchingMethod,
 	TaxAuthorityRegistry,
-	TaxPayerConfigSchema,
+	TaxpayerConfigSchema,
 	zDateTimeFromISOString,
 } from "@brrr/lib";
 import { NodeInfoProvider } from "@brrr/lib/info/node";
@@ -81,7 +81,7 @@ async function main() {
 	}
 
 	const configRaw = parseYaml(await fs.readFile(CONFIG_FILE, "utf-8"));
-	const configParsed = TaxPayerConfigSchema.safeParse(configRaw);
+	const configParsed = TaxpayerConfigSchema.safeParse(configRaw);
 	if (!configParsed.success) {
 		console.error("Invalid userConfig.yml:");
 		for (const issue of configParsed.error.issues) {
@@ -89,7 +89,7 @@ async function main() {
 		}
 		process.exit(1);
 	}
-	const taxPayerInfo = configParsed.data;
+	const taxpayerInfo = configParsed.data;
 
 	const reportConfig = {
 		fromDate: zDateTimeFromISOString.parse(`${year}-01-01`),
@@ -140,7 +140,7 @@ async function main() {
 		const { xml, csv } = await taxAuthorities.generateExports({
 			authorityId: TaxAuthorityId.SLOVENIA,
 			reportTypeId: reportType,
-			taxPayerInfo,
+			taxpayerInfo,
 			reportConfig,
 			events: financialEvents,
 		});

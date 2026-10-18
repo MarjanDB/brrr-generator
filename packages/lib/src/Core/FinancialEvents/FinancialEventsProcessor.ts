@@ -1,5 +1,5 @@
+import type { ILotMatchingMethod } from "@brrr/Core/LotMatching/ILotMatchingMethod";
 import type { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
-import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod";
 import type { LotLeg, MatchedLot } from "@brrr/Core/LotMatching/MatchedLot";
 import type { TradeEventDerivative, TradeEventStock } from "@brrr/Core/Schemas/Events";
 import type { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
@@ -12,7 +12,7 @@ export class FinancialEventsProcessor {
 
 	stockLotLegsClosedInPeriod(
 		grouping: FinancialGrouping,
-		method: LotMatchingMethod,
+		method: ILotMatchingMethod,
 		fromDate: ValidDateTime,
 		toDate: ValidDateTime,
 	): LotLeg<TradeEventStock>[] {
@@ -25,7 +25,7 @@ export class FinancialEventsProcessor {
 
 	derivativeLotLegsClosedInPeriod(
 		grouping: DerivativeGrouping,
-		method: LotMatchingMethod,
+		method: ILotMatchingMethod,
 		fromDate: ValidDateTime,
 		toDate: ValidDateTime,
 	): LotLeg<TradeEventDerivative>[] {

@@ -15,7 +15,7 @@ describe("Slovenia, Doh-KDVP", () => {
 				report: SlovenianReportTypeId.KDVP,
 				year: stockTrade.year,
 				lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
-				taxPayer: Fixtures.taxPayer,
+				taxpayer: Fixtures.taxpayer,
 				info: Scenario.config.infoProvider(Fixtures.lookups),
 			});
 
@@ -31,7 +31,7 @@ describe("Slovenia, Doh-KDVP", () => {
 				report: SlovenianReportTypeId.KDVP,
 				year: stockTrade.year,
 				lotMatching: TaxAuthorityLotMatchingMethod.PROVIDED,
-				taxPayer: Fixtures.taxPayer,
+				taxpayer: Fixtures.taxpayer,
 				info: Scenario.config.infoProvider(Fixtures.lookups),
 			});
 
@@ -54,7 +54,7 @@ describe("Slovenia, Doh-KDVP", () => {
 				report: SlovenianReportTypeId.KDVP,
 				year: duplicatingTrades.year,
 				lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
-				taxPayer: Fixtures.taxPayer,
+				taxpayer: Fixtures.taxpayer,
 				info: Scenario.config.infoProvider(Fixtures.lookups),
 			});
 
@@ -78,7 +78,7 @@ describe("Slovenia, Doh-KDVP", () => {
 				report: SlovenianReportTypeId.KDVP,
 				year: split.year,
 				lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
-				taxPayer: Fixtures.taxPayer,
+				taxpayer: Fixtures.taxpayer,
 				info: Scenario.config.infoProvider(Fixtures.lookups),
 			});
 

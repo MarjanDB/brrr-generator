@@ -1,8 +1,8 @@
 import { CountryName, Isin } from "@brrr/Core/Schemas/Identifiers";
-import type { CompanyInfo, Country, InfoProvider } from "@brrr/InfoProviders/InfoProvider";
+import type { CompanyInfo, Country, IInfoProvider } from "@brrr/InfoProviders/IInfoProvider";
 
 // Takes plain strings, so the site and the CLI can use it without building lib's identifiers.
-export class PredefinedInfoProvider implements InfoProvider {
+export class PredefinedInfoProvider implements IInfoProvider {
 	private readonly companies = new Map<Isin, CompanyInfo>();
 	private readonly countries = new Map<CountryName, Country>();
 

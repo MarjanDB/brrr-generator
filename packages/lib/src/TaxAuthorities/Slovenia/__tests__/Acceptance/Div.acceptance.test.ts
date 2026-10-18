@@ -14,7 +14,7 @@ describe("Slovenia, Doh-Div", () => {
 			report: SlovenianReportTypeId.DIV,
 			year: dividends.year,
 			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
-			taxPayer: Fixtures.taxPayer,
+			taxpayer: Fixtures.taxpayer,
 			info: Scenario.config.infoProvider(Fixtures.lookups),
 		});
 
@@ -30,7 +30,7 @@ describe("Slovenia, Doh-Div", () => {
 			report: SlovenianReportTypeId.DIV,
 			year: paymentInLieu.year,
 			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
-			taxPayer: Fixtures.taxPayer,
+			taxpayer: Fixtures.taxpayer,
 			info: Scenario.config.infoProvider(Fixtures.lookups),
 		});
 

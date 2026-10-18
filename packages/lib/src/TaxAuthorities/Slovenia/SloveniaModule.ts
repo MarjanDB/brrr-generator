@@ -1,6 +1,6 @@
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
-import { InfoProvider } from "@brrr/InfoProviders/InfoProvider";
+import { IInfoProvider } from "@brrr/InfoProviders/IInfoProvider";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";
 import { IfiReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Ifi/IfiReportGenerator";
 import { KdvpReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Kdvp/KdvpReportGenerator";
@@ -19,8 +19,8 @@ export function loadSloveniaModule(container: Container): void {
 	container
 		.bind(DivReportGenerator)
 		.toResolvedValue(
-			(infoProvider: InfoProvider) => new DivReportGenerator(infoProvider),
-			[InfoProvider.Token],
+			(infoProvider: IInfoProvider) => new DivReportGenerator(infoProvider),
+			[IInfoProvider.Token],
 		)
 		.inSingletonScope();
 

@@ -1,5 +1,5 @@
+import type { ILotMatchingMethod } from "@brrr/Core/LotMatching/ILotMatchingMethod";
 import type { Lot } from "@brrr/Core/LotMatching/Lot";
-import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
 import { TradeAssociationTracker } from "@brrr/Core/LotMatching/TradeAssociationTracker";
 
@@ -36,7 +36,7 @@ class TrackingTradeBuySellSide {
 	}
 }
 
-export class FifoLotMatchingMethod implements LotMatchingMethod {
+export class FifoLotMatchingMethod implements ILotMatchingMethod {
 	performMatching(events: Trade[]): Lot[] {
 		const tracker = new TradeAssociationTracker();
 

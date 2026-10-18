@@ -1,14 +1,14 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { FifoLotMatchingMethod } from "@brrr/Core/LotMatching/FifoLotMatchingMethod";
+import type { ILotMatchingMethod } from "@brrr/Core/LotMatching/ILotMatchingMethod";
 import type { Lot } from "@brrr/Core/LotMatching/Lot";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
-import type { LotMatchingMethod } from "@brrr/Core/LotMatching/LotMatchingMethod";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
 import { CurrencyCode, TradeEventId } from "@brrr/Core/Schemas/Identifiers";
 
 const { build } = Scenario;
 
-class FakeLotMatchingMethod implements LotMatchingMethod {
+class FakeLotMatchingMethod implements ILotMatchingMethod {
 	receivedTrades: Trade[] | null = null;
 
 	performMatching(trades: Trade[]): Lot[] {

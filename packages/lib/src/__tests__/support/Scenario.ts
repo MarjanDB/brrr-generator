@@ -13,6 +13,7 @@ import {
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
+	type TradeEventCashTransaction,
 	TradeEventCashTransactionDividend,
 	TradeEventCashTransactionPaymentInLieuOfDividend,
 	TradeEventCashTransactionWithholdingTax,
@@ -23,7 +24,6 @@ import {
 	type TradeEventStock,
 	TradeEventStockAcquired,
 	TradeEventStockSold,
-	type TransactionCash,
 } from "@brrr/Core/Schemas/Events";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
 import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
@@ -32,12 +32,12 @@ import type { IdentifierRelationshipAny } from "@brrr/Core/Schemas/IdentifierRel
 import { TaxLot, type TaxLotDerivative, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
 import { createContainer } from "@brrr/container";
-import type { CompanyInfo, Country, InfoProvider } from "@brrr/InfoProviders/InfoProvider";
+import type { CompanyInfo, Country, IInfoProvider } from "@brrr/InfoProviders/IInfoProvider";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import type {
 	TaxAuthorityConfiguration,
 	TaxAuthorityLotMatchingMethod,
-	TaxPayerInfo,
+	TaxpayerInfo,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type { GeneratedExports } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
 import type { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Schemas/ReportTypes";
@@ -157,7 +157,7 @@ const build = {
 		stockTrades: TradeEventStock[];
 		stockTaxLots: TaxLotStock[];
 		derivativeGroupings: DerivativeGrouping[];
-		cashTransactions: TransactionCash[];
+		cashTransactions: TradeEventCashTransaction[];
 	}): FinancialGrouping {
 		return new FinancialGrouping({
 			financialIdentifier: fields.identifier,
@@ -257,15 +257,15 @@ const pipeline = {
 			report: SlovenianReportTypeId;
 			year: number;
 			lotMatching: TaxAuthorityLotMatchingMethod;
-			taxPayer: TaxPayerInfo;
-			info: InfoProvider;
+			taxpayer: TaxpayerInfo;
+			info: IInfoProvider;
 		},
 	): Promise<GeneratedExports> {
 		const container = createContainer(options.info);
 		return await container.get(TaxAuthorityRegistry).generateExports({
 			authorityId: TaxAuthorityId.SLOVENIA,
 			reportTypeId: options.report,
-			taxPayerInfo: options.taxPayer,
+			taxpayerInfo: options.taxpayer,
 			reportConfig: config.report(options.year, options.lotMatching),
 			events,
 		});

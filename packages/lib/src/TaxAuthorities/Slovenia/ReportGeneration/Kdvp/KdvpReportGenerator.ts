@@ -4,7 +4,7 @@ import { TradeEventStockAcquired, type TradeEventStockSold } from "@brrr/Core/Sc
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import type {
 	TaxAuthorityConfiguration,
-	TaxPayerInfo,
+	TaxpayerInfo,
 } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { createLotMatchingMethod } from "@brrr/TaxAuthorities/LotMatchingMethodFactory";
 import {
@@ -166,7 +166,7 @@ export class KdvpReportGenerator {
 
 	toXml(
 		config: TaxAuthorityConfiguration,
-		userConfig: TaxPayerInfo,
+		userConfig: TaxpayerInfo,
 		documentType: EDavkiDocumentWorkflowType,
 		items: EDavkiGenericTradeReportItem[],
 	): string {

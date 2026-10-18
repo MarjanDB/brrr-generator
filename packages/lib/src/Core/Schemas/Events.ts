@@ -116,10 +116,10 @@ export class TradeEventCashTransactionWithholdingTax extends CashTransactionBase
 
 export class TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend extends CashTransactionBase {}
 
-export type TransactionCash =
+export type TradeEventCashTransaction =
 	| TradeEventCashTransactionDividend
 	| TradeEventCashTransactionWithholdingTax
 	| TradeEventCashTransactionPaymentInLieuOfDividend
 	| TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend;
 
-export type TradeEvent = TradeEventStock | TradeEventDerivative | TransactionCash;
+export type TradeEvent = TradeEventStock | TradeEventDerivative | TradeEventCashTransaction;
