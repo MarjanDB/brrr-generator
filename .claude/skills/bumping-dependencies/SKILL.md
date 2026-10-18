@@ -36,10 +36,8 @@ lockfile is missing, so deleting only the lockfile keeps the old resolutions.
 
 After `pnpm install`:
 
-1. `pnpm lint`
-2. `pnpm --filter @brrr/lib test`, `pnpm --filter @brrr/lib typecheck`, `pnpm --filter @brrr/lib build`
-3. `pnpm --filter @brrr/cli exec tsc --noEmit`
-4. `pnpm --filter @brrr/app typecheck`, `pnpm --filter @brrr/app build`, and read the build output for new warnings
+1. `pnpm check`: lint, lib's build, every package's typecheck and lib's tests
+2. `pnpm --filter @brrr/app build`, and read the build output for new warnings
 
 For a major version, read its changelog or migration guide before bumping. Breaks this repo has already hit:
 

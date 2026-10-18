@@ -47,17 +47,33 @@ function parseReportTypeId(value: string): SlovenianReportTypeId | undefined {
 	return Object.values(SlovenianReportTypeId).find((id) => id === value);
 }
 
+function parseLotMatchingMethod(value: string): TaxAuthorityLotMatchingMethod | undefined {
+	return Object.values(TaxAuthorityLotMatchingMethod).find(
+		(method) => method.toLowerCase() === value,
+	);
+}
+
 async function main() {
 	const program = new Command();
+	const validReportTypes = Object.values(SlovenianReportTypeId);
+	// Typed in lowercase, like the report types.
+	const validLotMatchingMethods = Object.values(TaxAuthorityLotMatchingMethod).map((method) =>
+		method.toLowerCase(),
+	);
 
 	program
 		.name("ib-tax")
 		.description("Generate Slovenian tax reports from IBKR exports")
 		.requiredOption("--year <year>", "Reporting year, e.g. 2025")
-		.option("--report <type>", "Report type: kdvp, div, ifi, or all", "all")
+		.option("--report <type>", `Report type: ${validReportTypes.join(", ")}, or all`, "all")
+		.option(
+			"--lot-matching <method>",
+			`Lot matching: ${validLotMatchingMethods.join(", ")}`,
+			TaxAuthorityLotMatchingMethod.FIFO.toLowerCase(),
+		)
 		.parse(process.argv);
 
-	const opts = program.opts<{ year: string; report: string }>();
+	const opts = program.opts<{ year: string; report: string; lotMatching: string }>();
 
 	const year = parseInt(opts.year, 10);
 	if (Number.isNaN(year)) {
@@ -65,7 +81,6 @@ async function main() {
 		process.exit(1);
 	}
 
-	const validReportTypes = Object.values(SlovenianReportTypeId);
 	const reportTypes: SlovenianReportTypeId[] = [];
 	if (opts.report === "all") {
 		reportTypes.push(...validReportTypes);
@@ -78,6 +93,14 @@ async function main() {
 			}
 			reportTypes.push(reportType);
 		}
+	}
+
+	const lotMatchingMethod = parseLotMatchingMethod(opts.lotMatching);
+	if (!lotMatchingMethod) {
+		console.error(
+			`Unknown lot matching: ${opts.lotMatching}. Valid: ${validLotMatchingMethods.join(", ")}`,
+		);
+		process.exit(1);
 	}
 
 	const configRaw = parseYaml(await fs.readFile(CONFIG_FILE, "utf-8"));
@@ -94,7 +117,7 @@ async function main() {
 	const reportConfig = {
 		fromDate: zDateTimeFromISOString.parse(`${year}-01-01`),
 		toDate: zDateTimeFromISOString.parse(`${year + 1}-01-01`),
-		lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
+		lotMatchingMethod,
 	};
 
 	const container = createContainer(new NodeInfoProvider());

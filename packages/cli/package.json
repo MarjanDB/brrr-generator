@@ -4,7 +4,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"start": "tsx src/main.ts"
+		"start": "tsx src/main.ts",
+		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
 		"@brrr/lib": "workspace:*",

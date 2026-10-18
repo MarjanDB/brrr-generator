@@ -10,8 +10,9 @@ company and country lookups. Nuxt's source directory is `packages/app/app/`.
 
 ## Running and checking
 
-- `pnpm --filter @brrr/lib build` first, and again after every lib change: the app imports `@brrr/lib` from `packages/lib/dist/`.
-- `pnpm dev` (root) for the dev server, `pnpm --filter @brrr/app typecheck`, `pnpm --filter @brrr/app build`, `pnpm lint:fix`.
+- The app imports `@brrr/lib` from `packages/lib/dist/`. `pnpm dev` (root) builds lib, then rebuilds it on every change while
+  the dev server runs. For anything else, `pnpm --filter @brrr/lib build` first, and again after every lib change.
+- `pnpm dev`, `pnpm --filter @brrr/app typecheck`, `pnpm --filter @brrr/app build`, `pnpm lint:fix`.
 - Env: `packages/app/util/env.config.ts` (`APP_CONFIG`, zod) reads `packages/app/.env` if present: `PORT`, `HOST`, `NODE_ENV`, and
   `NUXT_PUBLIC_POSTHOG_PUBLIC_KEY` / `NUXT_PUBLIC_POSTHOG_HOST` for analytics.
 

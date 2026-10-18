@@ -23,21 +23,24 @@ anything from them.
 
 pnpm 11, pinned in the root `package.json` (`packageManager`). Always use `pnpm`.
 
-| Command                                        | What it does                                           |
-| ---------------------------------------------- | ------------------------------------------------------ |
-| `pnpm lint` / `pnpm lint:fix`                  | Biome check / check and fix, whole repo                |
-| `pnpm --filter @brrr/lib test`                 | Vitest, lib (unit, integration and acceptance tests)   |
-| `pnpm --filter @brrr/lib typecheck`            | `tsc --noEmit`, lib                                    |
-| `pnpm --filter @brrr/lib build`                | tsdown, lib → `packages/lib/dist/`                     |
-| `pnpm --filter @brrr/app typecheck`            | `nuxt typecheck`                                       |
-| `pnpm --filter @brrr/app build`                | Nuxt build                                             |
-| `pnpm --filter @brrr/cli exec tsc --noEmit`    | Typecheck the CLI                                      |
-| `pnpm --filter @brrr/test-cases typecheck`     | Typecheck the test cases package                       |
-| `pnpm dev`                                     | Nuxt dev server                                        |
-| `pnpm cli --year 2025 [--report kdvp,div,ifi]` | Generate reports from `imports/` (calls Yahoo Finance) |
+| Command                                                              | What it does                                           |
+| -------------------------------------------------------------------- | ------------------------------------------------------ |
+| `pnpm check`                                                         | Lint, typecheck and test everything, as CI does        |
+| `pnpm lint` / `pnpm lint:fix`                                        | Biome check / check and fix, whole repo                |
+| `pnpm typecheck`                                                     | Build lib, then typecheck every package                |
+| `pnpm --filter @brrr/lib test`                                       | Vitest, lib (unit, integration and acceptance tests)   |
+| `pnpm --filter @brrr/lib typecheck`                                  | `tsc --noEmit`, lib                                    |
+| `pnpm --filter @brrr/lib build`                                      | tsdown, lib → `packages/lib/dist/`                     |
+| `pnpm --filter @brrr/app typecheck`                                  | `nuxt typecheck`                                       |
+| `pnpm --filter @brrr/app build`                                      | Nuxt build                                             |
+| `pnpm --filter @brrr/cli typecheck`                                  | Typecheck the CLI                                      |
+| `pnpm --filter @brrr/test-cases typecheck`                           | Typecheck the test cases package                       |
+| `pnpm dev`                                                           | Nuxt dev server, with lib rebuilt on every change      |
+| `pnpm cli --year 2025 [--report kdvp,div,ifi] [--lot-matching fifo]` | Generate reports from `imports/` (calls Yahoo Finance) |
 
 **The app and the CLI import `@brrr/lib` from `packages/lib/dist/`.** After changing `packages/lib/`, run `pnpm --filter @brrr/lib build` before
-typechecking or running either of them, or they keep seeing the old code.
+typechecking or running either of them, or they keep seeing the old code. `pnpm typecheck` and `pnpm check` build it first, and `pnpm dev`
+rebuilds it as you edit.
 
 Dependency versions live in the `catalog:` of `pnpm-workspace.yaml`, pinned exactly. Read the **bumping-dependencies** skill before adding,
 removing or updating any dependency.
@@ -49,8 +52,10 @@ Run these for what you touched before calling a change done, and report failures
 - Anything: `pnpm lint:fix`
 - `packages/lib/`: `pnpm --filter @brrr/lib test` and `pnpm --filter @brrr/lib typecheck`
 - `packages/app/`: build lib, then `pnpm --filter @brrr/app typecheck`
-- `packages/cli/`: build lib, then `pnpm --filter @brrr/cli exec tsc --noEmit`
+- `packages/cli/`: build lib, then `pnpm --filter @brrr/cli typecheck`
 - `packages/test-cases/`: `pnpm --filter @brrr/test-cases typecheck` and `pnpm --filter @brrr/lib test`
+
+`pnpm check` runs all of them at once, with lint checking instead of fixing. CI runs the same on every PR.
 
 ## Architecture
 
