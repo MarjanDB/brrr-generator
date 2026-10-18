@@ -7,6 +7,7 @@
 		"dev": "nuxt dev",
 		"generate": "nuxt generate",
 		"preview": "nuxt preview",
+		"test": "vitest run",
 		"typecheck": "nuxt typecheck",
 		"postinstall": "nuxt prepare"
 	},
@@ -31,6 +32,7 @@
 		"@types/luxon": "catalog:",
 		"@unocss/nuxt": "catalog:",
 		"unocss": "catalog:",
+		"vitest": "catalog:",
 		"vue-tsc": "catalog:"
 	}
 }

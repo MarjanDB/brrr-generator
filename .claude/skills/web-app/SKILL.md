@@ -12,9 +12,17 @@ company and country lookups. Nuxt's source directory is `packages/app/app/`.
 
 - The app imports `@brrr/lib` from `packages/lib/dist/`. `pnpm dev` (root) builds lib, then rebuilds it on every change while
   the dev server runs. For anything else, `pnpm --filter @brrr/lib build` first, and again after every lib change.
-- `pnpm dev`, `pnpm --filter @brrr/app typecheck`, `pnpm --filter @brrr/app build`, `pnpm lint:fix`.
+- `pnpm dev`, `pnpm --filter @brrr/app typecheck`, `pnpm --filter @brrr/app test`, `pnpm --filter @brrr/app build`, `pnpm lint:fix`.
+  One test file: `pnpm --filter @brrr/app exec vitest run <name>`.
 - Env: `packages/app/util/env.config.ts` (`APP_CONFIG`, zod) reads `packages/app/.env` if present: `PORT`, `HOST`, `NODE_ENV`, and
   `NUXT_PUBLIC_POSTHOG_PUBLIC_KEY` / `NUXT_PUBLIC_POSTHOG_HOST` for analytics.
+
+## Tests
+
+Vitest runs the app's pure TypeScript only (no DOM, no Vue test utils): the download step's graph logic under `app/download/`. Tests sit
+in `__tests__/` beside the code, import `describe`, `expect` and `test` from `vitest` (no globals, unlike lib), import code through the
+`~/` and `~~/` aliases (`packages/app/vitest.config.ts`), and need lib built, like `typecheck`. Nuxt ignores `*.test.ts`, so they are
+never bundled.
 
 ## The wizard
 
