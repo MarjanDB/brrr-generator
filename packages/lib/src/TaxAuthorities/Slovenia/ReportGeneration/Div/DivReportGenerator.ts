@@ -73,9 +73,7 @@ function filterOutCashTransactionsBasedOnDate(
 }
 
 function amountOf(transaction: TradeEventCashTransaction): number {
-	return (
-		transaction.exchangedMoney.underlyingQuantity * transaction.exchangedMoney.underlyingTradePrice
-	);
+	return transaction.exchangedMoney.quantity * transaction.exchangedMoney.priceInBase;
 }
 
 function inOriginalCurrency(transaction: TradeEventCashTransaction, amount: number): number {

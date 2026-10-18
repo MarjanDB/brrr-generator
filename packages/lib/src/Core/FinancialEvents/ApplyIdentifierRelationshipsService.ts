@@ -1,4 +1,4 @@
-import { GenericMonetaryExchangeInformation } from "@brrr/Core/Schemas/CommonFormats";
+import { ExchangedMoney } from "@brrr/Core/Schemas/CommonFormats";
 import {
 	type TradeEventStock,
 	TradeEventStockAcquired,
@@ -168,10 +168,10 @@ export class ApplyIdentifierRelationshipsService {
 				toIdentifier: relationship.toIdentifier,
 				changeType: relationship.changeType,
 				effectiveDate: relationship.effectiveDate,
-				quantityBefore: m.underlyingQuantity,
-				quantityAfter: m.underlyingQuantity * ratio,
-				beforeQuantity: m.underlyingQuantity,
-				beforeTradePrice: m.underlyingTradePrice,
+				quantityBefore: m.quantity,
+				quantityAfter: m.quantity * ratio,
+				beforeQuantity: m.quantity,
+				beforeTradePrice: m.priceInBase,
 			});
 
 			scaledTrades.push(scaleTradeForSplit(t, ratio, step));
@@ -270,10 +270,10 @@ function scaleTradeForSplit(
 	step: SplitProvenanceStep,
 ): TradeEventStock {
 	const scaled = {
-		exchangedMoney: new GenericMonetaryExchangeInformation({
+		exchangedMoney: new ExchangedMoney({
 			...trade.exchangedMoney,
-			underlyingQuantity: trade.exchangedMoney.underlyingQuantity * ratio,
-			underlyingTradePrice: trade.exchangedMoney.underlyingTradePrice * (1 / ratio),
+			quantity: trade.exchangedMoney.quantity * ratio,
+			priceInBase: trade.exchangedMoney.priceInBase * (1 / ratio),
 		}),
 		provenance: [...trade.provenance, step],
 	};

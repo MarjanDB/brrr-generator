@@ -11,9 +11,9 @@ import type { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades
 import {
 	AssetClass,
 	Category,
+	ExchangedMoney,
 	GenericDerivativeReportItemGainType,
 	GenericDividendType,
-	GenericMonetaryExchangeInformation,
 	GenericTradeReportItemGainType,
 	ShortLong,
 } from "@brrr/Core/Schemas/CommonFormats";
@@ -158,12 +158,12 @@ export class IbkrTransformService {
 				ticker: Ticker.Schema.parse(transaction.symbol),
 			});
 			const currency = CurrencyCode.Schema.parse(transaction.currency);
-			const exchangedMoney = new GenericMonetaryExchangeInformation({
-				underlyingQuantity: 1,
-				underlyingTradePrice: transaction.amount * transaction.fxRateToBase,
-				underlyingCurrency: currency,
+			const exchangedMoney = new ExchangedMoney({
+				quantity: 1,
+				priceInBase: transaction.amount * transaction.fxRateToBase,
+				currency: currency,
 				commissionCurrency: currency,
-				commissionTotal: 0,
+				commissionInBase: 0,
 				taxCurrency: currency,
 				taxTotal: 0,
 				fxRateToBase: transaction.fxRateToBase,
@@ -212,12 +212,12 @@ export class IbkrTransformService {
 				isin: Isin.Schema.parse(trade.isin),
 				ticker: Ticker.Schema.parse(trade.symbol),
 			});
-			const exchangedMoney = new GenericMonetaryExchangeInformation({
-				underlyingCurrency: CurrencyCode.Schema.parse(trade.currency),
-				underlyingQuantity: trade.quantity,
-				underlyingTradePrice: trade.tradePrice * trade.fxRateToBase,
+			const exchangedMoney = new ExchangedMoney({
+				currency: CurrencyCode.Schema.parse(trade.currency),
+				quantity: trade.quantity,
+				priceInBase: trade.tradePrice * trade.fxRateToBase,
 				commissionCurrency: CurrencyCode.Schema.parse(trade.ibCommissionCurrency),
-				commissionTotal: trade.ibCommission * trade.fxRateToBase,
+				commissionInBase: trade.ibCommission * trade.fxRateToBase,
 				taxCurrency: CurrencyCode.Schema.parse(trade.currency), // NOTE: Taxes Currency == Trade Currency ??
 				taxTotal: trade.taxes,
 				fxRateToBase: trade.fxRateToBase,
@@ -270,12 +270,12 @@ export class IbkrTransformService {
 				ticker: Ticker.Schema.parse(trade.symbol),
 				name: trade.description,
 			});
-			const exchangedMoney = new GenericMonetaryExchangeInformation({
-				underlyingCurrency: CurrencyCode.Schema.parse(trade.currency),
-				underlyingQuantity: trade.quantity,
-				underlyingTradePrice: trade.tradePrice * trade.fxRateToBase,
+			const exchangedMoney = new ExchangedMoney({
+				currency: CurrencyCode.Schema.parse(trade.currency),
+				quantity: trade.quantity,
+				priceInBase: trade.tradePrice * trade.fxRateToBase,
 				commissionCurrency: CurrencyCode.Schema.parse(trade.ibCommissionCurrency),
-				commissionTotal: trade.ibCommission * trade.fxRateToBase,
+				commissionInBase: trade.ibCommission * trade.fxRateToBase,
 				taxCurrency: CurrencyCode.Schema.parse(trade.currency), // NOTE: Taxes Currency == Trade Currency ??
 				taxTotal: trade.taxes,
 				fxRateToBase: trade.fxRateToBase,

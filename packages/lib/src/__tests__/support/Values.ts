@@ -1,4 +1,4 @@
-import { GenericMonetaryExchangeInformation } from "@brrr/Core/Schemas/CommonFormats";
+import { ExchangedMoney } from "@brrr/Core/Schemas/CommonFormats";
 import type { TradeEventBase, TradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Events";
 import { type ValidDateTime, zDateTimeFromISOString } from "@brrr/Utils/DateTime";
 
@@ -8,7 +8,7 @@ type CashTransaction = TradeEventCashTransactionDividend;
 
 // The money every event carries. `currency` is the currency of the amount, the commission and the tax.
 export type MoneyFields = {
-	currency: GenericMonetaryExchangeInformation["underlyingCurrency"];
+	currency: ExchangedMoney["currency"];
 	commission: number;
 	tax: number;
 	fxRateToBase: number;
@@ -39,13 +39,13 @@ export const Values = {
 		return zDateTimeFromISOString.parse(iso);
 	},
 
-	tradeMoney(fields: TradeFields): GenericMonetaryExchangeInformation {
-		return new GenericMonetaryExchangeInformation({
-			underlyingCurrency: fields.currency,
-			underlyingQuantity: fields.quantity,
-			underlyingTradePrice: fields.price,
+	tradeMoney(fields: TradeFields): ExchangedMoney {
+		return new ExchangedMoney({
+			currency: fields.currency,
+			quantity: fields.quantity,
+			priceInBase: fields.price,
 			commissionCurrency: fields.currency,
-			commissionTotal: fields.commission,
+			commissionInBase: fields.commission,
 			taxCurrency: fields.currency,
 			taxTotal: fields.tax,
 			fxRateToBase: fields.fxRateToBase,
@@ -53,13 +53,13 @@ export const Values = {
 	},
 
 	// A cash transaction is one unit of its amount.
-	cashMoney(fields: CashFields): GenericMonetaryExchangeInformation {
-		return new GenericMonetaryExchangeInformation({
-			underlyingCurrency: fields.currency,
-			underlyingQuantity: 1,
-			underlyingTradePrice: fields.amount,
+	cashMoney(fields: CashFields): ExchangedMoney {
+		return new ExchangedMoney({
+			currency: fields.currency,
+			quantity: 1,
+			priceInBase: fields.amount,
 			commissionCurrency: fields.currency,
-			commissionTotal: fields.commission,
+			commissionInBase: fields.commission,
 			taxCurrency: fields.currency,
 			taxTotal: fields.tax,
 			fxRateToBase: fields.fxRateToBase,

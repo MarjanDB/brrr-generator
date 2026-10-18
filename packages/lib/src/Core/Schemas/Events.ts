@@ -1,8 +1,8 @@
 import type {
 	AssetClass,
+	ExchangedMoney,
 	GenericDerivativeReportItemGainType,
 	GenericDividendType,
-	GenericMonetaryExchangeInformation,
 	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
 import type {
@@ -19,7 +19,7 @@ type TradeEventArgs = {
 	assetClass: AssetClass;
 	date: ValidDateTime;
 	multiplier: number;
-	exchangedMoney: GenericMonetaryExchangeInformation;
+	exchangedMoney: ExchangedMoney;
 	provenance: AnyProvenanceStep[];
 };
 
@@ -34,7 +34,7 @@ export abstract class TradeEventBase {
 	public readonly assetClass: AssetClass;
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
-	public readonly exchangedMoney: GenericMonetaryExchangeInformation;
+	public readonly exchangedMoney: ExchangedMoney;
 	public readonly provenance: AnyProvenanceStep[];
 
 	constructor(args: TradeEventArgs) {
