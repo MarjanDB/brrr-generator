@@ -34,6 +34,7 @@ export type { ImportResult, ReportRequest, ReportResult } from "@brrr/Pipeline/R
 export { ReportPipeline } from "@brrr/Pipeline/ReportPipeline";
 
 // Provenance
+export { DropCategory } from "@brrr/Provenance/Models/DropCategory";
 export { DropReason } from "@brrr/Provenance/Models/DropReason";
 export { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
 export type { ProvenanceDetail } from "@brrr/Provenance/Models/ProvenanceDetail";
@@ -48,8 +49,19 @@ export type { ProvenanceNode } from "@brrr/Provenance/Models/ProvenanceNode";
 export { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
 export type { ProvenanceSlice } from "@brrr/Provenance/Models/ProvenanceSlice";
 export type { ProvenanceWarning } from "@brrr/Provenance/Models/ProvenanceWarning";
+export type { ReportInstrument } from "@brrr/Provenance/Models/ReportInstrument";
+export { ReportInstrumentKind } from "@brrr/Provenance/Models/ReportInstrumentKind";
+export type { ReportItem } from "@brrr/Provenance/Models/ReportItem";
+export type { ReportLeftOut } from "@brrr/Provenance/Models/ReportLeftOut";
+export type { ReportMatchedLot } from "@brrr/Provenance/Models/ReportMatchedLot";
+export type { ReportMatchedLotSide } from "@brrr/Provenance/Models/ReportMatchedLotSide";
+export type { ReportProvenance } from "@brrr/Provenance/Models/ReportProvenance";
+export type { ReportTotals } from "@brrr/Provenance/Models/ReportTotals";
+export type { ReportUnderlying } from "@brrr/Provenance/Models/ReportUnderlying";
 export { ProvenanceGraph } from "@brrr/Provenance/Services/ProvenanceGraph";
+export { ProvenanceReportReader } from "@brrr/Provenance/Services/ProvenanceReportReader";
 export { ProvenanceWalker } from "@brrr/Provenance/Services/ProvenanceWalker";
+export { dropCategoryOf } from "@brrr/Provenance/Utils/DropCategoryOf";
 
 // Tax authorities
 export type {
