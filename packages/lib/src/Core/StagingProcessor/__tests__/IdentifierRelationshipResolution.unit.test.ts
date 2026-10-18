@@ -1,15 +1,13 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { CorrelationKey, Isin, Ticker } from "@brrr/Core/Schemas/Identifiers";
-import {
-	StagingIdentifierChangeType,
-	StagingIdentifierRelationship,
-	StagingIdentifierRelationshipPartial,
-	StagingIdentifierRelationshipPartialWithQuantity,
-	StagingIdentifierRelationshipSplit,
-	StagingIdentifierRelationships,
-} from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
+import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierChangeType";
+import { StagingIdentifierRelationship } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationship";
+import { StagingIdentifierRelationshipPartial } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationshipPartial";
+import { StagingIdentifierRelationshipPartialWithQuantity } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationshipPartialWithQuantity";
+import { StagingIdentifierRelationshipSplit } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationshipSplit";
+import { StagingIdentifierRelationships } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationships";
+import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/Instrument/StagingFinancialIdentifier";
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
-import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
 
 test("two partials same key produce one full relationship", () => {

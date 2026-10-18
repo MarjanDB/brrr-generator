@@ -1,14 +1,11 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
-import { Category, ShortLong } from "@brrr/Core/Schemas/CommonFormats";
-import { TradeEventStockAcquired, TradeEventStockSold } from "@brrr/Core/Schemas/Events";
+import { TradeEventStockAcquired } from "@brrr/Core/Schemas/Events/Stock/TradeEventStockAcquired";
+import { TradeEventStockSold } from "@brrr/Core/Schemas/Events/Stock/TradeEventStockSold";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
-import {
-	IdentifierChangeType,
-	IdentifierRelationship,
-	IdentifierRelationshipSplit,
-} from "@brrr/Core/Schemas/IdentifierRelationship";
+import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationships/IdentifierChangeType";
+import { IdentifierRelationship } from "@brrr/Core/Schemas/IdentifierRelationships/IdentifierRelationship";
+import { IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationships/IdentifierRelationshipSplit";
 import {
 	CountryCode,
 	CurrencyCode,
@@ -17,7 +14,10 @@ import {
 	Ticker,
 	TradeEventId,
 } from "@brrr/Core/Schemas/Identifiers";
-import { SplitProvenanceStep } from "@brrr/Core/Schemas/Provenance";
+import { Category } from "@brrr/Core/Schemas/Instrument/Category";
+import { FinancialIdentifier } from "@brrr/Core/Schemas/Instrument/FinancialIdentifier";
+import { ShortLong } from "@brrr/Core/Schemas/Lots/ShortLong";
+import { SplitProvenanceStep } from "@brrr/Core/Schemas/Provenance/SplitProvenanceStep";
 
 const { build } = Scenario;
 

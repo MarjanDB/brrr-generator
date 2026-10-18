@@ -1,7 +1,9 @@
 import type { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
-import { AcquisitionMethod, Category } from "@brrr/Core/Schemas/CommonFormats";
-import { TradeEventStockAcquired, type TradeEventStockSold } from "@brrr/Core/Schemas/Events";
-import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
+import { AcquisitionMethod } from "@brrr/Core/Schemas/Events/AcquisitionMethod";
+import { TradeEventStockAcquired } from "@brrr/Core/Schemas/Events/Stock/TradeEventStockAcquired";
+import type { TradeEventStockSold } from "@brrr/Core/Schemas/Events/Stock/TradeEventStockSold";
+import type { FinancialGrouping } from "@brrr/Core/Schemas/Groupings/FinancialGrouping";
+import { Category } from "@brrr/Core/Schemas/Instrument/Category";
 import type {
 	TaxAuthorityConfiguration,
 	TaxpayerInfo,

@@ -1,0 +1,10 @@
+import type { StagingTradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionDividend";
+import type { StagingTradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionPaymentInLieuOfDividend";
+import type { StagingTradeEventCashTransactionWithholdingTax } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionWithholdingTax";
+import type { StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend";
+
+export type StagingTradeEventCashTransaction =
+	| StagingTradeEventCashTransactionDividend
+	| StagingTradeEventCashTransactionWithholdingTax
+	| StagingTradeEventCashTransactionPaymentInLieuOfDividend
+	| StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend;

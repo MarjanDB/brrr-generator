@@ -1,5 +1,6 @@
-import { ExchangedMoney } from "@brrr/Core/Schemas/CommonFormats";
-import type { TradeEventBase, TradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Events";
+import type { TradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionDividend";
+import { ExchangedMoney } from "@brrr/Core/Schemas/Events/ExchangedMoney";
+import type { TradeEventBase } from "@brrr/Core/Schemas/Events/TradeEventBase";
 import { type ValidDateTime, zDateTimeFromISOString } from "@brrr/Utils/DateTime";
 
 // Ids take the model's own field types, so they follow the model if it moves to nominal types.

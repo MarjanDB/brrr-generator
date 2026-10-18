@@ -1,6 +1,6 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
-import { Category, DividendType, ShortLong } from "@brrr/Core/Schemas/CommonFormats";
-import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship";
+import { DividendType } from "@brrr/Core/Schemas/Events/DividendType";
+import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationships/IdentifierChangeType";
 import {
 	CashActionId,
 	CashTransactionId,
@@ -11,13 +11,13 @@ import {
 	Ticker,
 	TradeEventId,
 } from "@brrr/Core/Schemas/Identifiers";
-import {
-	StagingIdentifierChangeType,
-	StagingIdentifierRelationship,
-	StagingIdentifierRelationships,
-} from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
+import { Category } from "@brrr/Core/Schemas/Instrument/Category";
+import { ShortLong } from "@brrr/Core/Schemas/Lots/ShortLong";
+import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierChangeType";
+import { StagingIdentifierRelationship } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationship";
+import { StagingIdentifierRelationships } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationships";
+import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/Instrument/StagingFinancialIdentifier";
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
-import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
 

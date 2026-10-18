@@ -15,13 +15,11 @@ import {
 } from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
 import { IbkrTransformService } from "@brrr/Brokers/Ibkr/Transform";
 import { CorrelationKey } from "@brrr/Core/Schemas/Identifiers";
-import {
-	StagingTradeEventCashTransactionDividend,
-	StagingTradeEventCashTransactionPaymentInLieuOfDividend,
-	StagingTradeEventCashTransactionWithholdingTax,
-	StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
-} from "@brrr/Core/Schemas/Staging/Events";
-import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
+import { StagingTradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionDividend";
+import { StagingTradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionPaymentInLieuOfDividend";
+import { StagingTradeEventCashTransactionWithholdingTax } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionWithholdingTax";
+import { StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend";
+import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierChangeType";
 import { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
 
 const { ibkr } = Scenario.build;

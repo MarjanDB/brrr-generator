@@ -1,12 +1,10 @@
 import type { CorrelationKey } from "@brrr/Core/Schemas/Identifiers";
-import {
-	StagingIdentifierChangeType,
-	StagingIdentifierRelationship,
-	type StagingIdentifierRelationshipAny,
-	type StagingIdentifierRelationshipPartialAny,
-	StagingIdentifierRelationshipSplit,
-	StagingIdentifierRelationships,
-} from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
+import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierChangeType";
+import { StagingIdentifierRelationship } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationship";
+import type { StagingIdentifierRelationshipAny } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationshipAny";
+import type { StagingIdentifierRelationshipPartialAny } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationshipPartialAny";
+import { StagingIdentifierRelationshipSplit } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationshipSplit";
+import { StagingIdentifierRelationships } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationships";
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 
 export class IdentifierRelationshipResolution {

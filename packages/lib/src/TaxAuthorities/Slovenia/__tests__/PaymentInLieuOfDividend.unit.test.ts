@@ -1,6 +1,5 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
-import { Category, DividendType } from "@brrr/Core/Schemas/CommonFormats";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
+import { DividendType } from "@brrr/Core/Schemas/Events/DividendType";
 import {
 	CashActionId,
 	CashTransactionId,
@@ -9,6 +8,8 @@ import {
 	ListingExchange,
 	TradeEventId,
 } from "@brrr/Core/Schemas/Identifiers";
+import { Category } from "@brrr/Core/Schemas/Instrument/Category";
+import { FinancialIdentifier } from "@brrr/Core/Schemas/Instrument/FinancialIdentifier";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";
