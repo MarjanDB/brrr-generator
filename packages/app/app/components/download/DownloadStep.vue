@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import type { GeneratedOutputs } from "~/components/download/generatedOutputs";
 import { findTaxAuthorityGuide } from "~/components/download/taxAuthorityGuides";
-import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
 import GuideModal from "~/components/guide/GuideModal.vue";
 
 const props = defineProps<{

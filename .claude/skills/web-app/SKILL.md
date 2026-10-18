@@ -20,13 +20,13 @@ company and country lookups. Nuxt's source directory is `packages/app/app/`.
 
 `packages/app/app/pages/index.vue` is the whole product: one page holding the state of four steps, each a component that emits to move on.
 
-1. **Upload** — `components/ibkr/IbkrUploadStep.vue`: reads the files, runs `ReportPipeline.read`, emits the `ImportResult`
+1. **Upload** — `components/upload/UploadStep.vue`: reads the files, runs `ReportPipeline.read`, emits the `ImportResult`
    (detections, `FinancialEvents` and the provenance graph).
-2. **Review** — `components/ibkr/IbkrReviewStep.vue` and `components/ibkr/instrument/` (per-instrument stocks, derivatives, dividends and
-   summary, each with a table and a chart); `IbkrGroupingModal.vue`.
-3. **Configure** — `components/export/ExportConfigStep.vue`: tax authority cards (`taxAuthorityCards.ts`), then that authority's form
+2. **Review** — `components/review/ReviewStep.vue` and `components/review/instrument/` (per-instrument stocks, derivatives, dividends and
+   summary, each with a table and a chart); `InstrumentModal.vue`.
+3. **Configure** — `components/configure/ConfigureStep.vue`: tax authority cards (`taxAuthorityCards.ts`), then that authority's form
    from `authorityForms` (`SloveniaExportForm.vue`), which takes the `ImportResult` and calls `ReportPipeline.generate`.
-4. **Download** — `components/export/ExportDownloadStep.vue`, plus the submission guide from `components/download/taxAuthorityGuides.ts`.
+4. **Download** — `components/download/DownloadStep.vue`, plus the submission guide from `components/download/taxAuthorityGuides.ts`.
 
 Guides (broker export instructions, tax authority submission instructions) are data: `GuideStep`s in `components/guide/guideTypes.ts`,
 shown by `GuideModal.vue`, with screenshots under `packages/app/public/screenshots/` and icons under `packages/app/public/icons/`.
@@ -46,7 +46,7 @@ shown by `GuideModal.vue`, with screenshots under `packages/app/public/screensho
 
 - `components: [{ path: "~/components", pathPrefix: false }]`: components auto-register by file name, without their folder as a prefix,
   so names must be unique across folders. Explicit `~/components/...` imports are also used.
-- Folders by area: `upload/`, `ibkr/`, `export/`, `download/`, `guide/`, `form/`, `ui/`.
+- Folders by area: `upload/`, `review/`, `configure/`, `download/`, `guide/`, `form/`, `ui/`.
 - Forms: wrap fields in `AppForm` (emits `submit` with `valid`) and use `AppTextInput`, `AppNumberInput`, `AppSelect`, `AppCheckbox`,
   `AppFileInput`. Each takes a `validate` function returning an error string or `null`, registers itself with the surrounding form, and
   links its label through `useId()`.

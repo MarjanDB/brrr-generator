@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ImportResult } from "@brrr/lib";
-import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
+import type { GeneratedOutputs } from "~/components/download/generatedOutputs";
 
 const { locale, setLocale, locales, t } = useI18n();
 
@@ -100,14 +100,14 @@ function onRestart() {
     <WizardStepper :steps="stepLabels" :current-step="currentStep" :max-step="maxStep" @navigate="onNavigate" />
 
     <!-- Step 1: Upload (always visible; collapses after completion) -->
-    <IbkrUploadStep
+    <UploadStep
       :collapsed="currentStep > 1"
       :file-count="xmlFiles?.length ?? 0"
       @processed="onProcessed"
     />
 
     <!-- Step 2: Review (mounted only after parsing completes) -->
-    <IbkrReviewStep
+    <ReviewStep
       v-if="imported !== null"
       :financial-events="imported.events"
       :collapsed="currentStep > 2"
@@ -115,7 +115,7 @@ function onRestart() {
     />
 
     <!-- Step 3: Configure (mounted once review is confirmed; stays mounted during back-navigation) -->
-    <ExportConfigStep
+    <ConfigureStep
       v-if="imported !== null && step3Unlocked"
       :imported="imported"
       :collapsed="currentStep > 3"
@@ -123,7 +123,7 @@ function onRestart() {
     />
 
     <!-- Step 4: Download (mounted only after generation completes) -->
-    <ExportDownloadStep
+    <DownloadStep
       v-if="generatedOutputs !== null && currentStep === 4"
       :outputs="generatedOutputs"
       @restart="onRestart"

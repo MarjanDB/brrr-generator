@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { type ImportResult, TaxAuthorityId } from "@brrr/lib";
 import type { Component } from "vue";
-import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
-import SloveniaExportForm from "~/components/export/SloveniaExportForm.vue";
-import { TAX_AUTHORITY_CARDS, type TaxAuthorityCard } from "~/components/export/taxAuthorityCards";
+import SloveniaExportForm from "~/components/configure/SloveniaExportForm.vue";
+import { TAX_AUTHORITY_CARDS, type TaxAuthorityCard } from "~/components/configure/taxAuthorityCards";
+import type { GeneratedOutputs } from "~/components/download/generatedOutputs";
 
 defineProps<{
   imported: ImportResult;

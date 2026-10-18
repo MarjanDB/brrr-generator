@@ -110,7 +110,7 @@ function openModal(row: InstrumentRow) {
     </AppButton>
   </div>
 
-  <IbkrGroupingModal
+  <InstrumentModal
     v-if="modalRow"
     v-model:open="modalOpen"
     :name="modalRow.name"
