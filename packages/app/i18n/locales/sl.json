@@ -270,5 +270,9 @@
 	"download_graph_spread": "Kliknite za razpiranje",
 	"download_graph_pair_hint": "Povezan lot in vrstici, v kateri je končal",
 	"download_graph_split_hint": "Delitev {before} : {after}: količina ×{n}, cena ÷{n}",
-	"download_graph_split_hint_reverse": "Združitev {before} : {after}: količina ÷{n}, cena ×{n}"
+	"download_graph_split_hint_reverse": "Združitev {before} : {after}: količina ÷{n}, cena ×{n}",
+	"download_graph_back": "Nazaj",
+	"download_graph_every_step": "Pokaži vse korake",
+	"download_graph_every_step_hint": "Pokaži tudi razčlenjene zapise, vmesne objekte in noge",
+	"download_graph_label": "Od kod je to"
 }

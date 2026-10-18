@@ -270,5 +270,9 @@
 	"download_graph_spread": "Click to spread them out",
 	"download_graph_pair_hint": "A matched lot and the two lines it became",
 	"download_graph_split_hint": "Split {before} : {after}: quantity ×{n}, price ÷{n}",
-	"download_graph_split_hint_reverse": "Reverse split {before} : {after}: quantity ÷{n}, price ×{n}"
+	"download_graph_split_hint_reverse": "Reverse split {before} : {after}: quantity ÷{n}, price ×{n}",
+	"download_graph_back": "Back",
+	"download_graph_every_step": "Show every step",
+	"download_graph_every_step_hint": "Also show parsed records, staging objects and legs",
+	"download_graph_label": "Where this came from"
 }
