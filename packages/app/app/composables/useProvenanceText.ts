@@ -6,14 +6,14 @@ import {
 	TaxAuthorityLotMatchingMethod,
 } from "@brrr/lib";
 import { DateTime } from "luxon";
-import { splitRatioOf } from "~/download/labels/instrumentLabels";
-import type { SplitChip } from "~/download/labels/SplitChip";
+import type { SplitChip } from "~/types/instrumentPanel";
 import {
 	detailKindKeys,
 	detailValueParams,
 	dropReasonKeys,
 	lotMatchingKeys,
 } from "~/utils/i18nKeys";
+import { splitRatioOf } from "~/utils/instrumentPanel";
 
 // The sentences and values the download step writes about the provenance graph, finished and in
 // the reader's locale.

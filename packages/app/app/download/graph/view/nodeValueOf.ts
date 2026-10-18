@@ -11,9 +11,8 @@ import type { GraphNode } from "~/download/graph/GraphNode";
 import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { NodeValue } from "~/download/graph/view/NodeValue";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
-import { splitRatioOf } from "~/download/labels/instrumentLabels";
-import { SplitChip } from "~/download/labels/SplitChip";
 import { legSideKeys, nodeValueKeys, stackKindKeys } from "~/utils/i18nKeys";
+import { splitRatioOf } from "~/utils/instrumentPanel";
 import { fieldOf, formatNumber } from "~/utils/provenanceFields";
 
 const cashKinds: ProvenanceEventKind[] = [
@@ -81,13 +80,13 @@ function corporateActionValue(node: GraphNode, locale: string): NodeValue {
 		case IdentifierChangeType.SPLIT:
 		case IdentifierChangeType.REVERSE_SPLIT: {
 			const ratio = splitRatioOf(
-				new SplitChip({
+				{
 					kind,
 					before: fieldOf(source, ProvenanceField.SPLIT_BEFORE),
 					after: fieldOf(source, ProvenanceField.SPLIT_AFTER),
 					fromIsin: null,
 					fromTicker: null,
-				}),
+				},
 				locale,
 			);
 			return value(

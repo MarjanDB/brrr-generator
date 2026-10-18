@@ -1,9 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
-import { MarkState } from "~/download/timeline/MarkState";
-import { markStateOf } from "~/download/timeline/markStateOf";
-import { TickGranularity } from "~/download/timeline/TickGranularity";
-import { paddedRange, timelineTicks } from "~/download/timeline/timelineTicks";
+import { MarkState, TickGranularity } from "~/types/timeline";
+import { markStateOf, paddedRange, timelineTicks } from "~/utils/instrumentTimeline";
 
 const day = 24 * 60 * 60 * 1000;
 

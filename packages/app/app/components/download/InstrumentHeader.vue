@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { IdentifierChangeType, OptionRight } from "@brrr/lib";
 import { computed } from "vue";
-import type { SplitChip } from "~/download/labels/SplitChip";
-import { monogramIntent, monogramText } from "~/download/panel/monogramIntent";
-import type { PanelEntry } from "~/download/panel/PanelEntry";
+import type { PanelEntry, SplitChip } from "~/types/instrumentPanel";
 import { ColorIntent } from "~/types/ui";
 
 const props = defineProps<{

@@ -12,7 +12,7 @@ import { assert, describe, expect, test } from "vitest";
 import { mountComposable } from "~/composables/__tests__/support/mountComposable";
 import { useProvenanceText } from "~/composables/useProvenanceText";
 import { GraphBuilder } from "~/download/graph/__tests__/support/GraphBuilder";
-import { SplitChip } from "~/download/labels/SplitChip";
+import type { SplitChip } from "~/types/instrumentPanel";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -233,13 +233,13 @@ describe("the sentence about a warning", () => {
 describe("a split chip's ratio", () => {
 	test("a split of 4 shares into 40 reads 10 : 1", async () => {
 		const { text } = await mountText();
-		const chip = new SplitChip({
+		const chip: SplitChip = {
 			kind: IdentifierChangeType.SPLIT,
 			before: "4",
 			after: "40",
 			fromIsin: "US86800U1043",
 			fromTicker: "SMCI.OLD",
-		});
+		};
 
 		const ratio = text.splitRatio(chip);
 
@@ -249,13 +249,13 @@ describe("a split chip's ratio", () => {
 
 	test("a reverse split of 10 shares into 1 reads 1 : 10", async () => {
 		const { text } = await mountText();
-		const chip = new SplitChip({
+		const chip: SplitChip = {
 			kind: IdentifierChangeType.REVERSE_SPLIT,
 			before: "10",
 			after: "1",
 			fromIsin: "US0000000001",
 			fromTicker: "ACME.OLD",
-		});
+		};
 
 		const ratio = text.splitRatio(chip);
 
@@ -265,26 +265,26 @@ describe("a split chip's ratio", () => {
 
 	test("a rename has no ratio", async () => {
 		const { text } = await mountText();
-		const chip = new SplitChip({
+		const chip: SplitChip = {
 			kind: IdentifierChangeType.RENAME,
 			before: null,
 			after: null,
 			fromIsin: "US0000000001",
 			fromTicker: "OLD",
-		});
+		};
 
 		expect(text.splitRatio(chip)).toBeNull();
 	});
 
 	test("the numbers of the ratio follow the language", async () => {
 		const { text, i18n } = await mountText();
-		const chip = new SplitChip({
+		const chip: SplitChip = {
 			kind: IdentifierChangeType.SPLIT,
 			before: "2",
 			after: "5",
 			fromIsin: "US0000000001",
 			fromTicker: "ACME.OLD",
-		});
+		};
 		await i18n.setLocale("sl");
 
 		const ratio = text.splitRatio(chip);

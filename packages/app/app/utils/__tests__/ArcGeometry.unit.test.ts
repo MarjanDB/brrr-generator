@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { arcGeometry, arcHit } from "~/download/timeline/arcCurve";
+import { arcGeometry, arcHit } from "~/utils/instrumentTimeline";
 
 describe("the arc between a buy and a sale", () => {
 	test("it starts and ends on the axis and its control point sits twice the rise above the middle", () => {

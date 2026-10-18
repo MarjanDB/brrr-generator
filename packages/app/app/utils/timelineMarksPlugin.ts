@@ -1,14 +1,16 @@
 import type { ProvenanceNode } from "@brrr/lib";
 import type { Chart, Plugin } from "chart.js";
 import type { ChartThemeColors } from "~/composables/useChartTheme";
-import type { ArcGeometry, Point } from "~/download/timeline/ArcGeometry";
-import { arcGeometry, arcHit } from "~/download/timeline/arcCurve";
-import { MarkState } from "~/download/timeline/MarkState";
-import { markStateOf } from "~/download/timeline/markStateOf";
-import type { Timeline } from "~/download/timeline/Timeline";
-import type { TimelineArc } from "~/download/timeline/TimelineArc";
-import type { TimelineMark } from "~/download/timeline/TimelineMark";
-import { TimelineMarkKind } from "~/download/timeline/TimelineMarkKind";
+import {
+	type ArcGeometry,
+	MarkState,
+	type Point,
+	type Timeline,
+	type TimelineArc,
+	type TimelineMark,
+	TimelineMarkKind,
+} from "~/types/timeline";
+import { arcGeometry, arcHit, markStateOf } from "~/utils/instrumentTimeline";
 
 // Everything here is the first pass of how the timeline looks: the marker shapes, how high an arc
 // rises, how it ends. The data, the state and the interaction around it are final.

@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import {
-	ProvenanceField,
 	type ProvenanceNode,
 	ProvenanceReportReader,
 	ProvenanceWalker,
 	type ReportInstrument,
 } from "@brrr/lib";
-import { DateTime } from "luxon";
 import { computed, shallowRef, watch } from "vue";
 import DownloadHeader from "~/components/download/DownloadHeader.vue";
 import FocusFacts from "~/components/download/FocusFacts.vue";
@@ -14,16 +12,8 @@ import InstrumentHeader from "~/components/download/InstrumentHeader.vue";
 import InstrumentPanel from "~/components/download/InstrumentPanel.vue";
 import InstrumentTimeline from "~/components/download/InstrumentTimeline.vue";
 import GuideModal from "~/components/guide/GuideModal.vue";
-import { leftOutOf, warningsOf } from "~/download/focusItems";
 import { FocusState } from "~/download/graph/FocusState";
 import { GraphIndex } from "~/download/graph/GraphIndex";
-import { chipsOf } from "~/download/labels/instrumentLabels";
-import { buildPanel } from "~/download/panel/buildPanel";
-import { defaultFocus } from "~/download/panel/defaultFocus";
-import { findEntry } from "~/download/panel/findEntry";
-import { firstEntry } from "~/download/panel/firstEntry";
-import { buildTimeline } from "~/download/timeline/buildTimeline";
-import type { TimelineMark } from "~/download/timeline/TimelineMark";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
 
 const props = defineProps<{
@@ -73,9 +63,6 @@ watch(sections, (next) => {
 const selectedEntry = computed(() =>
 	selected.value === null ? null : findEntry(sections.value, selected.value),
 );
-const timeline = computed(() =>
-	selected.value === null ? null : buildTimeline(selected.value, walker.value),
-);
 const lit = computed(() => focusState.value?.lit?.sources ?? null);
 const leftOut = computed(() =>
 	selected.value === null || focusState.value === null
@@ -92,22 +79,6 @@ const timelineName = computed(
 );
 // The form as the graph's popovers name it: the report type's own id.
 const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
-
-function describeMark(mark: TimelineMark): string {
-	const date = fieldOf(mark.node, ProvenanceField.DATE) ?? fieldOf(mark.node, ProvenanceField.ACQUIRED_DATE);
-	const quantity = Number(fieldOf(mark.node, ProvenanceField.QUANTITY));
-	return t(markKeys[mark.kind], {
-		date:
-			date === null
-				? ""
-				: DateTime.fromISO(date).setLocale(locale.value).toLocaleString(DateTime.DATE_MED),
-		quantity: new Intl.NumberFormat(locale.value).format(Math.abs(quantity)),
-		amount: new Intl.NumberFormat(locale.value).format(
-			Math.abs(Number(fieldOf(mark.node, ProvenanceField.PRICE))),
-		),
-		currency: fieldOf(mark.node, ProvenanceField.CURRENCY) ?? "",
-	});
-}
 
 defineExpose({ index });
 </script>
@@ -129,18 +100,18 @@ defineExpose({ index });
       <InstrumentPanel :sections="sections" :selected="selected" @select="select" />
 
       <div
-        v-if="selectedEntry !== null && timeline !== null && focusState !== null"
+        v-if="selectedEntry !== null && selected !== null && focusState !== null"
         class="flex flex-col min-w-0 rounded-md border border-edge"
       >
         <InstrumentHeader :entry="selectedEntry" :chips="chipsOf(selectedEntry.instrument)" />
         <div class="px-4">
           <InstrumentTimeline
-            :timeline="timeline"
+            :instrument="selected"
+            :walker="walker"
             :focus="focusState.focus"
             :lit="lit"
             :locale="locale"
             :name="timelineName"
-            :describe="describeMark"
             @select="focus"
           />
         </div>

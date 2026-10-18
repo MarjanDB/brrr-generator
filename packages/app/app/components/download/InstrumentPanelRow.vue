@@ -4,8 +4,7 @@ import { DateTime } from "luxon";
 import { computed } from "vue";
 import AppBadge from "~/components/ui/AppBadge.vue";
 import AppTooltip from "~/components/ui/AppTooltip.vue";
-import { monogramIntent, monogramText } from "~/download/panel/monogramIntent";
-import type { PanelEntry } from "~/download/panel/PanelEntry";
+import type { PanelEntry } from "~/types/instrumentPanel";
 import { ColorIntent } from "~/types/ui";
 
 const props = defineProps<{

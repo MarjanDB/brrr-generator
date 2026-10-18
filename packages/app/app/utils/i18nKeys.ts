@@ -12,7 +12,7 @@ import {
 import { GraphHeading } from "~/download/graph/GraphHeading";
 import { GraphNodeKind } from "~/download/graph/GraphNodeKind";
 import { NodeValueKind } from "~/download/graph/view/NodeValueKind";
-import { TimelineMarkKind } from "~/download/timeline/TimelineMarkKind";
+import { TimelineMarkKind } from "~/types/timeline";
 
 // The i18n key of each enum value the download step writes out. Record<Enum, string> makes a new
 // value fail to compile until it has a key.

@@ -5,9 +5,8 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 import AppBadge from "~/components/ui/AppBadge.vue";
 import AppButton from "~/components/ui/AppButton.vue";
 import AppTooltip from "~/components/ui/AppTooltip.vue";
-import type { PanelSections } from "~/download/panel/PanelSections";
-import { warningItemsOf } from "~/download/panel/warningItems";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
+import type { PanelSections } from "~/types/instrumentPanel";
 import { ColorIntent } from "~/types/ui";
 import type { TaxAuthorityGuide } from "~/utils/taxAuthorityGuides";
 

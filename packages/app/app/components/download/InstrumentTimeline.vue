@@ -1,26 +1,20 @@
 <script setup lang="ts">
-import type { ProvenanceNode } from "@brrr/lib";
+import type { ProvenanceNode, ProvenanceWalker, ReportInstrument } from "@brrr/lib";
 import { Chart, type ChartConfiguration } from "chart.js/auto";
 import { DateTime } from "luxon";
 import { computed, onMounted, onUnmounted, useTemplateRef, watch } from "vue";
-import { TickGranularity } from "~/download/timeline/TickGranularity";
-import type { Timeline } from "~/download/timeline/Timeline";
-import type { TimelineMark } from "~/download/timeline/TimelineMark";
-import {
-	type TimelineMarksPlugin,
-	timelineMarksPlugin,
-} from "~/download/timeline/timelineMarksPlugin";
-import { paddedRange, timelineTicks } from "~/download/timeline/timelineTicks";
+import { TickGranularity } from "~/types/timeline";
+import { paddedRange } from "~/utils/instrumentTimeline";
+import { type TimelineMarksPlugin, timelineMarksPlugin } from "~/utils/timelineMarksPlugin";
 
 const props = defineProps<{
-	timeline: Timeline;
+	instrument: ReportInstrument;
+	walker: ProvenanceWalker;
 	focus: ProvenanceNode;
 	lit: ReadonlySet<ProvenanceNode> | null;
 	locale: string;
 	// The instrument's name for the screen reader
 	name: string;
-	// The tooltip text of a mark
-	describe: (mark: TimelineMark) => string;
 }>();
 
 const emit = defineEmits<{
@@ -28,25 +22,29 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const { timeline, ticks, describeMark } = useInstrumentTimeline(
+	() => props.instrument,
+	() => props.walker,
+);
 const { colors } = useChartTheme();
 const canvasRef = useTemplateRef<HTMLCanvasElement>("canvas");
 let chart: Chart<"scatter"> | null = null;
 
-const height = computed(() => 150 + 22 * Math.max(0, props.timeline.stackDepth - 1));
+const height = computed(() => 150 + 22 * Math.max(0, timeline.value.stackDepth - 1));
 const arcTolerance = 6;
 
 function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter"> {
-	const { timeline } = props;
-	const range = paddedRange(timeline.first, timeline.last);
+	const drawn = timeline.value;
+	const range = paddedRange(drawn.first, drawn.last);
 	const c = colors.value;
-	const ticks = timelineTicks(timeline.first, timeline.last);
-	const granularityAt = new Map(ticks.map((tick) => [tick.at, tick.granularity]));
+	const tickList = ticks.value;
+	const granularityAt = new Map(tickList.map((tick) => [tick.at, tick.granularity]));
 	return {
 		type: "scatter",
 		data: {
 			datasets: [
 				{
-					data: timeline.marks.map((mark) => ({ x: mark.at, y: -mark.stack })),
+					data: drawn.marks.map((mark) => ({ x: mark.at, y: -mark.stack })),
 					pointRadius: 11,
 					pointStyle: "circle",
 					backgroundColor: "transparent",
@@ -69,8 +67,8 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 					callbacks: {
 						title: () => "",
 						label: (context) => {
-							const mark = timeline.marks[context.dataIndex];
-							return mark === undefined ? "" : props.describe(mark);
+							const mark = drawn.marks[context.dataIndex];
+							return mark === undefined ? "" : describeMark(mark);
 						},
 					},
 				},
@@ -83,7 +81,7 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 					grid: { color: c.grid },
 					border: { color: c.grid },
 					afterBuildTicks: (scale) => {
-						scale.ticks = ticks.map((tick) => ({ value: tick.at }));
+						scale.ticks = tickList.map((tick) => ({ value: tick.at }));
 					},
 					ticks: {
 						color: c.ticks,
@@ -95,14 +93,14 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 				},
 				y: {
 					display: false,
-					min: -(timeline.stackDepth - 1) - 1.5,
+					min: -(drawn.stackDepth - 1) - 1.5,
 					max: 1.5,
 				},
 			},
 			onClick: (event, elements) => {
 				const element = elements[0];
 				if (element !== undefined) {
-					const mark = timeline.marks[element.index];
+					const mark = drawn.marks[element.index];
 					if (mark !== undefined) {
 						emit("select", mark.node);
 					}
@@ -158,7 +156,7 @@ function rebuild() {
 		return;
 	}
 	const plugin = timelineMarksPlugin(() => ({
-		timeline: props.timeline,
+		timeline: timeline.value,
 		focus: props.focus,
 		lit: props.lit,
 		colors: colors.value,
@@ -176,7 +174,7 @@ watch(
   () => [props.focus, props.lit],
   () => chart?.update("none"),
 );
-watch(() => props.timeline, rebuild);
+watch(timeline, rebuild);
 watch(colors, rebuild);
 </script>
 

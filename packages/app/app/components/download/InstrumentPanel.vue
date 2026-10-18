@@ -2,8 +2,7 @@
 import type { ReportInstrument } from "@brrr/lib";
 import { computed, ref } from "vue";
 import InstrumentPanelRow from "~/components/download/InstrumentPanelRow.vue";
-import { filterPanel } from "~/download/panel/filterPanel";
-import type { PanelSections } from "~/download/panel/PanelSections";
+import type { PanelSections } from "~/types/instrumentPanel";
 
 const props = defineProps<{
 	sections: PanelSections;
