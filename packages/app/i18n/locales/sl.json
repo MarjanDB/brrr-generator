@@ -47,7 +47,7 @@
 	"upload_summary": "{n} datoteka(e) naložena(e)",
 	"upload_button": "Izgleda dobro, nadaljuj",
 	"upload_detection_file": "Datoteka",
-	"upload_detection_brokerage": "Prepoznan posrednik",
+	"upload_detection_broker": "Prepoznan posrednik",
 	"upload_detection_unknown": "Neznano / nepodprto",
 	"upload_detection_ignored": "Nekaterih datotek ni bilo mogoče prepoznati in bodo ignorirane.",
 	"export_summary": "{type} / {year}",

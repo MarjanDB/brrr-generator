@@ -1,58 +1,58 @@
-import type { BrokerageId } from "@brrr/Brokerages/BrokerageIdentifiers";
-import type { IBrokerageProvider } from "@brrr/Brokerages/Interfaces/IBrokerageProvider";
+import type { BrokerId } from "@brrr/Brokers/BrokerIdentifiers";
+import type { IBrokerProvider } from "@brrr/Brokers/Interfaces/IBrokerProvider";
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 
-export type BrokerageFileDetection = {
+export type BrokerFileDetection = {
 	fileName: string;
-	detectedBrokerage: { id: BrokerageId; name: string } | null;
+	detectedBroker: { id: BrokerId; name: string } | null;
 	// Set when the file looks like a broker's export but can't be read.
 	error: string | null;
 };
 
-export class BrokerageRegistry {
-	constructor(private readonly ibkr: IBrokerageProvider) {}
+export class BrokerRegistry {
+	constructor(private readonly ibkr: IBrokerProvider) {}
 
-	public listBrokerages(): { id: BrokerageId; name: string }[] {
-		return [{ id: this.ibkr.brokerageId, name: this.ibkr.displayName }];
+	public listBrokers(): { id: BrokerId; name: string }[] {
+		return [{ id: this.ibkr.brokerId, name: this.ibkr.displayName }];
 	}
 
-	private detectOne(file: { fileName: string; xml: string }): BrokerageFileDetection {
+	private detectOne(file: { fileName: string; xml: string }): BrokerFileDetection {
 		const isIbkr = this.ibkr.isThisValidExport(file.xml);
 		if (!isIbkr) {
 			return {
 				fileName: file.fileName,
-				detectedBrokerage: null,
+				detectedBroker: null,
 				error: this.ibkr.describeExportProblem(file.xml),
 			};
 		}
 
 		return {
 			fileName: file.fileName,
-			detectedBrokerage: { id: this.ibkr.brokerageId, name: this.ibkr.displayName },
+			detectedBroker: { id: this.ibkr.brokerId, name: this.ibkr.displayName },
 			error: null,
 		};
 	}
 
-	public detect(files: { fileName: string; xml: string }[]): BrokerageFileDetection[] {
+	public detect(files: { fileName: string; xml: string }[]): BrokerFileDetection[] {
 		return files.map((f) => this.detectOne(f));
 	}
 
 	private pickIbkrXmlStrings(
 		files: { fileName: string; xml: string }[],
-		detections: BrokerageFileDetection[],
+		detections: BrokerFileDetection[],
 	): string[] {
 		const xmlStrings: string[] = [];
 		for (const [i, f] of files.entries()) {
 			const detection = detections[i];
-			const detectedBrokerageId = detection?.detectedBrokerage?.id ?? null;
-			if (detectedBrokerageId !== this.ibkr.brokerageId) continue;
+			const detectedBrokerId = detection?.detectedBroker?.id ?? null;
+			if (detectedBrokerId !== this.ibkr.brokerId) continue;
 			xmlStrings.push(f.xml);
 		}
 		return xmlStrings;
 	}
 
 	public loadAndTransformDetected(files: { fileName: string; xml: string }[]): {
-		detections: BrokerageFileDetection[];
+		detections: BrokerFileDetection[];
 		stagingEvents: StagingFinancialEvents;
 	} {
 		const detections = this.detect(files);

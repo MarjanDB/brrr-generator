@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-	BrokerageRegistry,
+	BrokerRegistry,
 	createContainer,
 	SlovenianReportTypeId,
 	StagingFinancialGroupingProcessor,
@@ -98,7 +98,7 @@ async function main() {
 	};
 
 	const container = createContainer(new NodeInfoProvider());
-	const brokerages = container.get(BrokerageRegistry);
+	const brokers = container.get(BrokerRegistry);
 	const groupingProcessor = container.get(StagingFinancialGroupingProcessor);
 	const taxAuthorities = container.get(TaxAuthorityRegistry);
 
@@ -113,7 +113,7 @@ async function main() {
 	}
 	console.log(`Found ${files.length} XML file(s)`);
 
-	const { detections, stagingEvents } = brokerages.loadAndTransformDetected(files);
+	const { detections, stagingEvents } = brokers.loadAndTransformDetected(files);
 	// A broker export that can't be read must stop the run: leaving it out would silently change
 	// the reports (e.g. the cost basis of later sales).
 	const unreadable = detections.filter((detection) => detection.error !== null);
@@ -125,7 +125,7 @@ async function main() {
 		process.exit(1);
 	}
 	for (const detection of detections) {
-		if (detection.detectedBrokerage === null) {
+		if (detection.detectedBroker === null) {
 			console.warn(`Skipping ${detection.fileName}: not a recognised broker export`);
 		}
 	}

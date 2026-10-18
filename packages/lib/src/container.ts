@@ -1,4 +1,4 @@
-import { loadBrokeragesModule } from "@brrr/Brokerages/BrokeragesModule";
+import { loadBrokersModule } from "@brrr/Brokers/BrokersModule";
 import { loadCoreModule } from "@brrr/Core/CoreModule";
 import { InfoProvider } from "@brrr/InfoProviders/InfoProvider";
 import { loadTaxAuthoritiesModule } from "@brrr/TaxAuthorities/TaxAuthoritiesModule";
@@ -13,7 +13,7 @@ export function createContainer(infoProvider: InfoProvider): Container {
 		.inSingletonScope();
 
 	loadCoreModule(container);
-	loadBrokeragesModule(container);
+	loadBrokersModule(container);
 	loadTaxAuthoritiesModule(container);
 
 	return container;

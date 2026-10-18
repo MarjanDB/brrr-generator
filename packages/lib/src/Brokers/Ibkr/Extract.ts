@@ -1,4 +1,4 @@
-import type { IbkrTransactionId } from "@brrr/Brokerages/Ibkr/Schemas/IbkrIdentifiers";
+import type { IbkrTransactionId } from "@brrr/Brokers/Ibkr/Schemas/IbkrIdentifiers";
 import {
 	AssetClass,
 	CorporateAction,
@@ -8,8 +8,8 @@ import {
 	TradeDerivative,
 	TradeStock,
 	TransactionCash,
-} from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
-import { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades";
+} from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
+import { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
 import { XMLParser } from "fast-xml-parser";
 
 export class IbkrExtractService {

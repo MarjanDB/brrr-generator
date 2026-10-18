@@ -19,7 +19,7 @@ company and country lookups. Nuxt's source directory is `packages/app/app/`.
 
 `packages/app/app/pages/index.vue` is the whole product: one page holding the state of four steps, each a component that emits to move on.
 
-1. **Upload** — `components/ibkr/IbkrUploadStep.vue`: reads the files, runs `BrokerageRegistry.loadAndTransformDetected` and
+1. **Upload** — `components/ibkr/IbkrUploadStep.vue`: reads the files, runs `BrokerRegistry.loadAndTransformDetected` and
    `StagingFinancialGroupingProcessor`, emits `FinancialEvents`.
 2. **Review** — `components/ibkr/IbkrReviewStep.vue` and `components/ibkr/instrument/` (per-instrument stocks, derivatives, dividends and
    summary, each with a table and a chart); `IbkrGroupingModal.vue`.

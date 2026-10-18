@@ -1,7 +1,7 @@
 import { StagingBuilders } from "@brrr/__tests__/support/StagingBuilders";
 import { type CashFields, type TradeFields, Values } from "@brrr/__tests__/support/Values";
-import { BrokerageRegistry } from "@brrr/Brokerages/BrokerageRegistry";
-import { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades";
+import { BrokerRegistry } from "@brrr/Brokers/BrokerRegistry";
+import { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
 import {
@@ -236,10 +236,10 @@ const pipeline = {
 	run(files: { fileName: string; xml: string }[]) {
 		const container = createContainer(new PredefinedInfoProvider());
 		const { detections, stagingEvents } = container
-			.get(BrokerageRegistry)
+			.get(BrokerRegistry)
 			.loadAndTransformDetected(files);
 
-		const unread = detections.filter((d) => d.error !== null || d.detectedBrokerage === null);
+		const unread = detections.filter((d) => d.error !== null || d.detectedBroker === null);
 		if (unread.length > 0) {
 			throw new Error(`Not read as a broker export: ${unread.map((d) => d.fileName).join(", ")}`);
 		}

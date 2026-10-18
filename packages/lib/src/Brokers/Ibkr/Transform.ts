@@ -6,8 +6,8 @@ import {
 	type TradeDerivative,
 	type TradeStock,
 	type TransactionCash,
-} from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
-import type { SegmentedTrades } from "@brrr/Brokerages/Ibkr/Schemas/SegmentedTrades";
+} from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
+import type { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
 import {
 	GenericAssetClass,
 	GenericCategory,

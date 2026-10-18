@@ -47,7 +47,7 @@
 	"upload_summary": "{n} file(s) loaded",
 	"upload_button": "Looks good, continue",
 	"upload_detection_file": "File",
-	"upload_detection_brokerage": "Detected brokerage",
+	"upload_detection_broker": "Detected broker",
 	"upload_detection_unknown": "Unknown / unsupported",
 	"upload_detection_ignored": "Some files were not recognized and will be ignored.",
 	"export_summary": "{type} / {year}",

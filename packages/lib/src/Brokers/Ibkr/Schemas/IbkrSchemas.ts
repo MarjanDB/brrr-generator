@@ -6,7 +6,7 @@ import {
 	IbkrSecurityId,
 	IbkrSymbol,
 	IbkrTransactionId,
-} from "@brrr/Brokerages/Ibkr/Schemas/IbkrIdentifiers";
+} from "@brrr/Brokers/Ibkr/Schemas/IbkrIdentifiers";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import { DateTime } from "luxon";
 import { z } from "zod/v4";

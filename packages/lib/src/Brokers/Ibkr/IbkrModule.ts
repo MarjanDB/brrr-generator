@@ -1,6 +1,6 @@
-import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract";
-import { IbkrBrokerageExportProvider } from "@brrr/Brokerages/Ibkr/IbkrBrokerageExportProvider";
-import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform";
+import { IbkrExtractService } from "@brrr/Brokers/Ibkr/Extract";
+import { IbkrBrokerExportProvider } from "@brrr/Brokers/Ibkr/IbkrBrokerExportProvider";
+import { IbkrTransformService } from "@brrr/Brokers/Ibkr/Transform";
 import type { Container } from "inversify";
 
 export function loadIbkrModule(container: Container): void {
@@ -14,10 +14,10 @@ export function loadIbkrModule(container: Container): void {
 		.inSingletonScope();
 
 	container
-		.bind(IbkrBrokerageExportProvider)
+		.bind(IbkrBrokerExportProvider)
 		.toResolvedValue(
 			(extract: IbkrExtractService, transform: IbkrTransformService) =>
-				new IbkrBrokerageExportProvider(extract, transform),
+				new IbkrBrokerExportProvider(extract, transform),
 			[IbkrExtractService, IbkrTransformService],
 		)
 		.inSingletonScope();

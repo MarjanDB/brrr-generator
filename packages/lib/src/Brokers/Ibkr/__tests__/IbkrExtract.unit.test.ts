@@ -1,6 +1,6 @@
-import { IbkrExtractService } from "@brrr/Brokerages/Ibkr/Extract";
-import { IbkrActionId, IbkrIsin } from "@brrr/Brokerages/Ibkr/Schemas/IbkrIdentifiers";
-import { BuyOrSell, CashTransactionType } from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
+import { IbkrExtractService } from "@brrr/Brokers/Ibkr/Extract";
+import { IbkrActionId, IbkrIsin } from "@brrr/Brokers/Ibkr/Schemas/IbkrIdentifiers";
+import { BuyOrSell, CashTransactionType } from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
 import { TestKit } from "@brrr/test-cases";
 
 const { ibkr } = TestKit;

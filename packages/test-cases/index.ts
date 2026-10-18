@@ -82,7 +82,7 @@ function testCase<I extends FileNames, S extends FileNames>(definition: {
 	return {
 		year: definition.year,
 		inputs,
-		// Every declared export, in declaration order, shaped for BrokerageRegistry.loadAndTransformDetected.
+		// Every declared export, in declaration order, shaped for BrokerRegistry.loadAndTransformDetected.
 		readInputs: (): ExportFile[] => Object.values(inputs).map((input) => input.read()),
 		expected,
 	};

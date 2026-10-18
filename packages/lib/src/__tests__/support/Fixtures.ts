@@ -6,7 +6,7 @@ import {
 	IbkrListingExchange,
 	IbkrSymbol,
 	IbkrTransactionId,
-} from "@brrr/Brokerages/Ibkr/Schemas/IbkrIdentifiers";
+} from "@brrr/Brokers/Ibkr/Schemas/IbkrIdentifiers";
 import {
 	AssetClass,
 	BuyOrSell,
@@ -22,7 +22,7 @@ import {
 	type TradeStock,
 	type TransactionCash,
 	TransactionType,
-} from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
+} from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
 import { CountryCode, CountryName } from "@brrr/Core/Schemas/Identifiers";
 import { type CompanyInfo, type Country, TreatyType } from "@brrr/InfoProviders/InfoProvider";
 import { type TaxPayerInfo, TaxPayerType } from "@brrr/TaxAuthorities/ConfigurationProvider";

@@ -4,7 +4,7 @@ import {
 	IbkrIsin,
 	IbkrSymbol,
 	IbkrTransactionId,
-} from "@brrr/Brokerages/Ibkr/Schemas/IbkrIdentifiers";
+} from "@brrr/Brokers/Ibkr/Schemas/IbkrIdentifiers";
 import {
 	BuyOrSell,
 	CashTransactionType,
@@ -12,8 +12,8 @@ import {
 	OpenCloseIndicator,
 	type TradeStock,
 	type TransactionCash,
-} from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
-import { IbkrTransformService } from "@brrr/Brokerages/Ibkr/Transform";
+} from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
+import { IbkrTransformService } from "@brrr/Brokers/Ibkr/Transform";
 import { CorrelationKey } from "@brrr/Core/Schemas/Identifiers";
 import {
 	StagingTradeEventCashTransactionDividend,

@@ -5,7 +5,7 @@ import type {
 	TradeDerivative,
 	TradeStock,
 	TransactionCash,
-} from "@brrr/Brokerages/Ibkr/Schemas/IbkrSchemas";
+} from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
 
 export class SegmentedTrades {
 	public readonly cashTransactions: TransactionCash[];

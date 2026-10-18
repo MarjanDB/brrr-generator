@@ -1,4 +1,4 @@
 // The brokers whose exports lib reads.
-export enum BrokerageId {
+export enum BrokerId {
 	IBKR = "ibkr",
 }
