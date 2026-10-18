@@ -52,7 +52,6 @@ function toCoreTradeFields(
 		date: input.date,
 		multiplier: input.multiplier,
 		exchangedMoney: input.exchangedMoney,
-		provenance: [],
 	};
 }
 
@@ -175,7 +174,6 @@ function toCoreLot<A extends TradeEvent, S extends TradeEvent>(
 		acquired: trades.acquired,
 		sold: trades.sold,
 		shortLongType: ShortLong.LONG,
-		provenance: [],
 	});
 	track(
 		provenance,

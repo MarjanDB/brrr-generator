@@ -45,7 +45,7 @@ import type { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Models
 type LotFields = { id: TaxLotStock["id"]; quantity: number; shortLongType: ShortLong };
 
 // Builders for lib's objects. Each fixes only what its name says (a stock buy is a STOCK bought
-// with multiplier 1; everything built has no provenance yet); every other value is required.
+// with multiplier 1); every other value is required.
 const build = {
 	date: Values.date,
 
@@ -57,7 +57,6 @@ const build = {
 			multiplier: 1,
 			exchangedMoney: Values.tradeMoney(fields),
 			acquisitionMethod: AcquisitionMethod.BOUGHT,
-			provenance: [],
 		});
 	},
 
@@ -68,7 +67,6 @@ const build = {
 			date: Values.date(fields.date),
 			multiplier: 1,
 			exchangedMoney: Values.tradeMoney(fields),
-			provenance: [],
 		});
 	},
 
@@ -80,7 +78,6 @@ const build = {
 			multiplier: fields.multiplier,
 			exchangedMoney: Values.tradeMoney(fields),
 			acquisitionMethod: AcquisitionMethod.BOUGHT,
-			provenance: [],
 		});
 	},
 
@@ -91,7 +88,6 @@ const build = {
 			date: Values.date(fields.date),
 			multiplier: fields.multiplier,
 			exchangedMoney: Values.tradeMoney(fields),
-			provenance: [],
 		});
 	},
 
@@ -124,13 +120,13 @@ const build = {
 	stockTaxLot(
 		fields: LotFields & { acquired: TradeEventStockAcquired; sold: TradeEventStockSold },
 	): TaxLotStock {
-		return new TaxLot({ ...fields, provenance: [] });
+		return new TaxLot(fields);
 	},
 
 	derivativeTaxLot(
 		fields: LotFields & { acquired: TradeEventDerivativeAcquired; sold: TradeEventDerivativeSold },
 	): TaxLotDerivative {
-		return new TaxLot({ ...fields, provenance: [] });
+		return new TaxLot(fields);
 	},
 
 	derivativeGrouping(fields: {
@@ -142,7 +138,6 @@ const build = {
 			financialIdentifier: fields.identifier,
 			derivativeTrades: fields.trades,
 			derivativeTaxLots: fields.taxLots,
-			provenance: [],
 		});
 	},
 
@@ -163,7 +158,6 @@ const build = {
 			stockTaxLots: fields.stockTaxLots,
 			derivativeGroupings: fields.derivativeGroupings,
 			cashTransactions: fields.cashTransactions,
-			provenance: [],
 		});
 	},
 
@@ -195,7 +189,6 @@ function cashEvent(fields: CashFields) {
 		actionId: fields.actionId,
 		transactionId: fields.transactionId,
 		listingExchange: fields.listingExchange,
-		provenance: [],
 	};
 }
 

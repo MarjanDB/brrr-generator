@@ -1,7 +1,6 @@
 import type { ExchangedMoney } from "@brrr/Core/Models/Events/ExchangedMoney";
 import type { TradeEventId } from "@brrr/Core/Models/Identifiers";
 import type { AssetClass } from "@brrr/Core/Models/Instrument/AssetClass";
-import type { AnyProvenanceStep } from "@brrr/Core/Models/Provenance/AnyProvenanceStep";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 
 export type TradeEventArgs = {
@@ -10,7 +9,6 @@ export type TradeEventArgs = {
 	date: ValidDateTime;
 	multiplier: number;
 	exchangedMoney: ExchangedMoney;
-	provenance: AnyProvenanceStep[];
 };
 
 export abstract class TradeEventBase {
@@ -19,7 +17,6 @@ export abstract class TradeEventBase {
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: ExchangedMoney;
-	public readonly provenance: AnyProvenanceStep[];
 
 	public constructor(args: TradeEventArgs) {
 		this.id = args.id;
@@ -27,6 +24,5 @@ export abstract class TradeEventBase {
 		this.date = args.date;
 		this.multiplier = args.multiplier;
 		this.exchangedMoney = args.exchangedMoney;
-		this.provenance = args.provenance;
 	}
 }

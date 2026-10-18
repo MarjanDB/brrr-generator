@@ -75,7 +75,6 @@ export class StagingFinancialGroupingProcessor {
 				),
 				derivativeTrades: trades,
 				derivativeTaxLots: lots.map((lot) => toCoreDerivativeLot(lot, trades, provenance)),
-				provenance: [],
 			});
 			provenance.node(
 				grouping,
@@ -116,7 +115,6 @@ export class StagingFinancialGroupingProcessor {
 			cashTransactions: input.cashTransactions.map((transaction) =>
 				toCoreCashTransaction(transaction, provenance),
 			),
-			provenance: [],
 		});
 		provenance.node(
 			grouping,
