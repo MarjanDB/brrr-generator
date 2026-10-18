@@ -1,7 +1,7 @@
 import type { ILotMatchingMethod } from "@brrr/Core/LotMatching/ILotMatchingMethod";
 import type { LotLeg, MatchedLot } from "@brrr/Core/LotMatching/MatchedLot";
 import type { Trade } from "@brrr/Core/LotMatching/Trade";
-import type { TradeEventBase } from "@brrr/Core/Schemas/Events";
+import type { TradeEventBase } from "@brrr/Core/Schemas/Events/TradeEventBase";
 import type { TradeEventId } from "@brrr/Core/Schemas/Identifiers";
 
 export class LotMatcher {

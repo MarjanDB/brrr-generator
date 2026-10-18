@@ -1,30 +1,26 @@
-import { ShortLong } from "@brrr/Core/Schemas/CommonFormats";
-import {
-	type TradeEvent,
-	type TradeEventCashTransaction,
-	TradeEventCashTransactionDividend,
-	TradeEventCashTransactionPaymentInLieuOfDividend,
-	TradeEventCashTransactionWithholdingTax,
-	TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
-	type TradeEventDerivative,
-	TradeEventDerivativeAcquired,
-	TradeEventDerivativeSold,
-	type TradeEventStock,
-	TradeEventStockAcquired,
-	TradeEventStockSold,
-} from "@brrr/Core/Schemas/Events";
-import { TaxLot, type TaxLotDerivative, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
-import {
-	type StagingTradeEventCashTransaction,
-	StagingTradeEventCashTransactionDividend,
-	StagingTradeEventCashTransactionPaymentInLieuOfDividend,
-	StagingTradeEventCashTransactionWithholdingTax,
-	type StagingTradeEventDerivative,
-	StagingTradeEventDerivativeAcquired,
-	type StagingTradeEventStock,
-	StagingTradeEventStockAcquired,
-} from "@brrr/Core/Schemas/Staging/Events";
-import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots";
+import type { TradeEventCashTransaction } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransaction";
+import { TradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionDividend";
+import { TradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionPaymentInLieuOfDividend";
+import { TradeEventCashTransactionWithholdingTax } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionWithholdingTax";
+import { TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend";
+import type { TradeEventDerivative } from "@brrr/Core/Schemas/Events/Derivative/TradeEventDerivative";
+import { TradeEventDerivativeAcquired } from "@brrr/Core/Schemas/Events/Derivative/TradeEventDerivativeAcquired";
+import { TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events/Derivative/TradeEventDerivativeSold";
+import type { TradeEventStock } from "@brrr/Core/Schemas/Events/Stock/TradeEventStock";
+import { TradeEventStockAcquired } from "@brrr/Core/Schemas/Events/Stock/TradeEventStockAcquired";
+import { TradeEventStockSold } from "@brrr/Core/Schemas/Events/Stock/TradeEventStockSold";
+import type { TradeEvent } from "@brrr/Core/Schemas/Events/TradeEvent";
+import { ShortLong } from "@brrr/Core/Schemas/Lots/ShortLong";
+import { TaxLot, type TaxLotDerivative, type TaxLotStock } from "@brrr/Core/Schemas/Lots/TaxLot";
+import type { StagingTradeEventCashTransaction } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransaction";
+import { StagingTradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionDividend";
+import { StagingTradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionPaymentInLieuOfDividend";
+import { StagingTradeEventCashTransactionWithholdingTax } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionWithholdingTax";
+import type { StagingTradeEventDerivative } from "@brrr/Core/Schemas/Staging/Events/Derivative/StagingTradeEventDerivative";
+import { StagingTradeEventDerivativeAcquired } from "@brrr/Core/Schemas/Staging/Events/Derivative/StagingTradeEventDerivativeAcquired";
+import type { StagingTradeEventStock } from "@brrr/Core/Schemas/Staging/Events/Stock/StagingTradeEventStock";
+import { StagingTradeEventStockAcquired } from "@brrr/Core/Schemas/Staging/Events/Stock/StagingTradeEventStockAcquired";
+import type { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots/StagingTaxLot";
 
 // Staging events and lots carry the broker's view of an instrument; these turn them into the
 // core model the tax authorities work with.

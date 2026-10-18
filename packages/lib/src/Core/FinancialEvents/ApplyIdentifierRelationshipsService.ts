@@ -1,23 +1,18 @@
-import { ExchangedMoney } from "@brrr/Core/Schemas/CommonFormats";
-import {
-	type TradeEventStock,
-	TradeEventStockAcquired,
-	TradeEventStockSold,
-} from "@brrr/Core/Schemas/Events";
+import { ExchangedMoney } from "@brrr/Core/Schemas/Events/ExchangedMoney";
+import type { TradeEventStock } from "@brrr/Core/Schemas/Events/Stock/TradeEventStock";
+import { TradeEventStockAcquired } from "@brrr/Core/Schemas/Events/Stock/TradeEventStockAcquired";
+import { TradeEventStockSold } from "@brrr/Core/Schemas/Events/Stock/TradeEventStockSold";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
-import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
-import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import {
-	IdentifierChangeType,
-	IdentifierRelationshipSplit,
-} from "@brrr/Core/Schemas/IdentifierRelationship";
+import { DerivativeGrouping } from "@brrr/Core/Schemas/Groupings/DerivativeGrouping";
+import { FinancialGrouping } from "@brrr/Core/Schemas/Groupings/FinancialGrouping";
+import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationships/IdentifierChangeType";
+import { IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationships/IdentifierRelationshipSplit";
 import type { FinancialIdentifierKey } from "@brrr/Core/Schemas/Identifiers";
-import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
-import {
-	type AnyProvenanceStep,
-	RenameProvenanceStep,
-	SplitProvenanceStep,
-} from "@brrr/Core/Schemas/Provenance";
+import type { FinancialIdentifier } from "@brrr/Core/Schemas/Instrument/FinancialIdentifier";
+import { TaxLot, type TaxLotStock } from "@brrr/Core/Schemas/Lots/TaxLot";
+import type { AnyProvenanceStep } from "@brrr/Core/Schemas/Provenance/AnyProvenanceStep";
+import { RenameProvenanceStep } from "@brrr/Core/Schemas/Provenance/RenameProvenanceStep";
+import { SplitProvenanceStep } from "@brrr/Core/Schemas/Provenance/SplitProvenanceStep";
 
 // Applies corporate action identifier relationships to financial events.
 //

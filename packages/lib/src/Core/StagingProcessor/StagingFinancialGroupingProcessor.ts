@@ -1,18 +1,15 @@
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
-import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import {
-	IdentifierChangeType,
-	IdentifierRelationship,
-	type IdentifierRelationshipAny,
-	IdentifierRelationshipSplit,
-} from "@brrr/Core/Schemas/IdentifierRelationship";
+import { DerivativeGrouping } from "@brrr/Core/Schemas/Groupings/DerivativeGrouping";
+import { FinancialGrouping } from "@brrr/Core/Schemas/Groupings/FinancialGrouping";
+import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationships/IdentifierChangeType";
+import { IdentifierRelationship } from "@brrr/Core/Schemas/IdentifierRelationships/IdentifierRelationship";
+import type { IdentifierRelationshipAny } from "@brrr/Core/Schemas/IdentifierRelationships/IdentifierRelationshipAny";
+import { IdentifierRelationshipSplit } from "@brrr/Core/Schemas/IdentifierRelationships/IdentifierRelationshipSplit";
 import type { FinancialIdentifierKey } from "@brrr/Core/Schemas/Identifiers";
-import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping";
-import {
-	StagingIdentifierChangeType,
-	StagingIdentifierRelationshipSplit,
-} from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
+import { FinancialIdentifier } from "@brrr/Core/Schemas/Instrument/FinancialIdentifier";
+import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Groupings/StagingFinancialGrouping";
+import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierChangeType";
+import { StagingIdentifierRelationshipSplit } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationshipSplit";
 import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 import type { IdentifierRelationshipResolution } from "@brrr/Core/StagingProcessor/IdentifierRelationshipResolution";
 import {

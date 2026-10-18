@@ -1,7 +1,7 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod";
-import { ShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import { CurrencyCode, TaxLotId, TradeEventId } from "@brrr/Core/Schemas/Identifiers";
+import { ShortLong } from "@brrr/Core/Schemas/Lots/ShortLong";
 
 const { build } = Scenario;
 

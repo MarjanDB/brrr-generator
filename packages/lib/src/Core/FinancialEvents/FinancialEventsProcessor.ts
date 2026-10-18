@@ -1,8 +1,10 @@
 import type { ILotMatchingMethod } from "@brrr/Core/LotMatching/ILotMatchingMethod";
 import type { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
 import type { LotLeg, MatchedLot } from "@brrr/Core/LotMatching/MatchedLot";
-import type { TradeEventDerivative, TradeEventStock } from "@brrr/Core/Schemas/Events";
-import type { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
+import type { TradeEventDerivative } from "@brrr/Core/Schemas/Events/Derivative/TradeEventDerivative";
+import type { TradeEventStock } from "@brrr/Core/Schemas/Events/Stock/TradeEventStock";
+import type { DerivativeGrouping } from "@brrr/Core/Schemas/Groupings/DerivativeGrouping";
+import type { FinancialGrouping } from "@brrr/Core/Schemas/Groupings/FinancialGrouping";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 
 // Matches an instrument's trades into lots and keeps the legs of the lots closed in a period:

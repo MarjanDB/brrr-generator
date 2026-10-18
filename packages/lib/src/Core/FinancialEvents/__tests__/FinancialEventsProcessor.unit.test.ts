@@ -1,7 +1,5 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod";
-import { Category, ShortLong } from "@brrr/Core/Schemas/CommonFormats";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import {
 	CountryCode,
 	CurrencyCode,
@@ -10,6 +8,9 @@ import {
 	Ticker,
 	TradeEventId,
 } from "@brrr/Core/Schemas/Identifiers";
+import { Category } from "@brrr/Core/Schemas/Instrument/Category";
+import { FinancialIdentifier } from "@brrr/Core/Schemas/Instrument/FinancialIdentifier";
+import { ShortLong } from "@brrr/Core/Schemas/Lots/ShortLong";
 
 const { build, pipeline } = Scenario;
 

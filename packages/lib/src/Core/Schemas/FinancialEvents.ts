@@ -1,5 +1,5 @@
-import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import type { IdentifierRelationshipAny } from "@brrr/Core/Schemas/IdentifierRelationship";
+import type { FinancialGrouping } from "@brrr/Core/Schemas/Groupings/FinancialGrouping";
+import type { IdentifierRelationshipAny } from "@brrr/Core/Schemas/IdentifierRelationships/IdentifierRelationshipAny";
 
 export class FinancialEvents {
 	public readonly groupings: FinancialGrouping[];

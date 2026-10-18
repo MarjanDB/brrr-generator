@@ -1,4 +1,4 @@
-import type { TradeEvent } from "@brrr/Core/Schemas/Events";
+import type { TradeEvent } from "@brrr/Core/Schemas/Events/TradeEvent";
 
 export function round(value: number, decimals: number): number {
 	const factor = 10 ** decimals;

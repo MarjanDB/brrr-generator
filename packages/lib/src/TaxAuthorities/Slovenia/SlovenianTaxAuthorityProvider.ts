@@ -1,5 +1,5 @@
 import type { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
-import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship";
+import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationships/IdentifierChangeType";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import type {
 	GeneratedExports,

@@ -4,31 +4,28 @@ import { BrokerRegistry } from "@brrr/Brokers/BrokerRegistry";
 import { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
-import {
-	AcquisitionMethod,
-	AssetClass,
-	type Category,
-	type DividendType,
-	type ShortLong,
-} from "@brrr/Core/Schemas/CommonFormats";
-import {
-	type TradeEventCashTransaction,
-	TradeEventCashTransactionDividend,
-	TradeEventCashTransactionPaymentInLieuOfDividend,
-	TradeEventCashTransactionWithholdingTax,
-	TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
-	type TradeEventDerivative,
-	TradeEventDerivativeAcquired,
-	TradeEventDerivativeSold,
-	type TradeEventStock,
-	TradeEventStockAcquired,
-	TradeEventStockSold,
-} from "@brrr/Core/Schemas/Events";
+import { AcquisitionMethod } from "@brrr/Core/Schemas/Events/AcquisitionMethod";
+import type { TradeEventCashTransaction } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransaction";
+import { TradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionDividend";
+import { TradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionPaymentInLieuOfDividend";
+import { TradeEventCashTransactionWithholdingTax } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionWithholdingTax";
+import { TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend";
+import type { TradeEventDerivative } from "@brrr/Core/Schemas/Events/Derivative/TradeEventDerivative";
+import { TradeEventDerivativeAcquired } from "@brrr/Core/Schemas/Events/Derivative/TradeEventDerivativeAcquired";
+import { TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events/Derivative/TradeEventDerivativeSold";
+import type { DividendType } from "@brrr/Core/Schemas/Events/DividendType";
+import type { TradeEventStock } from "@brrr/Core/Schemas/Events/Stock/TradeEventStock";
+import { TradeEventStockAcquired } from "@brrr/Core/Schemas/Events/Stock/TradeEventStockAcquired";
+import { TradeEventStockSold } from "@brrr/Core/Schemas/Events/Stock/TradeEventStockSold";
 import { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
-import type { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
-import { DerivativeGrouping, FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
-import type { IdentifierRelationshipAny } from "@brrr/Core/Schemas/IdentifierRelationship";
-import { TaxLot, type TaxLotDerivative, type TaxLotStock } from "@brrr/Core/Schemas/Lots";
+import { DerivativeGrouping } from "@brrr/Core/Schemas/Groupings/DerivativeGrouping";
+import { FinancialGrouping } from "@brrr/Core/Schemas/Groupings/FinancialGrouping";
+import type { IdentifierRelationshipAny } from "@brrr/Core/Schemas/IdentifierRelationships/IdentifierRelationshipAny";
+import { AssetClass } from "@brrr/Core/Schemas/Instrument/AssetClass";
+import type { Category } from "@brrr/Core/Schemas/Instrument/Category";
+import type { FinancialIdentifier } from "@brrr/Core/Schemas/Instrument/FinancialIdentifier";
+import type { ShortLong } from "@brrr/Core/Schemas/Lots/ShortLong";
+import { TaxLot, type TaxLotDerivative, type TaxLotStock } from "@brrr/Core/Schemas/Lots/TaxLot";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
 import { createContainer } from "@brrr/container";
 import type { CompanyInfo, Country, IInfoProvider } from "@brrr/InfoProviders/IInfoProvider";

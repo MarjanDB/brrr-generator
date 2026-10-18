@@ -1,8 +1,7 @@
 import { Fixtures } from "@brrr/__tests__/support/Fixtures";
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
-import { Category, DividendType, ShortLong } from "@brrr/Core/Schemas/CommonFormats";
-import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
+import { DividendType } from "@brrr/Core/Schemas/Events/DividendType";
 import {
 	CashActionId,
 	CashTransactionId,
@@ -12,6 +11,9 @@ import {
 	TaxLotId,
 	TradeEventId,
 } from "@brrr/Core/Schemas/Identifiers";
+import { Category } from "@brrr/Core/Schemas/Instrument/Category";
+import { FinancialIdentifier } from "@brrr/Core/Schemas/Instrument/FinancialIdentifier";
+import { ShortLong } from "@brrr/Core/Schemas/Lots/ShortLong";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/PredefinedInfoProvider";
 import { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { DivReportGenerator } from "@brrr/TaxAuthorities/Slovenia/ReportGeneration/Div/DivReportGenerator";

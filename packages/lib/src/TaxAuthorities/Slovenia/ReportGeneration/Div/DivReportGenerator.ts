@@ -1,12 +1,10 @@
-import { DividendType } from "@brrr/Core/Schemas/CommonFormats";
-import {
-	type TradeEventCashTransaction,
-	TradeEventCashTransactionDividend,
-	TradeEventCashTransactionPaymentInLieuOfDividend,
-	TradeEventCashTransactionWithholdingTax,
-	TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
-} from "@brrr/Core/Schemas/Events";
-import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
+import type { TradeEventCashTransaction } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransaction";
+import { TradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionDividend";
+import { TradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionPaymentInLieuOfDividend";
+import { TradeEventCashTransactionWithholdingTax } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionWithholdingTax";
+import { TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend";
+import { DividendType } from "@brrr/Core/Schemas/Events/DividendType";
+import type { FinancialGrouping } from "@brrr/Core/Schemas/Groupings/FinancialGrouping";
 import { type CashActionId, Isin } from "@brrr/Core/Schemas/Identifiers";
 import { type IInfoProvider, TreatyType } from "@brrr/InfoProviders/IInfoProvider";
 import type {

@@ -4,15 +4,13 @@ export { type BrokerFileDetection, BrokerRegistry } from "@brrr/Brokers/BrokerRe
 export type { IBrokerProvider } from "@brrr/Brokers/Interfaces/IBrokerProvider";
 
 // Core
-export {
-	TradeEventCashTransactionDividend,
-	TradeEventCashTransactionPaymentInLieuOfDividend,
-	TradeEventCashTransactionWithholdingTax,
-	TradeEventDerivativeAcquired,
-	TradeEventStockAcquired,
-} from "@brrr/Core/Schemas/Events";
+export { TradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionDividend";
+export { TradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionPaymentInLieuOfDividend";
+export { TradeEventCashTransactionWithholdingTax } from "@brrr/Core/Schemas/Events/CashTransaction/TradeEventCashTransactionWithholdingTax";
+export { TradeEventDerivativeAcquired } from "@brrr/Core/Schemas/Events/Derivative/TradeEventDerivativeAcquired";
+export { TradeEventStockAcquired } from "@brrr/Core/Schemas/Events/Stock/TradeEventStockAcquired";
 export { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
-export type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
+export type { FinancialGrouping } from "@brrr/Core/Schemas/Groupings/FinancialGrouping";
 export { StagingFinancialGroupingProcessor } from "@brrr/Core/StagingProcessor/StagingFinancialGroupingProcessor";
 export { createContainer } from "@brrr/container";
 

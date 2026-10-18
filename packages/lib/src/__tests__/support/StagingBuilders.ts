@@ -1,27 +1,24 @@
 import { type CashFields, type TradeFields, Values } from "@brrr/__tests__/support/Values";
-import {
-	AcquisitionMethod,
-	AssetClass,
-	type Category,
-	type DividendType,
-	type ShortLong,
-} from "@brrr/Core/Schemas/CommonFormats";
-import {
-	type StagingTradeEventCashTransaction,
-	StagingTradeEventCashTransactionDividend,
-	StagingTradeEventCashTransactionPaymentInLieuOfDividend,
-	StagingTradeEventCashTransactionWithholdingTax,
-	StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend,
-	type StagingTradeEventDerivative,
-	StagingTradeEventDerivativeAcquired,
-	StagingTradeEventDerivativeSold,
-	type StagingTradeEventStock,
-	StagingTradeEventStockAcquired,
-	StagingTradeEventStockSold,
-} from "@brrr/Core/Schemas/Staging/Events";
-import { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping";
-import { StagingTaxLot, StagingTaxLotMatchingDetails } from "@brrr/Core/Schemas/Staging/Lots";
-import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/StagingFinancialIdentifier";
+import { AcquisitionMethod } from "@brrr/Core/Schemas/Events/AcquisitionMethod";
+import type { DividendType } from "@brrr/Core/Schemas/Events/DividendType";
+import { AssetClass } from "@brrr/Core/Schemas/Instrument/AssetClass";
+import type { Category } from "@brrr/Core/Schemas/Instrument/Category";
+import type { ShortLong } from "@brrr/Core/Schemas/Lots/ShortLong";
+import type { StagingTradeEventCashTransaction } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransaction";
+import { StagingTradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionDividend";
+import { StagingTradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionPaymentInLieuOfDividend";
+import { StagingTradeEventCashTransactionWithholdingTax } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionWithholdingTax";
+import { StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend";
+import type { StagingTradeEventDerivative } from "@brrr/Core/Schemas/Staging/Events/Derivative/StagingTradeEventDerivative";
+import { StagingTradeEventDerivativeAcquired } from "@brrr/Core/Schemas/Staging/Events/Derivative/StagingTradeEventDerivativeAcquired";
+import { StagingTradeEventDerivativeSold } from "@brrr/Core/Schemas/Staging/Events/Derivative/StagingTradeEventDerivativeSold";
+import type { StagingTradeEventStock } from "@brrr/Core/Schemas/Staging/Events/Stock/StagingTradeEventStock";
+import { StagingTradeEventStockAcquired } from "@brrr/Core/Schemas/Staging/Events/Stock/StagingTradeEventStockAcquired";
+import { StagingTradeEventStockSold } from "@brrr/Core/Schemas/Staging/Events/Stock/StagingTradeEventStockSold";
+import { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Groupings/StagingFinancialGrouping";
+import type { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/Instrument/StagingFinancialIdentifier";
+import { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots/StagingTaxLot";
+import { StagingTaxLotMatchingDetails } from "@brrr/Core/Schemas/Staging/Lots/StagingTaxLotMatchingDetails";
 
 type WithIdentifier = { identifier: StagingFinancialIdentifier };
 

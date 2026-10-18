@@ -69,7 +69,10 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
 ### TypeScript
 
 - PascalCase for types, classes, enums, Vue components and `packages/lib/src/` folders; camelCase for functions, methods and variables.
-- Imports go at the top of the file. Inside `packages/lib/` import through the `@brrr/*` alias (`@brrr/Core/Schemas/Events`), not relative paths.
+- Imports go at the top of the file. Inside `packages/lib/` import through the `@brrr/*` alias (`@brrr/Core/Schemas/Events/TradeEvent`), not relative paths.
+- One model per file, named after it: each class, enum and union type gets its own file, in a folder per concern
+  (`Core/Schemas/Events/Stock/TradeEventStockAcquired.ts`, `Core/Schemas/Lots/TaxLot.ts`), and `Core/Schemas/Staging/` mirrors those
+  folders for the staging twins. A class's `…Args` type stays in its file. There are no `index.ts` barrels: import each model from its own file.
 - Domain models are classes with `public readonly` fields and one args-object constructor (see `Core/Schemas/`). Don't mutate them, and
   don't copy one just to change a field: build each value once with its final contents. Where a value really changes (a split rescaling
   a trade), one named function builds the new object through the class's constructor and appends a `provenance` step, so the trace back

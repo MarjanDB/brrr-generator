@@ -1,5 +1,5 @@
-import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Grouping";
-import { StagingIdentifierRelationships } from "@brrr/Core/Schemas/Staging/IdentifierRelationship";
+import type { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Groupings/StagingFinancialGrouping";
+import { StagingIdentifierRelationships } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationships";
 
 export class StagingFinancialEvents {
 	public readonly groupings: StagingFinancialGrouping[];
