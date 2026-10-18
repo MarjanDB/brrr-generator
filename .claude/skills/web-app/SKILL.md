@@ -86,7 +86,7 @@ shown by `GuideModal.vue`, with screenshots under `packages/app/public/screensho
 
 `@nuxtjs/i18n` with `strategy: "prefix"` (`/en/…`, `/sl/…`). Messages are flat snake_case keys in `packages/app/i18n/locales/en.json` and
 `sl.json`; every key goes into both files, in Slovenian too. Use `const { t } = useI18n()` and `t("key")` in components; data files such
-as the guides hold keys, not text. Page meta goes through `useSeoMeta` with translated strings. Sentences about enum values (drop reasons, detail kinds, event kinds, categories, lot-matching methods) use `Record<Enum, string>` key maps in `app/download/sentences/sentenceKeys.ts`, so a new enum value fails to compile until it has a key; `LocaleKeys.unit.test.ts` checks that both locale files have the same keys and that every mapped key exists.
+as the guides hold keys, not text. Page meta goes through `useSeoMeta` with translated strings. Sentences about enum values (drop reasons, detail kinds, event kinds, categories, lot-matching methods) use `Record<Enum, string>` key maps in `app/download/sentences/sentenceKeys.ts`, so a new enum value fails to compile until it has a key; `LocaleKeys.unit.test.ts` checks that both locale files have the same keys and that every mapped key exists. vue-i18n takes a bare `@` to start a linked message and then fails to compile the whole locale file in the browser, so a literal `@` is written `{'@'}`; the same test rejects a bare one.
 
 ## Styling
 
@@ -100,6 +100,8 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
   `-edge`: `bg-accent text-accent-on`, `border-danger-edge`.
 - Class names are written out in full (`AppBadge` maps `ColorIntent` x `BadgeVariant` to literal strings): UnoCSS only sees literals,
   so `` `bg-${color}` `` renders nothing.
+- UnoCSS scans `.vue` files and, through `content.pipeline.include` in `unocss.config.ts`, the TypeScript under `app/download/`.
+  A class or icon written only in a `.ts` file anywhere else is never generated.
 - Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `app-surface-raised`, `app-surface-sunken`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`,
   `text-label`, `text-caption`, `input-md`, `button-filled-<intent>`, `button-ghost`, `alert-error`, …
 - There is one theme: no dark mode and no `dark:` classes.

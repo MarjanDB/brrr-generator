@@ -23,6 +23,14 @@ describe("the locale files", () => {
 		expect(Object.keys(en).sort()).toEqual(Object.keys(sl).sort());
 	});
 
+	// vue-i18n takes a bare @ to start a linked message and fails to compile the whole file in the
+	// browser; a literal @ is written {'@'}.
+	test("no message has a bare @", () => {
+		const bare = /@(?!'\})/;
+		expect(Object.entries(en).filter(([, text]) => bare.test(text))).toEqual([]);
+		expect(Object.entries(sl).filter(([, text]) => bare.test(text))).toEqual([]);
+	});
+
 	test("every drop reason has a key in the locale files", () => {
 		for (const key of Object.values(dropReasonKeys)) {
 			expect(englishKeys.has(key)).toEqual(true);

@@ -53,17 +53,20 @@ function eventSegments(layout: GraphLayout, onPath: GraphLayoutNode[]): CaptionS
 		segments.push(segment({ kind: CaptionSegmentKind.SPLIT_INTO, node: rebuilt.to }));
 	}
 	const pairs = onPath.filter((node) => node.node.kind === GraphNodeKind.PAIR);
+	const matchedLots = onPath.filter((node) => node.node.kind === GraphNodeKind.MATCHED_LOT);
 	const lines = onPath.filter((node) => node.node.kind === GraphNodeKind.REPORT_LINE);
+	const sold =
+		layout.focus.node.source?.fields[ProvenanceField.EVENT_KIND] === ProvenanceEventKind.SOLD;
+	const opposite = sold ? ProvenanceEventKind.ACQUIRED : ProvenanceEventKind.SOLD;
 	const [firstPair] = pairs;
+	const [firstMatchedLot] = matchedLots;
 	if (firstPair !== undefined) {
-		const sold =
-			layout.focus.node.source?.fields[ProvenanceField.EVENT_KIND] === ProvenanceEventKind.SOLD;
 		segments.push(
 			segment({
 				kind: CaptionSegmentKind.MATCHED_WITH,
 				node: firstPair,
 				count: pairs.length,
-				opposite: sold ? ProvenanceEventKind.ACQUIRED : ProvenanceEventKind.SOLD,
+				opposite,
 			}),
 			segment({
 				kind: CaptionSegmentKind.REPORT_LINES,
@@ -75,6 +78,17 @@ function eventSegments(layout: GraphLayout, onPath: GraphLayoutNode[]): CaptionS
 					0,
 				),
 			}),
+		);
+	} else if (firstMatchedLot !== undefined) {
+		// With every step shown, matched lots and lines are drawn apart, not folded into pair cards.
+		segments.push(
+			segment({
+				kind: CaptionSegmentKind.MATCHED_WITH,
+				node: firstMatchedLot,
+				count: matchedLots.length,
+				opposite,
+			}),
+			segment({ kind: CaptionSegmentKind.REPORT_LINES, count: lines.length }),
 		);
 	} else if (lines[0] !== undefined) {
 		segments.push(

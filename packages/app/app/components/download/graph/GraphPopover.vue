@@ -6,6 +6,7 @@ import { nodeLookOf } from "~/download/graph/view/nodeLook";
 import type { PopoverContent } from "~/download/graph/view/PopoverContent";
 import { PopoverKind } from "~/download/graph/view/PopoverKind";
 import { popoverPosition } from "~/download/graph/view/popoverPosition";
+import { formatNumber } from "~/download/labels/formatNumber";
 
 const props = defineProps<{
 	content: PopoverContent;
@@ -19,7 +20,7 @@ const props = defineProps<{
 	formName: string;
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const popoverWidth = 260;
 const rootRef = useTemplateRef<HTMLElement>("root");
@@ -65,7 +66,9 @@ const isRow = computed(() => props.content.kind === PopoverKind.ROW_ATTRIBUTES);
         <dt class="text-ink-muted" :class="isRow ? 'font-mono text-xs' : ''">
           {{ row.nameKey === null ? row.name : t(row.nameKey) }}
         </dt>
-        <dd :class="isRow ? 'font-mono text-xs break-all' : ''">{{ row.value }}</dd>
+        <dd :class="isRow ? 'font-mono text-xs break-all' : ''">
+          {{ isRow ? row.value : formatNumber(row.value, locale) }}
+        </dd>
       </template>
     </dl>
     <p class="mt-2 text-xs text-ink-muted">

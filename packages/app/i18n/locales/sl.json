@@ -190,7 +190,7 @@
 	"download_fact_transaction_id": "Transakcija",
 	"download_fact_kind": "Vrsta",
 	"download_nothing": "V tem poročilu ni ničesar",
-	"download_node_trade": "{quantity} @ {price} {currency}",
+	"download_node_trade": "{quantity} {'@'} {price} {currency}",
 	"download_node_cash": "{amount} {currency}",
 	"download_node_lot": "{quantity} · {date}",
 	"download_node_split": "delitev {before} : {after}",
