@@ -239,3 +239,13 @@ test("a walker told to ignore nothing follows every edge", () => {
 	expect(walker.up(graph.nodeOf(line)).nodes).toHaveLength(3);
 	expect(walker.down(graph.nodeOf(eventA)).nodes).toHaveLength(3);
 });
+
+test("the drops of a node are the ones recorded on it", () => {
+	const walker = new ProvenanceWalker(graph);
+
+	const drops = walker.dropsOf(graph.nodeOf(rowFuture));
+
+	expect(drops).toHaveLength(1);
+	expect(drops[0].reason).toEqual(DropReason.NOT_SUPPORTED);
+	expect(walker.dropsOf(graph.nodeOf(rowBuy))).toHaveLength(0);
+});

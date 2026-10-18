@@ -59,6 +59,11 @@ export class ProvenanceWalker {
 		return [...(this.outgoing.get(node) ?? [])];
 	}
 
+	public dropsOf(node: ProvenanceNode): ProvenanceDrop[] {
+		this.assertKnown(node);
+		return [...(this.dropsByNode.get(node) ?? [])];
+	}
+
 	public drops(): ProvenanceDrop[] {
 		return [...this.allDrops];
 	}
