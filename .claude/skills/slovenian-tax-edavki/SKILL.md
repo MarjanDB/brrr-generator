@@ -27,6 +27,10 @@ report period of 1 January to 1 January of the following year.
 - `SlovenianTaxAuthorityProvider` (`ITaxAuthorityProvider`) holds the `TaxAuthorityDescriptor` (`authorityId: TaxAuthorityId.SLOVENIA`) and the
   `REPORT_TYPES` table mapping IDs (`SlovenianReportTypeId`) to the enum. `generate` applies `RENAME`, `SPLIT` and `REVERSE_SPLIT`
   relationships, calls the generator's `convert` once → report lines, and renders them with `toXml` and `toCsv` into `{ xml, csv }`.
+- The report's provenance layer comes in as `ctx.provenance`. The relationships service, lot matching and each generator record into
+  it: every line a `convert` builds is a `REPORT_LINE` made from what's behind it (KDVP and IFI: a leg and the grouping; DIV: a
+  day's sum of action sums), and what a report leaves out is dropped with its reason. `Utils/ReportLineLabels.ts` holds the labels.
+  `toXml` and `toCsv` record nothing.
 - Shared amount helpers (`round`, `toOriginalCurrency`, `foreignTaxOf`) are in `Utils/Amounts.ts`.
 - Each generator keeps the pure pieces in `Xml*.ts` (built with fast-xml-parser's `XMLBuilder`) and `Csv*.ts` (built with
   `csv-stringify/browser/esm/sync`, never the Node build). Report line classes and their enums are in `Models/Kdvp/`, `Models/Div/` and `Models/Ifi/`, one per file.
@@ -40,7 +44,8 @@ report period of 1 January to 1 January of the following year.
   name.
 - **DIV:** keeps cash transactions inside the period, pairs withholding tax with its dividend (a withholding without a matching dividend
   throws), merges dividends of one ISIN paid on the same day, then fills payer name, address, country and the treaty paragraph from the
-  `IInfoProvider` using the ISIN. That lookup is best-effort: when it fails, the fields stay blank and the report still generates. Amounts
+  `IInfoProvider` using the ISIN. That lookup is best-effort: when it fails or finds no company, the fields stay blank, the report
+  still generates, and each of the ISIN's lines gets a provenance warning saying why. Amounts
   are rounded to 2 decimals and foreign tax is made positive. The XML is always filed as `ORIGINAL`; `isSelfReport` (the report period
   ended before last year) only sets DOH_DIV's `SelfReport` flag.
 

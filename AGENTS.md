@@ -226,9 +226,8 @@ To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
 - Call `Scenario` and `Fixtures` directly: no local wrapper functions around them, and every buy, sale and lot built with its exact
   type. A local helper is only for wiring that isn't test data, such as a provider built with collaborators the test spies on.
   `support/Setup.ts` pins Luxon's zone and clock for every test.
-- The completeness tests (`ProvenanceCompleteness.integration.test.ts`) are the one place a test support
-  helper computes what's checked. They assert that no row goes nowhere and no line comes from nowhere, across all of a case's
-  reports.
+- The completeness tests (`ProvenanceCompleteness.integration.test.ts`) are the one place a test support helper computes what's
+  checked. They assert that no row goes nowhere and no line comes from nowhere, across all of a case's reports.
 - **A test case or a unit test?** A case for a real-shaped export turned into whole reports: regressions from users' exports and
   anything that crosses layers. A unit test with `Scenario` for one rule in one class, where hand-built input states the rule more
   clearly than an export.
