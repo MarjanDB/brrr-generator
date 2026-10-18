@@ -6,26 +6,11 @@ import { GraphChain } from "~/download/graph/GraphChain";
 
 const emptyChain = new GraphChain({ nodes: new Set(), edges: new Set(), sources: new Set() });
 
-function threeNodes() {
-	const b = new GraphBuilder();
-	const file = b.file({ name: "U1.xml" });
-	const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
-	const buy = b.trade({
-		file,
-		instrument: acme,
-		kind: ProvenanceEventKind.ACQUIRED,
-		date: "2024-01-10",
-		quantity: "10",
-		price: "5",
-		currency: "USD",
-		label: "buy ACME",
-	});
-	return { file: b.node(file), row: b.node(buy.row), event: b.node(buy.event) };
-}
-
 describe("the download step's focus state", () => {
 	test("a new state has its focus, an empty trail and nothing lit", () => {
-		const { file } = threeNodes();
+		const b = new GraphBuilder();
+		const builtFile = b.file({ name: "U1.xml" });
+		const file = b.node(builtFile);
 
 		const state = FocusState.start(file);
 
@@ -36,7 +21,22 @@ describe("the download step's focus state", () => {
 	});
 
 	test("refocusing twice and going back twice returns to the first focus", () => {
-		const { file, row, event } = threeNodes();
+		const b = new GraphBuilder();
+		const builtFile = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file: builtFile,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const file = b.node(builtFile);
+		const row = b.node(buy.row);
+		const event = b.node(buy.event);
 
 		const state = FocusState.start(file).refocus(row).refocus(event);
 
@@ -57,7 +57,21 @@ describe("the download step's focus state", () => {
 	});
 
 	test("refocusing on the node already in focus does not grow the trail", () => {
-		const { file, row } = threeNodes();
+		const b = new GraphBuilder();
+		const builtFile = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file: builtFile,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const file = b.node(builtFile);
+		const row = b.node(buy.row);
 
 		const state = FocusState.start(file).refocus(row).refocus(row);
 
@@ -66,7 +80,9 @@ describe("the download step's focus state", () => {
 	});
 
 	test("going back with an empty trail leaves the focus where it is", () => {
-		const { file } = threeNodes();
+		const b = new GraphBuilder();
+		const builtFile = b.file({ name: "U1.xml" });
+		const file = b.node(builtFile);
 
 		const state = FocusState.start(file).back();
 
@@ -75,7 +91,21 @@ describe("the download step's focus state", () => {
 	});
 
 	test("lighting a chain keeps it until the next refocus", () => {
-		const { file, row } = threeNodes();
+		const b = new GraphBuilder();
+		const builtFile = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file: builtFile,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const file = b.node(builtFile);
+		const row = b.node(buy.row);
 
 		const lit = FocusState.start(file).light(emptyChain);
 		const refocused = lit.refocus(row);
@@ -86,7 +116,21 @@ describe("the download step's focus state", () => {
 	});
 
 	test("going back clears what was lit", () => {
-		const { file, row } = threeNodes();
+		const b = new GraphBuilder();
+		const builtFile = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file: builtFile,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const file = b.node(builtFile);
+		const row = b.node(buy.row);
 
 		const state = FocusState.start(file).refocus(row).light(emptyChain).back();
 
@@ -95,7 +139,21 @@ describe("the download step's focus state", () => {
 	});
 
 	test("clearing the light keeps the focus and the trail", () => {
-		const { file, row } = threeNodes();
+		const b = new GraphBuilder();
+		const builtFile = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file: builtFile,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const file = b.node(builtFile);
+		const row = b.node(buy.row);
 
 		const state = FocusState.start(file).refocus(row).light(emptyChain).clearLight();
 
@@ -105,7 +163,22 @@ describe("the download step's focus state", () => {
 	});
 
 	test("mapping the focus maps the trail too and clears what was lit", () => {
-		const { file, row, event } = threeNodes();
+		const b = new GraphBuilder();
+		const builtFile = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file: builtFile,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const file = b.node(builtFile);
+		const row = b.node(buy.row);
+		const event = b.node(buy.event);
 
 		const state = FocusState.start(file)
 			.refocus(row)
@@ -118,7 +191,22 @@ describe("the download step's focus state", () => {
 	});
 
 	test("no transition changes the state it was called on", () => {
-		const { file, row, event } = threeNodes();
+		const b = new GraphBuilder();
+		const builtFile = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file: builtFile,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const file = b.node(builtFile);
+		const row = b.node(buy.row);
+		const event = b.node(buy.event);
 		const state = FocusState.start(file).refocus(row).light(emptyChain);
 
 		state.refocus(event);
