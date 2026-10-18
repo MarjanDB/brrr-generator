@@ -13,7 +13,8 @@
 			"!**/coverage/**/*",
 			"!**/.nuxt",
 			"!**/.output",
-			"!**/*.svg"
+			"!**/*.svg",
+			"!**/.claude/worktrees"
 		]
 	},
 	"formatter": {
