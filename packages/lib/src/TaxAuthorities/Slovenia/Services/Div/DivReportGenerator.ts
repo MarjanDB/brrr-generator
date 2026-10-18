@@ -29,6 +29,7 @@ import {
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/Services/Div/CsvDohDiv";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/Services/Div/XmlDohDiv";
 import { round, toOriginalCurrency } from "@brrr/TaxAuthorities/Slovenia/Utils/Amounts";
+import { ReportLineFields } from "@brrr/TaxAuthorities/Slovenia/Utils/ReportLineFields";
 import { ReportLineLabels } from "@brrr/TaxAuthorities/Slovenia/Utils/ReportLineLabels";
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import type { DateTime } from "luxon";
@@ -150,7 +151,12 @@ function totalsPerAction(
 				),
 			]),
 		};
-		provenance.node(totals, ProvenanceNodeKind.SUM, ReportLineLabels.actionSum(actionId), {});
+		provenance.node(
+			totals,
+			ProvenanceNodeKind.SUM,
+			ReportLineLabels.actionSum(actionId),
+			ReportLineFields.sum(totals),
+		);
 		provenance.derive(
 			[...action.dividends, ...action.withholdings],
 			totals,
@@ -203,7 +209,7 @@ function mergeDividendsReceivedOnSameDay(
 			merged,
 			ProvenanceNodeKind.SUM,
 			ReportLineLabels.daySum(merged.dateReceived, merged.dividendType),
-			{},
+			ReportLineFields.sum(merged),
 		);
 		provenance.derive(entries, merged, ProvenanceChange.MERGED, STAGE, null);
 		return merged;
@@ -288,7 +294,7 @@ export class DivReportGenerator {
 					line.dividendPayerIdentificationNumber,
 					line.dividendAmount,
 				),
-				{},
+				ReportLineFields.divLine(line),
 			);
 			provenance.derive([entry], line, ProvenanceChange.REPORTED, STAGE, null);
 			if (problem !== null) {

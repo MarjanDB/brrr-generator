@@ -25,6 +25,7 @@ import { EDavkiTradeSecurityType } from "@brrr/TaxAuthorities/Slovenia/Models/Kd
 import { generateCsvReport } from "@brrr/TaxAuthorities/Slovenia/Services/Kdvp/CsvDohKdvp";
 import { generateXmlReport } from "@brrr/TaxAuthorities/Slovenia/Services/Kdvp/XmlDohKdvp";
 import { foreignTaxOf, toOriginalCurrency } from "@brrr/TaxAuthorities/Slovenia/Utils/Amounts";
+import { ReportLineFields } from "@brrr/TaxAuthorities/Slovenia/Utils/ReportLineFields";
 import { ReportLineLabels } from "@brrr/TaxAuthorities/Slovenia/Utils/ReportLineLabels";
 
 const STAGE = ProvenanceStage.Schema.parse("KdvpReportGenerator");
@@ -131,7 +132,9 @@ export class KdvpReportGenerator {
 					line,
 					ProvenanceNodeKind.REPORT_LINE,
 					ReportLineLabels.kdvpLine(bought, trade.date, quantity, reportedIsin),
-					{},
+					line instanceof EDavkiTradeReportSecurityLineGenericEventBought
+						? ReportLineFields.kdvpBought(line)
+						: ReportLineFields.kdvpSold(line),
 				);
 				provenance.derive([leg, isinGrouping], line, ProvenanceChange.REPORTED, STAGE, null);
 				return line;

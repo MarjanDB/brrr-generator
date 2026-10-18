@@ -26,6 +26,8 @@ export files (ImportFile: name + XML string)
 
 A grouping is recorded as made from the events and lots it holds, by `GROUPED` edges (`Core/Utils/GroupingMembers.ts`). Anything asking where a line came from must walk with `new ProvenanceWalker(graph, [ProvenanceChange.GROUPED])`, or every row of an instrument reaches every line of it.
 
+Nodes carry their facts in `fields`, keyed by `ProvenanceField` (Core) or `EDavkiProvenanceField` (the Slovenian sums and report lines), and the site reads those, never a label. `ProvenanceFields` (`Core/Utils/`) and `ReportLineFields` (`TaxAuthorities/Slovenia/Utils/`) write them, beside `ProvenanceLabels` and `ReportLineLabels`. The golden renderer does not print them. A new node kind or form adds its fields in the same place as its label. A derivative grouping carries its `OptionContract`, which the staging derivative trades bring from the broker.
+
 The site runs this in the browser (`packages/app/app/components/upload/UploadStep.vue`, `packages/app/app/components/configure/SloveniaExportForm.vue`);
 the CLI runs it in Node (`packages/cli/src/main.ts`). Both go through `ReportPipeline`.
 
