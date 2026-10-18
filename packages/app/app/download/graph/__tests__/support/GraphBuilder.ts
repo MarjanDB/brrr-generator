@@ -1,5 +1,6 @@
 import {
 	EDavkiProvenanceField,
+	type OptionRight,
 	ProvenanceChange,
 	type ProvenanceEventKind,
 	ProvenanceField,
@@ -72,6 +73,26 @@ export class GraphBuilder {
 			{ [ProvenanceField.ISIN]: args.isin, [ProvenanceField.TICKER]: args.ticker },
 		);
 		return instrument;
+	}
+
+	// A derivative grouping the way the core records it: the OCC symbol as its ticker, the contract
+	// terms as fields, and no ISIN.
+	public optionContract(args: {
+		occSymbol: string;
+		underlyingSymbol: string;
+		expiry: string;
+		strike: string;
+		right: OptionRight;
+	}): object {
+		const contract = {};
+		this.graph.node(contract, ProvenanceNodeKind.GROUPING, `grouping ${args.occSymbol}`, {
+			[ProvenanceField.TICKER]: args.occSymbol,
+			[ProvenanceField.UNDERLYING_SYMBOL]: args.underlyingSymbol,
+			[ProvenanceField.EXPIRY]: args.expiry,
+			[ProvenanceField.STRIKE]: args.strike,
+			[ProvenanceField.OPTION_RIGHT]: args.right,
+		});
+		return contract;
 	}
 
 	// file -CONTAINS-> ROW -PARSED-> RECORD -TRANSFORMED-> STAGING_EVENT -CONVERTED-> EVENT -GROUPED-> instrument
@@ -187,6 +208,7 @@ export class GraphBuilder {
 		const detail = `${args.before} → ${args.after}`;
 		const old = this.node(args.trade.event);
 		this.graph.node(action, ProvenanceNodeKind.CORPORATE_ACTION, `split ${detail}`, {
+			[ProvenanceField.CORPORATE_ACTION_KIND]: "SPLIT",
 			[ProvenanceField.SPLIT_BEFORE]: args.before,
 			[ProvenanceField.SPLIT_AFTER]: args.after,
 			[ProvenanceField.DATE]: args.date,
