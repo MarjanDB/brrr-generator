@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { type FinancialEvents, TaxAuthorityId } from "@brrr/lib";
+import { type ImportResult, TaxAuthorityId } from "@brrr/lib";
 import type { Component } from "vue";
 import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
 import SloveniaExportForm from "~/components/export/SloveniaExportForm.vue";
 import { TAX_AUTHORITY_CARDS, type TaxAuthorityCard } from "~/components/export/taxAuthorityCards";
 
 defineProps<{
-  financialEvents: FinancialEvents;
+  imported: ImportResult;
   collapsed: boolean;
 }>();
 
@@ -83,7 +83,7 @@ function onGenerated(outputs: GeneratedOutputs) {
       :is="activeForm"
       v-if="activeForm"
       :key="selectedAuthorityId"
-      :financial-events="financialEvents"
+      :imported="imported"
       @generated="onGenerated"
     />
   </div>

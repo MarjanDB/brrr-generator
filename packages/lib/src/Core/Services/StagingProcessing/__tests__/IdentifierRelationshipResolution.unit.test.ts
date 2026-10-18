@@ -1,4 +1,7 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
+import { IbkrExtractService } from "@brrr/Brokers/Ibkr/Services/IbkrExtractService";
+import { IbkrTransformService } from "@brrr/Brokers/Ibkr/Services/IbkrTransformService";
+import type { ImportFile } from "@brrr/Brokers/Models/ImportFile";
 import { CorrelationKey, Isin, Ticker } from "@brrr/Core/Models/Identifiers";
 import { StagingIdentifierChangeType } from "@brrr/Core/Models/Staging/IdentifierRelationships/StagingIdentifierChangeType";
 import { StagingIdentifierRelationship } from "@brrr/Core/Models/Staging/IdentifierRelationships/StagingIdentifierRelationship";
@@ -9,6 +12,13 @@ import { StagingIdentifierRelationships } from "@brrr/Core/Models/Staging/Identi
 import { StagingFinancialIdentifier } from "@brrr/Core/Models/Staging/Instrument/StagingFinancialIdentifier";
 import { StagingFinancialEvents } from "@brrr/Core/Models/Staging/StagingFinancialEvents";
 import { IdentifierRelationshipResolution } from "@brrr/Core/Services/StagingProcessing/IdentifierRelationshipResolution";
+import { DropReason } from "@brrr/Provenance/Models/DropReason";
+import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
+import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
+import { ProvenanceGraph } from "@brrr/Provenance/Services/ProvenanceGraph";
+import { ProvenanceWalker } from "@brrr/Provenance/Services/ProvenanceWalker";
+import { TestKit } from "@brrr/test-cases";
 
 test("two partials same key produce one full relationship", () => {
 	const fromId = new StagingFinancialIdentifier({
@@ -39,6 +49,7 @@ test("two partials same key produce one full relationship", () => {
 	];
 	const result = new IdentifierRelationshipResolution().mergePartialIdentifierRelationships(
 		partials,
+		new NullProvenanceRecorder(),
 	);
 	expect(result.length).toEqual(1);
 	expect(result[0].fromIdentifier.isin).toEqual("US111");
@@ -78,6 +89,7 @@ test("partials with quantity produce full with quantityBefore/quantityAfter", ()
 	];
 	const result = new IdentifierRelationshipResolution().mergePartialIdentifierRelationships(
 		partials,
+		new NullProvenanceRecorder(),
 	);
 	expect(result.length).toEqual(1);
 	expect(result[0]).toBeInstanceOf(StagingIdentifierRelationshipSplit);
@@ -119,6 +131,7 @@ test("reverse split inferred when quantity after less than before", () => {
 	];
 	const result = new IdentifierRelationshipResolution().mergePartialIdentifierRelationships(
 		partials,
+		new NullProvenanceRecorder(),
 	);
 	expect(result.length).toEqual(1);
 	expect(result[0]).toBeInstanceOf(StagingIdentifierRelationshipSplit);
@@ -146,12 +159,16 @@ test("only from partial produces no full relationship", () => {
 	];
 	const result = new IdentifierRelationshipResolution().mergePartialIdentifierRelationships(
 		partials,
+		new NullProvenanceRecorder(),
 	);
 	expect(result.length).toEqual(0);
 });
 
 test("empty partials returns empty", () => {
-	const result = new IdentifierRelationshipResolution().mergePartialIdentifierRelationships([]);
+	const result = new IdentifierRelationshipResolution().mergePartialIdentifierRelationships(
+		[],
+		new NullProvenanceRecorder(),
+	);
 	expect(result.length).toEqual(0);
 });
 
@@ -183,6 +200,7 @@ test("preserves existing full relationships", () => {
 	const result =
 		new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(
 			events,
+			new NullProvenanceRecorder(),
 		);
 	expect(result.identifierRelationships.relationships.length).toEqual(1);
 	expect(result.identifierRelationships.relationships[0].fromIdentifier.isin).toEqual("US111");
@@ -201,8 +219,77 @@ test("resolution returns a StagingFinancialEvents instance", () => {
 	const result =
 		new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(
 			events,
+			new NullProvenanceRecorder(),
 		);
 
 	expect(result).toBeInstanceOf(StagingFinancialEvents);
 	expect(result.identifierRelationships).toBeInstanceOf(StagingIdentifierRelationships);
+});
+
+function staged(file: ImportFile, graph: ProvenanceGraph): StagingFinancialEvents {
+	graph.node(file, ProvenanceNodeKind.FILE, file.fileName, {});
+	const segmented = new IbkrExtractService().extractFromXML(file, graph);
+	return new IbkrTransformService().convertSegmentedTradesToStagingEvents(segmented, graph);
+}
+
+test("two halves of a corporate action pair into one", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const staging = staged(
+		TestKit.ibkr.corporateActionsTwoRows.inputs.corporateActionsTwoRows.read(),
+		graph,
+	);
+
+	const resolved =
+		new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(
+			staging,
+			graph,
+		);
+
+	const paired = graph.nodeOf(resolved.identifierRelationships.relationships[0]);
+	expect(paired.kind).toEqual(ProvenanceNodeKind.STAGING_CORPORATE_ACTION);
+	expect(paired.label).toEqual("SPLIT SMCI.OLD → SMCI");
+	const halves = new ProvenanceWalker(graph).parents(paired);
+	expect(halves).toHaveLength(2);
+	expect(halves[0].change).toEqual(ProvenanceChange.PAIRED);
+	expect(halves[0].from.label).toEqual("corporate action 141913764 · from SMCI.OLD");
+	expect(halves[1].from.label).toEqual("corporate action 141913764 · to SMCI");
+});
+
+test("a half with no partner is dropped as unpaired", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const staging = staged(TestKit.ibkr.corporateAction.inputs.simpleCorporateAction.read(), graph);
+
+	new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(
+		staging,
+		graph,
+	);
+
+	const drops = graph.drops();
+	expect(drops).toHaveLength(1);
+	expect(drops[0].node.label).toEqual("corporate action 114947593 · to TORO");
+	expect(drops[0].reason).toEqual(DropReason.UNPAIRED);
+});
+
+test("a third row in a paired corporate action is dropped as unpaired", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const twoRows = TestKit.ibkr.corporateActionsTwoRows.inputs.corporateActionsTwoRows.read();
+	// The file's first <CorporateAction …/> is the SMCI half (transactionID 3131760429); repeat it under a new id.
+	const start = twoRows.xml.indexOf("<CorporateAction");
+	const smciRow = twoRows.xml.slice(start, twoRows.xml.indexOf("/>", start) + 2);
+	const extraRow = smciRow.replace('transactionID="3131760429"', 'transactionID="3131760430"');
+	const file = {
+		fileName: "three-rows.xml",
+		xml: twoRows.xml.replace(smciRow, `${smciRow}\n${extraRow}`),
+	};
+	const staging = staged(file, graph);
+
+	new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(
+		staging,
+		graph,
+	);
+
+	const drops = graph.drops();
+	expect(drops).toHaveLength(1);
+	expect(drops[0].node.label).toEqual("corporate action 141913764 · to SMCI");
+	expect(drops[0].reason).toEqual(DropReason.UNPAIRED);
 });

@@ -8,9 +8,9 @@ import { TestKit } from "@brrr/test-cases";
 describe("Slovenia, Doh-Div", () => {
 	test("a TotalEnergies dividend with French withholding tax in 2022 (IBKR)", async () => {
 		const dividends = TestKit.ibkr.dividends;
-		const { events } = Scenario.pipeline.run(dividends.readInputs());
+		const imported = Scenario.pipeline.run(dividends.readInputs());
 
-		const report = await Scenario.pipeline.generate(events, {
+		const report = await Scenario.pipeline.generate(imported, {
 			report: SlovenianReportTypeId.DIV,
 			year: dividends.year,
 			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
@@ -24,9 +24,9 @@ describe("Slovenia, Doh-Div", () => {
 
 	test("a McDonald's payment in lieu of dividend with US withholding tax in 2024 (IBKR)", async () => {
 		const paymentInLieu = TestKit.ibkr.paymentInLieuOfDividends;
-		const { events } = Scenario.pipeline.run(paymentInLieu.readInputs());
+		const imported = Scenario.pipeline.run(paymentInLieu.readInputs());
 
-		const report = await Scenario.pipeline.generate(events, {
+		const report = await Scenario.pipeline.generate(imported, {
 			report: SlovenianReportTypeId.DIV,
 			year: paymentInLieu.year,
 			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,

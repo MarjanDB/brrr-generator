@@ -9,9 +9,9 @@ describe("Slovenia, Doh-KDVP", () => {
 	describe("everyday cases", () => {
 		test("5 EDF shares bought and sold in 2022 (IBKR), FIFO", async () => {
 			const stockTrade = TestKit.ibkr.stockTrade;
-			const { events } = Scenario.pipeline.run(stockTrade.readInputs());
+			const imported = Scenario.pipeline.run(stockTrade.readInputs());
 
-			const report = await Scenario.pipeline.generate(events, {
+			const report = await Scenario.pipeline.generate(imported, {
 				report: SlovenianReportTypeId.KDVP,
 				year: stockTrade.year,
 				lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
@@ -25,9 +25,9 @@ describe("Slovenia, Doh-KDVP", () => {
 
 		test("5 EDF shares bought and sold in 2022 (IBKR), the broker's lots", async () => {
 			const stockTrade = TestKit.ibkr.stockTrade;
-			const { events } = Scenario.pipeline.run(stockTrade.readInputs());
+			const imported = Scenario.pipeline.run(stockTrade.readInputs());
 
-			const report = await Scenario.pipeline.generate(events, {
+			const report = await Scenario.pipeline.generate(imported, {
 				report: SlovenianReportTypeId.KDVP,
 				year: stockTrade.year,
 				lotMatching: TaxAuthorityLotMatchingMethod.PROVIDED,
@@ -48,9 +48,9 @@ describe("Slovenia, Doh-KDVP", () => {
 		// A regression from a real export: IBKR lists the same RKLB executions more than once.
 		test("RKLB executions the IBKR export repeats are reported once (2024, FIFO)", async () => {
 			const duplicatingTrades = TestKit.ibkr.duplicatingTrades;
-			const { events } = Scenario.pipeline.run(duplicatingTrades.readInputs());
+			const imported = Scenario.pipeline.run(duplicatingTrades.readInputs());
 
-			const report = await Scenario.pipeline.generate(events, {
+			const report = await Scenario.pipeline.generate(imported, {
 				report: SlovenianReportTypeId.KDVP,
 				year: duplicatingTrades.year,
 				lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
@@ -72,9 +72,9 @@ describe("Slovenia, Doh-KDVP", () => {
 		// CorporateActionsTwoRows.xml.
 		test("SMCI shares bought before its 10-for-1 split count ten times (2024, FIFO)", async () => {
 			const split = TestKit.ibkr.split;
-			const { events } = Scenario.pipeline.run(split.readInputs());
+			const imported = Scenario.pipeline.run(split.readInputs());
 
-			const report = await Scenario.pipeline.generate(events, {
+			const report = await Scenario.pipeline.generate(imported, {
 				report: SlovenianReportTypeId.KDVP,
 				year: split.year,
 				lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
@@ -84,6 +84,27 @@ describe("Slovenia, Doh-KDVP", () => {
 
 			await expect(report.xml).toMatchFileSnapshot(split.expected.slovenia.kdvpFifo.xmlPath);
 			await expect(report.csv).toMatchFileSnapshot(split.expected.slovenia.kdvpFifo.csvPath);
+		});
+
+		// StockTrade's export given twice: the report must equal StockTrade's own.
+		test("5 EDF shares in two overlapping exports are reported once (2022, FIFO)", async () => {
+			const overlappingExports = TestKit.ibkr.overlappingExports;
+			const imported = Scenario.pipeline.run(overlappingExports.readInputs());
+
+			const report = await Scenario.pipeline.generate(imported, {
+				report: SlovenianReportTypeId.KDVP,
+				year: overlappingExports.year,
+				lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
+				taxpayer: Fixtures.taxpayer,
+				info: Scenario.config.infoProvider(Fixtures.lookups),
+			});
+
+			await expect(report.xml).toMatchFileSnapshot(
+				overlappingExports.expected.slovenia.kdvpFifo.xmlPath,
+			);
+			await expect(report.csv).toMatchFileSnapshot(
+				overlappingExports.expected.slovenia.kdvpFifo.csvPath,
+			);
 		});
 	});
 });

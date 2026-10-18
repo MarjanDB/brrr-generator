@@ -3,13 +3,11 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-	BrokerRegistry,
 	createContainer,
+	ReportPipeline,
 	SlovenianReportTypeId,
-	StagingFinancialGroupingProcessor,
 	TaxAuthorityId,
 	TaxAuthorityLotMatchingMethod,
-	TaxAuthorityRegistry,
 	TaxpayerConfigSchema,
 	zDateTimeFromISOString,
 } from "@brrr/lib";
@@ -121,9 +119,7 @@ async function main() {
 	};
 
 	const container = createContainer(new NodeInfoProvider());
-	const brokers = container.get(BrokerRegistry);
-	const groupingProcessor = container.get(StagingFinancialGroupingProcessor);
-	const taxAuthorities = container.get(TaxAuthorityRegistry);
+	const pipeline = container.get(ReportPipeline);
 
 	const files: { fileName: string; xml: string }[] = [];
 	for (const entry of await fs.readdir(IMPORTS_DIR, { withFileTypes: true })) {
@@ -136,7 +132,8 @@ async function main() {
 	}
 	console.log(`Found ${files.length} XML file(s)`);
 
-	const { detections, stagingEvents } = brokers.loadAndTransformDetected(files);
+	const imported = pipeline.read(files);
+	const { detections } = imported;
 	// A broker export that can't be read must stop the run: leaving it out would silently change
 	// the reports (e.g. the cost basis of later sales).
 	const unreadable = detections.filter((detection) => detection.error !== null);
@@ -153,19 +150,17 @@ async function main() {
 		}
 	}
 
-	const financialEvents = groupingProcessor.processStagingFinancialEvents(stagingEvents);
-	console.log(`Processed ${financialEvents.groupings.length} grouping(s)`);
+	console.log(`Processed ${imported.events.groupings.length} grouping(s)`);
 
 	await fs.mkdir(EXPORTS_DIR, { recursive: true });
 
 	for (const reportType of reportTypes) {
 		const outputFiles = OUTPUT_FILES[reportType];
-		const { xml, csv } = await taxAuthorities.generateExports({
+		const { xml, csv } = await pipeline.generate(imported, {
 			authorityId: TaxAuthorityId.SLOVENIA,
 			reportTypeId: reportType,
 			taxpayerInfo,
 			reportConfig,
-			events: financialEvents,
 		});
 		const xmlPath = path.join(EXPORTS_DIR, outputFiles.xml);
 		const csvPath = path.join(EXPORTS_DIR, outputFiles.csv);

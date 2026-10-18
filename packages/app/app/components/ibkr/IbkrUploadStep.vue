@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import {
-  BrokerRegistry,
-  createContainer,
-  type FinancialEvents,
-  StagingFinancialGroupingProcessor,
-} from "@brrr/lib";
+import { createContainer, type ImportResult, ReportPipeline } from "@brrr/lib";
 import BrokerSupportSection from "~/components/upload/BrokerSupportSection.vue";
 import { BROKER_GUIDES } from "~/components/upload/brokerGuides";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
@@ -15,7 +10,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  processed: [financialEvents: FinancialEvents, files: FileList];
+  processed: [imported: ImportResult, files: FileList];
 }>();
 
 const { t } = useI18n();
@@ -31,7 +26,7 @@ function brokerIconUrl(brokerId: string): string | null {
 const xmlFiles = ref<FileList | null>(null);
 const error = ref<string | null>(null);
 const loading = ref(false);
-const processedEvents = shallowRef<FinancialEvents | null>(null);
+const processedImport = shallowRef<ImportResult | null>(null);
 const processedFiles = shallowRef<FileList | null>(null);
 const detections = ref<
   { fileName: string; detectedBroker: { id: string; name: string } | null }[]
@@ -46,7 +41,7 @@ async function processSelectedFiles(files: FileList) {
   error.value = null;
   loading.value = true;
   detections.value = [];
-  processedEvents.value = null;
+  processedImport.value = null;
   processedFiles.value = null;
 
   const current = ++processingVersion;
@@ -55,23 +50,16 @@ async function processSelectedFiles(files: FileList) {
     if (current !== processingVersion) return;
     const container = createContainer(new ApiInfoProvider());
 
-    const brokerRegistry = container.get(BrokerRegistry);
     const normalized = xmlContents.map((xml, i) => ({
       fileName: files.item(i)?.name ?? `file-${i + 1}.xml`,
       xml,
     }));
 
-    const { detections: detectedRows, stagingEvents } =
-      brokerRegistry.loadAndTransformDetected(normalized);
+    const imported = container.get(ReportPipeline).read(normalized);
     if (current !== processingVersion) return;
 
-    detections.value = detectedRows;
-
-    const financialEvents = container
-      .get(StagingFinancialGroupingProcessor)
-      .processStagingFinancialEvents(stagingEvents);
-    if (current !== processingVersion) return;
-    processedEvents.value = financialEvents;
+    detections.value = imported.detections;
+    processedImport.value = imported;
     processedFiles.value = files;
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
@@ -81,15 +69,15 @@ async function processSelectedFiles(files: FileList) {
 }
 
 function onContinue() {
-  if (!processedEvents.value || !processedFiles.value) return;
-  emit("processed", processedEvents.value, processedFiles.value);
+  if (!processedImport.value || !processedFiles.value) return;
+  emit("processed", processedImport.value, processedFiles.value);
 }
 
 watch(xmlFiles, (v) => {
   if (!v || v.length === 0) {
     processingVersion++;
     detections.value = [];
-    processedEvents.value = null;
+    processedImport.value = null;
     processedFiles.value = null;
     error.value = null;
     loading.value = false;
@@ -176,7 +164,7 @@ watch(xmlFiles, (v) => {
           class="button-filled-primary self-start"
           type="submit"
           :loading="loading"
-          :disabled="processedEvents === null"
+          :disabled="processedImport === null"
         >
           {{ t('upload_button') }}
         </AppButton>

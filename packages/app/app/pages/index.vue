@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FinancialEvents } from "@brrr/lib";
+import type { ImportResult } from "@brrr/lib";
 import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
 
 const { $toggleTheme, $theme } = useNuxtApp();
@@ -26,7 +26,7 @@ const currentLocale = computed({
 // Wizard state
 const currentStep = ref<1 | 2 | 3 | 4>(1);
 const xmlFiles = ref<FileList | null>(null);
-const financialEvents = shallowRef<FinancialEvents | null>(null);
+const imported = shallowRef<ImportResult | null>(null);
 const generatedOutputs = ref<GeneratedOutputs | null>(null);
 // Tracks whether the user has confirmed step 2 (unlocks step 3 component)
 const step3Unlocked = ref(false);
@@ -34,8 +34,8 @@ const step3Unlocked = ref(false);
 // Highest step whose prerequisites are met — drives stepper navigability
 const maxStep = computed<1 | 2 | 3 | 4>(() => {
   if (generatedOutputs.value !== null) return 4;
-  if (step3Unlocked.value && financialEvents.value !== null) return 3;
-  if (financialEvents.value !== null) return 2;
+  if (step3Unlocked.value && imported.value !== null) return 3;
+  if (imported.value !== null) return 2;
   return 1;
 });
 
@@ -46,8 +46,8 @@ const stepLabels = computed(() => [
   t("wizard_step_download"),
 ]);
 
-function onProcessed(events: FinancialEvents, files: FileList) {
-  financialEvents.value = events;
+function onProcessed(result: ImportResult, files: FileList) {
+  imported.value = result;
   xmlFiles.value = files;
   generatedOutputs.value = null;
   step3Unlocked.value = false;
@@ -71,7 +71,7 @@ function onNavigate(step: number) {
 function onRestart() {
   currentStep.value = 1;
   xmlFiles.value = null;
-  financialEvents.value = null;
+  imported.value = null;
   generatedOutputs.value = null;
   step3Unlocked.value = false;
 }
@@ -112,16 +112,16 @@ function onRestart() {
 
     <!-- Step 2: Review (mounted only after parsing completes) -->
     <IbkrReviewStep
-      v-if="financialEvents !== null"
-      :financial-events="financialEvents"
+      v-if="imported !== null"
+      :financial-events="imported.events"
       :collapsed="currentStep > 2"
       @confirmed="onConfirmed"
     />
 
     <!-- Step 3: Configure (mounted once review is confirmed; stays mounted during back-navigation) -->
     <ExportConfigStep
-      v-if="financialEvents !== null && step3Unlocked"
-      :financial-events="financialEvents"
+      v-if="imported !== null && step3Unlocked"
+      :imported="imported"
       :collapsed="currentStep > 3"
       @generated="onGenerated"
     />

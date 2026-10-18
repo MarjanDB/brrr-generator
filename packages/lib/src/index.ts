@@ -1,7 +1,11 @@
 // Brokers
-export { type BrokerFileDetection, BrokerRegistry } from "@brrr/Brokers/BrokerRegistry";
-export type { IBrokerProvider } from "@brrr/Brokers/Interfaces/IBrokerProvider";
+export { BrokerRegistry } from "@brrr/Brokers/BrokerRegistry";
+export type {
+	BrokerFileDetection,
+	IBrokerProvider,
+} from "@brrr/Brokers/Interfaces/IBrokerProvider";
 export { BrokerId } from "@brrr/Brokers/Models/BrokerIdentifiers";
+export type { ImportFile } from "@brrr/Brokers/Models/ImportFile";
 
 // Container
 export { createContainer } from "@brrr/Container";
@@ -23,6 +27,10 @@ export type { CompanyLocationInfo } from "@brrr/InfoProviders/Models/CompanyLoca
 export type { Country } from "@brrr/InfoProviders/Models/Country";
 export { TreatyType } from "@brrr/InfoProviders/Models/TreatyType";
 export { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
+
+// Pipeline
+export type { ImportResult, ReportRequest, ReportResult } from "@brrr/Pipeline/ReportPipeline";
+export { ReportPipeline } from "@brrr/Pipeline/ReportPipeline";
 
 // Provenance
 export { DropReason } from "@brrr/Provenance/Models/DropReason";

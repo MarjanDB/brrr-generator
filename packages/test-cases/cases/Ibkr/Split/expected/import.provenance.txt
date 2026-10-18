@@ -1,0 +1,70 @@
+n1 FILE SmciSplit.xml
+n2 ROW Trade 900000301 · SMCI
+  ← n1 CONTAINS by IbkrExtractService
+n3 RECORD TradeStock 900000301
+  ← n2 PARSED by IbkrExtractService
+n4 ROW Trade 900000302 · SMCI
+  ← n1 CONTAINS by IbkrExtractService
+n5 RECORD TradeStock 900000302
+  ← n4 PARSED by IbkrExtractService
+n6 ROW Trade 900000303 · SMCI
+  ← n1 CONTAINS by IbkrExtractService
+n7 RECORD TradeStock 900000303
+  ← n6 PARSED by IbkrExtractService
+n8 ROW Trade 900000304 · SMCI
+  ← n1 CONTAINS by IbkrExtractService
+n9 RECORD TradeStock 900000304
+  ← n8 PARSED by IbkrExtractService
+n10 ROW Trade 900000305 · SMCI
+  ← n1 CONTAINS by IbkrExtractService
+n11 RECORD TradeStock 900000305
+  ← n10 PARSED by IbkrExtractService
+n12 ROW CorporateAction 3131760429 · SMCI
+  ← n1 CONTAINS by IbkrExtractService
+n13 RECORD CorporateAction 3131760429
+  ← n12 PARSED by IbkrExtractService
+n14 ROW CorporateAction 3131760419 · SMCI.OLD
+  ← n1 CONTAINS by IbkrExtractService
+n15 RECORD CorporateAction 3131760419
+  ← n14 PARSED by IbkrExtractService
+n16 STAGING_EVENT stock bought 900000301 · 3 SMCI
+  ← n3 TRANSFORMED by IbkrTransformService
+n17 STAGING_EVENT stock bought 900000302 · 1 SMCI
+  ← n5 TRANSFORMED by IbkrTransformService
+n18 STAGING_EVENT stock bought 900000303 · 15 SMCI
+  ← n7 TRANSFORMED by IbkrTransformService
+n19 STAGING_EVENT stock sold 900000304 · -45 SMCI
+  ← n9 TRANSFORMED by IbkrTransformService
+n20 STAGING_EVENT stock sold 900000305 · -10 SMCI
+  ← n11 TRANSFORMED by IbkrTransformService
+n21 STAGING_GROUPING grouping US86800U1043 · SMCI
+n22 STAGING_GROUPING grouping US86800U3023 · SMCI
+n23 STAGING_CORPORATE_ACTION corporate action 141913764 · to SMCI
+  ← n13 TRANSFORMED by IbkrTransformService
+n24 STAGING_CORPORATE_ACTION corporate action 141913764 · from SMCI.OLD
+  ← n15 TRANSFORMED by IbkrTransformService
+n25 STAGING_CORPORATE_ACTION SPLIT SMCI.OLD → SMCI
+  ← n24 PAIRED by IdentifierRelationshipResolution
+  ← n23 PAIRED by IdentifierRelationshipResolution
+n26 EVENT stock bought 900000301 · 3 SMCI
+  ← n16 CONVERTED by StagingToCore
+n27 EVENT stock bought 900000302 · 1 SMCI
+  ← n17 CONVERTED by StagingToCore
+n28 GROUPING grouping US86800U1043 · SMCI
+  ← n21 CONVERTED by StagingFinancialGroupingProcessor
+n29 EVENT stock bought 900000303 · 15 SMCI
+  ← n18 CONVERTED by StagingToCore
+n30 EVENT stock sold 900000304 · -45 SMCI
+  ← n19 CONVERTED by StagingToCore
+n31 EVENT stock sold 900000305 · -10 SMCI
+  ← n20 CONVERTED by StagingToCore
+n32 GROUPING grouping US86800U3023 · SMCI
+  ← n22 CONVERTED by StagingFinancialGroupingProcessor
+n33 CORPORATE_ACTION SPLIT SMCI.OLD → SMCI (4 → 40)
+  ← n25 CONVERTED by StagingFinancialGroupingProcessor
+
+Dropped:
+(none)
+
+Warnings:
+(none)

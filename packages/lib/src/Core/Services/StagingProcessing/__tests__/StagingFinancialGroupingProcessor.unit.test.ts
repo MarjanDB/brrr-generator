@@ -1,4 +1,7 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
+import { IbkrExtractService } from "@brrr/Brokers/Ibkr/Services/IbkrExtractService";
+import { IbkrTransformService } from "@brrr/Brokers/Ibkr/Services/IbkrTransformService";
+import type { ImportFile } from "@brrr/Brokers/Models/ImportFile";
 import { DividendType } from "@brrr/Core/Models/Events/DividendType";
 import { IdentifierChangeType } from "@brrr/Core/Models/IdentifierRelationships/IdentifierChangeType";
 import {
@@ -20,6 +23,13 @@ import { StagingFinancialIdentifier } from "@brrr/Core/Models/Staging/Instrument
 import { StagingFinancialEvents } from "@brrr/Core/Models/Staging/StagingFinancialEvents";
 import { IdentifierRelationshipResolution } from "@brrr/Core/Services/StagingProcessing/IdentifierRelationshipResolution";
 import { StagingFinancialGroupingProcessor } from "@brrr/Core/Services/StagingProcessing/StagingFinancialGroupingProcessor";
+import { DropReason } from "@brrr/Provenance/Models/DropReason";
+import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
+import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
+import { ProvenanceGraph } from "@brrr/Provenance/Services/ProvenanceGraph";
+import { ProvenanceWalker } from "@brrr/Provenance/Services/ProvenanceWalker";
+import { TestKit } from "@brrr/test-cases";
 
 const { build } = Scenario;
 const { staging } = build;
@@ -170,7 +180,7 @@ test("simple stock lot matching", () => {
 			cashTransactions: [],
 		}),
 	];
-	const results = processor.generateGenericGroupings(groupings);
+	const results = processor.generateGenericGroupings(groupings, new NullProvenanceRecorder());
 	expect(results.length).toEqual(1);
 	expect(results[0].stockTaxLots[0].acquired).toEqual(results[0].stockTrades[0]);
 	expect(results[0].stockTaxLots[0].acquired.exchangedMoney.quantity).toEqual(1);
@@ -192,7 +202,9 @@ test("partial stock lot matching throws", () => {
 			cashTransactions: [],
 		}),
 	];
-	expect(() => processor.generateGenericGroupings(groupings)).toThrow(Error);
+	expect(() => processor.generateGenericGroupings(groupings, new NullProvenanceRecorder())).toThrow(
+		Error,
+	);
 });
 
 test("throws when a stock lot has no sold date", () => {
@@ -218,7 +230,7 @@ test("throws when a stock lot has no sold date", () => {
 		}),
 	];
 
-	expect(() => processor.generateGenericGroupings(groupings)).toThrow(
+	expect(() => processor.generateGenericGroupings(groupings, new NullProvenanceRecorder())).toThrow(
 		"LookupError: Failed to match stock lot",
 	);
 });
@@ -237,7 +249,7 @@ test("simple derivative lot matching", () => {
 			cashTransactions: [],
 		}),
 	];
-	const results = processor.generateGenericGroupings(groupings);
+	const results = processor.generateGenericGroupings(groupings, new NullProvenanceRecorder());
 	expect(results.length).toEqual(1);
 	expect(results[0].derivativeGroupings[0].derivativeTaxLots[0].acquired).toEqual(
 		results[0].derivativeGroupings[0].derivativeTrades[0],
@@ -267,7 +279,7 @@ test("dividend with withholding tax", () => {
 			cashTransactions: [simpleStagingDividend, simpleStagingDividendWithholdingTax],
 		}),
 	];
-	const results = processor.generateGenericGroupings(groupings);
+	const results = processor.generateGenericGroupings(groupings, new NullProvenanceRecorder());
 	expect(results.length).toEqual(1);
 	expect(results[0].cashTransactions[0].id).toEqual(simpleStagingDividend.id);
 	expect(results[0].cashTransactions[1].id).toEqual(simpleStagingDividendWithholdingTax.id);
@@ -294,7 +306,7 @@ test("payment in lieu of dividend with withholding tax", () => {
 			],
 		}),
 	];
-	const results = processor.generateGenericGroupings(groupings);
+	const results = processor.generateGenericGroupings(groupings, new NullProvenanceRecorder());
 	expect(results.length).toEqual(1);
 	expect(results[0].cashTransactions[0].id).toEqual(simpleStagingPaymentInLieuOfDividend.id);
 	expect(results[0].cashTransactions[1].id).toEqual(
@@ -344,6 +356,7 @@ test("processStagingFinancialEvents returns FinancialEvents with converted relat
 			],
 			identifierRelationships: relationships,
 		}),
+		new NullProvenanceRecorder(),
 	);
 	expect(result.groupings.length).toEqual(1);
 	expect(result.groupings[0].financialIdentifier.isin).toEqual("US111");
@@ -351,4 +364,94 @@ test("processStagingFinancialEvents returns FinancialEvents with converted relat
 	expect(result.identifierRelationships[0].fromIdentifier.isin).toEqual("US111");
 	expect(result.identifierRelationships[0].toIdentifier.isin).toEqual("US222");
 	expect(result.identifierRelationships[0].changeType).toEqual(IdentifierChangeType.RENAME);
+});
+
+function staged(file: ImportFile, graph: ProvenanceGraph): StagingFinancialEvents {
+	graph.node(file, ProvenanceNodeKind.FILE, file.fileName, {});
+	const segmented = new IbkrExtractService().extractFromXML(file, graph);
+	return new IbkrTransformService().convertSegmentedTradesToStagingEvents(segmented, graph);
+}
+
+test("staging objects convert to core objects", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const stagingEvents = staged(TestKit.ibkr.stockTrade.inputs.simpleStockTrade.read(), graph);
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
+
+	const events = processor.processStagingFinancialEvents(stagingEvents, graph);
+
+	const walker = new ProvenanceWalker(graph);
+	const buy = graph.nodeOf(events.groupings[0].stockTrades[0]);
+	expect(buy.kind).toEqual(ProvenanceNodeKind.EVENT);
+	expect(buy.label).toEqual("stock bought 241234985 · 5 EDF");
+	expect(walker.parents(buy)[0].change).toEqual(ProvenanceChange.CONVERTED);
+	expect(walker.parents(buy)[0].by).toEqual("StagingToCore");
+	expect(walker.parents(buy)[0].from.kind).toEqual(ProvenanceNodeKind.STAGING_EVENT);
+	const lot = graph.nodeOf(events.groupings[0].stockTaxLots[0]);
+	expect(lot.kind).toEqual(ProvenanceNodeKind.LOT);
+	expect(lot.label).toEqual("lot 241234985 · 5 EDF");
+	const grouping = graph.nodeOf(events.groupings[0]);
+	expect(grouping.kind).toEqual(ProvenanceNodeKind.GROUPING);
+	expect(grouping.label).toEqual("grouping FR0010242511 · EDF");
+	expect(walker.parents(grouping)[0].from.kind).toEqual(ProvenanceNodeKind.STAGING_GROUPING);
+});
+
+test("a paired corporate action converts to a core one", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const stagingEvents = staged(
+		TestKit.ibkr.corporateActionsTwoRows.inputs.corporateActionsTwoRows.read(),
+		graph,
+	);
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
+
+	const events = processor.processStagingFinancialEvents(stagingEvents, graph);
+
+	const action = graph.nodeOf(events.identifierRelationships[0]);
+	expect(action.kind).toEqual(ProvenanceNodeKind.CORPORATE_ACTION);
+	expect(action.label).toEqual("SPLIT SMCI.OLD → SMCI (4 → 40)");
+	expect(new ProvenanceWalker(graph).parents(action)[0].from.label).toEqual(
+		"SPLIT SMCI.OLD → SMCI",
+	);
+});
+
+test("a corporate action of a type lib doesn't know is dropped", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const twoRows = TestKit.ibkr.corporateActionsTwoRows.inputs.corporateActionsTwoRows.read();
+	const file = {
+		fileName: "unknown-type.xml",
+		xml: twoRows.xml.replaceAll('type="FI"', 'type="SO"'),
+	};
+	const stagingEvents = staged(file, graph);
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
+
+	processor.processStagingFinancialEvents(stagingEvents, graph);
+
+	const drops = graph.drops();
+	expect(drops).toHaveLength(1);
+	expect(drops[0].node.label).toEqual("UNKNOWN SMCI.OLD → SMCI");
+	expect(drops[0].reason).toEqual(DropReason.UNKNOWN_TYPE);
+});
+
+test("a derivative lot of an instrument with no derivative trades is dropped", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const stagingLot = simpleStagingDerivativeLot;
+	const stagingGrouping = staging.grouping({
+		identifier: ident,
+		countryOfOrigin: null,
+		category: Category.REGULAR,
+		stockTrades: [],
+		stockTaxLots: [],
+		derivativeTrades: [],
+		derivativeTaxLots: [stagingLot],
+		cashTransactions: [],
+	});
+	graph.node(stagingLot, ProvenanceNodeKind.STAGING_LOT, "lot Lot · 1 AAPL", {});
+	graph.node(stagingGrouping, ProvenanceNodeKind.STAGING_GROUPING, "grouping US123 · AAPL", {});
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
+
+	processor.process(stagingGrouping, graph);
+
+	const drops = graph.drops();
+	expect(drops).toHaveLength(1);
+	expect(drops[0].node).toBe(graph.nodeOf(stagingLot));
+	expect(drops[0].reason).toEqual(DropReason.NO_TRADES);
 });

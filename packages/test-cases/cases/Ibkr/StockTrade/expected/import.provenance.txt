@@ -1,0 +1,34 @@
+n1 FILE SimpleStockTrade.xml
+n2 ROW Trade 241234985 · EDF
+  ← n1 CONTAINS by IbkrExtractService
+n3 RECORD TradeStock 241234985
+  ← n2 PARSED by IbkrExtractService
+n4 ROW Trade 262720557 · EDF
+  ← n1 CONTAINS by IbkrExtractService
+n5 RECORD TradeStock 262720557
+  ← n4 PARSED by IbkrExtractService
+n6 ROW Lot 241234985 · EDF
+  ← n1 CONTAINS by IbkrExtractService
+n7 RECORD LotStock 241234985
+  ← n6 PARSED by IbkrExtractService
+n8 STAGING_EVENT stock bought 241234985 · 5 EDF
+  ← n3 TRANSFORMED by IbkrTransformService
+n9 STAGING_EVENT stock sold 262720557 · -5 EDF
+  ← n5 TRANSFORMED by IbkrTransformService
+n10 STAGING_LOT lot 241234985 · 5 EDF
+  ← n7 TRANSFORMED by IbkrTransformService
+n11 STAGING_GROUPING grouping FR0010242511 · EDF
+n12 EVENT stock bought 241234985 · 5 EDF
+  ← n8 CONVERTED by StagingToCore
+n13 EVENT stock sold 262720557 · -5 EDF
+  ← n9 CONVERTED by StagingToCore
+n14 LOT lot 241234985 · 5 EDF
+  ← n10 CONVERTED by StagingToCore
+n15 GROUPING grouping FR0010242511 · EDF
+  ← n11 CONVERTED by StagingFinancialGroupingProcessor
+
+Dropped:
+(none)
+
+Warnings:
+(none)

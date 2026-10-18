@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import {
 	createContainer,
-	type FinancialEvents,
+	type ImportResult,
+	ReportPipeline,
 	SlovenianReportTypeId,
 	TaxAuthorityId,
 	TaxAuthorityLotMatchingMethod,
-	TaxAuthorityRegistry,
 	TaxpayerConfigSchema,
 	zDateTimeFromISOString,
 } from "@brrr/lib";
@@ -13,7 +13,7 @@ import type { GeneratedOutputs } from "~/components/export/generatedOutputs";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
 const props = defineProps<{
-	financialEvents: FinancialEvents;
+	imported: ImportResult;
 }>();
 
 const emit = defineEmits<{
@@ -37,7 +37,7 @@ const error = ref<string | null>(null);
 const loading = ref(false);
 
 const container = createContainer(new ApiInfoProvider());
-const registry = container.get(TaxAuthorityRegistry);
+const pipeline = container.get(ReportPipeline);
 
 const FILENAMES: Record<string, { xml: string; csv: string }> = {
 	[SlovenianReportTypeId.KDVP]: { xml: "Doh_KDVP.xml", csv: "export-trades.csv" },
@@ -91,12 +91,11 @@ async function onSubmit(valid: boolean) {
 			lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 		};
 
-		const { xml, csv } = await registry.generateExports({
+		const { xml, csv } = await pipeline.generate(props.imported, {
 			authorityId: TaxAuthorityId.SLOVENIA,
 			reportTypeId: reportType.value,
 			taxpayerInfo,
 			reportConfig,
-			events: props.financialEvents,
 		});
 
 		const filenames = FILENAMES[reportType.value] ?? { xml: "export.xml", csv: "export.csv" };

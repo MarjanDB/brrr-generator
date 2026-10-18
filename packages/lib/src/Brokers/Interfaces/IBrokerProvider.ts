@@ -1,13 +1,23 @@
 import type { BrokerId } from "@brrr/Brokers/Models/BrokerIdentifiers";
+import type { ImportFile } from "@brrr/Brokers/Models/ImportFile";
 import type { StagingFinancialEvents } from "@brrr/Core/Models/Staging/StagingFinancialEvents";
+import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
+
+export type BrokerFileDetection = {
+	fileName: string;
+	detectedBroker: { id: BrokerId; name: string } | null;
+	// Set when the file looks like a broker's export but can't be read.
+	error: string | null;
+};
 
 export interface IBrokerProvider {
 	readonly brokerId: BrokerId;
 	readonly displayName: string;
 
-	isThisValidExport(xmlString: string): boolean;
-	// Why a file that looks like this broker's export can't be read; null for a valid export and
-	// for files that aren't this broker's at all.
-	describeExportProblem(xmlString: string): string | null;
-	loadAndTransform(xmlStrings: string[]): StagingFinancialEvents;
+	// Reads each file once: says which ones are this broker's, and turns those into staging events.
+	// The caller records the files as nodes; the provider records what it makes from them.
+	load(
+		files: ImportFile[],
+		provenance: IProvenanceRecorder,
+	): { detections: BrokerFileDetection[]; events: StagingFinancialEvents };
 }

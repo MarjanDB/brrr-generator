@@ -18,9 +18,9 @@ skill.
 | `Schemas/FieldParsers.ts` | The field parsers the row schemas share (dates, empty-as-null strings and numbers, `notes` codes, `remap`, `toArray`). |
 | `Schemas/IbkrIdentifiers.ts` | IBKR's identifier types (`IbkrTransactionId`, `IbkrIsin`, `IbkrSymbol`, …) for the row fields the extract and transform read; the row schemas use their `Schema`s. |
 | `Models/SegmentedTrades.ts` | The broker container: `cashTransactions`, `corporateActions`, `stockTrades`, `stockLots`, `derivativeTrades`, `derivativeLots`. |
-| `Services/IbkrExtractService.ts` | `extractFromXML(xml)` → `SegmentedTrades`; `mergeTrades(list)` combines several files. |
-| `Services/IbkrTransformService.ts` | `convertSegmentedTradesToStagingEvents` → `StagingFinancialEvents`. |
-| `IbkrBrokerExportProvider.ts` | `IBrokerProvider` with `brokerId = BrokerId.IBKR`. A file counts as IBKR when `extractFromXML` doesn't throw. |
+| `Services/IbkrExtractService.ts` | `extractFromXML(file, provenance)` → `SegmentedTrades` (file is an `ImportFile`; rows, records and drops are recorded only after the whole file parses); `mergeTrades(list, provenance)` combines several files and records deduplication. |
+| `Services/IbkrTransformService.ts` | `convertSegmentedTradesToStagingEvents(segmented, provenance)` → `StagingFinancialEvents`. |
+| `IbkrBrokerExportProvider.ts` | `IBrokerProvider` with `brokerId = BrokerId.IBKR`. `load(files, provenance)` parses each file once; a file counts as IBKR when `extractFromXML` doesn't throw. |
 | `IbkrModule.ts` | Inversify bindings. |
 
 ## Parsing
