@@ -28,6 +28,10 @@ export type { Country } from "@brrr/InfoProviders/Models/Country";
 export { TreatyType } from "@brrr/InfoProviders/Models/TreatyType";
 export { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
 
+// Pipeline
+export type { ImportResult, ReportRequest, ReportResult } from "@brrr/Pipeline/ReportPipeline";
+export { ReportPipeline } from "@brrr/Pipeline/ReportPipeline";
+
 // Provenance
 export { DropReason } from "@brrr/Provenance/Models/DropReason";
 export { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";

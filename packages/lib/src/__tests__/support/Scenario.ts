@@ -1,7 +1,7 @@
 import { StagingBuilders } from "@brrr/__tests__/support/StagingBuilders";
 import { type CashFields, type TradeFields, Values } from "@brrr/__tests__/support/Values";
-import { BrokerRegistry } from "@brrr/Brokers/BrokerRegistry";
 import { SegmentedTrades } from "@brrr/Brokers/Ibkr/Models/SegmentedTrades";
+import type { ImportFile } from "@brrr/Brokers/Models/ImportFile";
 import { createContainer } from "@brrr/Container";
 import { AcquisitionMethod } from "@brrr/Core/Models/Events/AcquisitionMethod";
 import type { TradeEventCashTransaction } from "@brrr/Core/Models/Events/CashTransaction/TradeEventCashTransaction";
@@ -27,19 +27,20 @@ import type { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
 import { TaxLot, type TaxLotDerivative, type TaxLotStock } from "@brrr/Core/Models/Lots/TaxLot";
 import { FinancialEventsProcessor } from "@brrr/Core/Services/LotMatching/FinancialEventsProcessor";
 import { LotMatcher } from "@brrr/Core/Services/LotMatching/LotMatcher";
-import { StagingFinancialGroupingProcessor } from "@brrr/Core/Services/StagingProcessing/StagingFinancialGroupingProcessor";
 import type { IInfoProvider } from "@brrr/InfoProviders/Interfaces/IInfoProvider";
 import type { CompanyInfo } from "@brrr/InfoProviders/Models/CompanyInfo";
 import type { Country } from "@brrr/InfoProviders/Models/Country";
 import { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
-import { NullProvenanceRecorder } from "@brrr/Provenance/Services/NullProvenanceRecorder";
-import type { GeneratedExports } from "@brrr/TaxAuthorities/Interfaces/ITaxAuthorityProvider";
+import {
+	type ImportResult,
+	ReportPipeline,
+	type ReportResult,
+} from "@brrr/Pipeline/ReportPipeline";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/Models/TaxAuthorityConfiguration";
 import { TaxAuthorityId } from "@brrr/TaxAuthorities/Models/TaxAuthorityIdentifiers";
 import type { TaxAuthorityLotMatchingMethod } from "@brrr/TaxAuthorities/Models/TaxAuthorityLotMatchingMethod";
 import type { TaxpayerInfo } from "@brrr/TaxAuthorities/Schemas/TaxpayerConfigSchema";
 import type { SlovenianReportTypeId } from "@brrr/TaxAuthorities/Slovenia/Models/SlovenianReportTypeId";
-import { TaxAuthorityRegistry } from "@brrr/TaxAuthorities/TaxAuthorityRegistry";
 
 type LotFields = { id: TaxLotStock["id"]; quantity: number; shortLongType: ShortLong };
 
@@ -227,27 +228,21 @@ const config = {
 };
 
 const pipeline = {
-	// Broker exports to FinancialEvents, through the same calls the CLI and the site make.
-	run(files: { fileName: string; xml: string }[]) {
-		const container = createContainer(new PredefinedInfoProvider());
-		const { detections, stagingEvents } = container
-			.get(BrokerRegistry)
-			.load(files, new NullProvenanceRecorder());
+	// Broker exports to the import, through the same ReportPipeline the CLI and the site use.
+	run(files: ImportFile[]): ImportResult {
+		const imported = createContainer(new PredefinedInfoProvider()).get(ReportPipeline).read(files);
 
-		const unread = detections.filter((d) => d.error !== null || d.detectedBroker === null);
+		const unread = imported.detections.filter((d) => d.error !== null || d.detectedBroker === null);
 		if (unread.length > 0) {
 			throw new Error(`Not read as a broker export: ${unread.map((d) => d.fileName).join(", ")}`);
 		}
 
-		const events = container
-			.get(StagingFinancialGroupingProcessor)
-			.processStagingFinancialEvents(stagingEvents, new NullProvenanceRecorder());
-		return { detections, stagingEvents, events };
+		return imported;
 	},
 
 	// One Slovenian report for a calendar year.
 	async generate(
-		events: FinancialEvents,
+		imported: ImportResult,
 		options: {
 			report: SlovenianReportTypeId;
 			year: number;
@@ -255,15 +250,15 @@ const pipeline = {
 			taxpayer: TaxpayerInfo;
 			info: IInfoProvider;
 		},
-	): Promise<GeneratedExports> {
-		const container = createContainer(options.info);
-		return await container.get(TaxAuthorityRegistry).generateExports({
-			authorityId: TaxAuthorityId.SLOVENIA,
-			reportTypeId: options.report,
-			taxpayerInfo: options.taxpayer,
-			reportConfig: config.report(options.year, options.lotMatching),
-			events,
-		});
+	): Promise<ReportResult> {
+		return await createContainer(options.info)
+			.get(ReportPipeline)
+			.generate(imported, {
+				authorityId: TaxAuthorityId.SLOVENIA,
+				reportTypeId: options.report,
+				taxpayerInfo: options.taxpayer,
+				reportConfig: config.report(options.year, options.lotMatching),
+			});
 	},
 
 	eventsProcessor(): FinancialEventsProcessor {

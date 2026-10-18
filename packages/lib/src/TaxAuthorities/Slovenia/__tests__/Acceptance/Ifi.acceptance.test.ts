@@ -8,9 +8,9 @@ import { TestKit } from "@brrr/test-cases";
 describe("Slovenia, D-IFI", () => {
 	test("one AAPL call bought and sold in December 2023 (IBKR), FIFO", async () => {
 		const optionTrade = TestKit.ibkr.optionTrade;
-		const { events } = Scenario.pipeline.run(optionTrade.readInputs());
+		const imported = Scenario.pipeline.run(optionTrade.readInputs());
 
-		const report = await Scenario.pipeline.generate(events, {
+		const report = await Scenario.pipeline.generate(imported, {
 			report: SlovenianReportTypeId.IFI,
 			year: optionTrade.year,
 			lotMatching: TaxAuthorityLotMatchingMethod.FIFO,
