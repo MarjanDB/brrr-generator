@@ -7,7 +7,7 @@ import type {
 import { ReportTypeId, type TaxAuthorityId } from "@brrr/TaxAuthorities/TaxAuthorityIdentifiers";
 
 export class TaxAuthorityRegistry {
-	constructor(private readonly slovenia: ITaxAuthorityProvider) {}
+	public constructor(private readonly slovenia: ITaxAuthorityProvider) {}
 
 	public listAuthorities(): TaxAuthorityDescriptor[] {
 		return [this.slovenia.descriptor];

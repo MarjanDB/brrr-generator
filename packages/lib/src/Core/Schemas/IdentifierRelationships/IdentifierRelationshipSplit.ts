@@ -16,7 +16,7 @@ export class IdentifierRelationshipSplit {
 	public readonly quantityBefore: number;
 	public readonly quantityAfter: number;
 
-	constructor(args: IdentifierRelationshipSplitArgs) {
+	public constructor(args: IdentifierRelationshipSplitArgs) {
 		this.fromIdentifier = args.fromIdentifier;
 		this.toIdentifier = args.toIdentifier;
 		this.changeType = args.changeType;

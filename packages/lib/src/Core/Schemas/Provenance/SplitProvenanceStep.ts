@@ -16,7 +16,7 @@ export class SplitProvenanceStep extends ProvenanceStepBase {
 	public readonly beforeQuantity?: number | null;
 	public readonly beforeTradePrice?: number | null;
 
-	constructor(args: SplitProvenanceStepArgs) {
+	public constructor(args: SplitProvenanceStepArgs) {
 		super(args);
 		this.quantityBefore = args.quantityBefore;
 		this.quantityAfter = args.quantityAfter;

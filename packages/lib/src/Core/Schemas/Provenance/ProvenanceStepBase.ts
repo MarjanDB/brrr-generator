@@ -15,7 +15,7 @@ export abstract class ProvenanceStepBase {
 	public readonly changeType: IdentifierChangeType;
 	public readonly effectiveDate: ValidDateTime;
 
-	constructor(args: ProvenanceStepArgs) {
+	public constructor(args: ProvenanceStepArgs) {
 		this.fromIdentifier = args.fromIdentifier;
 		this.toIdentifier = args.toIdentifier;
 		this.changeType = args.changeType;

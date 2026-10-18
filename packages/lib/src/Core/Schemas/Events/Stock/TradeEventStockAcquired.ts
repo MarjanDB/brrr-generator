@@ -6,7 +6,7 @@ type StockAcquiredArgs = TradeEventArgs & { acquisitionMethod: AcquisitionMethod
 export class TradeEventStockAcquired extends TradeEventBase {
 	public readonly acquisitionMethod: AcquisitionMethod;
 
-	constructor(args: StockAcquiredArgs) {
+	public constructor(args: StockAcquiredArgs) {
 		super(args);
 		this.acquisitionMethod = args.acquisitionMethod;
 	}

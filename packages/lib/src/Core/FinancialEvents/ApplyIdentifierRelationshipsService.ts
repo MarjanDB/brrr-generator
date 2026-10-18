@@ -30,7 +30,10 @@ import { SplitProvenanceStep } from "@brrr/Core/Schemas/Provenance/SplitProvenan
 //
 // Application order: RENAME first, then SPLIT/REVERSE_SPLIT by EffectiveDate.
 export class ApplyIdentifierRelationshipsService {
-	apply(events: FinancialEvents, changeTypesToApply: IdentifierChangeType[]): FinancialEvents {
+	public apply(
+		events: FinancialEvents,
+		changeTypesToApply: IdentifierChangeType[],
+	): FinancialEvents {
 		let current = events;
 
 		if (changeTypesToApply.includes(IdentifierChangeType.RENAME)) {

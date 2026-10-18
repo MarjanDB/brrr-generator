@@ -17,7 +17,7 @@ export class StagingIdentifierRelationshipPartialWithQuantity {
 	public readonly effectiveDate: ValidDateTime;
 	public readonly quantity: number;
 
-	constructor(args: StagingIdentifierRelationshipPartialWithQuantityArgs) {
+	public constructor(args: StagingIdentifierRelationshipPartialWithQuantityArgs) {
 		this.fromIdentifier = args.fromIdentifier;
 		this.toIdentifier = args.toIdentifier;
 		this.correlationKey = args.correlationKey;

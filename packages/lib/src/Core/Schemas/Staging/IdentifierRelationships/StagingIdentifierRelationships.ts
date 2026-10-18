@@ -5,7 +5,7 @@ export class StagingIdentifierRelationships {
 	public readonly relationships: StagingIdentifierRelationshipAny[];
 	public readonly partialRelationships: StagingIdentifierRelationshipPartialAny[];
 
-	constructor(args: {
+	public constructor(args: {
 		relationships: StagingIdentifierRelationshipAny[];
 		partialRelationships: StagingIdentifierRelationshipPartialAny[];
 	}) {

@@ -8,7 +8,7 @@ import { StagingIdentifierRelationships } from "@brrr/Core/Schemas/Staging/Ident
 import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
 
 export class IdentifierRelationshipResolution {
-	mergePartialIdentifierRelationships(
+	public mergePartialIdentifierRelationships(
 		partials: StagingIdentifierRelationshipPartialAny[],
 	): StagingIdentifierRelationshipAny[] {
 		if (partials.length === 0) return [];
@@ -63,7 +63,7 @@ export class IdentifierRelationshipResolution {
 		return merged;
 	}
 
-	resolveStagingFinancialEventsPartialRelationships(
+	public resolveStagingFinancialEventsPartialRelationships(
 		events: StagingFinancialEvents,
 	): StagingFinancialEvents {
 		const merged = this.mergePartialIdentifierRelationships(

@@ -4,12 +4,12 @@ import type { Trade } from "@brrr/Core/LotMatching/Trade";
 import { TradeAssociationTracker } from "@brrr/Core/LotMatching/TradeAssociationTracker";
 
 class TrackingTradeBuySellSide {
-	buySide: Trade;
-	sellSide: Trade;
-	candidateEvent: Trade;
-	earliestEventWaitingForMatch: Trade;
+	public buySide: Trade;
+	public sellSide: Trade;
+	public candidateEvent: Trade;
+	public earliestEventWaitingForMatch: Trade;
 
-	constructor(candidateEvent: Trade, earliestEventWaitingForMatch: Trade) {
+	public constructor(candidateEvent: Trade, earliestEventWaitingForMatch: Trade) {
 		this.candidateEvent = candidateEvent;
 		this.earliestEventWaitingForMatch = earliestEventWaitingForMatch;
 
@@ -22,12 +22,12 @@ class TrackingTradeBuySellSide {
 		}
 	}
 
-	confirmConsumedQuantity(quantity: number, tracker: TradeAssociationTracker): void {
+	public confirmConsumedQuantity(quantity: number, tracker: TradeAssociationTracker): void {
 		tracker.trackAcquiredQuantity(this.buySide, quantity);
 		tracker.trackSoldQuantity(this.sellSide, -quantity);
 	}
 
-	getRemainingQuantity(of: Trade, tracker: TradeAssociationTracker): number {
+	public getRemainingQuantity(of: Trade, tracker: TradeAssociationTracker): number {
 		if (of === this.buySide) {
 			return of.quantity - tracker.getAcquiredTradeTracker(of).quantity;
 		} else {
@@ -37,7 +37,7 @@ class TrackingTradeBuySellSide {
 }
 
 export class FifoLotMatchingMethod implements ILotMatchingMethod {
-	performMatching(events: Trade[]): Lot[] {
+	public performMatching(events: Trade[]): Lot[] {
 		const tracker = new TradeAssociationTracker();
 
 		if (events.length === 0) return [];

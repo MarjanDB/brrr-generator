@@ -5,7 +5,10 @@ import type { TradeEventBase } from "@brrr/Core/Schemas/Events/TradeEventBase";
 import type { TradeEventId } from "@brrr/Core/Schemas/Identifiers";
 
 export class LotMatcher {
-	matchLots<T extends TradeEventBase>(method: ILotMatchingMethod, events: T[]): MatchedLot<T>[] {
+	public matchLots<T extends TradeEventBase>(
+		method: ILotMatchingMethod,
+		events: T[],
+	): MatchedLot<T>[] {
 		const tradeEventMappings = new Map<TradeEventId, T>();
 		const tradeMappings = new Map<TradeEventId, Trade>();
 

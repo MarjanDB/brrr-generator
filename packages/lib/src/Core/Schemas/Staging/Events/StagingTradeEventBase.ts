@@ -21,7 +21,7 @@ export abstract class StagingTradeEventBase {
 	public readonly multiplier: number;
 	public readonly exchangedMoney: ExchangedMoney;
 
-	constructor(args: StagingTradeEventArgs) {
+	public constructor(args: StagingTradeEventArgs) {
 		this.id = args.id;
 		this.financialIdentifier = args.financialIdentifier;
 		this.assetClass = args.assetClass;

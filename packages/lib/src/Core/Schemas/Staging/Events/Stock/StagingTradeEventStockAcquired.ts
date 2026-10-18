@@ -11,7 +11,7 @@ type StagingStockAcquiredArgs = StagingTradeEventArgs & {
 export class StagingTradeEventStockAcquired extends StagingTradeEventBase {
 	public readonly acquisitionMethod: AcquisitionMethod;
 
-	constructor(args: StagingStockAcquiredArgs) {
+	public constructor(args: StagingStockAcquiredArgs) {
 		super(args);
 		this.acquisitionMethod = args.acquisitionMethod;
 	}

@@ -9,7 +9,7 @@ type StagingDividendArgs = StagingCashTransactionArgs & { dividendType: Dividend
 export class StagingTradeEventCashTransactionDividend extends StagingCashTransactionBase {
 	public readonly dividendType: DividendType;
 
-	constructor(args: StagingDividendArgs) {
+	public constructor(args: StagingDividendArgs) {
 		super(args);
 		this.dividendType = args.dividendType;
 	}

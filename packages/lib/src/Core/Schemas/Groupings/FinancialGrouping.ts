@@ -28,7 +28,7 @@ export class FinancialGrouping {
 	public readonly cashTransactions: TradeEventCashTransaction[];
 	public readonly provenance: AnyProvenanceStep[];
 
-	constructor(args: FinancialGroupingArgs) {
+	public constructor(args: FinancialGroupingArgs) {
 		this.financialIdentifier = args.financialIdentifier;
 		this.countryOfOrigin = args.countryOfOrigin;
 		this.underlyingCategory = args.underlyingCategory;

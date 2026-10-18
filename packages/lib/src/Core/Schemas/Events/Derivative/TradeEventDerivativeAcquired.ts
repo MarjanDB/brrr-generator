@@ -8,7 +8,7 @@ type DerivativeAcquiredArgs = TradeEventArgs & {
 export class TradeEventDerivativeAcquired extends TradeEventBase {
 	public readonly acquisitionMethod: AcquisitionMethod;
 
-	constructor(args: DerivativeAcquiredArgs) {
+	public constructor(args: DerivativeAcquiredArgs) {
 		super(args);
 		this.acquisitionMethod = args.acquisitionMethod;
 	}

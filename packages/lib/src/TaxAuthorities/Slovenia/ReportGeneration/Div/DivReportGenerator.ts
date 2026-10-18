@@ -157,9 +157,9 @@ function mergeDividendsReceivedOnSameDay(totals: DividendTotals[]): DividendTota
 }
 
 export class DivReportGenerator {
-	constructor(private readonly infoProvider: IInfoProvider) {}
+	public constructor(private readonly infoProvider: IInfoProvider) {}
 
-	async convert(
+	public async convert(
 		config: TaxAuthorityConfiguration,
 		groupings: FinancialGrouping[],
 	): Promise<EDavkiDividendReportLine[]> {
@@ -252,7 +252,7 @@ export class DivReportGenerator {
 		return { title, address, countryOfOrigin, taxReliefParagraph };
 	}
 
-	toXml(
+	public toXml(
 		config: TaxAuthorityConfiguration,
 		userConfig: TaxpayerInfo,
 		selfReport: boolean,
@@ -261,7 +261,7 @@ export class DivReportGenerator {
 		return generateXmlReport(config, userConfig, selfReport, items);
 	}
 
-	toCsv(items: EDavkiDividendReportLine[]): string {
+	public toCsv(items: EDavkiDividendReportLine[]): string {
 		return generateCsvReport(items);
 	}
 }

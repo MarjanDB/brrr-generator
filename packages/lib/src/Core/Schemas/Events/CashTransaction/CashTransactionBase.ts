@@ -16,7 +16,7 @@ export abstract class CashTransactionBase extends TradeEventBase {
 	public readonly transactionId: CashTransactionId;
 	public readonly listingExchange: ListingExchange;
 
-	constructor(args: CashTransactionArgs) {
+	public constructor(args: CashTransactionArgs) {
 		super(args);
 		this.actionId = args.actionId;
 		this.transactionId = args.transactionId;

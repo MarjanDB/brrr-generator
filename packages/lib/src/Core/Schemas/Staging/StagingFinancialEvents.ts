@@ -21,7 +21,7 @@ export class StagingFinancialEvents {
 		});
 	}
 
-	constructor(args: {
+	public constructor(args: {
 		groupings: StagingFinancialGrouping[];
 		identifierRelationships: StagingIdentifierRelationships;
 	}) {

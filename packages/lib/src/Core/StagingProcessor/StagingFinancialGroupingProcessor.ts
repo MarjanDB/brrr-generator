@@ -35,7 +35,7 @@ const CHANGE_TYPES: Record<
 const UNKNOWN_EFFECTIVE_DATE = DateTime.fromMillis(0) as ValidDateTime;
 
 export class StagingFinancialGroupingProcessor {
-	constructor(private readonly relationshipResolution: IdentifierRelationshipResolution) {}
+	public constructor(private readonly relationshipResolution: IdentifierRelationshipResolution) {}
 
 	private processAndGroupDerivativeTrades(input: StagingFinancialGrouping): DerivativeGrouping[] {
 		const tradesByIdKey = new Map<FinancialIdentifierKey, typeof input.derivativeTrades>();
@@ -72,7 +72,7 @@ export class StagingFinancialGroupingProcessor {
 		return derivativeGroupings;
 	}
 
-	process(input: StagingFinancialGrouping): FinancialGrouping {
+	public process(input: StagingFinancialGrouping): FinancialGrouping {
 		const stockTrades = input.stockTrades.map(toCoreStockTrade);
 
 		return new FinancialGrouping({
@@ -87,11 +87,11 @@ export class StagingFinancialGroupingProcessor {
 		});
 	}
 
-	generateGenericGroupings(groupings: StagingFinancialGrouping[]): FinancialGrouping[] {
+	public generateGenericGroupings(groupings: StagingFinancialGrouping[]): FinancialGrouping[] {
 		return groupings.map((g) => this.process(g));
 	}
 
-	processStagingFinancialEvents(events: StagingFinancialEvents): FinancialEvents {
+	public processStagingFinancialEvents(events: StagingFinancialEvents): FinancialEvents {
 		const resolved =
 			this.relationshipResolution.resolveStagingFinancialEventsPartialRelationships(events);
 		const processedGroupings = this.generateGenericGroupings(resolved.groupings);

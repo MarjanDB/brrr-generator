@@ -15,7 +15,7 @@ export class IdentifierRelationship {
 	public readonly changeType: IdentifierChangeType;
 	public readonly effectiveDate: ValidDateTime;
 
-	constructor(args: IdentifierRelationshipArgs) {
+	public constructor(args: IdentifierRelationshipArgs) {
 		this.fromIdentifier = args.fromIdentifier;
 		this.toIdentifier = args.toIdentifier;
 		this.changeType = args.changeType;

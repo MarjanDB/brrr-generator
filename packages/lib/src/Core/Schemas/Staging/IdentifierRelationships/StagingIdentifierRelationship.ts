@@ -15,7 +15,7 @@ export class StagingIdentifierRelationship {
 	public readonly changeType: StagingIdentifierChangeType;
 	public readonly effectiveDate: ValidDateTime | null;
 
-	constructor(args: StagingIdentifierRelationshipArgs) {
+	public constructor(args: StagingIdentifierRelationshipArgs) {
 		this.fromIdentifier = args.fromIdentifier;
 		this.toIdentifier = args.toIdentifier;
 		this.changeType = args.changeType;
