@@ -32,7 +32,7 @@ pnpm 11, pinned in the root `package.json` (`packageManager`). Always use `pnpm`
 | `pnpm --filter @brrr/lib typecheck`                                  | `tsc --noEmit`, lib                                    |
 | `pnpm --filter @brrr/lib build`                                      | tsdown, lib → `packages/lib/dist/`                     |
 | `pnpm --filter @brrr/app typecheck`                                  | `nuxt typecheck`                                       |
-| `pnpm --filter @brrr/app test`                                       | Vitest, app: the download step's graph logic           |
+| `pnpm --filter @brrr/app test`                                       | Vitest, app: the download and review steps' logic      |
 | `pnpm --filter @brrr/app build`                                      | Nuxt build                                             |
 | `pnpm --filter @brrr/cli typecheck`                                  | Typecheck the CLI                                      |
 | `pnpm --filter @brrr/test-cases typecheck`                           | Typecheck the test cases package                       |

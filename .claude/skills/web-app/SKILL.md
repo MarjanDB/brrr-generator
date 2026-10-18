@@ -19,7 +19,7 @@ company and country lookups. Nuxt's source directory is `packages/app/app/`.
 
 ## Tests
 
-Vitest runs the app's pure TypeScript only (no DOM, no Vue test utils): the download step's logic under `app/download/` (graph, panel, timeline, sentences). Tests sit
+Vitest runs the app's pure TypeScript only (no DOM, no Vue test utils): the download step's logic under `app/download/` (graph, panel, timeline, sentences) and the review step's under `app/review/`. Tests sit
 in `__tests__/` beside the code, import `describe`, `expect` and `test` from `vitest` (no globals, unlike lib), import code through the
 `~/` and `~~/` aliases (`packages/app/vitest.config.ts`), and need lib built, like `typecheck`. Nuxt ignores `*.test.ts`, so they are
 never bundled.
@@ -31,7 +31,13 @@ never bundled.
 1. **Upload** — `components/upload/UploadStep.vue`: reads the files, runs `ReportPipeline.read`, emits the `ImportResult`
    (detections, `FinancialEvents` and the provenance graph).
 2. **Review** — `components/review/ReviewStep.vue` and `components/review/instrument/` (per-instrument stocks, derivatives, dividends and
-   summary, each with a table and a chart); `InstrumentModal.vue`.
+   summary, each with a table and a chart); `InstrumentModal.vue`. `ReviewStep` takes the import's `provenance` graph, builds an
+   `ImportSources` from it once and passes it down as a prop (`InstrumentModal`, the sections, the tables). Each trade and cash
+   row has a "where from" popover (`components/review/source/`: `RowSourceButton`, mounted-when-open `RowSourcePopover`,
+   `FileChip`) showing the export file(s), a "counted once" note for a deduplicated row, the row's key IBKR attributes and an "All
+   attributes" toggle. Above the table, `ImportLeftOutNote.vue` lists what the import left out (amber) and what it counted once
+   (info badge). The logic is plain TypeScript in `app/review/` (`ImportSources`, `readImportLeftOut`, `rowAttributes`), tested; it
+   reads node kinds, edges and `fields`, and a label only as a file's name or a left-out row's own wording.
 3. **Configure** — `components/configure/ConfigureStep.vue`: tax authority cards (`taxAuthorityCards.ts`), then that authority's form
    from `authorityForms` (`SloveniaExportForm.vue`), which takes the `ImportResult` and calls `ReportPipeline.generate`.
 4. **Download** — `components/download/DownloadStep.vue`, receiving `GeneratedOutputs` (the files, the year and lot-matching method, the report's provenance graph and the import). It reads the graph once (`ProvenanceReportReader`) and lays out `DownloadHeader` (form and year, counts, the needs-a-look popover (each item with the file or row it is about) and the warnings popover (each warning with its instrument), guide, downloads, start over), `InstrumentPanel` (the report's instruments by asset type, with search, and an amber badge on a row whose instrument has warnings), `InstrumentHeader`, `InstrumentTimeline` and `FocusFacts` (the focused item's facts and the sentences about it). The logic is plain TypeScript under `app/download/`, tested; the components under `components/download/` only draw. The submission guide comes from `components/download/taxAuthorityGuides.ts`. The step reads facts from node `fields` and sentences from `ProvenanceDetail` and `DropReason`, never from a node's label.
@@ -80,6 +86,7 @@ shown by `GuideModal.vue`, with screenshots under `packages/app/public/screensho
   links its label through `useId()`.
 - Primitives (select, checkbox, dialog, tooltip) come from reka-ui. Composables from `@vueuse/core` before writing your own.
 - Charts use chart.js; `composables/useChartTheme.ts` reads theme colours from CSS variables. The review step's charts use a time scale with a hand-written date adapter (`CumulativeLineChart.vue`). The download timeline (`InstrumentTimeline.vue`) needs no adapter: its x axis is a linear scale of epoch milliseconds, ticked by `timelineTicks`, and its arcs and marks are drawn by an inline plugin (`app/download/timeline/timelineMarksPlugin.ts`, never registered globally) over one transparent scatter dataset that gives chart.js the hit-testing and tooltip. The canvas is not keyboard-reachable; the marks are reachable through the panel and `FocusFacts`.
+- A popover inside a reka `Dialog` needs `PopoverPortal` (the dialog is translated and clips overflow) and a z-index above the dialog's `z-50`.
 - Biome lints `.vue` files. Pages are exempt from the multi-word component name rule; everything else needs multi-word names.
 
 ## Text (i18n)
