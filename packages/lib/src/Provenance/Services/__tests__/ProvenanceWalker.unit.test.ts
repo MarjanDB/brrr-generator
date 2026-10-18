@@ -189,3 +189,41 @@ test("a node from another graph is refused", () => {
 
 	expect(() => walker.up(other.nodeOf(stranger))).toThrow("Provenance: node is not in this graph");
 });
+
+test("a walker told to ignore a change does not follow edges of that change", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const eventA = {};
+	const eventB = {};
+	const grouping = {};
+	const line = {};
+	graph.node(eventA, ProvenanceNodeKind.EVENT, "buy A", {});
+	graph.node(eventB, ProvenanceNodeKind.EVENT, "buy B", {});
+	graph.node(grouping, ProvenanceNodeKind.GROUPING, "grouping", {});
+	graph.node(line, ProvenanceNodeKind.REPORT_LINE, "line", {});
+	graph.derive([eventA, eventB], grouping, ProvenanceChange.GROUPED, stage, null);
+	graph.derive([grouping], line, ProvenanceChange.REPORTED, stage, null);
+
+	const walker = new ProvenanceWalker(graph, [ProvenanceChange.GROUPED]);
+
+	expect(walker.parents(graph.nodeOf(grouping))).toHaveLength(0);
+	expect(walker.children(graph.nodeOf(eventA))).toHaveLength(0);
+	expect(walker.up(graph.nodeOf(line)).nodes).toEqual([graph.nodeOf(line), graph.nodeOf(grouping)]);
+	expect(walker.down(graph.nodeOf(eventA)).nodes).toEqual([graph.nodeOf(eventA)]);
+});
+
+test("a walker told to ignore nothing follows every edge", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const eventA = {};
+	const grouping = {};
+	const line = {};
+	graph.node(eventA, ProvenanceNodeKind.EVENT, "buy A", {});
+	graph.node(grouping, ProvenanceNodeKind.GROUPING, "grouping", {});
+	graph.node(line, ProvenanceNodeKind.REPORT_LINE, "line", {});
+	graph.derive([eventA], grouping, ProvenanceChange.GROUPED, stage, null);
+	graph.derive([grouping], line, ProvenanceChange.REPORTED, stage, null);
+
+	const walker = new ProvenanceWalker(graph);
+
+	expect(walker.up(graph.nodeOf(line)).nodes).toHaveLength(3);
+	expect(walker.down(graph.nodeOf(eventA)).nodes).toHaveLength(3);
+});

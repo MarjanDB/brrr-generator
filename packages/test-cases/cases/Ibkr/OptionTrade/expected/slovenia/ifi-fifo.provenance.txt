@@ -18,6 +18,9 @@ n9 STAGING_EVENT option sold 639309966 · -1 AAPL  231222C00202500
 n10 STAGING_LOT lot 635331370 · 1 AAPL  231222C00202500
   ← n7 TRANSFORMED by IbkrTransformService
 n11 STAGING_GROUPING grouping US0378331005 · AAPL  231222C00202500
+  ← n8 GROUPED by IbkrTransformService
+  ← n9 GROUPED by IbkrTransformService
+  ← n10 GROUPED by IbkrTransformService
 n12 EVENT option bought 635331370 · 1 AAPL  231222C00202500
   ← n8 CONVERTED by StagingToCore
 n13 EVENT option sold 639309966 · -1 AAPL  231222C00202500
@@ -26,6 +29,9 @@ n14 LOT lot 635331370 · 1 AAPL  231222C00202500
   ← n10 CONVERTED by StagingToCore
 n15 GROUPING derivative grouping US0378331005 · AAPL  231222C00202500
   ← n11 CONVERTED by StagingFinancialGroupingProcessor
+  ← n12 GROUPED by StagingFinancialGroupingProcessor
+  ← n13 GROUPED by StagingFinancialGroupingProcessor
+  ← n14 GROUPED by StagingFinancialGroupingProcessor
 n16 GROUPING grouping US0378331005 · AAPL  231222C00202500
   ← n11 CONVERTED by StagingFinancialGroupingProcessor
 n17 MATCHED_LOT matched lot 635331370 → 639309966 · 1

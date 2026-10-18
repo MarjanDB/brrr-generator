@@ -12,12 +12,16 @@ n6 STAGING_EVENT dividend 269176073 · TTE
 n7 STAGING_EVENT withholding tax 323614082 · TTE
   ← n5 TRANSFORMED by IbkrTransformService
 n8 STAGING_GROUPING grouping FR0000120271 · TTE
+  ← n6 GROUPED by IbkrTransformService
+  ← n7 GROUPED by IbkrTransformService
 n9 EVENT dividend 269176073 · TTE
   ← n6 CONVERTED by StagingToCore
 n10 EVENT withholding tax 323614082 · TTE
   ← n7 CONVERTED by StagingToCore
 n11 GROUPING grouping FR0000120271 · TTE
   ← n8 CONVERTED by StagingFinancialGroupingProcessor
+  ← n9 GROUPED by StagingFinancialGroupingProcessor
+  ← n10 GROUPED by StagingFinancialGroupingProcessor
 
 Dropped:
 (none)

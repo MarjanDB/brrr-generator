@@ -291,7 +291,7 @@ test("transform: no corporate actions produces no partials", () => {
 	expect(result.identifierRelationships.partialRelationships.length).toEqual(0);
 });
 
-test("each record becomes a staging object, and each instrument a grouping with no parents", () => {
+test("each record becomes a staging object, and each instrument a grouping", () => {
 	const graph = new ProvenanceGraph({ parent: null });
 	const file = TestKit.ibkr.stockTrade.inputs.simpleStockTrade.read();
 	graph.node(file, ProvenanceNodeKind.FILE, file.fileName, {});
@@ -314,7 +314,7 @@ test("each record becomes a staging object, and each instrument a grouping with 
 	const grouping = graph.nodeOf(staging.groupings[0]);
 	expect(grouping.kind).toEqual(ProvenanceNodeKind.STAGING_GROUPING);
 	expect(grouping.label).toEqual("grouping FR0010242511 · EDF");
-	expect(walker.parents(grouping)).toEqual([]);
+	expect(walker.parents(grouping)).toHaveLength(3);
 });
 
 test("each corporate action row becomes one half of a staging corporate action", () => {

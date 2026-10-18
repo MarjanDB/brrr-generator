@@ -48,6 +48,14 @@ n24 STAGING_EVENT stock bought 3347474516 · 2 RKLB
 n25 STAGING_EVENT stock bought 3347474530 · 8 RKLB
   ← n17 TRANSFORMED by IbkrTransformService
 n26 STAGING_GROUPING grouping US7731221062 · RKLB
+  ← n18 GROUPED by IbkrTransformService
+  ← n19 GROUPED by IbkrTransformService
+  ← n20 GROUPED by IbkrTransformService
+  ← n21 GROUPED by IbkrTransformService
+  ← n22 GROUPED by IbkrTransformService
+  ← n23 GROUPED by IbkrTransformService
+  ← n24 GROUPED by IbkrTransformService
+  ← n25 GROUPED by IbkrTransformService
 n27 EVENT stock bought 778803466 · 10 RKLB
   ← n18 CONVERTED by StagingToCore
 n28 EVENT stock bought 779716280 · 90 RKLB
@@ -66,6 +74,14 @@ n34 EVENT stock bought 3347474530 · 8 RKLB
   ← n25 CONVERTED by StagingToCore
 n35 GROUPING grouping US7731221062 · RKLB
   ← n26 CONVERTED by StagingFinancialGroupingProcessor
+  ← n27 GROUPED by StagingFinancialGroupingProcessor
+  ← n28 GROUPED by StagingFinancialGroupingProcessor
+  ← n29 GROUPED by StagingFinancialGroupingProcessor
+  ← n30 GROUPED by StagingFinancialGroupingProcessor
+  ← n31 GROUPED by StagingFinancialGroupingProcessor
+  ← n32 GROUPED by StagingFinancialGroupingProcessor
+  ← n33 GROUPED by StagingFinancialGroupingProcessor
+  ← n34 GROUPED by StagingFinancialGroupingProcessor
 
 Dropped:
 (none)

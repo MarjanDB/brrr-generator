@@ -38,7 +38,12 @@ n19 STAGING_EVENT stock sold 900000304 · -45 SMCI
 n20 STAGING_EVENT stock sold 900000305 · -10 SMCI
   ← n11 TRANSFORMED by IbkrTransformService
 n21 STAGING_GROUPING grouping US86800U1043 · SMCI
+  ← n16 GROUPED by IbkrTransformService
+  ← n17 GROUPED by IbkrTransformService
 n22 STAGING_GROUPING grouping US86800U3023 · SMCI
+  ← n18 GROUPED by IbkrTransformService
+  ← n19 GROUPED by IbkrTransformService
+  ← n20 GROUPED by IbkrTransformService
 n23 STAGING_CORPORATE_ACTION corporate action 141913764 · to SMCI
   ← n13 TRANSFORMED by IbkrTransformService
 n24 STAGING_CORPORATE_ACTION corporate action 141913764 · from SMCI.OLD
@@ -52,6 +57,8 @@ n27 EVENT stock bought 900000302 · 1 SMCI
   ← n17 CONVERTED by StagingToCore
 n28 GROUPING grouping US86800U1043 · SMCI
   ← n21 CONVERTED by StagingFinancialGroupingProcessor
+  ← n26 GROUPED by StagingFinancialGroupingProcessor
+  ← n27 GROUPED by StagingFinancialGroupingProcessor
 n29 EVENT stock bought 900000303 · 15 SMCI
   ← n18 CONVERTED by StagingToCore
 n30 EVENT stock sold 900000304 · -45 SMCI
@@ -60,6 +67,9 @@ n31 EVENT stock sold 900000305 · -10 SMCI
   ← n20 CONVERTED by StagingToCore
 n32 GROUPING grouping US86800U3023 · SMCI
   ← n22 CONVERTED by StagingFinancialGroupingProcessor
+  ← n29 GROUPED by StagingFinancialGroupingProcessor
+  ← n30 GROUPED by StagingFinancialGroupingProcessor
+  ← n31 GROUPED by StagingFinancialGroupingProcessor
 n33 CORPORATE_ACTION SPLIT SMCI.OLD → SMCI (4 → 40)
   ← n25 CONVERTED by StagingFinancialGroupingProcessor
 

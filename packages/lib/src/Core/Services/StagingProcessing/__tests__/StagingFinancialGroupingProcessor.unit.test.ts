@@ -455,3 +455,43 @@ test("a derivative lot of an instrument with no derivative trades is dropped", (
 	expect(drops[0].node).toBe(graph.nodeOf(stagingLot));
 	expect(drops[0].reason).toEqual(DropReason.NO_TRADES);
 });
+
+test("a core grouping is made from its staging grouping, then its events and lots", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const stagingEvents = staged(TestKit.ibkr.stockTrade.inputs.simpleStockTrade.read(), graph);
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
+
+	const events = processor.processStagingFinancialEvents(stagingEvents, graph);
+
+	const parents = new ProvenanceWalker(graph).parents(graph.nodeOf(events.groupings[0]));
+	expect(parents).toHaveLength(4);
+	expect(parents[0].from.kind).toEqual(ProvenanceNodeKind.STAGING_GROUPING);
+	expect(parents[0].change).toEqual(ProvenanceChange.CONVERTED);
+	expect(parents[1].from.label).toEqual("stock bought 241234985 · 5 EDF");
+	expect(parents[1].change).toEqual(ProvenanceChange.GROUPED);
+	expect(parents[1].by).toEqual("StagingFinancialGroupingProcessor");
+	expect(parents[2].from.label).toEqual("stock sold 262720557 · -5 EDF");
+	expect(parents[2].change).toEqual(ProvenanceChange.GROUPED);
+	expect(parents[3].from.label).toEqual("lot 241234985 · 5 EDF");
+	expect(parents[3].change).toEqual(ProvenanceChange.GROUPED);
+});
+
+test("a derivative grouping is made from its trades and lots, and the grouping beside it holds nothing", () => {
+	const graph = new ProvenanceGraph({ parent: null });
+	const stagingEvents = staged(TestKit.ibkr.optionTrade.inputs.simpleOptionTrade.read(), graph);
+	const processor = new StagingFinancialGroupingProcessor(new IdentifierRelationshipResolution());
+
+	const events = processor.processStagingFinancialEvents(stagingEvents, graph);
+
+	const walker = new ProvenanceWalker(graph);
+	const derivative = walker.parents(graph.nodeOf(events.groupings[0].derivativeGroupings[0]));
+	expect(derivative).toHaveLength(4);
+	expect(derivative[0].change).toEqual(ProvenanceChange.CONVERTED);
+	expect(derivative[1].from.label).toEqual("option bought 635331370 · 1 AAPL  231222C00202500");
+	expect(derivative[1].change).toEqual(ProvenanceChange.GROUPED);
+	expect(derivative[2].from.label).toEqual("option sold 639309966 · -1 AAPL  231222C00202500");
+	expect(derivative[2].change).toEqual(ProvenanceChange.GROUPED);
+	expect(derivative[3].from.label).toEqual("lot 635331370 · 1 AAPL  231222C00202500");
+	expect(derivative[3].change).toEqual(ProvenanceChange.GROUPED);
+	expect(walker.parents(graph.nodeOf(events.groupings[0]))).toHaveLength(1);
+});

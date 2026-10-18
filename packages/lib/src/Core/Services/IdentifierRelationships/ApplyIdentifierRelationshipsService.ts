@@ -11,6 +11,10 @@ import type { FinancialIdentifierKey } from "@brrr/Core/Models/Identifiers";
 import { AssetClass } from "@brrr/Core/Models/Instrument/AssetClass";
 import type { FinancialIdentifier } from "@brrr/Core/Models/Instrument/FinancialIdentifier";
 import { TaxLot, type TaxLotStock } from "@brrr/Core/Models/Lots/TaxLot";
+import {
+	recordDerivativeGroupingMembers,
+	recordGroupingMembers,
+} from "@brrr/Core/Utils/GroupingMembers";
 import { ProvenanceLabels } from "@brrr/Core/Utils/ProvenanceLabels";
 import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
 import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
@@ -226,6 +230,7 @@ export class ApplyIdentifierRelationshipsService {
 			STAGE,
 			splitDetail,
 		);
+		recordGroupingMembers(provenance, scaledFrom, STAGE);
 
 		const toGrouping =
 			events.groupings.find(
@@ -282,6 +287,7 @@ export class ApplyIdentifierRelationshipsService {
 						STAGE,
 						record.detail,
 					);
+					recordDerivativeGroupingMembers(provenance, rebuilt, STAGE);
 					return rebuilt;
 				}),
 			),
@@ -300,6 +306,7 @@ export class ApplyIdentifierRelationshipsService {
 			STAGE,
 			record.detail,
 		);
+		recordGroupingMembers(provenance, merged, STAGE);
 		return merged;
 	}
 }
