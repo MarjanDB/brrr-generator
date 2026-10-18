@@ -1,4 +1,8 @@
+import { ReportInstrumentKind } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
+import { edavkiFieldKeys } from "~/download/graph/view/edavkiFieldKeys";
+import { headingKeys, laneLabelKeys } from "~/download/graph/view/headingKeys";
+import { nodeValueKeys, stackKindKeys } from "~/download/graph/view/nodeValueKeys";
 import {
 	detailKindKeys,
 	dropCategoryKeys,
@@ -53,5 +57,39 @@ describe("the locale files", () => {
 		for (const key of Object.values(lotMatchingKeys)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
+	});
+
+	test("every kind of node value has a key in the locale files", () => {
+		for (const key of Object.values(nodeValueKeys)) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
+	});
+
+	test("every kind of node has a noun in the locale files", () => {
+		for (const key of Object.values(stackKindKeys)) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
+	});
+
+	test("every report line field has a key in the locale files", () => {
+		for (const key of Object.values(edavkiFieldKeys)) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
+	});
+
+	test("every column heading has a key in the locale files", () => {
+		for (const key of Object.values(headingKeys)) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
+	});
+
+	test("the lane labels for trades and for dividends have keys in the locale files", () => {
+		const trades = laneLabelKeys(ReportInstrumentKind.SHARE);
+		const dividends = laneLabelKeys(ReportInstrumentKind.DIVIDEND_PAYER);
+
+		expect(englishKeys.has(trades.acquired)).toEqual(true);
+		expect(englishKeys.has(trades.sold)).toEqual(true);
+		expect(englishKeys.has(dividends.acquired)).toEqual(true);
+		expect(englishKeys.has(dividends.sold)).toEqual(true);
 	});
 });
