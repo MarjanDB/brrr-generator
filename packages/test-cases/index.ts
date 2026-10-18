@@ -5,7 +5,7 @@ const CASES_ROOT = path.join(import.meta.dirname, "cases");
 
 type ExportFile = { fileName: string; xml: string };
 type InputFile = { fileName: string; path: string; read(): ExportFile };
-type ExpectedReport = { xmlPath: string; csvPath: string };
+type ExpectedReport = { xmlPath: string; csvPath: string; provenancePath: string };
 
 // Names a case gives its files, mapped to the file names on disk.
 type FileNames = Record<string, string>;
@@ -40,6 +40,7 @@ function expectedReport(root: string, authority: AuthorityFolder, name: string):
 	return {
 		xmlPath: path.join(root, "expected", authority, `${name}.xml`),
 		csvPath: path.join(root, "expected", authority, `${name}.csv`),
+		provenancePath: path.join(root, "expected", authority, `${name}.provenance.txt`),
 	};
 }
 
@@ -60,7 +61,7 @@ function checkFolder(root: string, declared: string[]): void {
 }
 
 // A case for one year: broker exports in input/, and the reports they should produce in
-// expected/<authority>/<name>.{xml,csv}.
+// expected/<authority>/<name>.{xml,csv}, each with the provenance of its generation beside it.
 function testCase<I extends FileNames, S extends FileNames>(definition: {
 	folder: string;
 	year: number;
@@ -79,7 +80,11 @@ function testCase<I extends FileNames, S extends FileNames>(definition: {
 	checkFolder(root, [
 		...Object.values(inputs).map((input) => input.path),
 		expected.importProvenancePath,
-		...Object.values(expected.slovenia).flatMap((report) => [report.xmlPath, report.csvPath]),
+		...Object.values(expected.slovenia).flatMap((report) => [
+			report.xmlPath,
+			report.csvPath,
+			report.provenancePath,
+		]),
 	]);
 
 	return {

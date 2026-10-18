@@ -201,7 +201,8 @@ To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
   so adding a file means declaring it. Every broker export a test reads lives here, unit tests included. Exports are trimmed and
   anonymised (fake account IDs); never copy anything from `imports/`. `expected/import.provenance.txt` pins what reading the
   inputs recorded (the import's provenance graph, rendered as text), the same way: byte for byte, rewritten with `-u` only for
-  an intended change.
+  an intended change. Each expected report has a `<name>.provenance.txt` beside it, pinning that report's provenance, import
+  included, the same way.
 - **Acceptance tests** are about the tax authority: did this input reach it correctly? They sit with the authority, one file per
   form (`packages/lib/src/TaxAuthorities/Slovenia/__tests__/Acceptance/{Kdvp,Ifi,Div}.acceptance.test.ts`), with one self-contained test
   per input case, titled by what the authority must see. Each runs the case through the public `Scenario.pipeline` only, and
@@ -225,6 +226,9 @@ To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
 - Call `Scenario` and `Fixtures` directly: no local wrapper functions around them, and every buy, sale and lot built with its exact
   type. A local helper is only for wiring that isn't test data, such as a provider built with collaborators the test spies on.
   `support/Setup.ts` pins Luxon's zone and clock for every test.
+- The completeness tests (`ProvenanceCompleteness.integration.test.ts`) are the one place a test support
+  helper computes what's checked. They assert that no row goes nowhere and no line comes from nowhere, across all of a case's
+  reports.
 - **A test case or a unit test?** A case for a real-shaped export turned into whole reports: regressions from users' exports and
   anything that crosses layers. A unit test with `Scenario` for one rule in one class, where hand-built input states the rule more
   clearly than an export.

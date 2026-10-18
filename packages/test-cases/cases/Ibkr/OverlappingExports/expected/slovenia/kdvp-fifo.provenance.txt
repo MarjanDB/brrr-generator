@@ -1,0 +1,67 @@
+n1 FILE FirstDownload.xml
+n2 FILE SecondDownload.xml
+n3 ROW Trade 241234985 · EDF
+  ← n1 CONTAINS by IbkrExtractService
+n4 RECORD TradeStock 241234985
+  ← n3 PARSED by IbkrExtractService
+n5 ROW Trade 262720557 · EDF
+  ← n1 CONTAINS by IbkrExtractService
+n6 RECORD TradeStock 262720557
+  ← n5 PARSED by IbkrExtractService
+n7 ROW Lot 241234985 · EDF
+  ← n1 CONTAINS by IbkrExtractService
+n8 RECORD LotStock 241234985
+  ← n7 PARSED by IbkrExtractService
+n9 ROW Trade 241234985 · EDF
+  ← n2 CONTAINS by IbkrExtractService
+n10 RECORD TradeStock 241234985
+  ← n9 PARSED by IbkrExtractService
+  ← n4 DEDUPLICATED by IbkrExtractService
+n11 ROW Trade 262720557 · EDF
+  ← n2 CONTAINS by IbkrExtractService
+n12 RECORD TradeStock 262720557
+  ← n11 PARSED by IbkrExtractService
+  ← n6 DEDUPLICATED by IbkrExtractService
+n13 ROW Lot 241234985 · EDF
+  ← n2 CONTAINS by IbkrExtractService
+n14 RECORD LotStock 241234985
+  ← n13 PARSED by IbkrExtractService
+n15 STAGING_EVENT stock bought 241234985 · 5 EDF
+  ← n10 TRANSFORMED by IbkrTransformService
+n16 STAGING_EVENT stock sold 262720557 · -5 EDF
+  ← n12 TRANSFORMED by IbkrTransformService
+n17 STAGING_LOT lot 241234985 · 5 EDF
+  ← n8 TRANSFORMED by IbkrTransformService
+n18 STAGING_LOT lot 241234985 · 5 EDF
+  ← n14 TRANSFORMED by IbkrTransformService
+n19 STAGING_GROUPING grouping FR0010242511 · EDF
+n20 EVENT stock bought 241234985 · 5 EDF
+  ← n15 CONVERTED by StagingToCore
+n21 EVENT stock sold 262720557 · -5 EDF
+  ← n16 CONVERTED by StagingToCore
+n22 LOT lot 241234985 · 5 EDF
+  ← n17 CONVERTED by StagingToCore
+n23 LOT lot 241234985 · 5 EDF
+  ← n18 CONVERTED by StagingToCore
+n24 GROUPING grouping FR0010242511 · EDF
+  ← n19 CONVERTED by StagingFinancialGroupingProcessor
+n25 MATCHED_LOT matched lot 241234985 → 262720557 · 5
+  ← n20 MATCHED by LotMatcher
+  ← n21 MATCHED by LotMatcher
+n26 LEG leg 241234985 · 5
+  ← n25 MATCHED by LotMatcher
+n27 LEG leg 262720557 · -5
+  ← n25 MATCHED by LotMatcher
+n28 REPORT_LINE DOH_KDVP bought 2022-02-22 · 5 FR0010242511
+  ← n26 REPORTED by KdvpReportGenerator
+  ← n24 REPORTED by KdvpReportGenerator
+n29 REPORT_LINE DOH_KDVP sold 2022-03-24 · -5 FR0010242511
+  ← n27 REPORTED by KdvpReportGenerator
+  ← n24 REPORTED by KdvpReportGenerator
+
+Dropped:
+n22 NOT_USED by LotMatchingMethodFactory (lot matching is FIFO)
+n23 NOT_USED by LotMatchingMethodFactory (lot matching is FIFO)
+
+Warnings:
+(none)

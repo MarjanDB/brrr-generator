@@ -1,0 +1,135 @@
+n1 FILE SmciSplit.xml
+n2 ROW Trade 900000301 · SMCI
+  ← n1 CONTAINS by IbkrExtractService
+n3 RECORD TradeStock 900000301
+  ← n2 PARSED by IbkrExtractService
+n4 ROW Trade 900000302 · SMCI
+  ← n1 CONTAINS by IbkrExtractService
+n5 RECORD TradeStock 900000302
+  ← n4 PARSED by IbkrExtractService
+n6 ROW Trade 900000303 · SMCI
+  ← n1 CONTAINS by IbkrExtractService
+n7 RECORD TradeStock 900000303
+  ← n6 PARSED by IbkrExtractService
+n8 ROW Trade 900000304 · SMCI
+  ← n1 CONTAINS by IbkrExtractService
+n9 RECORD TradeStock 900000304
+  ← n8 PARSED by IbkrExtractService
+n10 ROW Trade 900000305 · SMCI
+  ← n1 CONTAINS by IbkrExtractService
+n11 RECORD TradeStock 900000305
+  ← n10 PARSED by IbkrExtractService
+n12 ROW CorporateAction 3131760429 · SMCI
+  ← n1 CONTAINS by IbkrExtractService
+n13 RECORD CorporateAction 3131760429
+  ← n12 PARSED by IbkrExtractService
+n14 ROW CorporateAction 3131760419 · SMCI.OLD
+  ← n1 CONTAINS by IbkrExtractService
+n15 RECORD CorporateAction 3131760419
+  ← n14 PARSED by IbkrExtractService
+n16 STAGING_EVENT stock bought 900000301 · 3 SMCI
+  ← n3 TRANSFORMED by IbkrTransformService
+n17 STAGING_EVENT stock bought 900000302 · 1 SMCI
+  ← n5 TRANSFORMED by IbkrTransformService
+n18 STAGING_EVENT stock bought 900000303 · 15 SMCI
+  ← n7 TRANSFORMED by IbkrTransformService
+n19 STAGING_EVENT stock sold 900000304 · -45 SMCI
+  ← n9 TRANSFORMED by IbkrTransformService
+n20 STAGING_EVENT stock sold 900000305 · -10 SMCI
+  ← n11 TRANSFORMED by IbkrTransformService
+n21 STAGING_GROUPING grouping US86800U1043 · SMCI
+n22 STAGING_GROUPING grouping US86800U3023 · SMCI
+n23 STAGING_CORPORATE_ACTION corporate action 141913764 · to SMCI
+  ← n13 TRANSFORMED by IbkrTransformService
+n24 STAGING_CORPORATE_ACTION corporate action 141913764 · from SMCI.OLD
+  ← n15 TRANSFORMED by IbkrTransformService
+n25 STAGING_CORPORATE_ACTION SPLIT SMCI.OLD → SMCI
+  ← n24 PAIRED by IdentifierRelationshipResolution
+  ← n23 PAIRED by IdentifierRelationshipResolution
+n26 EVENT stock bought 900000301 · 3 SMCI
+  ← n16 CONVERTED by StagingToCore
+n27 EVENT stock bought 900000302 · 1 SMCI
+  ← n17 CONVERTED by StagingToCore
+n28 GROUPING grouping US86800U1043 · SMCI
+  ← n21 CONVERTED by StagingFinancialGroupingProcessor
+n29 EVENT stock bought 900000303 · 15 SMCI
+  ← n18 CONVERTED by StagingToCore
+n30 EVENT stock sold 900000304 · -45 SMCI
+  ← n19 CONVERTED by StagingToCore
+n31 EVENT stock sold 900000305 · -10 SMCI
+  ← n20 CONVERTED by StagingToCore
+n32 GROUPING grouping US86800U3023 · SMCI
+  ← n22 CONVERTED by StagingFinancialGroupingProcessor
+n33 CORPORATE_ACTION SPLIT SMCI.OLD → SMCI (4 → 40)
+  ← n25 CONVERTED by StagingFinancialGroupingProcessor
+n34 EVENT stock bought 900000301 · 30 SMCI
+  ← n26 SPLIT by ApplyIdentifierRelationshipsService (4 → 40)
+  ← n33 SPLIT by ApplyIdentifierRelationshipsService (4 → 40)
+n35 EVENT stock bought 900000302 · 10 SMCI
+  ← n27 SPLIT by ApplyIdentifierRelationshipsService (4 → 40)
+  ← n33 SPLIT by ApplyIdentifierRelationshipsService (4 → 40)
+n36 GROUPING grouping US86800U1043 · SMCI
+  ← n28 SPLIT by ApplyIdentifierRelationshipsService (4 → 40)
+  ← n33 SPLIT by ApplyIdentifierRelationshipsService (4 → 40)
+n37 GROUPING grouping US86800U3023 · SMCI
+  ← n36 SPLIT by ApplyIdentifierRelationshipsService (4 → 40)
+  ← n32 SPLIT by ApplyIdentifierRelationshipsService (4 → 40)
+  ← n33 SPLIT by ApplyIdentifierRelationshipsService (4 → 40)
+n38 MATCHED_LOT matched lot 900000301 → 900000304 · 30
+  ← n34 MATCHED by LotMatcher
+  ← n30 MATCHED by LotMatcher
+n39 LEG leg 900000301 · 30
+  ← n38 MATCHED by LotMatcher
+n40 LEG leg 900000304 · -30
+  ← n38 MATCHED by LotMatcher
+n41 MATCHED_LOT matched lot 900000302 → 900000304 · 10
+  ← n35 MATCHED by LotMatcher
+  ← n30 MATCHED by LotMatcher
+n42 LEG leg 900000302 · 10
+  ← n41 MATCHED by LotMatcher
+n43 LEG leg 900000304 · -10
+  ← n41 MATCHED by LotMatcher
+n44 MATCHED_LOT matched lot 900000303 → 900000304 · 5
+  ← n29 MATCHED by LotMatcher
+  ← n30 MATCHED by LotMatcher
+n45 LEG leg 900000303 · 5
+  ← n44 MATCHED by LotMatcher
+n46 LEG leg 900000304 · -5
+  ← n44 MATCHED by LotMatcher
+n47 MATCHED_LOT matched lot 900000303 → 900000305 · 10
+  ← n29 MATCHED by LotMatcher
+  ← n31 MATCHED by LotMatcher
+n48 LEG leg 900000303 · 10
+  ← n47 MATCHED by LotMatcher
+n49 LEG leg 900000305 · -10
+  ← n47 MATCHED by LotMatcher
+n50 REPORT_LINE DOH_KDVP bought 2024-08-05 · 30 US86800U3023
+  ← n39 REPORTED by KdvpReportGenerator
+  ← n37 REPORTED by KdvpReportGenerator
+n51 REPORT_LINE DOH_KDVP bought 2024-09-10 · 10 US86800U3023
+  ← n42 REPORTED by KdvpReportGenerator
+  ← n37 REPORTED by KdvpReportGenerator
+n52 REPORT_LINE DOH_KDVP bought 2024-11-05 · 5 US86800U3023
+  ← n45 REPORTED by KdvpReportGenerator
+  ← n37 REPORTED by KdvpReportGenerator
+n53 REPORT_LINE DOH_KDVP bought 2024-11-05 · 10 US86800U3023
+  ← n48 REPORTED by KdvpReportGenerator
+  ← n37 REPORTED by KdvpReportGenerator
+n54 REPORT_LINE DOH_KDVP sold 2024-12-10 · -30 US86800U3023
+  ← n40 REPORTED by KdvpReportGenerator
+  ← n37 REPORTED by KdvpReportGenerator
+n55 REPORT_LINE DOH_KDVP sold 2024-12-10 · -10 US86800U3023
+  ← n43 REPORTED by KdvpReportGenerator
+  ← n37 REPORTED by KdvpReportGenerator
+n56 REPORT_LINE DOH_KDVP sold 2024-12-10 · -5 US86800U3023
+  ← n46 REPORTED by KdvpReportGenerator
+  ← n37 REPORTED by KdvpReportGenerator
+n57 REPORT_LINE DOH_KDVP sold 2024-12-20 · -10 US86800U3023
+  ← n49 REPORTED by KdvpReportGenerator
+  ← n37 REPORTED by KdvpReportGenerator
+
+Dropped:
+(none)
+
+Warnings:
+(none)
