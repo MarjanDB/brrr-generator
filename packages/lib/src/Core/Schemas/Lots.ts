@@ -1,4 +1,4 @@
-import type { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats";
+import type { ShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import type {
 	TradeEventDerivativeAcquired,
 	TradeEventDerivativeSold,
@@ -13,7 +13,7 @@ type TaxLotArgs<A, S> = {
 	quantity: number;
 	acquired: A;
 	sold: S;
-	shortLongType: GenericShortLong;
+	shortLongType: ShortLong;
 	provenance: AnyProvenanceStep[];
 };
 
@@ -24,7 +24,7 @@ export class TaxLot<A, S> {
 	public readonly quantity: number;
 	public readonly acquired: A;
 	public readonly sold: S;
-	public readonly shortLongType: GenericShortLong;
+	public readonly shortLongType: ShortLong;
 	public readonly provenance: AnyProvenanceStep[];
 
 	constructor(args: TaxLotArgs<A, S>) {

@@ -1,11 +1,7 @@
 import { Fixtures } from "@brrr/__tests__/support/Fixtures";
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
-import {
-	GenericCategory,
-	GenericDividendType,
-	GenericShortLong,
-} from "@brrr/Core/Schemas/CommonFormats";
+import { Category, GenericDividendType, ShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import {
 	CashActionId,
@@ -121,13 +117,13 @@ const testData = build.events(
 		build.grouping({
 			identifier: new FinancialIdentifier({ isin: Isin.Schema.parse("ISIN") }),
 			countryOfOrigin: null,
-			category: GenericCategory.REGULAR,
+			category: Category.REGULAR,
 			stockTrades: [stockBought, stockSold],
 			stockTaxLots: [
 				build.stockTaxLot({
 					id: TaxLotId.Schema.parse("ID1"),
 					quantity: 1,
-					shortLongType: GenericShortLong.LONG,
+					shortLongType: ShortLong.LONG,
 					acquired: stockBought,
 					sold: stockSold,
 				}),
@@ -140,7 +136,7 @@ const testData = build.events(
 						build.derivativeTaxLot({
 							id: TaxLotId.Schema.parse("ID1"),
 							quantity: 1,
-							shortLongType: GenericShortLong.LONG,
+							shortLongType: ShortLong.LONG,
 							acquired: optionBought,
 							sold: optionSold,
 						}),

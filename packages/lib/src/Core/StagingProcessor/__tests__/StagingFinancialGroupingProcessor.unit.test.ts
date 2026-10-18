@@ -1,9 +1,5 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
-import {
-	GenericCategory,
-	GenericDividendType,
-	GenericShortLong,
-} from "@brrr/Core/Schemas/CommonFormats";
+import { Category, GenericDividendType, ShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import { IdentifierChangeType } from "@brrr/Core/Schemas/IdentifierRelationship";
 import {
 	CashActionId,
@@ -120,7 +116,7 @@ const simpleStagingStockLot = staging.taxLot({
 	id: TaxLotId.Schema.parse("Lot"),
 	identifier: ident,
 	quantity: 1,
-	shortLongType: GenericShortLong.LONG,
+	shortLongType: ShortLong.LONG,
 	acquired: { id: TradeEventId.Schema.parse("StockBought"), date: null },
 	sold: { id: null, date: "2023-01-02" },
 });
@@ -155,7 +151,7 @@ const simpleStagingDerivativeLot = staging.taxLot({
 	id: TaxLotId.Schema.parse("Lot"),
 	identifier: ident,
 	quantity: 1,
-	shortLongType: GenericShortLong.LONG,
+	shortLongType: ShortLong.LONG,
 	acquired: { id: TradeEventId.Schema.parse("DerivativeBought"), date: null },
 	sold: { id: null, date: "2023-01-02" },
 });
@@ -166,7 +162,7 @@ test("simple stock lot matching", () => {
 		staging.grouping({
 			identifier: ident,
 			countryOfOrigin: null,
-			category: GenericCategory.REGULAR,
+			category: Category.REGULAR,
 			stockTrades: [simpleStagingStockBuy, simpleStagingStockSold],
 			stockTaxLots: [simpleStagingStockLot],
 			derivativeTrades: [],
@@ -188,7 +184,7 @@ test("partial stock lot matching throws", () => {
 		staging.grouping({
 			identifier: ident,
 			countryOfOrigin: null,
-			category: GenericCategory.REGULAR,
+			category: Category.REGULAR,
 			stockTrades: [simpleStagingStockBuy],
 			stockTaxLots: [simpleStagingStockLot],
 			derivativeTrades: [],
@@ -205,7 +201,7 @@ test("throws when a stock lot has no sold date", () => {
 		id: TaxLotId.Schema.parse("Lot"),
 		identifier: ident,
 		quantity: 1,
-		shortLongType: GenericShortLong.LONG,
+		shortLongType: ShortLong.LONG,
 		acquired: { id: TradeEventId.Schema.parse("StockBought"), date: null },
 		sold: { id: null, date: null },
 	});
@@ -213,7 +209,7 @@ test("throws when a stock lot has no sold date", () => {
 		staging.grouping({
 			identifier: ident,
 			countryOfOrigin: null,
-			category: GenericCategory.REGULAR,
+			category: Category.REGULAR,
 			stockTrades: [simpleStagingStockBuy, simpleStagingStockSold],
 			stockTaxLots: [lotWithoutSoldDate],
 			derivativeTrades: [],
@@ -233,7 +229,7 @@ test("simple derivative lot matching", () => {
 		staging.grouping({
 			identifier: ident,
 			countryOfOrigin: null,
-			category: GenericCategory.REGULAR,
+			category: Category.REGULAR,
 			stockTrades: [],
 			stockTaxLots: [],
 			derivativeTrades: [simpleStagingDerivativeBuy, simpleStagingDerivativeSold],
@@ -264,7 +260,7 @@ test("dividend with withholding tax", () => {
 		staging.grouping({
 			identifier: ident,
 			countryOfOrigin: null,
-			category: GenericCategory.REGULAR,
+			category: Category.REGULAR,
 			stockTrades: [],
 			stockTaxLots: [],
 			derivativeTrades: [],
@@ -288,7 +284,7 @@ test("payment in lieu of dividend with withholding tax", () => {
 		staging.grouping({
 			identifier: ident,
 			countryOfOrigin: null,
-			category: GenericCategory.REGULAR,
+			category: Category.REGULAR,
 			stockTrades: [],
 			stockTaxLots: [],
 			derivativeTrades: [],
@@ -339,7 +335,7 @@ test("processStagingFinancialEvents returns FinancialEvents with converted relat
 				staging.grouping({
 					identifier: stagingIdA,
 					countryOfOrigin: null,
-					category: GenericCategory.REGULAR,
+					category: Category.REGULAR,
 					stockTrades: [],
 					stockTaxLots: [],
 					derivativeTrades: [],

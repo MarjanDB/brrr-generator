@@ -1,5 +1,5 @@
 import type {
-	GenericAssetClass,
+	AssetClass,
 	GenericDerivativeReportItemGainType,
 	GenericDividendType,
 	GenericMonetaryExchangeInformation,
@@ -16,7 +16,7 @@ import type { ValidDateTime } from "@brrr/Utils/DateTime";
 
 type TradeEventArgs = {
 	id: TradeEventId;
-	assetClass: GenericAssetClass;
+	assetClass: AssetClass;
 	date: ValidDateTime;
 	multiplier: number;
 	exchangedMoney: GenericMonetaryExchangeInformation;
@@ -31,7 +31,7 @@ type CashTransactionArgs = TradeEventArgs & {
 
 export abstract class TradeEventBase {
 	public readonly id: TradeEventId;
-	public readonly assetClass: GenericAssetClass;
+	public readonly assetClass: AssetClass;
 	public readonly date: ValidDateTime;
 	public readonly multiplier: number;
 	public readonly exchangedMoney: GenericMonetaryExchangeInformation;

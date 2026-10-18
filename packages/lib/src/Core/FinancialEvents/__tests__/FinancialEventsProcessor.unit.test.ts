@@ -1,6 +1,6 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ProvidedLotMatchingMethod } from "@brrr/Core/LotMatching/ProvidedLotMatchingMethod";
-import { GenericCategory, GenericShortLong } from "@brrr/Core/Schemas/CommonFormats";
+import { Category, ShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import {
 	CountryCode,
@@ -44,13 +44,13 @@ const stockSold = build.stockSold({
 const grouping = build.grouping({
 	identifier,
 	countryOfOrigin: CountryCode.Schema.parse("US"),
-	category: GenericCategory.REGULAR,
+	category: Category.REGULAR,
 	stockTrades: [stockBought, stockSold],
 	stockTaxLots: [
 		build.stockTaxLot({
 			id: TaxLotId.Schema.parse("Lot"),
 			quantity: 1,
-			shortLongType: GenericShortLong.LONG,
+			shortLongType: ShortLong.LONG,
 			acquired: stockBought,
 			sold: stockSold,
 		}),
@@ -89,7 +89,7 @@ test("no stock trades matching when no lots", () => {
 	const groupingNoLots = build.grouping({
 		identifier,
 		countryOfOrigin: CountryCode.Schema.parse("US"),
-		category: GenericCategory.REGULAR,
+		category: Category.REGULAR,
 		stockTrades: [stockBought, stockSold],
 		stockTaxLots: [],
 		derivativeGroupings: [],

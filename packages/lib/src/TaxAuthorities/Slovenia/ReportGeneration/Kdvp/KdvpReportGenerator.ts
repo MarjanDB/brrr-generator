@@ -1,5 +1,5 @@
 import type { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
-import { GenericCategory, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats";
+import { Category, GenericTradeReportItemGainType } from "@brrr/Core/Schemas/CommonFormats";
 import { TradeEventStockAcquired, type TradeEventStockSold } from "@brrr/Core/Schemas/Events";
 import type { FinancialGrouping } from "@brrr/Core/Schemas/Grouping";
 import type {
@@ -127,7 +127,7 @@ export class KdvpReportGenerator {
 				return convertStockSell(trade, quantity, commission);
 			});
 
-			const isTrustFund = isinGrouping.underlyingCategory === GenericCategory.TRUST_FUND;
+			const isTrustFund = isinGrouping.underlyingCategory === Category.TRUST_FUND;
 
 			const reportItem = new EDavkiTradeReportSecurityLineEvent({
 				isin: isin === null ? EDavkiIsin.Schema.parse("") : EDavkiIsin.FromIsin(isin),

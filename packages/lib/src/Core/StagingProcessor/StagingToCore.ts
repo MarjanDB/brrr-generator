@@ -1,4 +1,4 @@
-import { GenericShortLong } from "@brrr/Core/Schemas/CommonFormats";
+import { ShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import {
 	type TradeEvent,
 	type TradeEventCashTransaction,
@@ -108,7 +108,7 @@ function toCoreLot<A extends TradeEvent, S extends TradeEvent>(
 		quantity: input.quantity,
 		acquired: trades.acquired,
 		sold: trades.sold,
-		shortLongType: GenericShortLong.LONG,
+		shortLongType: ShortLong.LONG,
 		provenance: [],
 	});
 }

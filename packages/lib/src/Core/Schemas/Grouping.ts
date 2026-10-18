@@ -1,4 +1,4 @@
-import type { GenericCategory } from "@brrr/Core/Schemas/CommonFormats";
+import type { Category } from "@brrr/Core/Schemas/CommonFormats";
 import type {
 	TradeEventCashTransaction,
 	TradeEventDerivative,
@@ -33,7 +33,7 @@ export class DerivativeGrouping {
 type FinancialGroupingArgs = {
 	financialIdentifier: FinancialIdentifier;
 	countryOfOrigin: CountryCode | null;
-	underlyingCategory: GenericCategory;
+	underlyingCategory: Category;
 	stockTrades: TradeEventStock[];
 	stockTaxLots: TaxLotStock[];
 	derivativeGroupings: DerivativeGrouping[];
@@ -44,7 +44,7 @@ type FinancialGroupingArgs = {
 export class FinancialGrouping {
 	public readonly financialIdentifier: FinancialIdentifier;
 	public readonly countryOfOrigin: CountryCode | null;
-	public readonly underlyingCategory: GenericCategory;
+	public readonly underlyingCategory: Category;
 	public readonly stockTrades: TradeEventStock[];
 	public readonly stockTaxLots: TaxLotStock[];
 	public readonly derivativeGroupings: DerivativeGrouping[];

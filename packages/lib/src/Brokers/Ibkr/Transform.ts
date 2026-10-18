@@ -9,13 +9,13 @@ import {
 } from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
 import type { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
 import {
-	GenericAssetClass,
-	GenericCategory,
+	AssetClass,
+	Category,
 	GenericDerivativeReportItemGainType,
 	GenericDividendType,
 	GenericMonetaryExchangeInformation,
-	GenericShortLong,
 	GenericTradeReportItemGainType,
+	ShortLong,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
 	CashActionId,
@@ -121,7 +121,7 @@ export class IbkrTransformService {
 				new StagingFinancialGrouping({
 					financialIdentifier: identifier,
 					countryOfOrigin: null,
-					underlyingCategory: GenericCategory.REGULAR,
+					underlyingCategory: Category.REGULAR,
 					stockTrades: stocksMap.get(key)?.items ?? [],
 					stockTaxLots: stockLotsMap.get(key)?.items ?? [],
 					derivativeTrades: derivativesMap.get(key)?.items ?? [],
@@ -171,7 +171,7 @@ export class IbkrTransformService {
 			const base = {
 				id: TradeEventId.Schema.parse(transaction.transactionID),
 				financialIdentifier,
-				assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+				assetClass: AssetClass.CASH_AND_CASH_EQUIVALENTS,
 				date: transaction.dateTime,
 				multiplier: 1,
 				exchangedMoney,
@@ -225,7 +225,7 @@ export class IbkrTransformService {
 			const base = {
 				id: TradeEventId.Schema.parse(trade.transactionID),
 				financialIdentifier,
-				assetClass: GenericAssetClass.STOCK,
+				assetClass: AssetClass.STOCK,
 				date: trade.dateTime,
 				multiplier: 1,
 				exchangedMoney,
@@ -256,7 +256,7 @@ export class IbkrTransformService {
 						dateTime: null,
 					}),
 					sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
-					shortLongType: GenericShortLong.LONG,
+					shortLongType: ShortLong.LONG,
 				}),
 		);
 	}
@@ -283,7 +283,7 @@ export class IbkrTransformService {
 			const base = {
 				id: TradeEventId.Schema.parse(trade.transactionID),
 				financialIdentifier,
-				assetClass: GenericAssetClass.OPTION,
+				assetClass: AssetClass.OPTION,
 				multiplier: trade.multiplier,
 				date: trade.dateTime,
 				exchangedMoney,
@@ -315,7 +315,7 @@ export class IbkrTransformService {
 						dateTime: null,
 					}),
 					sold: new StagingTaxLotMatchingDetails({ id: null, dateTime: lot.dateTime }),
-					shortLongType: GenericShortLong.LONG,
+					shortLongType: ShortLong.LONG,
 				}),
 		);
 	}

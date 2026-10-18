@@ -1,5 +1,5 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
-import { GenericCategory, GenericDividendType } from "@brrr/Core/Schemas/CommonFormats";
+import { Category, GenericDividendType } from "@brrr/Core/Schemas/CommonFormats";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import {
 	CashActionId,
@@ -74,7 +74,7 @@ const testData = build.events(
 		build.grouping({
 			identifier: new FinancialIdentifier({ isin: Isin.Schema.parse("ISIN") }),
 			countryOfOrigin: null,
-			category: GenericCategory.REGULAR,
+			category: Category.REGULAR,
 			stockTrades: [],
 			stockTaxLots: [],
 			derivativeGroupings: [],

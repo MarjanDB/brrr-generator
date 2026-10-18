@@ -1,11 +1,11 @@
 import { type CashFields, type TradeFields, Values } from "@brrr/__tests__/support/Values";
 import {
-	GenericAssetClass,
-	type GenericCategory,
+	AssetClass,
+	type Category,
 	GenericDerivativeReportItemGainType,
 	type GenericDividendType,
-	type GenericShortLong,
 	GenericTradeReportItemGainType,
+	type ShortLong,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
 	type StagingTradeEventCashTransaction,
@@ -36,7 +36,7 @@ export const StagingBuilders = {
 		return new StagingTradeEventStockAcquired({
 			id: fields.id,
 			financialIdentifier: fields.identifier,
-			assetClass: GenericAssetClass.STOCK,
+			assetClass: AssetClass.STOCK,
 			date: Values.date(fields.date),
 			multiplier: 1,
 			exchangedMoney: Values.tradeMoney(fields),
@@ -48,7 +48,7 @@ export const StagingBuilders = {
 		return new StagingTradeEventStockSold({
 			id: fields.id,
 			financialIdentifier: fields.identifier,
-			assetClass: GenericAssetClass.STOCK,
+			assetClass: AssetClass.STOCK,
 			date: Values.date(fields.date),
 			multiplier: 1,
 			exchangedMoney: Values.tradeMoney(fields),
@@ -61,7 +61,7 @@ export const StagingBuilders = {
 		return new StagingTradeEventDerivativeAcquired({
 			id: fields.id,
 			financialIdentifier: fields.identifier,
-			assetClass: GenericAssetClass.OPTION,
+			assetClass: AssetClass.OPTION,
 			date: Values.date(fields.date),
 			multiplier: fields.multiplier,
 			exchangedMoney: Values.tradeMoney(fields),
@@ -75,7 +75,7 @@ export const StagingBuilders = {
 		return new StagingTradeEventDerivativeSold({
 			id: fields.id,
 			financialIdentifier: fields.identifier,
-			assetClass: GenericAssetClass.OPTION,
+			assetClass: AssetClass.OPTION,
 			date: Values.date(fields.date),
 			multiplier: fields.multiplier,
 			exchangedMoney: Values.tradeMoney(fields),
@@ -118,7 +118,7 @@ export const StagingBuilders = {
 		fields: {
 			id: StagingTaxLot["id"];
 			quantity: number;
-			shortLongType: GenericShortLong;
+			shortLongType: ShortLong;
 			acquired: LotSide;
 			sold: LotSide;
 		} & WithIdentifier,
@@ -136,7 +136,7 @@ export const StagingBuilders = {
 	grouping(
 		fields: {
 			countryOfOrigin: StagingFinancialGrouping["countryOfOrigin"];
-			category: GenericCategory;
+			category: Category;
 			stockTrades: StagingTradeEventStock[];
 			stockTaxLots: StagingTaxLot[];
 			derivativeTrades: StagingTradeEventDerivative[];
@@ -162,7 +162,7 @@ function cashEvent(fields: CashFields & WithIdentifier) {
 	return {
 		id: fields.id,
 		financialIdentifier: fields.identifier,
-		assetClass: GenericAssetClass.CASH_AND_CASH_EQUIVALENTS,
+		assetClass: AssetClass.CASH_AND_CASH_EQUIVALENTS,
 		date: Values.date(fields.date),
 		multiplier: 1,
 		exchangedMoney: Values.cashMoney(fields),

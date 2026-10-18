@@ -1,5 +1,5 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
-import { GenericCategory, GenericDividendType } from "@brrr/Core/Schemas/CommonFormats";
+import { Category, GenericDividendType } from "@brrr/Core/Schemas/CommonFormats";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import {
 	CashActionId,
@@ -28,7 +28,7 @@ test("dividends add up per action, then per day, and are rounded at the end", as
 		build.grouping({
 			identifier,
 			countryOfOrigin: null,
-			category: GenericCategory.REGULAR,
+			category: Category.REGULAR,
 			stockTrades: [],
 			stockTaxLots: [],
 			derivativeGroupings: [],
@@ -153,7 +153,7 @@ test("a withholding without a dividend of the same action is rejected", async ()
 			build.grouping({
 				identifier,
 				countryOfOrigin: null,
-				category: GenericCategory.REGULAR,
+				category: Category.REGULAR,
 				stockTrades: [],
 				stockTaxLots: [],
 				derivativeGroupings: [],
