@@ -1,7 +1,7 @@
 // Brokers
-export { BrokerId } from "@brrr/Brokers/BrokerIdentifiers";
 export { type BrokerFileDetection, BrokerRegistry } from "@brrr/Brokers/BrokerRegistry";
 export type { IBrokerProvider } from "@brrr/Brokers/Interfaces/IBrokerProvider";
+export { BrokerId } from "@brrr/Brokers/Models/BrokerIdentifiers";
 
 // Container
 export { createContainer } from "@brrr/Container";

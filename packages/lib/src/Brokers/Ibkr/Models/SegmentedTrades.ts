@@ -1,11 +1,9 @@
-import type {
-	CorporateAction,
-	LotDerivative,
-	LotStock,
-	TradeDerivative,
-	TradeStock,
-	TransactionCash,
-} from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
+import type { CorporateAction } from "@brrr/Brokers/Ibkr/Schemas/CorporateAction";
+import type { LotDerivative } from "@brrr/Brokers/Ibkr/Schemas/LotDerivative";
+import type { LotStock } from "@brrr/Brokers/Ibkr/Schemas/LotStock";
+import type { TradeDerivative } from "@brrr/Brokers/Ibkr/Schemas/TradeDerivative";
+import type { TradeStock } from "@brrr/Brokers/Ibkr/Schemas/TradeStock";
+import type { TransactionCash } from "@brrr/Brokers/Ibkr/Schemas/TransactionCash";
 
 export class SegmentedTrades {
 	public readonly cashTransactions: TransactionCash[];

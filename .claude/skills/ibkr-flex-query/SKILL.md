@@ -1,6 +1,6 @@
 ---
 name: ibkr-flex-query
-description: Interactive Brokers Flex Query XML and how lib parses and transforms it (IbkrSchemas, SegmentedTrades, IbkrExtractService, IbkrTransformService). Use when changing IBKR parsing or transformation, supporting a new IBKR row type, field or corporate action, debugging a Flex Query that fails to load, or adding IBKR test fixtures.
+description: Interactive Brokers Flex Query XML and how lib parses and transforms it (the row schemas, SegmentedTrades, IbkrExtractService, IbkrTransformService). Use when changing IBKR parsing or transformation, supporting a new IBKR row type, field or corporate action, debugging a Flex Query that fails to load, or adding IBKR test fixtures.
 ---
 
 # IBKR Flex Query
@@ -12,11 +12,14 @@ skill.
 
 | File | Role |
 | --- | --- |
-| `Schemas/IbkrSchemas.ts` | Enums for IBKR codes (`IbkrAssetClass`, `IbkrBuyOrSell`, `IbkrCashTransactionType`, `IbkrCodes`, …) and a zod schema per row type: `TradeStock`, `LotStock`, `TradeDerivative`, `LotDerivative`, `CorporateAction`, `TransactionCash`. Also `FlexQueryResponseSchema` for the document. |
+| `Schemas/<RowType>.ts` | A zod schema per row type, each in its own file: `TradeStock`, `LotStock`, `TradeDerivative`, `LotDerivative`, `CorporateAction`, `TransactionCash`, with the aliases for its XML attribute names. |
+| `Schemas/FlexStatement.ts`, `Schemas/FlexQueryResponse.ts` | The document: `FlexQueryResponseSchema` and the `FlexStatement` sections it holds. |
+| `Schemas/Enums/` | An enum per IBKR code list (`IbkrAssetClass`, `IbkrBuyOrSell`, `IbkrCashTransactionType`, `IbkrCodes`, …). |
+| `Schemas/FieldParsers.ts` | The field parsers the row schemas share (dates, empty-as-null strings and numbers, `notes` codes, `remap`, `toArray`). |
 | `Schemas/IbkrIdentifiers.ts` | IBKR's identifier types (`IbkrTransactionId`, `IbkrIsin`, `IbkrSymbol`, …) for the row fields the extract and transform read; the row schemas use their `Schema`s. |
-| `Schemas/SegmentedTrades.ts` | The broker container: `cashTransactions`, `corporateActions`, `stockTrades`, `stockLots`, `derivativeTrades`, `derivativeLots`. |
-| `Extract.ts` | `IbkrExtractService`: `extractFromXML(xml)` → `SegmentedTrades`; `mergeTrades(list)` combines several files. |
-| `Transform.ts` | `IbkrTransformService.convertSegmentedTradesToStagingEvents` → `StagingFinancialEvents`. |
+| `Models/SegmentedTrades.ts` | The broker container: `cashTransactions`, `corporateActions`, `stockTrades`, `stockLots`, `derivativeTrades`, `derivativeLots`. |
+| `Services/IbkrExtractService.ts` | `extractFromXML(xml)` → `SegmentedTrades`; `mergeTrades(list)` combines several files. |
+| `Services/IbkrTransformService.ts` | `convertSegmentedTradesToStagingEvents` → `StagingFinancialEvents`. |
 | `IbkrBrokerExportProvider.ts` | `IBrokerProvider` with `brokerId = BrokerId.IBKR`. A file counts as IBKR when `extractFromXML` doesn't throw. |
 | `IbkrModule.ts` | Inversify bindings. |
 
@@ -71,7 +74,7 @@ Lots have no unique ID and are concatenated, so overlapping exports duplicate lo
   split, which must reach KDVP scaled ten times). Each case is self-contained: a scenario that combines several exports is a case of
   its own, with its own copies. A case is declared once in the registry in `packages/test-cases/index.ts` (year, named inputs, named
   expected reports) and read through typed properties such as `TestKit.ibkr.stockTrade.inputs.simpleStockTrade.read()`.
-- `__tests__/IbkrExtract.unit.test.ts` parses those exports. `__tests__/IbkrTransform.unit.test.ts` transforms raw rows built with
+- `Services/__tests__/IbkrExtractService.unit.test.ts` parses those exports. `Services/__tests__/IbkrTransformService.unit.test.ts` transforms raw rows built with
   the named fixtures in `Fixtures.ibkr` (`stockTradeBuy`, `stockLotClosed`, `dividend`, `smciSplitOldRow`; variants spread one and
   list what they change), handed to the transform with `Scenario.build.ibkr.segmentedTrades`, which takes all six row lists.
 - `packages/lib/src/TaxAuthorities/Slovenia/__tests__/Acceptance/` runs each case end to end into the Slovenian forms and compares them with the case's

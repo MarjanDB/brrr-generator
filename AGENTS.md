@@ -76,8 +76,8 @@ file's folder says what it is:
 - `Utils/` — helpers that hold no state.
 
 `Models/` and `Services/` split into a folder per concern where an area has several (`Core/Models/Events/Stock/`,
-`Core/Services/LotMatching/`). Core follows this layout; Brokers, TaxAuthorities and InfoProviders are being moved to it one area at
-a time, so don't move their files in passing.
+`Core/Services/LotMatching/`). Core and Brokers follow this layout; TaxAuthorities and InfoProviders are being moved to it one area
+at a time, so don't move their files in passing.
 
 The **pipeline-and-structure** skill has the details and the steps for adding a broker, tax authority or report type.
 
@@ -89,20 +89,22 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
 - Imports go at the top of the file. Inside `packages/lib/` import through the `@brrr/*` alias (`@brrr/Core/Models/Events/TradeEvent`), not relative paths.
 - One model per file, named after it: each class, enum and union type gets its own file, in a folder per concern
   (`Core/Models/Events/Stock/TradeEventStockAcquired.ts`, `Core/Models/Lots/TaxLot.ts`), and `Core/Models/Staging/` mirrors those
-  folders for the staging twins. A class's `…Args` type stays in its file. There are no `index.ts` barrels: import each model from its own file.
+  folders for the staging twins. A class's `…Args` type stays in its file, and so does a type that only describes what one of its
+  methods takes or returns (`BrokerFileDetection` in `BrokerRegistry.ts`); for an interface's methods, that's the interface's file.
+  Models are what several files share. There are no `index.ts` barrels: import each model from its own file.
 - Domain models are classes with `public readonly` fields and one args-object constructor (see `Core/Models/`). Don't mutate them, and
   don't copy one just to change a field: build each value once with its final contents. Where a value really changes (a split rescaling
   a trade), one named function builds the new object through the class's constructor and appends a `provenance` step, so the trace back
   to the original survives (see `scaleTradeForSplit` in `Core/Services/IdentifierRelationships/ApplyIdentifierRelationshipsService.ts`).
 - Data from outside (XML rows, config files, env) is parsed with zod 4 (`import { z } from "zod/v4"`): a const holding `{ Schema }` and a
-  same-named type `z.output<typeof X.Schema>` (see `Brokers/Ibkr/Schemas/IbkrSchemas.ts`).
+  same-named type `z.output<typeof X.Schema>` (see `Brokers/Ibkr/Schemas/TradeStock.ts`).
 - `type` for plain data shapes. `interface` only for contracts a class implements, named with an `I` prefix and in a file of the
   same name (`IBrokerProvider`, `ITaxAuthorityProvider`, `IInfoProvider`, `ILotMatchingMethod`).
 - `enum` for fixed sets of values, not string-literal unions or `as const` objects.
 - Identifiers (ISINs, transaction IDs, report type IDs, …) get a nominal type from `@brrr/Utils/NominalType`, never a bare `string`.
   Each domain owns its own, even for the same concept: IBKR's in `Brokers/Ibkr/Schemas/IbkrIdentifiers.ts`, core's (staging and
   the lookups included) in `Core/Models/Identifiers.ts`, eDavki's in `TaxAuthorities/Slovenia/Schemas/EDavkiIdentifiers.ts`, the
-  registries' in `TaxAuthorities/TaxAuthorityIdentifiers.ts` and `Brokers/BrokerIdentifiers.ts` (enums where the set is fixed).
+  registries' in `TaxAuthorities/TaxAuthorityIdentifiers.ts` and `Brokers/Models/BrokerIdentifiers.ts` (enums where the set is fixed).
   A value changes type only where it crosses into the next domain. Declare the type, then a same-named const whose `Schema` holds
   the one cast; the brand names the domain:
 
@@ -114,7 +116,7 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
   ```
 
   A type built from another domain's adds a `From<X>` helper that goes through its `Schema` (`EDavkiIsin.FromIsin`), where its
-  domain may depend on the other. Core can't know brokers, so `Transform.ts` turns IBKR values into core ones with the core type's
+  domain may depend on the other. Core can't know brokers, so `IbkrTransformService` turns IBKR values into core ones with the core type's
   `Schema`. Tests build ids the same way: `Isin.Schema.parse("US0378331005")`.
   Lib's exports never make a caller (the site, the CLI) create one: `index.ts` exports enums but no nominal types, and the
   public entry points (`TaxAuthorityRegistry.generateExports`, `PredefinedInfoProvider`, `NodeInfoProvider`) take plain strings

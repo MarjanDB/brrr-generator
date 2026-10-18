@@ -1,15 +1,13 @@
+import { SegmentedTrades } from "@brrr/Brokers/Ibkr/Models/SegmentedTrades";
+import { CorporateAction } from "@brrr/Brokers/Ibkr/Schemas/CorporateAction";
+import { IbkrAssetClass } from "@brrr/Brokers/Ibkr/Schemas/Enums/IbkrAssetClass";
+import { FlexQueryResponseSchema } from "@brrr/Brokers/Ibkr/Schemas/FlexQueryResponse";
 import type { IbkrTransactionId } from "@brrr/Brokers/Ibkr/Schemas/IbkrIdentifiers";
-import {
-	CorporateAction,
-	FlexQueryResponseSchema,
-	IbkrAssetClass,
-	LotDerivative,
-	LotStock,
-	TradeDerivative,
-	TradeStock,
-	TransactionCash,
-} from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
-import { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
+import { LotDerivative } from "@brrr/Brokers/Ibkr/Schemas/LotDerivative";
+import { LotStock } from "@brrr/Brokers/Ibkr/Schemas/LotStock";
+import { TradeDerivative } from "@brrr/Brokers/Ibkr/Schemas/TradeDerivative";
+import { TradeStock } from "@brrr/Brokers/Ibkr/Schemas/TradeStock";
+import { TransactionCash } from "@brrr/Brokers/Ibkr/Schemas/TransactionCash";
 import { XMLParser } from "fast-xml-parser";
 
 export class IbkrExtractService {

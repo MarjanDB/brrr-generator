@@ -1,5 +1,5 @@
-import type { BrokerId } from "@brrr/Brokers/BrokerIdentifiers";
 import type { IBrokerProvider } from "@brrr/Brokers/Interfaces/IBrokerProvider";
+import type { BrokerId } from "@brrr/Brokers/Models/BrokerIdentifiers";
 import { StagingFinancialEvents } from "@brrr/Core/Models/Staging/StagingFinancialEvents";
 
 export type BrokerFileDetection = {
