@@ -99,7 +99,7 @@ async function onSubmit(valid: boolean) {
 		});
 
 		const filenames = FILENAMES[reportType.value] ?? { xml: "export.xml", csv: "export.csv" };
-		emit("generated", { xml, csv, xmlFilename: filenames.xml, csvFilename: filenames.csv, authorityId: TaxAuthorityId.SLOVENIA, reportTypeId: reportType.value, provenance, imported: props.imported });
+		emit("generated", { xml, csv, xmlFilename: filenames.xml, csvFilename: filenames.csv, authorityId: TaxAuthorityId.SLOVENIA, reportTypeId: reportType.value, year: selectedYear, lotMatchingMethod: reportConfig.lotMatchingMethod, provenance, imported: props.imported });
 	} catch (e) {
 		error.value = e instanceof Error ? e.message : String(e);
 	} finally {
