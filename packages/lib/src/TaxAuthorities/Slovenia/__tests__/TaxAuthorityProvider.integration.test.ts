@@ -1,7 +1,7 @@
 import { Fixtures } from "@brrr/__tests__/support/Fixtures";
 import { Scenario } from "@brrr/__tests__/support/Scenario";
 import { ApplyIdentifierRelationshipsService } from "@brrr/Core/FinancialEvents/ApplyIdentifierRelationshipsService";
-import { Category, GenericDividendType, ShortLong } from "@brrr/Core/Schemas/CommonFormats";
+import { Category, DividendType, ShortLong } from "@brrr/Core/Schemas/CommonFormats";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import {
 	CashActionId,
@@ -92,7 +92,7 @@ const dividend = build.dividend({
 	actionId: CashActionId.Schema.parse("DivAction"),
 	transactionId: CashTransactionId.Schema.parse("TranId1"),
 	listingExchange: ListingExchange.Schema.parse("EXH"),
-	dividendType: GenericDividendType.ORDINARY,
+	dividendType: DividendType.ORDINARY,
 	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,

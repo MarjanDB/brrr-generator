@@ -18,26 +18,10 @@ export enum ShortLong {
 	LONG = "LONG",
 }
 
-export enum GenericTradeReportItemGainType {
-	CAPITAL_INVESTMENT = "CAPITAL_INVESTMENT",
+export enum AcquisitionMethod {
 	BOUGHT = "BOUGHT",
-	CAPITAL_RAISE = "CAPITAL_RAISE",
-	CAPITAL_ASSET = "CAPITAL_ASSET",
-	CAPITALIZATION_CHANGE = "CAPITALIZATION_CHANGE",
-	INHERITANCE = "INHERITANCE",
 	GIFT = "GIFT",
-	OTHER = "OTHER",
-	RIGHT_TO_NEWLY_ISSUED_STOCK = "RIGHT_TO_NEWLY_ISSUED_STOCK",
-}
-
-export enum GenericDerivativeReportItemGainType {
-	CAPITAL_INVESTMENT = "CAPITAL_INVESTMENT",
-	BOUGHT = "BOUGHT",
-	CAPITAL_RAISE = "CAPITAL_RAISE",
-	CAPITAL_ASSET = "CAPITAL_ASSET",
-	CAPITALIZATION_CHANGE = "CAPITALIZATION_CHANGE",
 	INHERITANCE = "INHERITANCE",
-	GIFT = "GIFT",
 	OTHER = "OTHER",
 }
 
@@ -76,13 +60,12 @@ export class ExchangedMoney {
 	}
 }
 
-// https://www.racunovodstvo.net/zakonodaja/zdoh/90-clen
-export enum GenericDividendType {
-	UNKNOWN = "",
-	ORDINARY = "1",
-	CONSTRUCTIVE = "2",
-	LIQUIDATING = "3",
-	OTHER = "4",
-	OTHER_2 = "5",
-	BONUS = "6",
+// ISO 15022/20022 corporate action event codes (CAEV), with the dividend type qualifier where it
+// tells them apart.
+export enum DividendType {
+	UNKNOWN = "UNKNOWN",
+	ORDINARY = "ORDINARY", // DVCA, DIVI//REGR
+	BONUS = "BONUS", // DVCA, DIVI//SPEC
+	LIQUIDATING = "LIQUIDATING", // LIQU
+	OTHER = "OTHER",
 }

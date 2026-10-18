@@ -1,9 +1,8 @@
 import type {
+	AcquisitionMethod,
 	AssetClass,
+	DividendType,
 	ExchangedMoney,
-	GenericDerivativeReportItemGainType,
-	GenericDividendType,
-	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
 import type {
 	CashActionId,
@@ -60,14 +59,14 @@ abstract class CashTransactionBase extends TradeEventBase {
 	}
 }
 
-type StockAcquiredArgs = TradeEventArgs & { acquiredReason: GenericTradeReportItemGainType };
+type StockAcquiredArgs = TradeEventArgs & { acquisitionMethod: AcquisitionMethod };
 
 export class TradeEventStockAcquired extends TradeEventBase {
-	public readonly acquiredReason: GenericTradeReportItemGainType;
+	public readonly acquisitionMethod: AcquisitionMethod;
 
 	constructor(args: StockAcquiredArgs) {
 		super(args);
-		this.acquiredReason = args.acquiredReason;
+		this.acquisitionMethod = args.acquisitionMethod;
 	}
 }
 
@@ -76,15 +75,15 @@ export class TradeEventStockSold extends TradeEventBase {}
 export type TradeEventStock = TradeEventStockAcquired | TradeEventStockSold;
 
 type DerivativeAcquiredArgs = TradeEventArgs & {
-	acquiredReason: GenericDerivativeReportItemGainType;
+	acquisitionMethod: AcquisitionMethod;
 };
 
 export class TradeEventDerivativeAcquired extends TradeEventBase {
-	public readonly acquiredReason: GenericDerivativeReportItemGainType;
+	public readonly acquisitionMethod: AcquisitionMethod;
 
 	constructor(args: DerivativeAcquiredArgs) {
 		super(args);
-		this.acquiredReason = args.acquiredReason;
+		this.acquisitionMethod = args.acquisitionMethod;
 	}
 }
 
@@ -92,10 +91,10 @@ export class TradeEventDerivativeSold extends TradeEventBase {}
 
 export type TradeEventDerivative = TradeEventDerivativeAcquired | TradeEventDerivativeSold;
 
-type DividendArgs = CashTransactionArgs & { dividendType: GenericDividendType };
+type DividendArgs = CashTransactionArgs & { dividendType: DividendType };
 
 export class TradeEventCashTransactionDividend extends CashTransactionBase {
-	public readonly dividendType: GenericDividendType;
+	public readonly dividendType: DividendType;
 
 	constructor(args: DividendArgs) {
 		super(args);
@@ -104,7 +103,7 @@ export class TradeEventCashTransactionDividend extends CashTransactionBase {
 }
 
 export class TradeEventCashTransactionPaymentInLieuOfDividend extends CashTransactionBase {
-	public readonly dividendType: GenericDividendType;
+	public readonly dividendType: DividendType;
 
 	constructor(args: DividendArgs) {
 		super(args);

@@ -5,11 +5,10 @@ import { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
 import { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
 import { LotMatcher } from "@brrr/Core/LotMatching/LotMatcher";
 import {
+	AcquisitionMethod,
 	AssetClass,
 	type Category,
-	GenericDerivativeReportItemGainType,
-	type GenericDividendType,
-	GenericTradeReportItemGainType,
+	type DividendType,
 	type ShortLong,
 } from "@brrr/Core/Schemas/CommonFormats";
 import {
@@ -58,7 +57,7 @@ const build = {
 			date: Values.date(fields.date),
 			multiplier: 1,
 			exchangedMoney: Values.tradeMoney(fields),
-			acquiredReason: GenericTradeReportItemGainType.BOUGHT,
+			acquisitionMethod: AcquisitionMethod.BOUGHT,
 			provenance: [],
 		});
 	},
@@ -81,7 +80,7 @@ const build = {
 			date: Values.date(fields.date),
 			multiplier: fields.multiplier,
 			exchangedMoney: Values.tradeMoney(fields),
-			acquiredReason: GenericDerivativeReportItemGainType.BOUGHT,
+			acquisitionMethod: AcquisitionMethod.BOUGHT,
 			provenance: [],
 		});
 	},
@@ -97,9 +96,7 @@ const build = {
 		});
 	},
 
-	dividend(
-		fields: CashFields & { dividendType: GenericDividendType },
-	): TradeEventCashTransactionDividend {
+	dividend(fields: CashFields & { dividendType: DividendType }): TradeEventCashTransactionDividend {
 		return new TradeEventCashTransactionDividend({
 			...cashEvent(fields),
 			dividendType: fields.dividendType,
@@ -111,7 +108,7 @@ const build = {
 	},
 
 	paymentInLieu(
-		fields: CashFields & { dividendType: GenericDividendType },
+		fields: CashFields & { dividendType: DividendType },
 	): TradeEventCashTransactionPaymentInLieuOfDividend {
 		return new TradeEventCashTransactionPaymentInLieuOfDividend({
 			...cashEvent(fields),

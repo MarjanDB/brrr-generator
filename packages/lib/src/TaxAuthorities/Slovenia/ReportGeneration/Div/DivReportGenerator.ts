@@ -1,4 +1,4 @@
-import { GenericDividendType } from "@brrr/Core/Schemas/CommonFormats";
+import { DividendType } from "@brrr/Core/Schemas/CommonFormats";
 import {
 	type TradeEventCashTransaction,
 	TradeEventCashTransactionDividend,
@@ -29,14 +29,12 @@ import {
 import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import type { DateTime } from "luxon";
 
-const DIVIDEND_TYPE_MAPPINGS: Record<GenericDividendType, EDavkiDividendType> = {
-	[GenericDividendType.UNKNOWN]: EDavkiDividendType.UNKNOWN,
-	[GenericDividendType.ORDINARY]: EDavkiDividendType.ORDINARY,
-	[GenericDividendType.CONSTRUCTIVE]: EDavkiDividendType.CONSTRUCTIVE,
-	[GenericDividendType.LIQUIDATING]: EDavkiDividendType.LIQUIDATING,
-	[GenericDividendType.OTHER]: EDavkiDividendType.OTHER,
-	[GenericDividendType.OTHER_2]: EDavkiDividendType.OTHER,
-	[GenericDividendType.BONUS]: EDavkiDividendType.OTHER,
+const DIVIDEND_TYPE_MAPPINGS: Record<DividendType, EDavkiDividendType> = {
+	[DividendType.UNKNOWN]: EDavkiDividendType.UNKNOWN,
+	[DividendType.ORDINARY]: EDavkiDividendType.ORDINARY,
+	[DividendType.BONUS]: EDavkiDividendType.OTHER,
+	[DividendType.LIQUIDATING]: EDavkiDividendType.LIQUIDATING,
+	[DividendType.OTHER]: EDavkiDividendType.OTHER,
 };
 
 type Dividend =

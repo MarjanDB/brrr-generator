@@ -1,9 +1,8 @@
 import type {
+	AcquisitionMethod,
 	AssetClass,
+	DividendType,
 	ExchangedMoney,
-	GenericDerivativeReportItemGainType,
-	GenericDividendType,
-	GenericTradeReportItemGainType,
 } from "@brrr/Core/Schemas/CommonFormats";
 import type {
 	CashActionId,
@@ -61,15 +60,15 @@ abstract class StagingCashTransactionBase extends StagingTradeEventBase {
 }
 
 type StagingStockAcquiredArgs = StagingTradeEventArgs & {
-	acquiredReason: GenericTradeReportItemGainType;
+	acquisitionMethod: AcquisitionMethod;
 };
 
 export class StagingTradeEventStockAcquired extends StagingTradeEventBase {
-	public readonly acquiredReason: GenericTradeReportItemGainType;
+	public readonly acquisitionMethod: AcquisitionMethod;
 
 	constructor(args: StagingStockAcquiredArgs) {
 		super(args);
-		this.acquiredReason = args.acquiredReason;
+		this.acquisitionMethod = args.acquisitionMethod;
 	}
 }
 
@@ -78,15 +77,15 @@ export class StagingTradeEventStockSold extends StagingTradeEventBase {}
 export type StagingTradeEventStock = StagingTradeEventStockAcquired | StagingTradeEventStockSold;
 
 type StagingDerivativeAcquiredArgs = StagingTradeEventArgs & {
-	acquiredReason: GenericDerivativeReportItemGainType;
+	acquisitionMethod: AcquisitionMethod;
 };
 
 export class StagingTradeEventDerivativeAcquired extends StagingTradeEventBase {
-	public readonly acquiredReason: GenericDerivativeReportItemGainType;
+	public readonly acquisitionMethod: AcquisitionMethod;
 
 	constructor(args: StagingDerivativeAcquiredArgs) {
 		super(args);
-		this.acquiredReason = args.acquiredReason;
+		this.acquisitionMethod = args.acquisitionMethod;
 	}
 }
 
@@ -96,10 +95,10 @@ export type StagingTradeEventDerivative =
 	| StagingTradeEventDerivativeAcquired
 	| StagingTradeEventDerivativeSold;
 
-type StagingDividendArgs = StagingCashTransactionArgs & { dividendType: GenericDividendType };
+type StagingDividendArgs = StagingCashTransactionArgs & { dividendType: DividendType };
 
 export class StagingTradeEventCashTransactionDividend extends StagingCashTransactionBase {
-	public readonly dividendType: GenericDividendType;
+	public readonly dividendType: DividendType;
 
 	constructor(args: StagingDividendArgs) {
 		super(args);
@@ -110,7 +109,7 @@ export class StagingTradeEventCashTransactionDividend extends StagingCashTransac
 export class StagingTradeEventCashTransactionWithholdingTax extends StagingCashTransactionBase {}
 
 export class StagingTradeEventCashTransactionPaymentInLieuOfDividend extends StagingCashTransactionBase {
-	public readonly dividendType: GenericDividendType;
+	public readonly dividendType: DividendType;
 
 	constructor(args: StagingDividendArgs) {
 		super(args);

@@ -1,5 +1,5 @@
 import { Scenario } from "@brrr/__tests__/support/Scenario";
-import { Category, GenericDividendType } from "@brrr/Core/Schemas/CommonFormats";
+import { Category, DividendType } from "@brrr/Core/Schemas/CommonFormats";
 import { FinancialIdentifier } from "@brrr/Core/Schemas/FinancialIdentifier";
 import {
 	CashActionId,
@@ -22,7 +22,7 @@ const dividend = build.dividend({
 	actionId: CashActionId.Schema.parse("DivAction"),
 	transactionId: CashTransactionId.Schema.parse("TranId1"),
 	listingExchange: ListingExchange.Schema.parse("EXH"),
-	dividendType: GenericDividendType.ORDINARY,
+	dividendType: DividendType.ORDINARY,
 	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
@@ -36,7 +36,7 @@ const paymentInLieuOfDividend = build.paymentInLieu({
 	actionId: CashActionId.Schema.parse("DivAction2"),
 	transactionId: CashTransactionId.Schema.parse("TranId2"),
 	listingExchange: ListingExchange.Schema.parse("EXH"),
-	dividendType: GenericDividendType.ORDINARY,
+	dividendType: DividendType.ORDINARY,
 	currency: CurrencyCode.Schema.parse("EUR"),
 	commission: 0,
 	tax: 0,
