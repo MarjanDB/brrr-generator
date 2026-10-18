@@ -28,6 +28,6 @@ const { t } = useI18n();
       :x-min="xMin"
       :x-max="xMax"
     />
-    <DerivativeTradesTable :derivative-groupings="derivativeGroupings" />
+    <DerivativeTradesTable :derivative-groupings="derivativeGroupings" :base-currency="baseCurrency" />
   </section>
 </template>

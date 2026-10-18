@@ -50,28 +50,18 @@ function toCumulative(
 	return result;
 }
 
-function tradeValueInBase(money: {
-	quantity: number;
-	priceInBase: number;
-	fxRateToBase: number;
-}): number {
-	return money.quantity * money.priceInBase * money.fxRateToBase;
-}
+// Lib holds amounts in the account's base currency without recording which one it is. The Slovenian
+// reports read them in euros, and so does the review step.
+const BASE_CURRENCY = "EUR";
 
-function firstCurrency(groupings: FinancialGrouping[]): string {
-	for (const g of groupings) {
-		for (const t of g.stockTrades) return t.exchangedMoney.currency;
-		for (const t of g.cashTransactions) return t.exchangedMoney.currency;
-		for (const dg of g.derivativeGroupings) {
-			for (const t of dg.derivativeTrades) return t.exchangedMoney.currency;
-		}
-	}
-	return "";
+function valueInBase(event: {
+	multiplier: number;
+	exchangedMoney: { quantity: number; priceInBase: number };
+}): number {
+	return event.exchangedMoney.quantity * event.exchangedMoney.priceInBase * event.multiplier;
 }
 
 export function useInstrumentStats(groupings: FinancialGrouping[]): InstrumentStats {
-	const baseCurrency = firstCurrency(groupings);
-
 	let totalBought = 0;
 	let totalSold = 0;
 	let totalDividends = 0;
@@ -82,7 +72,7 @@ export function useInstrumentStats(groupings: FinancialGrouping[]): InstrumentSt
 
 	for (const g of groupings) {
 		for (const trade of g.stockTrades) {
-			const value = tradeValueInBase(trade.exchangedMoney);
+			const value = valueInBase(trade);
 			if (trade instanceof TradeEventStockAcquired) {
 				totalBought += value;
 			} else {
@@ -96,7 +86,7 @@ export function useInstrumentStats(groupings: FinancialGrouping[]): InstrumentSt
 				tx instanceof TradeEventCashTransactionDividend ||
 				tx instanceof TradeEventCashTransactionPaymentInLieuOfDividend
 			) {
-				const value = tradeValueInBase(tx.exchangedMoney);
+				const value = valueInBase(tx);
 				totalDividends += value;
 				dividendPoints.push({ date: tx.date, delta: value });
 			}
@@ -104,7 +94,7 @@ export function useInstrumentStats(groupings: FinancialGrouping[]): InstrumentSt
 
 		for (const dg of g.derivativeGroupings) {
 			for (const trade of dg.derivativeTrades) {
-				const value = tradeValueInBase(trade.exchangedMoney);
+				const value = valueInBase(trade);
 				if (trade instanceof TradeEventDerivativeAcquired) {
 					totalBought += value;
 				} else {
@@ -130,7 +120,7 @@ export function useInstrumentStats(groupings: FinancialGrouping[]): InstrumentSt
 		totalBought,
 		totalSold,
 		totalDividends,
-		baseCurrency,
+		baseCurrency: BASE_CURRENCY,
 		overallCumulativeSeries: toCumulative(allPoints, globalStart, globalEnd),
 		stockCumulativeSeries: toCumulative(stockPoints, globalStart, globalEnd),
 		dividendCumulativeSeries: toCumulative(dividendPoints, globalStart, globalEnd),

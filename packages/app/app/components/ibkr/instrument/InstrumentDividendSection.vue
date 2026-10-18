@@ -28,6 +28,6 @@ const { t } = useI18n();
       :x-min="xMin"
       :x-max="xMax"
     />
-    <DividendTransactionsTable :transactions="transactions" />
+    <DividendTransactionsTable :transactions="transactions" :base-currency="baseCurrency" />
   </section>
 </template>

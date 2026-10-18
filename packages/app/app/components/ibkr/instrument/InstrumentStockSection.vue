@@ -28,6 +28,6 @@ const { t } = useI18n();
       :x-min="xMin"
       :x-max="xMax"
     />
-    <StockTradesTable :trades="trades" />
+    <StockTradesTable :trades="trades" :base-currency="baseCurrency" />
   </section>
 </template>

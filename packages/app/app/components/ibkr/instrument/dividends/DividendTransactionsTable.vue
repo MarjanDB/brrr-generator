@@ -11,6 +11,7 @@ type CashTx = FinancialGrouping["cashTransactions"][number];
 
 defineProps<{
   transactions: CashTx[];
+  baseCurrency: string;
 }>();
 
 const { t } = useI18n();
@@ -50,12 +51,7 @@ function cashTxLabel(tx: CashTx): string {
           <td class="py-1.5 pr-3 app-text font-mono text-xs">{{ formatDate(tx.date) }}</td>
           <td class="py-1.5 pr-3 app-text text-xs">{{ cashTxLabel(tx) }}</td>
           <td class="py-1.5 text-right app-text text-xs">
-            {{
-              formatAmount(
-                tx.exchangedMoney.quantity * tx.exchangedMoney.priceInBase,
-                tx.exchangedMoney.currency,
-              )
-            }}
+            {{ formatAmount(tx.exchangedMoney.quantity * tx.exchangedMoney.priceInBase, baseCurrency) }}
           </td>
         </tr>
       </tbody>
