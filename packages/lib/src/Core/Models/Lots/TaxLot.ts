@@ -4,7 +4,6 @@ import type { TradeEventStockAcquired } from "@brrr/Core/Models/Events/Stock/Tra
 import type { TradeEventStockSold } from "@brrr/Core/Models/Events/Stock/TradeEventStockSold";
 import type { TaxLotId } from "@brrr/Core/Models/Identifiers";
 import type { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
-import type { AnyProvenanceStep } from "@brrr/Core/Models/Provenance/AnyProvenanceStep";
 
 type TaxLotArgs<A, S> = {
 	id: TaxLotId;
@@ -12,7 +11,6 @@ type TaxLotArgs<A, S> = {
 	acquired: A;
 	sold: S;
 	shortLongType: ShortLong;
-	provenance: AnyProvenanceStep[];
 };
 
 // The sides are named by direction, not by which one opens the position: on a short lot the sale
@@ -23,7 +21,6 @@ export class TaxLot<A, S> {
 	public readonly acquired: A;
 	public readonly sold: S;
 	public readonly shortLongType: ShortLong;
-	public readonly provenance: AnyProvenanceStep[];
 
 	public constructor(args: TaxLotArgs<A, S>) {
 		this.id = args.id;
@@ -31,7 +28,6 @@ export class TaxLot<A, S> {
 		this.acquired = args.acquired;
 		this.sold = args.sold;
 		this.shortLongType = args.shortLongType;
-		this.provenance = args.provenance;
 	}
 }
 

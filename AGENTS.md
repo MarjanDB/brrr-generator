@@ -104,8 +104,9 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
   Models are what several files share. There are no `index.ts` barrels: import each model from its own file.
 - Domain models are classes with `public readonly` fields and one args-object constructor (see `Core/Models/`). Don't mutate them, and
   don't copy one just to change a field: build each value once with its final contents. Where a value really changes (a split rescaling
-  a trade), one named function builds the new object through the class's constructor and appends a `provenance` step, so the trace back
-  to the original survives (see `scaleTradeForSplit` in `Core/Services/IdentifierRelationships/ApplyIdentifierRelationshipsService.ts`).
+  a trade), one named function builds the new object through the class's constructor, and the stage records it in the run's provenance
+  graph as made from the original, so the trace back survives (see `scaleTradeForSplit` in
+  `Core/Services/IdentifierRelationships/ApplyIdentifierRelationshipsService.ts`).
 - Data from outside (XML rows, config files, env) is parsed with zod 4 (`import { z } from "zod/v4"`): a const holding `{ Schema }` and a
   same-named type `z.output<typeof X.Schema>` (see `Brokers/Ibkr/Schemas/TradeStock.ts`).
 - `type` for plain data shapes. `interface` only for contracts a class implements, named with an `I` prefix and in a file of the
@@ -214,7 +215,7 @@ To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
   helper assertions or `map`/`filter` chains that compute the expectations.
 - **`Scenario`** (`packages/lib/src/__tests__/support/Scenario.ts`) builds lib's objects and runs the pipeline, and it **invents no values**:
   - `Scenario.build.*` (events, lots, groupings, their `staging` twins, `ibkr.segmentedTrades`) fixes only what a builder's name
-    says. `stockBought` is a STOCK bought with multiplier 1, `optionSold` an OPTION sold, and everything built has no provenance yet.
+    says. `stockBought` is a STOCK bought with multiplier 1, `optionSold` an OPTION sold.
     Every other value (id, date, quantity, price, currency, commission, tax, fx rate, lot quantity, long/short, every grouping
     list, even an empty one) is required, so the test shows the exact scenario.
   - `Scenario.config.report(year, lotMatching)` and `.infoProvider(lookups)`.

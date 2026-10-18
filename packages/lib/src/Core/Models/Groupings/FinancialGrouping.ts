@@ -5,7 +5,6 @@ import type { CountryCode } from "@brrr/Core/Models/Identifiers";
 import type { Category } from "@brrr/Core/Models/Instrument/Category";
 import type { FinancialIdentifier } from "@brrr/Core/Models/Instrument/FinancialIdentifier";
 import type { TaxLotStock } from "@brrr/Core/Models/Lots/TaxLot";
-import type { AnyProvenanceStep } from "@brrr/Core/Models/Provenance/AnyProvenanceStep";
 
 type FinancialGroupingArgs = {
 	financialIdentifier: FinancialIdentifier;
@@ -15,7 +14,6 @@ type FinancialGroupingArgs = {
 	stockTaxLots: TaxLotStock[];
 	derivativeGroupings: DerivativeGrouping[];
 	cashTransactions: TradeEventCashTransaction[];
-	provenance: AnyProvenanceStep[];
 };
 
 export class FinancialGrouping {
@@ -26,7 +24,6 @@ export class FinancialGrouping {
 	public readonly stockTaxLots: TaxLotStock[];
 	public readonly derivativeGroupings: DerivativeGrouping[];
 	public readonly cashTransactions: TradeEventCashTransaction[];
-	public readonly provenance: AnyProvenanceStep[];
 
 	public constructor(args: FinancialGroupingArgs) {
 		this.financialIdentifier = args.financialIdentifier;
@@ -36,6 +33,5 @@ export class FinancialGrouping {
 		this.stockTaxLots = args.stockTaxLots;
 		this.derivativeGroupings = args.derivativeGroupings;
 		this.cashTransactions = args.cashTransactions;
-		this.provenance = args.provenance;
 	}
 }
