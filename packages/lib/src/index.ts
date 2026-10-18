@@ -24,6 +24,18 @@ export type { Country } from "@brrr/InfoProviders/Models/Country";
 export { TreatyType } from "@brrr/InfoProviders/Models/TreatyType";
 export { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
 
+// Provenance
+export { DropReason } from "@brrr/Provenance/Models/DropReason";
+export { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+export type { ProvenanceDrop } from "@brrr/Provenance/Models/ProvenanceDrop";
+export type { ProvenanceEdge } from "@brrr/Provenance/Models/ProvenanceEdge";
+export type { ProvenanceNode } from "@brrr/Provenance/Models/ProvenanceNode";
+export { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
+export type { ProvenanceSlice } from "@brrr/Provenance/Models/ProvenanceSlice";
+export type { ProvenanceWarning } from "@brrr/Provenance/Models/ProvenanceWarning";
+export { ProvenanceGraph } from "@brrr/Provenance/Services/ProvenanceGraph";
+export { ProvenanceWalker } from "@brrr/Provenance/Services/ProvenanceWalker";
+
 // Tax authorities
 export type {
 	GeneratedExports,
