@@ -6,6 +6,7 @@ import {
 	eventKindKeys,
 	lotMatchingKeys,
 } from "~/download/sentences/sentenceKeys";
+import { markKeys } from "~/download/timeline/markKeys";
 import en from "~~/i18n/locales/en.json";
 import sl from "~~/i18n/locales/sl.json";
 
@@ -32,6 +33,12 @@ describe("the locale files", () => {
 
 	test("every event kind has a key in the locale files", () => {
 		for (const key of Object.values(eventKindKeys)) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
+	});
+
+	test("every kind of timeline mark has a key in the locale files", () => {
+		for (const key of Object.values(markKeys)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});

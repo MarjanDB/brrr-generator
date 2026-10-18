@@ -13,6 +13,7 @@ import { chipsOf } from "~/download/labels/instrumentLabels";
 import { buildPanel } from "~/download/panel/buildPanel";
 import { defaultFocus } from "~/download/panel/defaultFocus";
 import { filterPanel } from "~/download/panel/filterPanel";
+import { findEntry } from "~/download/panel/findEntry";
 import { firstEntry } from "~/download/panel/firstEntry";
 import { monogramIntent, monogramText } from "~/download/panel/monogramIntent";
 import { ColorIntent } from "~/utils/ColorIntent";
@@ -764,6 +765,66 @@ describe("searching the panel", () => {
 		const first = firstEntry(buildPanel(b.reading()));
 
 		expect(first?.ticker).toEqual("ACME");
+	});
+});
+
+describe("finding an instrument's entry", () => {
+	test("an instrument is found among the shares, and an unknown one is not found", () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const sell = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-03-10",
+			quantity: "-10",
+			price: "6",
+			currency: "USD",
+			label: "sell ACME",
+		});
+		b.match({
+			instrument: acme,
+			acquired: buy,
+			sold: sell,
+			quantity: "10",
+			boughtOn: "2024-01-10",
+			soldOn: "2024-03-10",
+		});
+		const other = new GraphBuilder();
+		const otherFile = other.file({ name: "U2.xml" });
+		const zed = other.instrument({ ticker: "ZED", isin: "US0000000009" });
+		const zedBuy = other.trade({
+			file: otherFile,
+			instrument: zed,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-05-01",
+			quantity: "5",
+			price: "7",
+			currency: "USD",
+			label: "buy ZED",
+		});
+		other.graph.drop(zedBuy.event, DropReason.POSITION_OPEN, stage, null);
+		const reading = b.reading();
+		const [share] = reading.shares;
+		const [stranger] = other.reading().withoutLines;
+		assert(share !== undefined);
+		assert(stranger !== undefined);
+
+		const sections = buildPanel(reading);
+
+		expect(findEntry(sections, share)?.ticker).toEqual("ACME");
+		expect(findEntry(sections, stranger)).toBeNull();
 	});
 });
 

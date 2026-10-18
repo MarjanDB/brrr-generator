@@ -23,7 +23,6 @@
 	"country_id_label": "Country ID",
 	"country_name_label": "Country name",
 	"generate_report": "Generate Report",
-	"result_title": "Result",
 	"download_xml": "Download XML",
 	"download_csv": "Download CSV",
 	"validation_required": "This field is required",
@@ -186,5 +185,6 @@
 	"download_fact_quantity": "Quantity",
 	"download_fact_price": "Price",
 	"download_fact_transaction_id": "Transaction",
-	"download_fact_kind": "Kind"
+	"download_fact_kind": "Kind",
+	"download_nothing": "Nothing in this report"
 }

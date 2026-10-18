@@ -10,9 +10,10 @@ export default defineNuxtConfig({
 
 	vite: {
 		build: {
-			// The whole wizard is one page, so its chunk carries chart.js and the tax engine (~691 kB);
-			// the entry carries PostHog and i18n (~541 kB). Kept just above the page chunk so growth
-			// still warns.
+			// The wizard page's chunk carries chart.js and the tax engine (~686 kB); the entry carries
+			// PostHog and i18n (~509 kB). The download step is a lazy component, so its panel, timeline
+			// and sentences load on their own after a report is generated. Kept just above the page
+			// chunk so growth still warns.
 			chunkSizeWarningLimit: 700,
 		},
 	},
