@@ -126,7 +126,7 @@ function openModal(row: InstrumentRow) {
     </AppButton>
   </div>
 
-  <InstrumentModal
+  <LazyInstrumentModal
     v-if="modalRow"
     v-model:open="modalOpen"
     :name="modalRow.name"

@@ -118,7 +118,8 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
 
 - `vite.build.chunkSizeWarningLimit` is 700 kB because the wizard page carries chart.js and the tax engine; keep it just above the
   largest chunk rather than raising it freely. `DownloadStep` is used as `<LazyDownloadStep>` in `pages/index.vue` so the panel,
-  timeline and sentences load only once a report exists and stay out of the page chunk; make the next heavy step lazy the same way
+  timeline and sentences load only once a report exists and stay out of the page chunk, and `ReviewStep` uses
+  `<LazyInstrumentModal>` (charts and the row popover) for the same reason; make the next heavy step lazy the same way
   rather than raising the limit.
 - `@nuxtjs/seo` prerenders the sitemap and OG images (`zeroRuntime`), so the server bundle holds only the lookup routes.
 - The root `Dockerfile` builds lib, then the app, and runs `.output/server/index.mjs`. Publishing a GitHub release force-pushes `master`
