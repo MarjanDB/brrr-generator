@@ -253,5 +253,17 @@
 	"download_edavki_field_dividend_type": "Vrsta dividende",
 	"download_edavki_field_tracking_id": "Sledilna številka",
 	"download_edavki_field_dividend_amount": "Znesek dividende",
-	"download_edavki_field_foreign_tax_paid": "Plačan tuji davek"
+	"download_edavki_field_foreign_tax_paid": "Plačan tuji davek",
+	"download_caption_trade": "{kind} {quantity} {ticker}",
+	"download_caption_cash": "{kind} {amount} {currency}",
+	"download_caption_split_into": "razdeljeno v {quantity}",
+	"download_caption_matched_buys": "povezano z nakupi: {count} (metoda {method})",
+	"download_caption_matched_sells": "povezano s prodajami: {count} (metoda {method})",
+	"download_caption_summed_into": "seštevek v vrsticah poročila: {n}",
+	"download_caption_bought_sold": "nakup {bought}, prodaja {sold}",
+	"download_caption_adjusted": "popravljenih poslov: {n}",
+	"download_popover_row_title": "Vrstica posrednika",
+	"download_popover_line_title": "Vrstica poročila",
+	"download_popover_from_file": "Iz {file}",
+	"download_popover_line_foot": "Kot jo prejme {form}"
 }

@@ -253,5 +253,17 @@
 	"download_edavki_field_dividend_type": "Dividend type",
 	"download_edavki_field_tracking_id": "Tracking ID",
 	"download_edavki_field_dividend_amount": "Dividend amount",
-	"download_edavki_field_foreign_tax_paid": "Foreign tax paid"
+	"download_edavki_field_foreign_tax_paid": "Foreign tax paid",
+	"download_caption_trade": "{kind} {quantity} {ticker}",
+	"download_caption_cash": "{kind} {amount} {currency}",
+	"download_caption_split_into": "split into {quantity}",
+	"download_caption_matched_buys": "matched with {count} buy(s) by {method}",
+	"download_caption_matched_sells": "matched with {count} sell(s) by {method}",
+	"download_caption_summed_into": "summed into {n} report line(s)",
+	"download_caption_bought_sold": "bought {bought}, sold {sold}",
+	"download_caption_adjusted": "adjusted {n} trade(s)",
+	"download_popover_row_title": "Broker row",
+	"download_popover_line_title": "Report line",
+	"download_popover_from_file": "From {file}",
+	"download_popover_line_foot": "As {form} gets it"
 }
