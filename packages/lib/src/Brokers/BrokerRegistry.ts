@@ -10,7 +10,7 @@ export type BrokerFileDetection = {
 };
 
 export class BrokerRegistry {
-	constructor(private readonly ibkr: IBrokerProvider) {}
+	public constructor(private readonly ibkr: IBrokerProvider) {}
 
 	public listBrokers(): { id: BrokerId; name: string }[] {
 		return [{ id: this.ibkr.brokerId, name: this.ibkr.displayName }];

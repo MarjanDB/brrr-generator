@@ -9,9 +9,9 @@ import { CurrencyCode, TradeEventId } from "@brrr/Core/Schemas/Identifiers";
 const { build } = Scenario;
 
 class FakeLotMatchingMethod implements ILotMatchingMethod {
-	receivedTrades: Trade[] | null = null;
+	public receivedTrades: Trade[] | null = null;
 
-	performMatching(trades: Trade[]): Lot[] {
+	public performMatching(trades: Trade[]): Lot[] {
 		this.receivedTrades = trades;
 		return [];
 	}

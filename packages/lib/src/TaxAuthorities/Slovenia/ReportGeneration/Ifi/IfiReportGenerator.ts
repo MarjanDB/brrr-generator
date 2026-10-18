@@ -87,9 +87,9 @@ function convertSell(
 }
 
 export class IfiReportGenerator {
-	constructor(private readonly processor: FinancialEventsProcessor) {}
+	public constructor(private readonly processor: FinancialEventsProcessor) {}
 
-	convert(
+	public convert(
 		config: TaxAuthorityConfiguration,
 		groupings: FinancialGrouping[],
 	): EDavkiGenericDerivativeReportItem[] {
@@ -146,11 +146,14 @@ export class IfiReportGenerator {
 		return converted;
 	}
 
-	toXml(config: TaxAuthorityConfiguration, items: EDavkiGenericDerivativeReportItem[]): string {
+	public toXml(
+		config: TaxAuthorityConfiguration,
+		items: EDavkiGenericDerivativeReportItem[],
+	): string {
 		return generateXmlReport(config, items);
 	}
 
-	toCsv(items: EDavkiGenericDerivativeReportItem[]): string {
+	public toCsv(items: EDavkiGenericDerivativeReportItem[]): string {
 		return generateCsvReport(items);
 	}
 }

@@ -5,7 +5,7 @@ export class StagingTaxLotMatchingDetails {
 	public readonly id: TradeEventId | null;
 	public readonly dateTime: ValidDateTime | null;
 
-	constructor(args: {
+	public constructor(args: {
 		id: TradeEventId | null;
 		dateTime: ValidDateTime | null;
 	}) {

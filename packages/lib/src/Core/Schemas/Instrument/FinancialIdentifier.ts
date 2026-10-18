@@ -6,7 +6,9 @@ export class FinancialIdentifier {
 	public readonly ticker: Ticker | null;
 	public readonly name: string | null;
 
-	constructor(params: { isin?: Isin | null; ticker?: Ticker | null; name?: string | null } = {}) {
+	public constructor(
+		params: { isin?: Isin | null; ticker?: Ticker | null; name?: string | null } = {},
+	) {
 		this.isin = params.isin ?? null;
 		this.ticker = params.ticker ?? null;
 		this.name = params.name ?? null;
@@ -18,7 +20,7 @@ export class FinancialIdentifier {
 	// While ISIN and the Ticker are enough for identifying a company ticker, it is not enough
 	// to identify a specific traded instrument (options with different strike prices / expiration dates).
 	// Use isTheSameAs for strict matching where ISIN + ticker are both needed.
-	isTheSameAs(other: FinancialIdentifier): boolean {
+	public isTheSameAs(other: FinancialIdentifier): boolean {
 		const hasIsin = this.isin !== null && other.isin !== null;
 		const hasTicker = this.ticker !== null && other.ticker !== null;
 		const hasName = this.name !== null && other.name !== null;
@@ -37,18 +39,18 @@ export class FinancialIdentifier {
 	// True when both have ISIN and it is the same. Use for rename/corporate-action resolution
 	// where only ISIN identifies the instrument (e.g. ticker may differ: RKLB.OLD vs RKLB).
 	// Not for options/distinct instruments where ISIN + ticker are both needed.
-	sameInstrumentByIsin(other: FinancialIdentifier): boolean {
+	public sameInstrumentByIsin(other: FinancialIdentifier): boolean {
 		return this.isin !== null && other.isin !== null && this.isin === other.isin;
 	}
 
 	// Map key: identifiers with the same ISIN, ticker and name share a key.
-	toKey(): FinancialIdentifierKey {
+	public toKey(): FinancialIdentifierKey {
 		return FinancialIdentifierKey.Schema.parse(
 			`${this.isin ?? ""}|${this.ticker ?? ""}|${this.name ?? ""}`,
 		);
 	}
 
-	static fromStagingIdentifier(identifier: StagingFinancialIdentifier): FinancialIdentifier {
+	public static fromStagingIdentifier(identifier: StagingFinancialIdentifier): FinancialIdentifier {
 		return new FinancialIdentifier({
 			isin: identifier.isin,
 			ticker: identifier.ticker,
@@ -56,7 +58,7 @@ export class FinancialIdentifier {
 		});
 	}
 
-	toString(): string {
+	public toString(): string {
 		return `FinancialIdentifier(ISIN: ${this.isin}, Ticker: ${this.ticker}, Name: ${this.name})`;
 	}
 }

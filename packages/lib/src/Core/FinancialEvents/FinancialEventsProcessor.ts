@@ -10,9 +10,9 @@ import type { ValidDateTime } from "@brrr/Utils/DateTime";
 // Matches an instrument's trades into lots and keeps the legs of the lots closed in a period:
 // those are the trades a capital gains report lists, each with the lot's share of it.
 export class FinancialEventsProcessor {
-	constructor(private readonly lotMatcher: LotMatcher) {}
+	public constructor(private readonly lotMatcher: LotMatcher) {}
 
-	stockLotLegsClosedInPeriod(
+	public stockLotLegsClosedInPeriod(
 		grouping: FinancialGrouping,
 		method: ILotMatchingMethod,
 		fromDate: ValidDateTime,
@@ -25,7 +25,7 @@ export class FinancialEventsProcessor {
 		);
 	}
 
-	derivativeLotLegsClosedInPeriod(
+	public derivativeLotLegsClosedInPeriod(
 		grouping: DerivativeGrouping,
 		method: ILotMatchingMethod,
 		fromDate: ValidDateTime,

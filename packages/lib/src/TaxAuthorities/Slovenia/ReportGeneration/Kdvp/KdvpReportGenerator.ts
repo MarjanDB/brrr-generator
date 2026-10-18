@@ -93,9 +93,9 @@ function convertStockSell(
 }
 
 export class KdvpReportGenerator {
-	constructor(private readonly processor: FinancialEventsProcessor) {}
+	public constructor(private readonly processor: FinancialEventsProcessor) {}
 
-	convert(
+	public convert(
 		config: TaxAuthorityConfiguration,
 		groupings: FinancialGrouping[],
 	): EDavkiGenericTradeReportItem[] {
@@ -160,7 +160,7 @@ export class KdvpReportGenerator {
 		return converted;
 	}
 
-	toXml(
+	public toXml(
 		config: TaxAuthorityConfiguration,
 		userConfig: TaxpayerInfo,
 		documentType: EDavkiDocumentWorkflowType,
@@ -169,7 +169,7 @@ export class KdvpReportGenerator {
 		return generateXmlReport(config, userConfig, documentType, items);
 	}
 
-	toCsv(items: EDavkiGenericTradeReportItem[]): string {
+	public toCsv(items: EDavkiGenericTradeReportItem[]): string {
 		return generateCsvReport(items);
 	}
 }

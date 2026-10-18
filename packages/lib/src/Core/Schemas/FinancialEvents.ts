@@ -5,7 +5,7 @@ export class FinancialEvents {
 	public readonly groupings: FinancialGrouping[];
 	public readonly identifierRelationships: IdentifierRelationshipAny[];
 
-	constructor(args: {
+	public constructor(args: {
 		groupings: FinancialGrouping[];
 		identifierRelationships: IdentifierRelationshipAny[];
 	}) {

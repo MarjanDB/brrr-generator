@@ -11,7 +11,7 @@ type StagingDerivativeAcquiredArgs = StagingTradeEventArgs & {
 export class StagingTradeEventDerivativeAcquired extends StagingTradeEventBase {
 	public readonly acquisitionMethod: AcquisitionMethod;
 
-	constructor(args: StagingDerivativeAcquiredArgs) {
+	public constructor(args: StagingDerivativeAcquiredArgs) {
 		super(args);
 		this.acquisitionMethod = args.acquisitionMethod;
 	}

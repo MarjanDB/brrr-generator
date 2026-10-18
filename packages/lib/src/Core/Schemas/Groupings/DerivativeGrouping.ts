@@ -16,7 +16,7 @@ export class DerivativeGrouping {
 	public readonly derivativeTaxLots: TaxLotDerivative[];
 	public readonly provenance: AnyProvenanceStep[];
 
-	constructor(args: DerivativeGroupingArgs) {
+	public constructor(args: DerivativeGroupingArgs) {
 		this.financialIdentifier = args.financialIdentifier;
 		this.derivativeTrades = args.derivativeTrades;
 		this.derivativeTaxLots = args.derivativeTaxLots;

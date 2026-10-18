@@ -19,7 +19,7 @@ export abstract class StagingCashTransactionBase extends StagingTradeEventBase {
 	public readonly transactionId: CashTransactionId;
 	public readonly listingExchange: ListingExchange;
 
-	constructor(args: StagingCashTransactionArgs) {
+	public constructor(args: StagingCashTransactionArgs) {
 		super(args);
 		this.actionId = args.actionId;
 		this.transactionId = args.transactionId;

@@ -16,7 +16,7 @@ export class StagingIdentifierRelationshipSplit {
 	public readonly quantityBefore: number;
 	public readonly quantityAfter: number;
 
-	constructor(args: StagingIdentifierRelationshipSplitArgs) {
+	public constructor(args: StagingIdentifierRelationshipSplitArgs) {
 		this.fromIdentifier = args.fromIdentifier;
 		this.toIdentifier = args.toIdentifier;
 		this.changeType = args.changeType;

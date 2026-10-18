@@ -18,7 +18,13 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"preset": "recommended"
+			"preset": "recommended",
+			"style": {
+				"useConsistentMemberAccessibility": {
+					"level": "error",
+					"options": { "accessibility": "explicit" }
+				}
+			}
 		}
 	},
 	"overrides": [

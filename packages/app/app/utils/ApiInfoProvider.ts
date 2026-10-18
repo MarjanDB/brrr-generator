@@ -7,7 +7,7 @@ type SerializedCountry = Omit<Country, "treaties"> & { treaties: Record<string, 
 export class ApiInfoProvider implements IInfoProvider {
 	private readonly predefined = new PredefinedInfoProvider();
 
-	async getCompanyInfo(isin: string): Promise<CompanyInfo | null> {
+	public async getCompanyInfo(isin: string): Promise<CompanyInfo | null> {
 		const local = await this.predefined.getCompanyInfo(isin);
 		if (local) return local;
 
@@ -17,7 +17,7 @@ export class ApiInfoProvider implements IInfoProvider {
 		return result;
 	}
 
-	async getCountry(name: string): Promise<Country | null> {
+	public async getCountry(name: string): Promise<Country | null> {
 		const local = await this.predefined.getCountry(name);
 		if (local) return local;
 
@@ -38,28 +38,28 @@ export class ApiInfoProvider implements IInfoProvider {
 		return country;
 	}
 
-	addCompany(isin: string, info: CompanyInfo): void {
+	public addCompany(isin: string, info: CompanyInfo): void {
 		this.predefined.addCompany(isin, info);
 	}
-	updateCompany(isin: string, info: CompanyInfo): void {
+	public updateCompany(isin: string, info: CompanyInfo): void {
 		this.predefined.updateCompany(isin, info);
 	}
-	removeCompany(isin: string): void {
+	public removeCompany(isin: string): void {
 		this.predefined.removeCompany(isin);
 	}
-	listCompanies() {
+	public listCompanies() {
 		return this.predefined.listCompanies();
 	}
-	addCountry(name: string, country: Country): void {
+	public addCountry(name: string, country: Country): void {
 		this.predefined.addCountry(name, country);
 	}
-	updateCountry(name: string, country: Country): void {
+	public updateCountry(name: string, country: Country): void {
 		this.predefined.updateCountry(name, country);
 	}
-	removeCountry(name: string): void {
+	public removeCountry(name: string): void {
 		this.predefined.removeCountry(name);
 	}
-	listCountries() {
+	public listCountries() {
 		return this.predefined.listCountries();
 	}
 }

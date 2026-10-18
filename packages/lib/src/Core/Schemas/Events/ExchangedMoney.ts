@@ -23,7 +23,7 @@ export class ExchangedMoney {
 	public readonly taxTotal: number;
 	public readonly fxRateToBase: number;
 
-	constructor(args: ExchangedMoneyArgs) {
+	public constructor(args: ExchangedMoneyArgs) {
 		this.currency = args.currency;
 		this.quantity = args.quantity;
 		this.priceInBase = args.priceInBase;

@@ -9,7 +9,7 @@ type DividendArgs = CashTransactionArgs & { dividendType: DividendType };
 export class TradeEventCashTransactionPaymentInLieuOfDividend extends CashTransactionBase {
 	public readonly dividendType: DividendType;
 
-	constructor(args: DividendArgs) {
+	public constructor(args: DividendArgs) {
 		super(args);
 		this.dividendType = args.dividendType;
 	}

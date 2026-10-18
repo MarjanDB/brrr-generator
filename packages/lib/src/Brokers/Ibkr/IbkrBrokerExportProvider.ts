@@ -8,7 +8,7 @@ export class IbkrBrokerExportProvider implements IBrokerProvider {
 	public readonly brokerId = BrokerId.IBKR;
 	public readonly displayName = "Interactive Brokers (Flex Query)";
 
-	constructor(
+	public constructor(
 		private readonly extract: IbkrExtractService,
 		private readonly transform: IbkrTransformService,
 	) {}

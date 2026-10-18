@@ -25,7 +25,7 @@ export class TaxLot<A, S> {
 	public readonly shortLongType: ShortLong;
 	public readonly provenance: AnyProvenanceStep[];
 
-	constructor(args: TaxLotArgs<A, S>) {
+	public constructor(args: TaxLotArgs<A, S>) {
 		this.id = args.id;
 		this.quantity = args.quantity;
 		this.acquired = args.acquired;

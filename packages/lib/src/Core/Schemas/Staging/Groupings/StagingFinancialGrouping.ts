@@ -16,7 +16,7 @@ export class StagingFinancialGrouping {
 	public readonly derivativeTaxLots: StagingTaxLot[];
 	public readonly cashTransactions: StagingTradeEventCashTransaction[];
 
-	constructor(args: {
+	public constructor(args: {
 		financialIdentifier: StagingFinancialIdentifier;
 		countryOfOrigin: CountryCode | null;
 		underlyingCategory: Category;

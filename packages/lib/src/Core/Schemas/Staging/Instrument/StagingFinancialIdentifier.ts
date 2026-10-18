@@ -5,13 +5,15 @@ export class StagingFinancialIdentifier {
 	public readonly ticker: Ticker | null;
 	public readonly name: string | null;
 
-	constructor(params: { isin?: Isin | null; ticker?: Ticker | null; name?: string | null } = {}) {
+	public constructor(
+		params: { isin?: Isin | null; ticker?: Ticker | null; name?: string | null } = {},
+	) {
 		this.isin = params.isin ?? null;
 		this.ticker = params.ticker ?? null;
 		this.name = params.name ?? null;
 	}
 
-	isTheSameAs(other: StagingFinancialIdentifier): boolean {
+	public isTheSameAs(other: StagingFinancialIdentifier): boolean {
 		const hasIsin = this.isin !== null && other.isin !== null;
 		const hasTicker = this.ticker !== null && other.ticker !== null;
 		const hasName = this.name !== null && other.name !== null;
@@ -40,13 +42,13 @@ export class StagingFinancialIdentifier {
 	}
 
 	// Map key: identifiers with the same ISIN, ticker and name share a key.
-	toKey(): FinancialIdentifierKey {
+	public toKey(): FinancialIdentifierKey {
 		return FinancialIdentifierKey.Schema.parse(
 			`${this.isin ?? ""}|${this.ticker ?? ""}|${this.name ?? ""}`,
 		);
 	}
 
-	toString(): string {
+	public toString(): string {
 		return `FinancialIdentifier(ISIN: ${this.isin}, Ticker: ${this.ticker}, Name: ${this.name})`;
 	}
 }

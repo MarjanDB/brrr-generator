@@ -8,11 +8,11 @@ import type { TaxLot } from "@brrr/Core/Schemas/Lots/TaxLot";
 export class ProvidedLotMatchingMethod implements ILotMatchingMethod {
 	private predefinedLots: TaxLot<TradeEvent, TradeEvent>[];
 
-	constructor(predefinedLots: TaxLot<TradeEvent, TradeEvent>[]) {
+	public constructor(predefinedLots: TaxLot<TradeEvent, TradeEvent>[]) {
 		this.predefinedLots = predefinedLots;
 	}
 
-	performMatching(_events: Trade[]): Lot[] {
+	public performMatching(_events: Trade[]): Lot[] {
 		// Validates that the lots never use more of a trade than it has.
 		const tracker = new TradeAssociationTracker();
 

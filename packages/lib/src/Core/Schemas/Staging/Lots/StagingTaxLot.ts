@@ -11,7 +11,7 @@ export class StagingTaxLot {
 	public readonly sold: StagingTaxLotMatchingDetails;
 	public readonly shortLongType: ShortLong;
 
-	constructor(args: {
+	public constructor(args: {
 		id: TaxLotId;
 		financialIdentifier: StagingFinancialIdentifier;
 		quantity: number;

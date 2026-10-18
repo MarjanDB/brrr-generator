@@ -52,7 +52,7 @@ export class EDavkiDividendReportLine {
 	public readonly foreignTaxPaid: number;
 	public readonly foreignTaxPaidInOriginalCurrency: number;
 
-	constructor(args: EDavkiDividendReportLineArgs) {
+	public constructor(args: EDavkiDividendReportLineArgs) {
 		this.dateReceived = args.dateReceived;
 		this.taxNumberForDividendPayer = args.taxNumberForDividendPayer;
 		this.dividendPayerIdentificationNumber = args.dividendPayerIdentificationNumber;
@@ -103,7 +103,7 @@ export class EDavkiTradeReportSecurityLineGenericEventBought {
 	public readonly inheritanceAndGiftTaxPaid: number | null;
 	public readonly baseTaxReduction: number | null;
 
-	constructor(args: {
+	public constructor(args: {
 		boughtOn: DateTime;
 		gainType: EDavkiTradeReportGainType;
 		quantity: number;
@@ -141,7 +141,7 @@ export class EDavkiTradeReportSecurityLineGenericEventSold {
 	public readonly commissionsInOriginalCurrency: number;
 	public readonly satisfiesTaxBasisReduction: boolean;
 
-	constructor(args: {
+	public constructor(args: {
 		soldOn: DateTime;
 		quantity: number;
 		totalPrice: number;
@@ -176,7 +176,7 @@ export class EDavkiTradeReportSecurityLineEvent {
 		| EDavkiTradeReportSecurityLineGenericEventSold
 	)[];
 
-	constructor(args: {
+	public constructor(args: {
 		isin: EDavkiIsin;
 		code: EDavkiSecurityCode | null;
 		name: string | null;
@@ -211,7 +211,7 @@ export class EDavkiGenericTradeReportItem {
 	public readonly taxDecreaseConformance: boolean | null;
 	public readonly items: EDavkiTradeReportSecurityLineEvent[];
 
-	constructor(args: {
+	public constructor(args: {
 		itemId: string | null;
 		inventoryListType: EDavkiTradeSecurityType;
 		name: string | null;
@@ -276,7 +276,7 @@ export class EDavkiDerivativeReportSecurityLineGenericEventBought {
 	public readonly commissionsInOriginalCurrency: number;
 	public readonly leveraged: boolean;
 
-	constructor(args: {
+	public constructor(args: {
 		boughtOn: DateTime;
 		gainType: EDavkiDerivativeReportGainType;
 		quantity: number;
@@ -312,7 +312,7 @@ export class EDavkiDerivativeReportSecurityLineGenericEventSold {
 	public readonly commissionsInOriginalCurrency: number;
 	public readonly leveraged: boolean;
 
-	constructor(args: {
+	public constructor(args: {
 		soldOn: DateTime;
 		quantity: number;
 		pricePerUnit: number;
@@ -351,7 +351,7 @@ export class EDavkiGenericDerivativeReportItem {
 	public readonly ftCountryName: string | null;
 	public readonly items: EDavkiDerivativeReportSecurityLines[];
 
-	constructor(args: {
+	public constructor(args: {
 		inventoryListType: EDavkiDerivativeSecurityType;
 		itemType: EDavkiDerivativeReportItemType;
 		name: string | null;

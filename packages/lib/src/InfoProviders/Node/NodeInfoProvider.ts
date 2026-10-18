@@ -148,39 +148,39 @@ export class NodeInfoProvider implements IInfoProvider {
 	private readonly yf = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
 
 	// Override methods — forward to predefined
-	addCompany(isin: string, info: CompanyInfo): void {
+	public addCompany(isin: string, info: CompanyInfo): void {
 		this.predefined.addCompany(isin, info);
 	}
 
-	updateCompany(isin: string, info: CompanyInfo): void {
+	public updateCompany(isin: string, info: CompanyInfo): void {
 		this.predefined.updateCompany(isin, info);
 	}
 
-	removeCompany(isin: string): void {
+	public removeCompany(isin: string): void {
 		this.predefined.removeCompany(isin);
 	}
 
-	listCompanies(): Map<Isin, CompanyInfo> {
+	public listCompanies(): Map<Isin, CompanyInfo> {
 		return this.predefined.listCompanies();
 	}
 
-	addCountry(name: string, country: Country): void {
+	public addCountry(name: string, country: Country): void {
 		this.predefined.addCountry(name, country);
 	}
 
-	updateCountry(name: string, country: Country): void {
+	public updateCountry(name: string, country: Country): void {
 		this.predefined.updateCountry(name, country);
 	}
 
-	removeCountry(name: string): void {
+	public removeCountry(name: string): void {
 		this.predefined.removeCountry(name);
 	}
 
-	listCountries(): Map<CountryName, Country> {
+	public listCountries(): Map<CountryName, Country> {
 		return this.predefined.listCountries();
 	}
 
-	async getCountry(name: string): Promise<Country | null> {
+	public async getCountry(name: string): Promise<Country | null> {
 		// 1. Check predefined
 		const fromPredefined = await this.predefined.getCountry(name);
 		if (fromPredefined !== null) {
@@ -211,7 +211,7 @@ export class NodeInfoProvider implements IInfoProvider {
 		};
 	}
 
-	async getCompanyInfo(isin: string): Promise<CompanyInfo | null> {
+	public async getCompanyInfo(isin: string): Promise<CompanyInfo | null> {
 		// 1. Check predefined
 		const fromPredefined = await this.predefined.getCompanyInfo(isin);
 		if (fromPredefined !== null) {

@@ -50,7 +50,7 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider {
 		})),
 	};
 
-	constructor(
+	public constructor(
 		private readonly applyIdentifierRelationshipsService: ApplyIdentifierRelationshipsService,
 		private readonly kdvpGenerator: KdvpReportGenerator,
 		private readonly divGenerator: DivReportGenerator,
@@ -59,14 +59,14 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider {
 
 	// A report is a "self-report" if the report period ended more than 1 year before the current date.
 	// It sets DOH_DIV's SelfReport flag; every document is still filed with the ORIGINAL workflow.
-	isSelfReport(currentTime: DateTime, reportConfig: TaxAuthorityConfiguration): boolean {
+	private isSelfReport(currentTime: DateTime, reportConfig: TaxAuthorityConfiguration): boolean {
 		const currentYear = currentTime.year;
 		const lastYear = currentYear - 1;
 		const reportEndPeriod = reportConfig.toDate.minus({ days: 1 }).year;
 		return reportEndPeriod < lastYear;
 	}
 
-	async generateExports(
+	public async generateExports(
 		reportTypeId: ReportTypeId,
 		ctx: TaxAuthorityRunContext,
 	): Promise<GeneratedExports> {
@@ -80,7 +80,7 @@ export class SlovenianTaxAuthorityProvider implements ITaxAuthorityProvider {
 	}
 
 	// Builds the report once and renders it both as the XML eDavki imports and as a CSV.
-	async generate(
+	public async generate(
 		reportType: SlovenianTaxAuthorityReportTypes,
 		ctx: TaxAuthorityRunContext,
 	): Promise<GeneratedExports> {

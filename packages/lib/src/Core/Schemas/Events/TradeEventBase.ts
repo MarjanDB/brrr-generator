@@ -21,7 +21,7 @@ export abstract class TradeEventBase {
 	public readonly exchangedMoney: ExchangedMoney;
 	public readonly provenance: AnyProvenanceStep[];
 
-	constructor(args: TradeEventArgs) {
+	public constructor(args: TradeEventArgs) {
 		this.id = args.id;
 		this.assetClass = args.assetClass;
 		this.date = args.date;

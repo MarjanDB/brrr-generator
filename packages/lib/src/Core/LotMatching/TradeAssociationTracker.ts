@@ -22,7 +22,7 @@ export class TradeAssociationTracker {
 		}
 	}
 
-	trackTrade(event: Trade): void {
+	public trackTrade(event: Trade): void {
 		if (event.quantity >= 0) {
 			this.associateAcquiredTrade(event);
 		} else {
@@ -30,7 +30,7 @@ export class TradeAssociationTracker {
 		}
 	}
 
-	trackAcquiredQuantity(event: Trade, quantity: number): void {
+	public trackAcquiredQuantity(event: Trade, quantity: number): void {
 		this.associateAcquiredTrade(event);
 
 		const tracker = this.tradeAcquiredTracker.get(event.id);
@@ -49,7 +49,7 @@ export class TradeAssociationTracker {
 		tracker.quantity += quantity;
 	}
 
-	trackSoldQuantity(event: Trade, quantity: number): void {
+	public trackSoldQuantity(event: Trade, quantity: number): void {
 		this.associateSoldTrade(event);
 
 		const tracker = this.tradeSoldTracker.get(event.id);
@@ -68,7 +68,7 @@ export class TradeAssociationTracker {
 		tracker.quantity += quantity;
 	}
 
-	getAcquiredTradeTracker(event: Trade): TradeAssociation {
+	public getAcquiredTradeTracker(event: Trade): TradeAssociation {
 		const tracker = this.tradeAcquiredTracker.get(event.id);
 		if (tracker === undefined) {
 			throw new Error(`Tracker for event (${event.id}) does not exist`);
@@ -76,7 +76,7 @@ export class TradeAssociationTracker {
 		return tracker;
 	}
 
-	getSoldTradeTracker(event: Trade): TradeAssociation {
+	public getSoldTradeTracker(event: Trade): TradeAssociation {
 		const tracker = this.tradeSoldTracker.get(event.id);
 		if (tracker === undefined) {
 			throw new Error(`Tracker for event (${event.id}) does not exist`);
