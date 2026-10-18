@@ -241,7 +241,7 @@ const pipeline = {
 
 		const events = container
 			.get(StagingFinancialGroupingProcessor)
-			.processStagingFinancialEvents(stagingEvents);
+			.processStagingFinancialEvents(stagingEvents, new NullProvenanceRecorder());
 		return { detections, stagingEvents, events };
 	},
 

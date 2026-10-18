@@ -261,6 +261,7 @@ test("transform: resolve partials produces full relationship", () => {
 	const resolved =
 		new IdentifierRelationshipResolution().resolveStagingFinancialEventsPartialRelationships(
 			staging,
+			new NullProvenanceRecorder(),
 		);
 	expect(resolved.identifierRelationships.relationships.length).toEqual(1);
 	expect(resolved.identifierRelationships.relationships[0].fromIdentifier.isin).toEqual(

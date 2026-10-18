@@ -21,6 +21,24 @@ import { StagingTradeEventDerivativeAcquired } from "@brrr/Core/Models/Staging/E
 import type { StagingTradeEventStock } from "@brrr/Core/Models/Staging/Events/Stock/StagingTradeEventStock";
 import { StagingTradeEventStockAcquired } from "@brrr/Core/Models/Staging/Events/Stock/StagingTradeEventStockAcquired";
 import type { StagingTaxLot } from "@brrr/Core/Models/Staging/Lots/StagingTaxLot";
+import { CashTransactionLabel, ProvenanceLabels } from "@brrr/Core/Utils/ProvenanceLabels";
+import type { IProvenanceRecorder } from "@brrr/Provenance/Interfaces/IProvenanceRecorder";
+import { ProvenanceChange } from "@brrr/Provenance/Models/ProvenanceChange";
+import { ProvenanceStage } from "@brrr/Provenance/Models/ProvenanceIdentifiers";
+import { ProvenanceNodeKind } from "@brrr/Provenance/Models/ProvenanceNodeKind";
+
+const STAGE = ProvenanceStage.Schema.parse("StagingToCore");
+
+function track(
+	provenance: IProvenanceRecorder,
+	staged: object,
+	core: object,
+	kind: ProvenanceNodeKind,
+	label: string,
+): void {
+	provenance.node(core, kind, label, {});
+	provenance.derive([staged], core, ProvenanceChange.CONVERTED, STAGE, null);
+}
 
 // Staging events and lots carry the broker's view of an instrument; these turn them into the
 // core model the tax authorities work with.
@@ -38,27 +56,59 @@ function toCoreTradeFields(
 	};
 }
 
-export function toCoreStockTrade(input: StagingTradeEventStock): TradeEventStock {
+export function toCoreStockTrade(
+	input: StagingTradeEventStock,
+	provenance: IProvenanceRecorder,
+): TradeEventStock {
 	const fields = toCoreTradeFields(input);
-	if (input instanceof StagingTradeEventStockAcquired) {
-		return new TradeEventStockAcquired({ ...fields, acquisitionMethod: input.acquisitionMethod });
-	}
-	return new TradeEventStockSold(fields);
+	const acquired = input instanceof StagingTradeEventStockAcquired;
+	const trade = acquired
+		? new TradeEventStockAcquired({ ...fields, acquisitionMethod: input.acquisitionMethod })
+		: new TradeEventStockSold(fields);
+	track(
+		provenance,
+		input,
+		trade,
+		ProvenanceNodeKind.EVENT,
+		ProvenanceLabels.trade(
+			input.assetClass,
+			acquired,
+			input.id,
+			input.exchangedMoney.quantity,
+			input.financialIdentifier.ticker,
+		),
+	);
+	return trade;
 }
 
-export function toCoreDerivativeTrade(input: StagingTradeEventDerivative): TradeEventDerivative {
+export function toCoreDerivativeTrade(
+	input: StagingTradeEventDerivative,
+	provenance: IProvenanceRecorder,
+): TradeEventDerivative {
 	const fields = toCoreTradeFields(input);
-	if (input instanceof StagingTradeEventDerivativeAcquired) {
-		return new TradeEventDerivativeAcquired({
-			...fields,
-			acquisitionMethod: input.acquisitionMethod,
-		});
-	}
-	return new TradeEventDerivativeSold(fields);
+	const acquired = input instanceof StagingTradeEventDerivativeAcquired;
+	const trade = acquired
+		? new TradeEventDerivativeAcquired({ ...fields, acquisitionMethod: input.acquisitionMethod })
+		: new TradeEventDerivativeSold(fields);
+	track(
+		provenance,
+		input,
+		trade,
+		ProvenanceNodeKind.EVENT,
+		ProvenanceLabels.trade(
+			input.assetClass,
+			acquired,
+			input.id,
+			input.exchangedMoney.quantity,
+			input.financialIdentifier.ticker,
+		),
+	);
+	return trade;
 }
 
 export function toCoreCashTransaction(
 	input: StagingTradeEventCashTransaction,
+	provenance: IProvenanceRecorder,
 ): TradeEventCashTransaction {
 	const fields = {
 		...toCoreTradeFields(input),
@@ -66,19 +116,35 @@ export function toCoreCashTransaction(
 		transactionId: input.transactionId,
 		listingExchange: input.listingExchange,
 	};
+	let transaction: TradeEventCashTransaction;
+	let label: CashTransactionLabel;
 	if (input instanceof StagingTradeEventCashTransactionDividend) {
-		return new TradeEventCashTransactionDividend({ ...fields, dividendType: input.dividendType });
-	}
-	if (input instanceof StagingTradeEventCashTransactionWithholdingTax) {
-		return new TradeEventCashTransactionWithholdingTax(fields);
-	}
-	if (input instanceof StagingTradeEventCashTransactionPaymentInLieuOfDividend) {
-		return new TradeEventCashTransactionPaymentInLieuOfDividend({
+		transaction = new TradeEventCashTransactionDividend({
 			...fields,
 			dividendType: input.dividendType,
 		});
+		label = CashTransactionLabel.DIVIDEND;
+	} else if (input instanceof StagingTradeEventCashTransactionWithholdingTax) {
+		transaction = new TradeEventCashTransactionWithholdingTax(fields);
+		label = CashTransactionLabel.WITHHOLDING_TAX;
+	} else if (input instanceof StagingTradeEventCashTransactionPaymentInLieuOfDividend) {
+		transaction = new TradeEventCashTransactionPaymentInLieuOfDividend({
+			...fields,
+			dividendType: input.dividendType,
+		});
+		label = CashTransactionLabel.PAYMENT_IN_LIEU;
+	} else {
+		transaction = new TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend(fields);
+		label = CashTransactionLabel.WITHHOLDING_TAX_ON_PAYMENT_IN_LIEU;
 	}
-	return new TradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend(fields);
+	track(
+		provenance,
+		input,
+		transaction,
+		ProvenanceNodeKind.EVENT,
+		ProvenanceLabels.cash(label, input.id, input.financialIdentifier.ticker),
+	);
+	return transaction;
 }
 
 // A broker lot names its buy by transaction ID and its sell only by date.
@@ -101,8 +167,9 @@ function matchLotTrades<A extends TradeEvent, S extends TradeEvent>(
 function toCoreLot<A extends TradeEvent, S extends TradeEvent>(
 	input: StagingTaxLot,
 	trades: { acquired: A; sold: S },
+	provenance: IProvenanceRecorder,
 ): TaxLot<A, S> {
-	return new TaxLot({
+	const lot = new TaxLot({
 		id: input.id,
 		quantity: input.quantity,
 		acquired: trades.acquired,
@@ -110,9 +177,21 @@ function toCoreLot<A extends TradeEvent, S extends TradeEvent>(
 		shortLongType: ShortLong.LONG,
 		provenance: [],
 	});
+	track(
+		provenance,
+		input,
+		lot,
+		ProvenanceNodeKind.LOT,
+		ProvenanceLabels.lot(input.id, input.quantity, input.financialIdentifier.ticker),
+	);
+	return lot;
 }
 
-export function toCoreStockLot(input: StagingTaxLot, trades: TradeEventStock[]): TaxLotStock {
+export function toCoreStockLot(
+	input: StagingTaxLot,
+	trades: TradeEventStock[],
+	provenance: IProvenanceRecorder,
+): TaxLotStock {
 	const matched = matchLotTrades(
 		input,
 		trades.filter((t): t is TradeEventStockAcquired => t instanceof TradeEventStockAcquired),
@@ -121,12 +200,13 @@ export function toCoreStockLot(input: StagingTaxLot, trades: TradeEventStock[]):
 	if (matched === null) {
 		throw new Error(`LookupError: Failed to match stock lot (ID: ${input.id})`);
 	}
-	return toCoreLot(input, matched);
+	return toCoreLot(input, matched, provenance);
 }
 
 export function toCoreDerivativeLot(
 	input: StagingTaxLot,
 	trades: TradeEventDerivative[],
+	provenance: IProvenanceRecorder,
 ): TaxLotDerivative {
 	const matched = matchLotTrades(
 		input,
@@ -140,5 +220,5 @@ export function toCoreDerivativeLot(
 	if (matched === null) {
 		throw new Error(`LookupError: Failed to match derivative lot (ID: ${input.id})`);
 	}
-	return toCoreLot(input, matched);
+	return toCoreLot(input, matched, provenance);
 }
