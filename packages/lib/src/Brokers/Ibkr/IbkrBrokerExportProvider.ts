@@ -2,7 +2,7 @@ import { BrokerId } from "@brrr/Brokers/BrokerIdentifiers";
 import type { IbkrExtractService } from "@brrr/Brokers/Ibkr/Extract";
 import type { IbkrTransformService } from "@brrr/Brokers/Ibkr/Transform";
 import type { IBrokerProvider } from "@brrr/Brokers/Interfaces/IBrokerProvider";
-import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
+import type { StagingFinancialEvents } from "@brrr/Core/Models/Staging/StagingFinancialEvents";
 
 export class IbkrBrokerExportProvider implements IBrokerProvider {
 	public readonly brokerId = BrokerId.IBKR;

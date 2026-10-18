@@ -1,4 +1,4 @@
-import type { FinancialEvents } from "@brrr/Core/Schemas/FinancialEvents";
+import type { FinancialEvents } from "@brrr/Core/Models/FinancialEvents";
 import type {
 	TaxAuthorityConfiguration,
 	TaxpayerInfo,

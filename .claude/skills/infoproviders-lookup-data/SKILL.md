@@ -52,6 +52,6 @@ Treaty references come from the
 ## Not this skill
 
 `LookupError: Failed to match stock lot` comes from
-`Core/StagingProcessor/StagingToCore.ts`: a broker lot whose buy (by transaction ID) or sell (by date) isn't among the
+`Core/Services/StagingProcessing/StagingToCore.ts`: a broker lot whose buy (by transaction ID) or sell (by date) isn't among the
 grouping's trades. That is missing or partial export history, or an identifier mismatch between trade and lot, not lookup data. Check
 that the uploaded exports cover the whole account history, then the **ibkr-flex-query** transform.

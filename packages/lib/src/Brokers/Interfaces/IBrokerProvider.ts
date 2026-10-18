@@ -1,5 +1,5 @@
 import type { BrokerId } from "@brrr/Brokers/BrokerIdentifiers";
-import type { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
+import type { StagingFinancialEvents } from "@brrr/Core/Models/Staging/StagingFinancialEvents";
 
 export interface IBrokerProvider {
 	readonly brokerId: BrokerId;

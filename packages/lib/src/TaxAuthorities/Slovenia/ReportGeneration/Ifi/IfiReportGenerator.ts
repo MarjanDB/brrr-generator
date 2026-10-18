@@ -1,8 +1,8 @@
-import type { FinancialEventsProcessor } from "@brrr/Core/FinancialEvents/FinancialEventsProcessor";
-import { AcquisitionMethod } from "@brrr/Core/Schemas/Events/AcquisitionMethod";
-import { TradeEventDerivativeAcquired } from "@brrr/Core/Schemas/Events/Derivative/TradeEventDerivativeAcquired";
-import type { TradeEventDerivativeSold } from "@brrr/Core/Schemas/Events/Derivative/TradeEventDerivativeSold";
-import type { FinancialGrouping } from "@brrr/Core/Schemas/Groupings/FinancialGrouping";
+import { AcquisitionMethod } from "@brrr/Core/Models/Events/AcquisitionMethod";
+import { TradeEventDerivativeAcquired } from "@brrr/Core/Models/Events/Derivative/TradeEventDerivativeAcquired";
+import type { TradeEventDerivativeSold } from "@brrr/Core/Models/Events/Derivative/TradeEventDerivativeSold";
+import type { FinancialGrouping } from "@brrr/Core/Models/Groupings/FinancialGrouping";
+import type { FinancialEventsProcessor } from "@brrr/Core/Services/LotMatching/FinancialEventsProcessor";
 import type { TaxAuthorityConfiguration } from "@brrr/TaxAuthorities/ConfigurationProvider";
 import { createLotMatchingMethod } from "@brrr/TaxAuthorities/LotMatchingMethodFactory";
 import {

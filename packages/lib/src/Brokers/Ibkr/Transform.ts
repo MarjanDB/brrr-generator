@@ -8,9 +8,9 @@ import {
 	type TransactionCash,
 } from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
 import type { SegmentedTrades } from "@brrr/Brokers/Ibkr/Schemas/SegmentedTrades";
-import { AcquisitionMethod } from "@brrr/Core/Schemas/Events/AcquisitionMethod";
-import { DividendType } from "@brrr/Core/Schemas/Events/DividendType";
-import { ExchangedMoney } from "@brrr/Core/Schemas/Events/ExchangedMoney";
+import { AcquisitionMethod } from "@brrr/Core/Models/Events/AcquisitionMethod";
+import { DividendType } from "@brrr/Core/Models/Events/DividendType";
+import { ExchangedMoney } from "@brrr/Core/Models/Events/ExchangedMoney";
 import {
 	CashActionId,
 	CashTransactionId,
@@ -22,31 +22,31 @@ import {
 	TaxLotId,
 	Ticker,
 	TradeEventId,
-} from "@brrr/Core/Schemas/Identifiers";
-import { AssetClass } from "@brrr/Core/Schemas/Instrument/AssetClass";
-import { Category } from "@brrr/Core/Schemas/Instrument/Category";
-import { ShortLong } from "@brrr/Core/Schemas/Lots/ShortLong";
-import type { StagingTradeEventCashTransaction } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransaction";
-import { StagingTradeEventCashTransactionDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionDividend";
-import { StagingTradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionPaymentInLieuOfDividend";
-import { StagingTradeEventCashTransactionWithholdingTax } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionWithholdingTax";
-import { StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend } from "@brrr/Core/Schemas/Staging/Events/CashTransaction/StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend";
-import type { StagingTradeEventDerivative } from "@brrr/Core/Schemas/Staging/Events/Derivative/StagingTradeEventDerivative";
-import { StagingTradeEventDerivativeAcquired } from "@brrr/Core/Schemas/Staging/Events/Derivative/StagingTradeEventDerivativeAcquired";
-import { StagingTradeEventDerivativeSold } from "@brrr/Core/Schemas/Staging/Events/Derivative/StagingTradeEventDerivativeSold";
-import type { StagingTradeEventStock } from "@brrr/Core/Schemas/Staging/Events/Stock/StagingTradeEventStock";
-import { StagingTradeEventStockAcquired } from "@brrr/Core/Schemas/Staging/Events/Stock/StagingTradeEventStockAcquired";
-import { StagingTradeEventStockSold } from "@brrr/Core/Schemas/Staging/Events/Stock/StagingTradeEventStockSold";
-import { StagingFinancialGrouping } from "@brrr/Core/Schemas/Staging/Groupings/StagingFinancialGrouping";
-import { StagingIdentifierChangeType } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierChangeType";
-import { StagingIdentifierRelationshipPartial } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationshipPartial";
-import type { StagingIdentifierRelationshipPartialAny } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationshipPartialAny";
-import { StagingIdentifierRelationshipPartialWithQuantity } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationshipPartialWithQuantity";
-import { StagingIdentifierRelationships } from "@brrr/Core/Schemas/Staging/IdentifierRelationships/StagingIdentifierRelationships";
-import { StagingFinancialIdentifier } from "@brrr/Core/Schemas/Staging/Instrument/StagingFinancialIdentifier";
-import { StagingTaxLot } from "@brrr/Core/Schemas/Staging/Lots/StagingTaxLot";
-import { StagingTaxLotMatchingDetails } from "@brrr/Core/Schemas/Staging/Lots/StagingTaxLotMatchingDetails";
-import { StagingFinancialEvents } from "@brrr/Core/Schemas/Staging/StagingFinancialEvents";
+} from "@brrr/Core/Models/Identifiers";
+import { AssetClass } from "@brrr/Core/Models/Instrument/AssetClass";
+import { Category } from "@brrr/Core/Models/Instrument/Category";
+import { ShortLong } from "@brrr/Core/Models/Lots/ShortLong";
+import type { StagingTradeEventCashTransaction } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransaction";
+import { StagingTradeEventCashTransactionDividend } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransactionDividend";
+import { StagingTradeEventCashTransactionPaymentInLieuOfDividend } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransactionPaymentInLieuOfDividend";
+import { StagingTradeEventCashTransactionWithholdingTax } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransactionWithholdingTax";
+import { StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend } from "@brrr/Core/Models/Staging/Events/CashTransaction/StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend";
+import type { StagingTradeEventDerivative } from "@brrr/Core/Models/Staging/Events/Derivative/StagingTradeEventDerivative";
+import { StagingTradeEventDerivativeAcquired } from "@brrr/Core/Models/Staging/Events/Derivative/StagingTradeEventDerivativeAcquired";
+import { StagingTradeEventDerivativeSold } from "@brrr/Core/Models/Staging/Events/Derivative/StagingTradeEventDerivativeSold";
+import type { StagingTradeEventStock } from "@brrr/Core/Models/Staging/Events/Stock/StagingTradeEventStock";
+import { StagingTradeEventStockAcquired } from "@brrr/Core/Models/Staging/Events/Stock/StagingTradeEventStockAcquired";
+import { StagingTradeEventStockSold } from "@brrr/Core/Models/Staging/Events/Stock/StagingTradeEventStockSold";
+import { StagingFinancialGrouping } from "@brrr/Core/Models/Staging/Groupings/StagingFinancialGrouping";
+import { StagingIdentifierChangeType } from "@brrr/Core/Models/Staging/IdentifierRelationships/StagingIdentifierChangeType";
+import { StagingIdentifierRelationshipPartial } from "@brrr/Core/Models/Staging/IdentifierRelationships/StagingIdentifierRelationshipPartial";
+import type { StagingIdentifierRelationshipPartialAny } from "@brrr/Core/Models/Staging/IdentifierRelationships/StagingIdentifierRelationshipPartialAny";
+import { StagingIdentifierRelationshipPartialWithQuantity } from "@brrr/Core/Models/Staging/IdentifierRelationships/StagingIdentifierRelationshipPartialWithQuantity";
+import { StagingIdentifierRelationships } from "@brrr/Core/Models/Staging/IdentifierRelationships/StagingIdentifierRelationships";
+import { StagingFinancialIdentifier } from "@brrr/Core/Models/Staging/Instrument/StagingFinancialIdentifier";
+import { StagingTaxLot } from "@brrr/Core/Models/Staging/Lots/StagingTaxLot";
+import { StagingTaxLotMatchingDetails } from "@brrr/Core/Models/Staging/Lots/StagingTaxLotMatchingDetails";
+import { StagingFinancialEvents } from "@brrr/Core/Models/Staging/StagingFinancialEvents";
 
 type AnyEvent = { financialIdentifier: StagingFinancialIdentifier };
 

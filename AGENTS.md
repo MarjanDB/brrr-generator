@@ -58,9 +58,26 @@ imports → broker provider (extract + transform) → **StagingFinancialEvents**
 **FinancialEvents** → tax authority provider (applies identifier relationships, lot matching, report generation) → XML + CSV
 
 - `packages/lib/src/Brokers/` — one folder per broker; turns export files into broker-neutral staging events.
-- `packages/lib/src/Core/` — broker- and country-neutral: schemas, staging → core processing, lot matching (NONE / FIFO / PROVIDED).
+- `packages/lib/src/Core/` — broker- and country-neutral: models, staging → core processing, lot matching (NONE / FIFO / PROVIDED).
 - `packages/lib/src/TaxAuthorities/` — one folder per country; turns core events into that country's forms.
 - `packages/lib/src/InfoProviders/` — company and country lookups (`IInfoProvider`); the Node implementation and its JSON data sit in `Node/`.
+
+Each area (`Core`, `Brokers` and each broker, `TaxAuthorities` and each country, `InfoProviders`) is laid out the same way, so a
+file's folder says what it is:
+
+- At the area's top, only its DI wiring (`<Area>Module.ts`) and its entry point, the class other areas call (`BrokerRegistry`,
+  `IbkrBrokerExportProvider`, `TaxAuthorityRegistry`, `SlovenianTaxAuthorityProvider`). Core has no entry point.
+- `Interfaces/` — the `I…` contracts.
+- `Models/` — what our code builds and passes around: classes, data types, enums, identifiers.
+- `Schemas/` — the outside's formats: the zod schemas we parse input with, the enums and identifiers they parse into, and the XSDs
+  of the forms we write. If it's parsed from someone else's data or is their own definition file, it's a schema; if our code builds
+  it, it's a model, even when it mirrors a form.
+- `Services/` — the classes and functions that do the work.
+- `Utils/` — helpers that hold no state.
+
+`Models/` and `Services/` split into a folder per concern where an area has several (`Core/Models/Events/Stock/`,
+`Core/Services/LotMatching/`). Core follows this layout; Brokers, TaxAuthorities and InfoProviders are being moved to it one area at
+a time, so don't move their files in passing.
 
 The **pipeline-and-structure** skill has the details and the steps for adding a broker, tax authority or report type.
 
@@ -69,14 +86,14 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
 ### TypeScript
 
 - PascalCase for types, classes, enums, Vue components and `packages/lib/src/` folders; camelCase for functions, methods and variables.
-- Imports go at the top of the file. Inside `packages/lib/` import through the `@brrr/*` alias (`@brrr/Core/Schemas/Events/TradeEvent`), not relative paths.
+- Imports go at the top of the file. Inside `packages/lib/` import through the `@brrr/*` alias (`@brrr/Core/Models/Events/TradeEvent`), not relative paths.
 - One model per file, named after it: each class, enum and union type gets its own file, in a folder per concern
-  (`Core/Schemas/Events/Stock/TradeEventStockAcquired.ts`, `Core/Schemas/Lots/TaxLot.ts`), and `Core/Schemas/Staging/` mirrors those
+  (`Core/Models/Events/Stock/TradeEventStockAcquired.ts`, `Core/Models/Lots/TaxLot.ts`), and `Core/Models/Staging/` mirrors those
   folders for the staging twins. A class's `…Args` type stays in its file. There are no `index.ts` barrels: import each model from its own file.
-- Domain models are classes with `public readonly` fields and one args-object constructor (see `Core/Schemas/`). Don't mutate them, and
+- Domain models are classes with `public readonly` fields and one args-object constructor (see `Core/Models/`). Don't mutate them, and
   don't copy one just to change a field: build each value once with its final contents. Where a value really changes (a split rescaling
   a trade), one named function builds the new object through the class's constructor and appends a `provenance` step, so the trace back
-  to the original survives (see `scaleTradeForSplit` in `Core/FinancialEvents/ApplyIdentifierRelationshipsService.ts`).
+  to the original survives (see `scaleTradeForSplit` in `Core/Services/IdentifierRelationships/ApplyIdentifierRelationshipsService.ts`).
 - Data from outside (XML rows, config files, env) is parsed with zod 4 (`import { z } from "zod/v4"`): a const holding `{ Schema }` and a
   same-named type `z.output<typeof X.Schema>` (see `Brokers/Ibkr/Schemas/IbkrSchemas.ts`).
 - `type` for plain data shapes. `interface` only for contracts a class implements, named with an `I` prefix and in a file of the
@@ -84,7 +101,7 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
 - `enum` for fixed sets of values, not string-literal unions or `as const` objects.
 - Identifiers (ISINs, transaction IDs, report type IDs, …) get a nominal type from `@brrr/Utils/NominalType`, never a bare `string`.
   Each domain owns its own, even for the same concept: IBKR's in `Brokers/Ibkr/Schemas/IbkrIdentifiers.ts`, core's (staging and
-  the lookups included) in `Core/Schemas/Identifiers.ts`, eDavki's in `TaxAuthorities/Slovenia/Schemas/EDavkiIdentifiers.ts`, the
+  the lookups included) in `Core/Models/Identifiers.ts`, eDavki's in `TaxAuthorities/Slovenia/Schemas/EDavkiIdentifiers.ts`, the
   registries' in `TaxAuthorities/TaxAuthorityIdentifiers.ts` and `Brokers/BrokerIdentifiers.ts` (enums where the set is fixed).
   A value changes type only where it crosses into the next domain. Declare the type, then a same-named const whose `Schema` holds
   the one cast; the brand names the domain:
@@ -105,7 +122,7 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
 - Dates and times use luxon. Models hold `ValidDateTime` (`DateTime<true>`); parse input with `zDateTimeFromISOString`
   (`@brrr/Utils/DateTime`). No `Date`.
 - Dependency injection is Inversify without decorators: each area has a `*Module.ts` that binds classes with
-  `toResolvedValue(factory, [dependencies])` in singleton scope, and `createContainer(infoProvider)` in `packages/lib/src/container.ts` loads them
+  `toResolvedValue(factory, [dependencies])` in singleton scope, and `createContainer(infoProvider)` in `packages/lib/src/Container.ts` loads them
   all. Anything the app or CLI needs is exported from `packages/lib/src/index.ts`.
 - `packages/lib/` stays platform-neutral: no DOM, and no Node built-ins (`fs`, `Buffer`, …) outside `InfoProviders/Node/`, which is exported
   separately as `@brrr/lib/info/node`. Dependencies used by the report code need a browser build (e.g. `csv-stringify/browser/esm/sync`);

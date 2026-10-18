@@ -1,4 +1,4 @@
-import type { CashActionId, CountryCode, Isin, Ticker } from "@brrr/Core/Schemas/Identifiers";
+import type { CashActionId, CountryCode, Isin, Ticker } from "@brrr/Core/Models/Identifiers";
 import type { Nominal } from "@brrr/Utils/NominalType";
 import { z } from "zod/v4";
 

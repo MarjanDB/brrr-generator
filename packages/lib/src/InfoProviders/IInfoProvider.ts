@@ -1,4 +1,4 @@
-import type { CountryCode, CountryName, Isin } from "@brrr/Core/Schemas/Identifiers";
+import type { CountryCode, CountryName, Isin } from "@brrr/Core/Models/Identifiers";
 
 export enum TreatyType {
 	TaxRelief = "TAX_RELIEF",

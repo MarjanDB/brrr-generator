@@ -1,0 +1,14 @@
+import { Isin, Ticker } from "@brrr/Core/Models/Identifiers";
+import { FinancialIdentifier } from "@brrr/Core/Models/Instrument/FinancialIdentifier";
+
+test("FinancialIdentifier exposes readonly fields", () => {
+	const identifier = new FinancialIdentifier({
+		isin: Isin.Schema.parse("US0000000001"),
+		ticker: Ticker.Schema.parse("ABC"),
+	});
+
+	expect(identifier.isin).toEqual("US0000000001");
+	expect(identifier.ticker).toEqual("ABC");
+	expect(identifier.name).toBeNull();
+	expect(identifier.toKey()).toEqual("US0000000001|ABC|");
+});
