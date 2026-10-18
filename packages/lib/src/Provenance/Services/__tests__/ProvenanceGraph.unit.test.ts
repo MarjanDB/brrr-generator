@@ -124,3 +124,74 @@ test("the null recorder accepts anything without recording", () => {
 
 	expect(recorder).toBeInstanceOf(NullProvenanceRecorder);
 });
+
+test("a layer sees its parent's nodes and edges", () => {
+	const parent = new ProvenanceGraph({ parent: null });
+	const row = {};
+	const record = {};
+	parent.node(row, ProvenanceNodeKind.ROW, "Trade 1001", {});
+	parent.node(record, ProvenanceNodeKind.RECORD, "Trade 1001", {});
+	parent.derive([row], record, ProvenanceChange.PARSED, stage, null);
+
+	const layer = parent.layer();
+
+	expect(layer.nodes()).toHaveLength(2);
+	expect(layer.edges()).toHaveLength(1);
+	expect(layer.nodeOf(row)).toBe(parent.nodeOf(row));
+});
+
+test("what a layer records stays out of its parent", () => {
+	const parent = new ProvenanceGraph({ parent: null });
+	const record = {};
+	parent.node(record, ProvenanceNodeKind.RECORD, "Trade 1001", {});
+	const layer = parent.layer();
+	const event = {};
+
+	layer.node(event, ProvenanceNodeKind.EVENT, "buy 10", {});
+	layer.derive([record], event, ProvenanceChange.TRANSFORMED, stage, null);
+	layer.drop(event, DropReason.OUTSIDE_PERIOD, stage, null);
+
+	expect(parent.nodes()).toHaveLength(1);
+	expect(parent.edges()).toHaveLength(0);
+	expect(parent.drops()).toHaveLength(0);
+	expect(layer.nodes()).toHaveLength(2);
+	expect(layer.edges()).toHaveLength(1);
+	expect(layer.drops()).toHaveLength(1);
+});
+
+test("recording a parent's object in a layer keeps the parent's node", () => {
+	const parent = new ProvenanceGraph({ parent: null });
+	const row = {};
+	parent.node(row, ProvenanceNodeKind.ROW, "Trade 1001", {});
+	const layer = parent.layer();
+
+	layer.node(row, ProvenanceNodeKind.ROW, "Trade 1001", {});
+
+	expect(layer.nodes()).toHaveLength(1);
+	expect(layer.nodeOf(row)).toBe(parent.nodeOf(row));
+});
+
+test("a layer numbers its nodes after its parent's, and so does its sibling", () => {
+	const parent = new ProvenanceGraph({ parent: null });
+	parent.node({}, ProvenanceNodeKind.ROW, "Trade 1001", {});
+	parent.node({}, ProvenanceNodeKind.ROW, "Trade 1002", {});
+	const kdvp = parent.layer();
+	const div = parent.layer();
+	const kdvpLine = {};
+	const divLine = {};
+
+	kdvp.node(kdvpLine, ProvenanceNodeKind.REPORT_LINE, "KDVP line", {});
+	div.node(divLine, ProvenanceNodeKind.REPORT_LINE, "DIV line", {});
+
+	expect(kdvp.nodeOf(kdvpLine).id).toEqual("n3");
+	expect(div.nodeOf(divLine).id).toEqual("n3");
+});
+
+test("a graph with layers can't record any more", () => {
+	const parent = new ProvenanceGraph({ parent: null });
+	parent.layer();
+
+	expect(() => parent.node({}, ProvenanceNodeKind.ROW, "Trade 1001", {})).toThrow(
+		"Provenance: this graph has layers; record into a layer instead",
+	);
+});
