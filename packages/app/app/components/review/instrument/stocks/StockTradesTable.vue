@@ -2,12 +2,15 @@
 import type { FinancialGrouping } from "@brrr/lib";
 import { TradeEventStockAcquired } from "@brrr/lib";
 import { useI18n } from 'vue-i18n';
+import type { ImportSources } from "~/review/ImportSources";
+import { RowSourceKind } from "~/review/RowSourceKind";
 
 type StockTrade = FinancialGrouping["stockTrades"][number];
 
 defineProps<{
   trades: StockTrade[];
   baseCurrency: string;
+  sources: ImportSources;
 }>();
 
 const { t } = useI18n();
@@ -30,7 +33,8 @@ function formatAmount(amount: number, currency: string) {
           <th class="text-left py-1.5 pr-3 font-medium app-text-muted">{{ t("modal_col_type") }}</th>
           <th class="text-right py-1.5 pr-3 font-medium app-text-muted">{{ t("modal_col_qty") }}</th>
           <th class="text-right py-1.5 pr-3 font-medium app-text-muted">{{ t("modal_col_price") }}</th>
-          <th class="text-right py-1.5 font-medium app-text-muted">{{ t("modal_col_total") }}</th>
+          <th class="text-right py-1.5 pr-3 font-medium app-text-muted">{{ t("modal_col_total") }}</th>
+          <th class="w-8 py-1.5 sticky right-0 bg-page"><span class="sr-only">{{ t("review_source_column") }}</span></th>
         </tr>
       </thead>
       <tbody>
@@ -47,8 +51,11 @@ function formatAmount(amount: number, currency: string) {
           <td class="py-1.5 pr-3 text-right app-text text-xs">
             {{ formatAmount(trade.exchangedMoney.priceInBase, baseCurrency) }}
           </td>
-          <td class="py-1.5 text-right app-text text-xs">
+          <td class="py-1.5 pr-3 text-right app-text text-xs">
             {{ formatAmount(trade.exchangedMoney.quantity * trade.exchangedMoney.priceInBase, baseCurrency) }}
+          </td>
+          <td class="py-1 pl-2 text-right sticky right-0 bg-page">
+            <RowSourceButton :sources="sources" :subject="trade" :kind="RowSourceKind.TRADE" />
           </td>
         </tr>
       </tbody>
