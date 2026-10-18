@@ -70,19 +70,22 @@ function testCase<I extends FileNames, S extends FileNames>(definition: {
 	const root = path.join(CASES_ROOT, definition.folder);
 	const inputs = mapValues(definition.inputs, (fileName) => inputFile(root, fileName));
 	const expected = {
+		// What reading the inputs recorded, as text (the provenance graph of the import).
+		importProvenancePath: path.join(root, "expected", "import.provenance.txt"),
 		slovenia: mapValues(definition.expected.slovenia, (name) =>
 			expectedReport(root, AuthorityFolder.Slovenia, name),
 		),
 	};
 	checkFolder(root, [
 		...Object.values(inputs).map((input) => input.path),
+		expected.importProvenancePath,
 		...Object.values(expected.slovenia).flatMap((report) => [report.xmlPath, report.csvPath]),
 	]);
 
 	return {
 		year: definition.year,
 		inputs,
-		// Every declared export, in declaration order, shaped for BrokerRegistry.loadAndTransformDetected.
+		// Every declared export, in declaration order, shaped for ReportPipeline.read.
 		readInputs: (): ExportFile[] => Object.values(inputs).map((input) => input.read()),
 		expected,
 	};

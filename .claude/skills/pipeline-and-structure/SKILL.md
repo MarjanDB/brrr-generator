@@ -11,17 +11,20 @@ plug into. All paths are under `packages/lib/src/` unless they say otherwise.
 ## Flow
 
 ```
-export files (XML strings)
-  → BrokerRegistry.loadAndTransformDetected   detects the broker of each file, runs that broker's provider
+export files (ImportFile: name + XML string)
+  → ReportPipeline.read                            (Pipeline/ReportPipeline.ts) creates the provenance graph and runs:
+  → BrokerRegistry.load                            records each file, runs that broker's provider once per file
   → StagingFinancialEvents                         staging groupings + partial identifier relationships
   → StagingFinancialGroupingProcessor.processStagingFinancialEvents
   → FinancialEvents                                core groupings + resolved identifier relationships
-  → TaxAuthorityRegistry.generateExports           picks the country provider, which picks the report generator
-  → { xml, csv }
+  → ImportResult { detections, events, provenance }
+  → ReportPipeline.generate                        takes a layer of the graph; TaxAuthorityRegistry.generateExports picks the
+                                                   country provider, which picks the report generator
+  → { xml, csv, provenance }
 ```
 
 The site runs this in the browser (`packages/app/app/components/ibkr/IbkrUploadStep.vue`, `packages/app/app/components/export/SloveniaExportForm.vue`);
-the CLI runs it in Node (`packages/cli/src/main.ts`, through the same two registries).
+the CLI runs it in Node (`packages/cli/src/main.ts`). Both go through `ReportPipeline`.
 
 ## Layers
 
@@ -52,12 +55,13 @@ before checking them.
 1. Create `Brokers/<Broker>/` with a zod schema per raw row type (`Schemas/`), the broker container (`Models/`), and in `Services/`
    an extract service (file → broker container, plus merging several files without duplicating rows) and a transform service
    (→ `StagingFinancialEvents`). Corporate actions become `StagingIdentifierRelationshipPartial`s.
-2. Add `<Broker>BrokerExportProvider implements IBrokerProvider` (`brokerId`, `displayName`, `isThisValidExport`,
-   `describeExportProblem`, `loadAndTransform`). The interface takes XML strings; a broker that exports CSV needs that widened first.
+2. Add `<Broker>BrokerExportProvider implements IBrokerProvider` (`brokerId`, `displayName`, and
+   `load(files, provenance)`, which reads each file once and returns a `BrokerFileDetection` per file plus the staging events).
+   The interface takes `ImportFile`s with an XML string; a broker that exports CSV needs that widened first. The extract and
+   transform record what they make from the files into the `IProvenanceRecorder` they're given (see the IBKR services).
 3. Bind it in a `<Broker>Module.ts` and load that from `BrokersModule.ts`.
-4. `BrokerRegistry` takes each provider in its constructor and has the IBKR one written into `listBrokers`, `detectOne` and
-   `loadAndTransformDetected`. Add the new provider to all three; staging events from several brokers are combined with
-   `StagingFinancialEvents.merge`.
+4. `BrokerRegistry` takes each provider in its constructor and has the IBKR one written into `listBrokers` and `load`. Add the new
+   provider to both; staging events from several brokers are combined with `StagingFinancialEvents.merge`.
 5. Unit tests in `__tests__/` beside the files they cover. Anonymised exports go in `packages/test-cases/cases/<Broker>/<Case>/input/`, each case
    declared in a `<broker>` group of the `TestKit` registry (`packages/test-cases/index.ts`: year, named inputs, named expected reports),
    with an acceptance test per case in each tax authority's `__tests__/Acceptance/<Form>.acceptance.test.ts`.

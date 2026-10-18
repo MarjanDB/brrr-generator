@@ -66,13 +66,15 @@ imports → broker provider (extract + transform) → **StagingFinancialEvents**
 - `packages/lib/src/Core/` — broker- and country-neutral: models, staging → core processing, lot matching (NONE / FIFO / PROVIDED).
 - `packages/lib/src/TaxAuthorities/` — one folder per country; turns core events into that country's forms.
 - `packages/lib/src/InfoProviders/` — company and country lookups (`IInfoProvider`), one folder per implementation; the Node one keeps its JSON data in `Node/Data/`.
+- `packages/lib/src/Pipeline/` — `ReportPipeline`, the one way in for the site, the CLI and the tests: `read(files)` runs the brokers and
+  the staging processor and returns the import with its provenance graph; `generate(imported, request)` makes a report from it.
 - `packages/lib/src/Provenance/` — what each stage made from what: a graph recorded beside the tax models and returned with each report. Stages only write to it; nothing in the tax logic reads it.
 
-Each area (`Core`, `Brokers` and each broker, `TaxAuthorities` and each country, `InfoProviders`, `Provenance`) is laid out
+Each area (`Core`, `Brokers` and each broker, `TaxAuthorities` and each country, `InfoProviders`, `Pipeline`, `Provenance`) is laid out
 the same way, so a file's folder says what it is:
 
 - At the area's top, only its DI wiring (`<Area>Module.ts`), its entry point, the class other areas call (`BrokerRegistry`,
-  `IbkrBrokerExportProvider`, `TaxAuthorityRegistry`, `SlovenianTaxAuthorityProvider`), and a folder per implementation
+  `IbkrBrokerExportProvider`, `TaxAuthorityRegistry`, `SlovenianTaxAuthorityProvider`, `ReportPipeline`), and a folder per implementation
   (`Brokers/Ibkr/`, `TaxAuthorities/Slovenia/`, `InfoProviders/Node/`). Core, InfoProviders and Provenance have no entry
   point, and InfoProviders and Provenance no module: `Container.ts` binds the provider it's given, and a provenance graph is
   created for each run, never bound in the container.
@@ -197,7 +199,9 @@ To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
   `stockTrade.year`, `stockTrade.inputs.simpleStockTrade.read()`, `stockTrade.readInputs()`,
   `stockTrade.expected.slovenia.kdvpFifo.xmlPath`. On import the registry fails if a case's declared files and its folder differ,
   so adding a file means declaring it. Every broker export a test reads lives here, unit tests included. Exports are trimmed and
-  anonymised (fake account IDs); never copy anything from `imports/`.
+  anonymised (fake account IDs); never copy anything from `imports/`. `expected/import.provenance.txt` pins what reading the
+  inputs recorded (the import's provenance graph, rendered as text), the same way: byte for byte, rewritten with `-u` only for
+  an intended change.
 - **Acceptance tests** are about the tax authority: did this input reach it correctly? They sit with the authority, one file per
   form (`packages/lib/src/TaxAuthorities/Slovenia/__tests__/Acceptance/{Kdvp,Ifi,Div}.acceptance.test.ts`), with one self-contained test
   per input case, titled by what the authority must see. Each runs the case through the public `Scenario.pipeline` only, and
@@ -213,7 +217,8 @@ To run one kind: `pnpm --filter @brrr/lib exec vitest run acceptance.test`.
     Every other value (id, date, quantity, price, currency, commission, tax, fx rate, lot quantity, long/short, every grouping
     list, even an empty one) is required, so the test shows the exact scenario.
   - `Scenario.config.report(year, lotMatching)` and `.infoProvider(lookups)`.
-  - `Scenario.pipeline.run(files)` and `.generate(events, { report, year, lotMatching, taxpayer, info })`, all arguments required.
+  - `Scenario.pipeline.run(files)` returns the import (events, detections, provenance), and
+    `.generate(imported, { report, year, lotMatching, taxpayer, info })` takes it, all arguments required.
 - **`Fixtures`** (`packages/lib/src/__tests__/support/Fixtures.ts`) holds named test data that tests look up on purpose: `taxpayer` (the
   one the expected files were generated for), `lookups` (company and country data), and IBKR sample rows (`ibkr.stockTradeBuy`, …).
   A test that needs a variant spreads a fixture and lists what it changes.
