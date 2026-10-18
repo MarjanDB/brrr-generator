@@ -6,10 +6,10 @@ import {
 	IbkrTransactionId,
 } from "@brrr/Brokers/Ibkr/Schemas/IbkrIdentifiers";
 import {
-	BuyOrSell,
-	CashTransactionType,
 	type CorporateAction,
-	OpenCloseIndicator,
+	IbkrBuyOrSell,
+	IbkrCashTransactionType,
+	IbkrOpenCloseIndicator,
 	type TradeStock,
 	type TransactionCash,
 } from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
@@ -37,8 +37,8 @@ const simpleTradeSell: TradeStock = {
 	tradeMoney: -30,
 	netCash: 33,
 	netCashInBase: 33,
-	openCloseIndicator: OpenCloseIndicator.CLOSE,
-	buyOrSell: BuyOrSell.SELL,
+	openCloseIndicator: IbkrOpenCloseIndicator.CLOSE,
+	buyOrSell: IbkrBuyOrSell.SELL,
 	transactionID: IbkrTransactionId.Schema.parse("ID2"),
 };
 
@@ -50,21 +50,21 @@ const withholdingTaxForDividend: TransactionCash = {
 	...Fixtures.ibkr.dividend,
 	description: "TTE(FR0000120271) CASH DIVIDEND USD 0.66 PER SHARE - FR TAX",
 	amount: -0.66,
-	type: CashTransactionType.WITHHOLDING_TAX,
+	type: IbkrCashTransactionType.WITHHOLDING_TAX,
 	transactionID: IbkrTransactionId.Schema.parse("323614082"),
 };
 
 const paymentInLieuOfDividend: TransactionCash = {
 	...Fixtures.ibkr.dividend,
 	description: "TTE(FR0000120271) CASH DIVIDEND USD 0.66 PER SHARE (Payment in Lieu of Dividends)",
-	type: CashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS,
+	type: IbkrCashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS,
 };
 
 const withholdingTaxForPaymentInLieu: TransactionCash = {
 	...Fixtures.ibkr.dividend,
 	description: "TTE(FR0000120271) PAYMENT IN LIEU OF DIVIDEND - FR TAX",
 	amount: -0.66,
-	type: CashTransactionType.WITHHOLDING_TAX,
+	type: IbkrCashTransactionType.WITHHOLDING_TAX,
 	transactionID: IbkrTransactionId.Schema.parse("323614082"),
 };
 

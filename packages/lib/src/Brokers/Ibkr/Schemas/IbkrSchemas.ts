@@ -11,13 +11,13 @@ import type { ValidDateTime } from "@brrr/Utils/DateTime";
 import { DateTime } from "luxon";
 import { z } from "zod/v4";
 
-export enum AssetClass {
+export enum IbkrAssetClass {
 	STOCK = "STK",
 	CASH = "CASH",
 	OPTION = "OPT",
 }
 
-export enum SubCategory {
+export enum IbkrSubCategory {
 	NONE = "",
 	COMMON = "COMMON",
 	PREFERRED = "PREFERRED",
@@ -29,31 +29,31 @@ export enum SubCategory {
 	P = "P",
 }
 
-export enum OpenCloseIndicator {
+export enum IbkrOpenCloseIndicator {
 	OPEN = "O",
 	CLOSE = "C",
 	NOT_SPECIFIED = "",
 }
 
-export enum TransactionType {
+export enum IbkrTransactionType {
 	EXCHANGE_TRADE = "ExchTrade",
 }
 
-export enum SecurityIDType {
+export enum IbkrSecurityIDType {
 	ISIN = "ISIN",
 }
 
-export enum BuyOrSell {
+export enum IbkrBuyOrSell {
 	BUY = "BUY",
 	SELL = "SELL",
 }
 
-export enum PutOrCall {
+export enum IbkrPutOrCall {
 	PUT = "P",
 	CALL = "C",
 }
 
-export enum Codes {
+export enum IbkrCodes {
 	ASSIGNMENT = "A",
 	ADR_FEE_ACCRUAL = "ADR",
 	AUTOMATIC_EXERCISE_FOR_DIVIDEND_RELATED_RECOMMENDATION = "AEx",
@@ -120,13 +120,13 @@ export enum Codes {
 	MUTUAL_FUND_EXCHANGE_TRANSACTION = "XCH",
 }
 
-export enum LevelOfDetail {
+export enum IbkrLevelOfDetail {
 	EXECUTION = "EXECUTION",
 	DETAIL = "DETAIL",
 	CLOSED_LOT = "CLOSED_LOT",
 }
 
-export enum OrderType {
+export enum IbkrOrderType {
 	LIMIT = "LMT",
 	MARKET = "MKT",
 	MID_POINT = "MIDPX",
@@ -134,11 +134,11 @@ export enum OrderType {
 	STOP_LIMIT = "STPLMT",
 }
 
-export enum Model {
+export enum IbkrModel {
 	INDEPENDENT = "Independent",
 }
 
-export enum CashTransactionType {
+export enum IbkrCashTransactionType {
 	WITHHOLDING_TAX = "Withholding Tax",
 	DIVIDEND = "Dividends",
 	PAYMENT_IN_LIEU_OF_DIVIDENDS = "Payment In Lieu Of Dividends",
@@ -177,9 +177,9 @@ const zDateTimeNullable = z.string().transform((s, ctx): ValidDateTime | null =>
 	return parseDateString(s, ctx);
 });
 
-const zNotes = z.string().transform((s): Codes[] => {
+const zNotes = z.string().transform((s): IbkrCodes[] => {
 	if (s === "") return [];
-	return s.split(";").map((code) => code as Codes);
+	return s.split(";").map((code) => code as IbkrCodes);
 });
 
 // ---------------------------------------------------------------------------
@@ -267,13 +267,13 @@ export const TradeStock = {
 			clientAccountID: z.string(),
 			currency: IbkrCurrency.Schema,
 			fxRateToBase: z.coerce.number(),
-			assetClass: z.enum(AssetClass),
-			subCategory: z.enum(SubCategory),
+			assetClass: z.enum(IbkrAssetClass),
+			subCategory: z.enum(IbkrSubCategory),
 			symbol: IbkrSymbol.Schema,
 			description: z.string(),
 			conid: z.string(),
 			securityID: z.string(),
-			securityIDType: z.enum(SecurityIDType),
+			securityIDType: z.enum(IbkrSecurityIDType),
 			cusip: zStrNullable,
 			isin: IbkrIsin.Schema,
 			figi: zStrNullable,
@@ -281,7 +281,7 @@ export const TradeStock = {
 			reportDate: zDateTime,
 			dateTime: zDateTime,
 			tradeDate: zDateTime,
-			transactionType: z.enum(TransactionType),
+			transactionType: z.enum(IbkrTransactionType),
 			exchange: z.string(),
 			quantity: z.coerce.number(),
 			tradePrice: z.coerce.number(),
@@ -293,20 +293,20 @@ export const TradeStock = {
 			netCash: z.coerce.number(),
 			netCashInBase: zNumNullable,
 			closePrice: z.coerce.number(),
-			openCloseIndicator: z.enum(OpenCloseIndicator),
+			openCloseIndicator: z.enum(IbkrOpenCloseIndicator),
 			notesAndCodes: zNotes,
 			costBasis: z.coerce.number(),
 			fifoProfitAndLossRealized: z.coerce.number(),
 			capitalGainsProfitAndLoss: zNumNullable,
 			forexProfitAndLoss: zNumNullable,
 			marketToMarketProfitAndLoss: zNumNullable,
-			buyOrSell: z.enum(BuyOrSell),
+			buyOrSell: z.enum(IbkrBuyOrSell),
 			transactionID: IbkrTransactionId.Schema,
 			orderTime: zDateTime,
-			levelOfDetail: z.enum(LevelOfDetail),
+			levelOfDetail: z.enum(IbkrLevelOfDetail),
 			changeInPrice: z.coerce.number(),
 			changeInQuantity: z.coerce.number(),
-			orderType: z.enum(OrderType),
+			orderType: z.enum(IbkrOrderType),
 			accruedInt: z.coerce.number(),
 		}),
 	),
@@ -325,13 +325,13 @@ export const LotStock = {
 			clientAccountID: z.string(),
 			currency: z.string(),
 			fxRateToBase: z.coerce.number(),
-			assetClass: z.enum(AssetClass),
-			subCategory: z.enum(SubCategory),
+			assetClass: z.enum(IbkrAssetClass),
+			subCategory: z.enum(IbkrSubCategory),
 			symbol: IbkrSymbol.Schema,
 			description: z.string(),
 			conid: z.string(),
 			securityID: z.string(),
-			securityIDType: z.enum(SecurityIDType),
+			securityIDType: z.enum(IbkrSecurityIDType),
 			cusip: zStrNullable,
 			isin: IbkrIsin.Schema,
 			figi: zStrNullable,
@@ -343,17 +343,17 @@ export const LotStock = {
 			exchange: z.string(),
 			quantity: z.coerce.number(),
 			tradePrice: z.coerce.number(),
-			openCloseIndicator: z.enum(OpenCloseIndicator),
+			openCloseIndicator: z.enum(IbkrOpenCloseIndicator),
 			notesAndCodes: zNotes,
 			costBasis: z.coerce.number(),
 			fifoProfitAndLossRealized: z.coerce.number(),
 			capitalGainsProfitAndLoss: z.coerce.number(),
 			forexProfitAndLoss: z.coerce.number(),
-			buyOrSell: z.enum(BuyOrSell),
+			buyOrSell: z.enum(IbkrBuyOrSell),
 			transactionID: IbkrTransactionId.Schema,
 			openDateTime: zDateTime,
 			holdingPeriodDateTime: zDateTime,
-			levelOfDetail: z.enum(LevelOfDetail),
+			levelOfDetail: z.enum(IbkrLevelOfDetail),
 		}),
 	),
 };
@@ -371,8 +371,8 @@ export const TradeDerivative = {
 			clientAccountID: z.string(),
 			currency: IbkrCurrency.Schema,
 			fxRateToBase: z.coerce.number(),
-			assetClass: z.enum(AssetClass),
-			subCategory: z.enum(SubCategory),
+			assetClass: z.enum(IbkrAssetClass),
+			subCategory: z.enum(IbkrSubCategory),
 			symbol: IbkrSymbol.Schema,
 			description: z.string(),
 			conid: z.string(),
@@ -388,10 +388,10 @@ export const TradeDerivative = {
 			reportDate: zDateTime,
 			expiry: zDateTime,
 			dateTime: zDateTime,
-			putOrCall: z.enum(PutOrCall),
+			putOrCall: z.enum(IbkrPutOrCall),
 			tradeDate: zDateTime,
 			settleDateTarget: zDateTime,
-			transactionType: z.enum(TransactionType),
+			transactionType: z.enum(IbkrTransactionType),
 			exchange: z.string(),
 			quantity: z.coerce.number(),
 			tradePrice: z.coerce.number(),
@@ -403,18 +403,18 @@ export const TradeDerivative = {
 			netCash: z.coerce.number(),
 			netCashInBase: z.coerce.number(),
 			closePrice: z.coerce.number(),
-			openCloseIndicator: z.enum(OpenCloseIndicator),
+			openCloseIndicator: z.enum(IbkrOpenCloseIndicator),
 			notesAndCodes: zNotes,
 			costBasis: z.coerce.number(),
 			fifoProfitAndLossRealized: z.coerce.number(),
 			capitalGainsProfitAndLoss: z.coerce.number(),
 			forexProfitAndLoss: z.coerce.number(),
 			marketToMarketProfitAndLoss: zNumNullable,
-			buyOrSell: z.enum(BuyOrSell),
+			buyOrSell: z.enum(IbkrBuyOrSell),
 			transactionID: IbkrTransactionId.Schema,
 			orderTime: zDateTime,
-			levelOfDetail: z.enum(LevelOfDetail),
-			orderType: z.enum(OrderType),
+			levelOfDetail: z.enum(IbkrLevelOfDetail),
+			orderType: z.enum(IbkrOrderType),
 		}),
 	),
 };
@@ -432,8 +432,8 @@ export const LotDerivative = {
 			clientAccountID: z.string(),
 			currency: z.string(),
 			fxRateToBase: z.coerce.number(),
-			assetClass: z.enum(AssetClass),
-			subCategory: z.enum(SubCategory),
+			assetClass: z.enum(IbkrAssetClass),
+			subCategory: z.enum(IbkrSubCategory),
 			symbol: IbkrSymbol.Schema,
 			description: z.string(),
 			conid: z.string(),
@@ -448,22 +448,22 @@ export const LotDerivative = {
 			reportDate: zDateTime,
 			expiry: zDateTime,
 			dateTime: zDateTime,
-			putOrCall: z.enum(PutOrCall),
+			putOrCall: z.enum(IbkrPutOrCall),
 			tradeDate: zDateTime,
 			exchange: z.string(),
 			quantity: z.coerce.number(),
 			tradePrice: z.coerce.number(),
-			openCloseIndicator: z.enum(OpenCloseIndicator),
+			openCloseIndicator: z.enum(IbkrOpenCloseIndicator),
 			notesAndCodes: zNotes,
 			costBasis: z.coerce.number(),
 			fifoProfitAndLossRealized: z.coerce.number(),
 			capitalGainsProfitAndLoss: z.coerce.number(),
 			forexProfitAndLoss: z.coerce.number(),
-			buyOrSell: z.enum(BuyOrSell),
+			buyOrSell: z.enum(IbkrBuyOrSell),
 			transactionID: IbkrTransactionId.Schema,
 			openDateTime: zDateTime,
 			holdingPeriodDateTime: zDateTime,
-			levelOfDetail: z.enum(LevelOfDetail),
+			levelOfDetail: z.enum(IbkrLevelOfDetail),
 		}),
 	),
 };
@@ -480,16 +480,16 @@ export const CorporateAction = {
 		z.object({
 			clientAccountID: z.string(),
 			accountAlias: zStrNullable,
-			model: z.string().transform((s) => (s === "" ? null : (s as Model))),
+			model: z.string().transform((s) => (s === "" ? null : (s as IbkrModel))),
 			currency: z.string(),
 			fxRateToBase: z.coerce.number(),
-			assetClass: z.enum(AssetClass),
-			subCategory: z.enum(SubCategory),
+			assetClass: z.enum(IbkrAssetClass),
+			subCategory: z.enum(IbkrSubCategory),
 			symbol: IbkrSymbol.Schema,
 			description: z.string(),
 			conid: z.string(),
 			securityID: z.string(),
-			securityIDType: z.enum(SecurityIDType),
+			securityIDType: z.enum(IbkrSecurityIDType),
 			cusip: zStrNullable,
 			isin: IbkrIsin.Schema,
 			figi: zStrNullable,
@@ -501,7 +501,7 @@ export const CorporateAction = {
 			multiplier: z.coerce.number(),
 			strike: zNumNullable,
 			expiry: zDateTimeNullable,
-			putOrCall: z.string().transform((s) => (s === "" ? null : (s as PutOrCall))),
+			putOrCall: z.string().transform((s) => (s === "" ? null : (s as IbkrPutOrCall))),
 			principalAdjustFactor: zNumNullable,
 			reportDate: zDateTime,
 			dateTime: zDateTime,
@@ -518,7 +518,7 @@ export const CorporateAction = {
 			type: z.string(),
 			transactionID: IbkrTransactionId.Schema,
 			actionID: IbkrActionId.Schema,
-			levelOfDetail: z.enum(LevelOfDetail),
+			levelOfDetail: z.enum(IbkrLevelOfDetail),
 			serialNumber: zStrNullable,
 			deliveryType: zStrNullable,
 			commodityType: zStrNullable,
@@ -541,13 +541,13 @@ export const TransactionCash = {
 			clientAccountID: z.string(),
 			currency: IbkrCurrency.Schema,
 			fxRateToBase: z.coerce.number(),
-			assetClass: z.enum(AssetClass),
-			subCategory: z.enum(SubCategory),
+			assetClass: z.enum(IbkrAssetClass),
+			subCategory: z.enum(IbkrSubCategory),
 			symbol: IbkrSymbol.Schema,
 			description: z.string(),
 			conid: z.string(),
 			securityID: z.string(),
-			securityIDType: z.enum(SecurityIDType),
+			securityIDType: z.enum(IbkrSecurityIDType),
 			cusip: zStrNullable,
 			isin: IbkrIsin.Schema,
 			figi: zStrNullable,
@@ -555,7 +555,7 @@ export const TransactionCash = {
 			dateTime: zDateTime,
 			settleDate: zDateTime,
 			amount: z.coerce.number(),
-			type: z.enum(CashTransactionType),
+			type: z.enum(IbkrCashTransactionType),
 			code: zStrNullable,
 			transactionID: IbkrTransactionId.Schema,
 			reportDate: zDateTime,

@@ -1,6 +1,6 @@
 import { IbkrExtractService } from "@brrr/Brokers/Ibkr/Extract";
 import { IbkrActionId, IbkrIsin } from "@brrr/Brokers/Ibkr/Schemas/IbkrIdentifiers";
-import { BuyOrSell, CashTransactionType } from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
+import { IbkrBuyOrSell, IbkrCashTransactionType } from "@brrr/Brokers/Ibkr/Schemas/IbkrSchemas";
 import { TestKit } from "@brrr/test-cases";
 
 const { ibkr } = TestKit;
@@ -24,13 +24,13 @@ test("stock trades: returns trades and lot", () => {
 test("stock trades: contains buy and sell event", () => {
 	const segmented = service.extractFromXML(stockTradeXml);
 	const buyTrade = segmented.stockTrades[0];
-	expect(buyTrade.buyOrSell).toEqual(BuyOrSell.BUY);
+	expect(buyTrade.buyOrSell).toEqual(IbkrBuyOrSell.BUY);
 	expect(buyTrade.isin).toEqual("FR0010242511");
 	expect(buyTrade.quantity).toEqual(5);
 	expect(buyTrade.transactionID).toEqual("241234985");
 
 	const sellTrade = segmented.stockTrades[1];
-	expect(sellTrade.buyOrSell).toEqual(BuyOrSell.SELL);
+	expect(sellTrade.buyOrSell).toEqual(IbkrBuyOrSell.SELL);
 	expect(sellTrade.isin).toEqual("FR0010242511");
 	expect(sellTrade.quantity).toEqual(-5);
 	expect(sellTrade.transactionID).toEqual("262720557");
@@ -58,14 +58,14 @@ test("option trades: returns trades and lot", () => {
 test("option trades: contains buy and sell event", () => {
 	const segmented = service.extractFromXML(optionTradeXml);
 	const buyTrade = segmented.derivativeTrades[0];
-	expect(buyTrade.buyOrSell).toEqual(BuyOrSell.BUY);
+	expect(buyTrade.buyOrSell).toEqual(IbkrBuyOrSell.BUY);
 	expect(buyTrade.underlyingSecurityID).toEqual("US0378331005");
 	expect(buyTrade.quantity).toEqual(1);
 	expect(buyTrade.multiplier).toEqual(100);
 	expect(buyTrade.transactionID).toEqual("635331370");
 
 	const sellTrade = segmented.derivativeTrades[1];
-	expect(sellTrade.buyOrSell).toEqual(BuyOrSell.SELL);
+	expect(sellTrade.buyOrSell).toEqual(IbkrBuyOrSell.SELL);
 	expect(sellTrade.quantity).toEqual(-1);
 	expect(sellTrade.transactionID).toEqual("639309966");
 });
@@ -125,12 +125,12 @@ test("cash transactions dividends: contains dividend and withholding tax", () =>
 	const dividend = segmented.cashTransactions[0];
 	expect(dividend.transactionID).toEqual("269176073");
 	expect(dividend.isin).toEqual("FR0000120271");
-	expect(dividend.type).toEqual(CashTransactionType.DIVIDEND);
+	expect(dividend.type).toEqual(IbkrCashTransactionType.DIVIDEND);
 
 	const withholding = segmented.cashTransactions[1];
 	expect(withholding.transactionID).toEqual("323614082");
 	expect(withholding.isin).toEqual("FR0000120271");
-	expect(withholding.type).toEqual(CashTransactionType.WITHHOLDING_TAX);
+	expect(withholding.type).toEqual(IbkrCashTransactionType.WITHHOLDING_TAX);
 });
 
 test("cash transactions payment in lieu: returns 2 transactions", () => {
@@ -150,9 +150,9 @@ test("cash transactions payment in lieu: contains payment and withholding", () =
 	expect(segmented.cashTransactions[0].transactionID).toEqual("814208300");
 	expect(segmented.cashTransactions[0].isin).toEqual("US5801351017");
 	expect(segmented.cashTransactions[0].type).toEqual(
-		CashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS,
+		IbkrCashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS,
 	);
 
 	expect(segmented.cashTransactions[1].transactionID).toEqual("814208301");
-	expect(segmented.cashTransactions[1].type).toEqual(CashTransactionType.WITHHOLDING_TAX);
+	expect(segmented.cashTransactions[1].type).toEqual(IbkrCashTransactionType.WITHHOLDING_TAX);
 });

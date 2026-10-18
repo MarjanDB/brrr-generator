@@ -1,6 +1,6 @@
 import {
-	CashTransactionType,
 	type CorporateAction,
+	IbkrCashTransactionType,
 	type LotDerivative,
 	type LotStock,
 	type TradeDerivative,
@@ -180,19 +180,22 @@ export class IbkrTransformService {
 				listingExchange: ListingExchange.Schema.parse(transaction.listingExchange),
 			};
 
-			if (transaction.type === CashTransactionType.DIVIDEND) {
+			if (transaction.type === IbkrCashTransactionType.DIVIDEND) {
 				return new StagingTradeEventCashTransactionDividend({ ...base, dividendType });
 			}
 
-			if (transaction.type === CashTransactionType.WITHHOLDING_TAX && isPaymentInLieuWithholding) {
+			if (
+				transaction.type === IbkrCashTransactionType.WITHHOLDING_TAX &&
+				isPaymentInLieuWithholding
+			) {
 				return new StagingTradeEventCashTransactionWithholdingTaxForPaymentInLieuOfDividend(base);
 			}
 
-			if (transaction.type === CashTransactionType.WITHHOLDING_TAX) {
+			if (transaction.type === IbkrCashTransactionType.WITHHOLDING_TAX) {
 				return new StagingTradeEventCashTransactionWithholdingTax(base);
 			}
 
-			if (transaction.type === CashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS) {
+			if (transaction.type === IbkrCashTransactionType.PAYMENT_IN_LIEU_OF_DIVIDENDS) {
 				return new StagingTradeEventCashTransactionPaymentInLieuOfDividend({
 					...base,
 					dividendType,

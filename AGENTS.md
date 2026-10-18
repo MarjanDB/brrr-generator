@@ -114,7 +114,7 @@ The **pipeline-and-structure** skill has the details and the steps for adding a 
 Where a name comes from depends on the layer it sits in. We only take the industry's name when our own would mislead.
 
 - **Brokers and tax authorities use their source's names and codes.** `Brokers/Ibkr/` mirrors the Flex Query
-  (`AssetClass.STOCK = "STK"`), and `TaxAuthorities/Slovenia/` mirrors eDavki (`EDavkiTradeReportGainType`, `"PLVP"`), because
+  (`IbkrAssetClass.STOCK = "STK"`), and `TaxAuthorities/Slovenia/` mirrors eDavki (`EDavkiTradeReportGainType`, `"PLVP"`), because
   those values are read from or written to someone else's file.
 - **Core uses our own words, chosen to read well.** Industry codes don't become Core names or values (`SPLIT`, not `SPLF`).
   Where a Core enum has an industry counterpart, a comment above it names the standard and each member gives its code:
