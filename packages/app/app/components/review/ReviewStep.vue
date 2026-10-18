@@ -3,10 +3,12 @@ import {
   type FinancialEvents,
   type FinancialGrouping,
   type ProvenanceGraph,
+  ProvenanceReportReader,
   TradeEventCashTransactionDividend,
 } from "@brrr/lib";
 import { shallowRef } from "vue";
 import { ImportSources } from "~/review/ImportSources";
+import { readImportLeftOut } from "~/review/readImportLeftOut";
 
 const props = defineProps<{
   financialEvents: FinancialEvents;
@@ -22,6 +24,9 @@ const { t } = useI18n();
 
 // Built once per import: where each imported row came from.
 const sources = computed(() => new ImportSources(props.provenance));
+const leftOut = computed(() =>
+  readImportLeftOut(new ProvenanceReportReader().read(props.provenance), sources.value),
+);
 
 interface InstrumentRow {
   name: string;
@@ -88,6 +93,7 @@ function openModal(row: InstrumentRow) {
 
   <div v-else class="card card-padding-md flex flex-col gap-4">
     <h2 class="text-h5">{{ t('review_instruments_title') }}</h2>
+    <ImportLeftOutNote :left-out="leftOut" />
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
