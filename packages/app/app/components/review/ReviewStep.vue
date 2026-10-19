@@ -5,7 +5,9 @@ import {
   type ProvenanceGraph,
   TradeEventCashTransactionDividend,
 } from "@brrr/lib";
+import { TabsContent, TabsList, TabsRoot, TabsTrigger } from "reka-ui";
 import { shallowRef } from "vue";
+import { ColorIntent } from "~/types/ui";
 
 const props = defineProps<{
   financialEvents: FinancialEvents;
@@ -19,7 +21,18 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 // Built once per import: where each imported row came from, for every row's popover below.
-provideImportSources(() => props.provenance);
+const sources = provideImportSources(() => props.provenance);
+// What the import left out and counted once, for the Issues tab and its trigger's counts.
+const leftOut = useImportLeftOut(() => props.provenance, sources);
+
+enum ReviewTab {
+  INSTRUMENTS = "INSTRUMENTS",
+  ISSUES = "ISSUES",
+}
+
+// An underline marks the open tab.
+const tabTrigger =
+  "-mb-px flex items-center gap-2 border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-muted rounded-t-sm transition-colors hover:text-ink aria-selected:border-accent-edge aria-selected:text-ink app-focus-ring";
 
 interface InstrumentRow {
   name: string;
@@ -79,38 +92,63 @@ function openModal(row: InstrumentRow, event: MouseEvent) {
 </script>
 
 <template>
-  <div class="card card-padding-md flex flex-col gap-4">
-    <h2 class="text-h5">{{ t('review_instruments_title') }}</h2>
-    <ImportLeftOutNote :provenance="provenance" />
-    <div class="overflow-x-auto">
-      <table class="app-table">
-        <thead>
-          <tr class="app-table-head-row">
-            <th class="app-table-th text-left">{{ t('review_column_name') }}</th>
-            <th class="app-table-th text-left">{{ t('review_column_isin') }}</th>
-            <th class="app-table-th text-right">{{ t('review_column_stock_trades') }}</th>
-            <th class="app-table-th text-right">{{ t('review_column_dividends') }}</th>
-            <th class="app-table-th text-right">{{ t('review_column_derivatives') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(row, i) in rows"
-            :key="row.isin || String(i)"
-            class="app-table-row app-row-interactive"
-            @click="openModal(row, $event)"
-          >
-            <td class="app-table-td pl-2">
-              <button type="button" class="text-left rounded-sm hover:underline app-focus-ring">{{ row.name }}</button>
-            </td>
-            <td class="app-table-td font-mono text-xs"><span class="app-text-muted">{{ row.isin }}</span></td>
-            <td class="app-table-td text-right">{{ row.stockTrades  }}</td>
-            <td class="app-table-td text-right">{{ row.dividends  }}</td>
-            <td class="app-table-td text-right">{{ row.derivatives  }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+  <div class="card card-padding-md flex flex-col gap-4 w-full max-w-screen-md mx-auto">
+    <TabsRoot :default-value="ReviewTab.INSTRUMENTS" class="flex flex-col gap-4">
+      <TabsList :aria-label="t('review_tabs_label')" class="flex gap-1 border-b app-border">
+        <TabsTrigger :value="ReviewTab.INSTRUMENTS" :class="tabTrigger">
+          {{ t('review_tab_instruments') }}
+          <AppBadge>{{ rows.length }}</AppBadge>
+        </TabsTrigger>
+        <TabsTrigger :value="ReviewTab.ISSUES" :class="tabTrigger">
+          {{ t('review_tab_issues') }}
+          <AppBadge v-if="leftOut.needsALook > 0" :color="ColorIntent.WARNING" class="gap-1">
+            <span class="i-mdi-alert-outline" aria-hidden="true" />
+            <span aria-hidden="true">{{ leftOut.needsALook }}</span>
+            <span class="sr-only">{{ t('review_left_out_count', { n: leftOut.needsALook }) }}</span>
+          </AppBadge>
+          <AppBadge v-if="leftOut.merged.length > 0" :color="ColorIntent.INFO" class="gap-1">
+            <span class="i-mdi-call-merge" aria-hidden="true" />
+            <span aria-hidden="true">{{ leftOut.merged.length }}</span>
+            <span class="sr-only">{{ t('review_merged_count', { n: leftOut.merged.length }) }}</span>
+          </AppBadge>
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent :value="ReviewTab.INSTRUMENTS" class="overflow-x-auto">
+        <table class="app-table">
+          <thead>
+            <tr class="app-table-head-row">
+              <th class="app-table-th text-left">{{ t('review_column_name') }}</th>
+              <th class="app-table-th text-left">{{ t('review_column_isin') }}</th>
+              <th class="app-table-th text-right">{{ t('review_column_stock_trades') }}</th>
+              <th class="app-table-th text-right">{{ t('review_column_dividends') }}</th>
+              <th class="app-table-th text-right">{{ t('review_column_derivatives') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(row, i) in rows"
+              :key="row.isin || String(i)"
+              class="app-table-row app-row-interactive"
+              @click="openModal(row, $event)"
+            >
+              <td class="app-table-td pl-2">
+                <button type="button" class="text-left rounded-sm hover:underline app-focus-ring">{{ row.name }}</button>
+              </td>
+              <td class="app-table-td font-mono text-xs"><span class="app-text-muted">{{ row.isin }}</span></td>
+              <td class="app-table-td text-right">{{ row.stockTrades  }}</td>
+              <td class="app-table-td text-right">{{ row.dividends  }}</td>
+              <td class="app-table-td text-right">{{ row.derivatives  }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </TabsContent>
+
+      <TabsContent :value="ReviewTab.ISSUES">
+        <ImportIssues :left-out="leftOut" />
+      </TabsContent>
+    </TabsRoot>
+
     <AppButton class="self-start" @click="emit('confirmed')">
       {{ t('review_confirm_button') }}
     </AppButton>

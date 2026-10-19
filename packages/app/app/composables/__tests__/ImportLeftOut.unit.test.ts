@@ -160,4 +160,26 @@ describe("what the import left out and what it counted once", () => {
 		expect(leftOut.value.merged).toHaveLength(0);
 		expect(sources.of(event).row.fileName).toEqual("U1.xml");
 	});
+
+	test("the component that provides the import sources reads what was left out with them", async () => {
+		const graph = new ProvenanceGraph({ parent: null });
+		const file = {};
+		const row = {};
+		graph.node(file, ProvenanceNodeKind.FILE, "U1.xml", {});
+		graph.node(row, ProvenanceNodeKind.ROW, "Trade 7 · ES", { assetCategory: "FUT" });
+		graph.derive([file], row, ProvenanceChange.CONTAINS, stage, null);
+		graph.drop(row, DropReason.NOT_SUPPORTED, stage, null);
+
+		const leftOut = await mountComposable(() =>
+			useImportLeftOut(
+				() => graph,
+				provideImportSources(() => graph),
+			),
+		);
+
+		expect(leftOut.value.needsALook).toEqual(1);
+		expect(leftOut.value.lines).toHaveLength(1);
+		expect(leftOut.value.lines[0]?.rows[0]?.row).toBe(graph.nodeOf(row));
+		expect(leftOut.value.lines[0]?.rows[0]?.fileName).toEqual("U1.xml");
+	});
 });

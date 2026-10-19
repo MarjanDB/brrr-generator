@@ -80,8 +80,11 @@ The four steps, each a component that emits to move on:
    `provideImportSources` once; anything below it reads the rows behind an event with `useImportSources()`. Each trade and cash
    row has a "where from" popover (`components/review/source/`: `RowSourceButton`, mounted-when-open `RowSourcePopover`,
    `FileChip`) showing the export file(s), a "counted once" note for a deduplicated row, the row's key IBKR attributes and an "All
-   attributes" toggle. Above the table, `ImportLeftOutNote.vue` lists what the import left out (amber) and what it counted once
-   (info badge). The logic is in `composables/useImportSources.ts`, `composables/useImportLeftOut.ts` and
+   attributes" toggle. The card is capped at `max-w-screen-md` and has two reka `Tabs`: Instruments (the table) and Issues
+   (`ImportIssues.vue`), whose trigger counts what the import left out (amber) and what it counted once (info). The Issues tab
+   folds what was left out into one group per sentence, then the rows counted once into one group, each opening to its files
+   and rows. `ReviewStep` provides the import sources and reads what was left out itself, so it passes its own sources to
+   `useImportLeftOut`. The logic is in `composables/useImportSources.ts`, `composables/useImportLeftOut.ts` and
    `utils/rowAttributes.ts`, with its shapes in `types/importSources.ts`; it reads node kinds, edges and `fields`, and a label only
    as a file's name or a left-out row's own wording.
 3. **Configure** — `components/configure/ConfigureStep.vue`: tax authority cards (`utils/taxAuthorityCards.ts`), then that authority's form
@@ -115,7 +118,7 @@ Every icon and tint is a literal class string in `utils/nodeLook.ts` (UnoCSS can
 to the graph starts with a test in `utils/__tests__/` or `composables/__tests__/`. `GraphView` stays lazy, so the graph loads only
 once the download step draws it.
 
-The page is full width; steps 1 and 3 cap their forms at `max-w-screen-md`.
+The page is full width; steps 1, 2 and 3 cap their cards at `max-w-screen-md`.
 
 Guides (broker export instructions, tax authority submission instructions) are data (`utils/brokerGuides.ts`, `utils/taxAuthorityGuides.ts`):
 `GuideStep`s from `types/guide.ts`, shown by `GuideModal.vue` (its `trigger` slot holds the button that opens it: each broker in
