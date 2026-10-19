@@ -39,14 +39,17 @@ the left, the mark in the middle and the tax offices on the right, stacked below
   export guide. The tax offices are `TAX_OFFICES` (`utils/taxOffices.ts`, shapes in `types/taxOffice.ts`): what the site shows
   of each, with no ids. `TAX_AUTHORITY_CARDS` builds on them and adds the `TaxAuthorityId` the configure step picks by.
 - `LandingMark` is the one way into the flow, a link to `/report/upload`.
-- The arrows: `LandingFlow` measures the cards (`data-landing-broker`, `data-landing-office`) and the mark
-  (`data-landing-mark`) in its row on every resize and hands the boxes to `landingArrowsOf` (`utils/landingArrows.ts`). Each
-  card meets the mark at a point of its own, and every curve is `edgeCurve` (`utils/edgeCurve.ts`), the one the provenance
-  graph draws its edges with. Stacked, `LandingDownArrow` takes their place. Nothing moves.
-- Every card in a column is as tall as the tallest one (`auto-rows-fr`).
+- The arrows render on the server: nothing is measured. Each card's `<li>` holds a `LandingConnector`, a box in the 100px
+  gap to the mark, from the card's middle to the card's own point on the mark. Every card in a column is as tall as the
+  tallest one (`auto-rows-fr`) and the column shares its middle with the mark, so `landingConnectorOf`
+  (`utils/landingConnectors.ts`) can give the box's height as a `calc()` on the card's own height (`100%` inside its row).
+  The curve is `edgeCurve` (`utils/edgeCurve.ts`, the one the provenance graph draws its edges with) in a 100 by 100 SVG
+  stretched over the box, with a non-scaling stroke; the arrowhead is an SVG of its own. The connectors rely on the mark's
+  132px height, the 10px gap between cards and the 100px column gap: change one and change `landingConnectors.ts` with it.
+  Stacked, `LandingDownArrow` takes their place. Nothing moves.
 - **Nothing the landing page imports may import a value from `@brrr/lib`** (type-only imports are fine). Lib isn't marked free
   of side effects, so one enum import pulls most of it, zod and inversify included, into the page. That is why the tax offices'
-  display data, `edgeCurve` and `landingArrowsOf` sit in files of their own.
+  display data, `edgeCurve` and `landingConnectorOf` sit in files of their own.
 
 ## The report flow
 

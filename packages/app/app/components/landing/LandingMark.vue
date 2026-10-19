@@ -16,7 +16,6 @@ const hintId = useId();
 			prefetch-on="interaction"
 			:aria-label="t('landing_start')"
 			:aria-describedby="hintId"
-			data-landing-mark
 			class="relative grid size-33 place-items-center rounded-[34px] border-2 border-action-edge bg-action text-action-on shadow-md hover:bg-action-hover app-focus-ring"
 		>
 			<span class="absolute left-3.5 top-1/2 -translate-y-1/2 flex flex-col gap-1.25" aria-hidden="true">
