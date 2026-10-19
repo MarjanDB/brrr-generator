@@ -1,9 +1,17 @@
-import { ProvenanceEventKind, ProvenanceWalker, type ReportInstrument } from "@brrr/lib";
+import {
+	DropReason,
+	ProvenanceEventKind,
+	ProvenanceStage,
+	ProvenanceWalker,
+	type ReportInstrument,
+} from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
 import { mountComposable } from "~/composables/__tests__/support/mountComposable";
 import { useInstrumentTimeline } from "~/composables/useInstrumentTimeline";
 import { TimelineMarkKind } from "~/types/timeline";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
+
+const stage = ProvenanceStage.Schema.parse("Test");
 
 // The timeline composable and the i18n locale it reads, so a test can switch the language. The app
 // is shared between tests, so each starts in English.
@@ -82,14 +90,14 @@ function dividendAndTax(): GraphBuilder {
 }
 
 describe("the timeline of the selected instrument", () => {
-	test("its marks and arc come from the instrument and the graph", async () => {
+	test("its marks and bar come from the instrument and the graph", async () => {
 		const b = boughtAndSold();
 		const { timeline } = await mountTimeline(b, b.reading().stocks[0]);
 
 		expect(timeline.timeline.value.marks).toHaveLength(2);
 		expect(timeline.timeline.value.marks[0]?.kind).toEqual(TimelineMarkKind.BOUGHT);
 		expect(timeline.timeline.value.marks[1]?.kind).toEqual(TimelineMarkKind.SOLD);
-		expect(timeline.timeline.value.arcs).toHaveLength(1);
+		expect(timeline.timeline.value.bars).toHaveLength(1);
 	});
 });
 
@@ -128,6 +136,47 @@ describe("the tooltip text of a mark", () => {
 		assert(mark !== undefined);
 
 		expect(timeline.describeMark(mark)).toEqual("Tax withheld 3 EUR on Apr 1, 2024");
+	});
+
+	test("a lot says its quantity and how long it was held", async () => {
+		const b = boughtAndSold();
+		const { timeline } = await mountTimeline(b, b.reading().stocks[0]);
+		const bar = timeline.timeline.value.bars[0];
+		assert(bar !== undefined);
+
+		expect(timeline.describeBar(bar)).toEqual("10 · held 2 mths");
+	});
+
+	test("what's still open says its quantity", async () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const zed = b.instrument({ ticker: "ZED", isin: "US0000000009" });
+		const buy = b.trade({
+			file,
+			instrument: zed,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-05-01",
+			quantity: "5",
+			price: "7",
+			currency: "USD",
+			label: "buy ZED",
+		});
+		b.graph.drop(buy.event, DropReason.POSITION_OPEN, stage, null);
+		const { timeline } = await mountTimeline(b, b.reading().withoutLines[0]);
+		const bar = timeline.timeline.value.bars[0];
+		assert(bar !== undefined);
+
+		expect(timeline.describeBar(bar)).toEqual("5 still open");
+	});
+
+	test("a lot's text follows the language", async () => {
+		const b = boughtAndSold();
+		const { timeline, i18n } = await mountTimeline(b, b.reading().stocks[0]);
+		const bar = timeline.timeline.value.bars[0];
+		assert(bar !== undefined);
+		await i18n.setLocale("sl");
+
+		expect(timeline.describeBar(bar)).toEqual("10 · v lasti 2 m");
 	});
 
 	test("the text follows the language", async () => {

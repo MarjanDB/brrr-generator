@@ -38,18 +38,26 @@ export type TimelineMark = {
 	kind: TimelineMarkKind;
 	// Epoch milliseconds, UTC midnight
 	at: number;
-	// 0 is on the axis; marks of the same day stack downward
-	stack: number;
 	weight: TimelineWeight;
 };
 
-// A matched lot, drawn from the buy it took to the sale it filled.
-export type TimelineArc = {
-	lot: ProvenanceNode;
-	from: TimelineMark;
-	to: TimelineMark;
+// A row of the timeline: a matched lot from the trade that opened it to the one that closed it (a
+// buy, then its sale; for a written option, the sale, then the buy), or what is left of a trade
+// that no lot closed, running to the end of the axis.
+export type TimelineBar = {
+	// The matched lot; null for what is still open
+	lot: ProvenanceNode | null;
+	opened: TimelineMark;
+	closed: TimelineMark | null;
 	quantity: number;
 	weight: TimelineWeight;
+};
+
+// A mark that ends no bar (a corporate action, a dividend, a tax, a broker lot), on the row under
+// the bars. 0 is on that row; points of the same day stack downward.
+export type TimelinePoint = {
+	mark: TimelineMark;
+	stack: number;
 };
 
 // Epoch milliseconds, UTC midnight.
@@ -65,19 +73,16 @@ export type TimelineTick = {
 };
 
 export type Timeline = {
+	// Every mark, in date order
 	marks: TimelineMark[];
-	arcs: TimelineArc[];
+	// Top to bottom, by the day each opened
+	bars: TimelineBar[];
+	points: TimelinePoint[];
 	// Epoch milliseconds of the earliest and the latest mark; 0 and 0 with no marks
 	first: number;
 	last: number;
+	// How many points stack on the busiest day; 0 with no points
 	stackDepth: number;
 };
 
 export type Point = { x: number; y: number };
-
-// A quadratic curve: where it starts, where it ends, and the point that bends it.
-export type ArcGeometry = {
-	start: Point;
-	end: Point;
-	control: Point;
-};

@@ -176,6 +176,8 @@
 	"download_mark_dividend": "Dividenda {amount} {currency}, {date}",
 	"download_mark_tax": "Odtegnjen davek {amount} {currency}, {date}",
 	"download_mark_broker_lot": "Lot posrednika {quantity} od {date}",
+	"download_bar_lot": "{quantity} · v lasti {duration}",
+	"download_bar_open": "{quantity} še odprto",
 	"download_arc_matched": "Povezano {quantity}",
 	"download_count_lines": "Vrstice poročila",
 	"download_count_not_in_report": "Ni v tem poročilu",

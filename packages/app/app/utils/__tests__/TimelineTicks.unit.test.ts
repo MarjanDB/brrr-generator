@@ -1,7 +1,21 @@
 import { describe, expect, test } from "vitest";
-import { MarkState, TickGranularity } from "~/types/timeline";
+import {
+	MarkState,
+	TickGranularity,
+	type TimelineBar,
+	TimelineMarkKind,
+	TimelineWeight,
+} from "~/types/timeline";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { markStateOf, paddedRange, timelineTicks } from "~/utils/instrumentTimeline";
+import {
+	barStateOf,
+	markSize,
+	markStateOf,
+	paddedRange,
+	rowPitch,
+	timelineTicks,
+	timelineYRange,
+} from "~/utils/instrumentTimeline";
 
 const day = 24 * 60 * 60 * 1000;
 
@@ -115,6 +129,48 @@ describe("the timeline's axis", () => {
 	});
 });
 
+describe("the timeline's rows", () => {
+	test("up to twelve bars sit 34 px apart", () => {
+		expect(rowPitch(3)).toEqual(34);
+		expect(rowPitch(12)).toEqual(34);
+	});
+
+	test("more bars share 408 px, never closer than 12 px", () => {
+		expect(rowPitch(24)).toEqual(17);
+		expect(rowPitch(100)).toEqual(12);
+	});
+
+	test("every bar, triangle and point is 12 px, whatever its quantity or weight", () => {
+		expect(markSize(rowPitch(3))).toEqual(12);
+		expect(markSize(rowPitch(24))).toEqual(12);
+	});
+
+	test("rows closer than 16 px shrink every mark to leave 4 px between rows", () => {
+		expect(markSize(rowPitch(100))).toEqual(8);
+	});
+
+	test("the bars sit above the points' row, with room around both", () => {
+		const range = timelineYRange(2, 1);
+
+		expect(range.min).toEqual(-0.9);
+		expect(range.max).toEqual(2.7);
+	});
+
+	test("without points the scale ends a row under the lowest bar, where the tax year's label goes", () => {
+		const range = timelineYRange(2, 0);
+
+		expect(range.min).toEqual(0);
+		expect(range.max).toEqual(2.7);
+	});
+
+	test("without bars the scale holds the points' row and its stacks", () => {
+		const range = timelineYRange(0, 2);
+
+		expect(range.min).toEqual(-1.9);
+		expect(range.max).toEqual(0.9);
+	});
+});
+
 describe("the state of a mark", () => {
 	test("the focused node is focused, even when it is lit", () => {
 		const b = new GraphBuilder();
@@ -146,5 +202,70 @@ describe("the state of a mark", () => {
 		const other = b.node(b.file({ name: "U2.xml" }));
 
 		expect(markStateOf(other, focus, null)).toEqual(MarkState.NORMAL);
+	});
+});
+
+describe("the state of a lot's bar", () => {
+	test("a bar whose lot is the focus is focused", () => {
+		const b = new GraphBuilder();
+		const lot = b.node(b.file({ name: "lot" }));
+		const buy = b.node(b.file({ name: "buy" }));
+		const sale = b.node(b.file({ name: "sale" }));
+		const bar: TimelineBar = {
+			lot,
+			opened: { node: buy, kind: TimelineMarkKind.BOUGHT, at: 0, weight: TimelineWeight.REPORTED },
+			closed: { node: sale, kind: TimelineMarkKind.SOLD, at: 1, weight: TimelineWeight.REPORTED },
+			quantity: 10,
+			weight: TimelineWeight.REPORTED,
+		};
+
+		expect(barStateOf(bar, lot, null)).toEqual(MarkState.FOCUSED);
+	});
+
+	test("a bar the focused trade opened or closed is lit, even with nothing else lit", () => {
+		const b = new GraphBuilder();
+		const lot = b.node(b.file({ name: "lot" }));
+		const buy = b.node(b.file({ name: "buy" }));
+		const sale = b.node(b.file({ name: "sale" }));
+		const bar: TimelineBar = {
+			lot,
+			opened: { node: buy, kind: TimelineMarkKind.BOUGHT, at: 0, weight: TimelineWeight.REPORTED },
+			closed: { node: sale, kind: TimelineMarkKind.SOLD, at: 1, weight: TimelineWeight.REPORTED },
+			quantity: 10,
+			weight: TimelineWeight.REPORTED,
+		};
+
+		expect(barStateOf(bar, sale, null)).toEqual(MarkState.LIT);
+	});
+
+	test("a bar whose lot is outside a lit chain is dimmed", () => {
+		const b = new GraphBuilder();
+		const lot = b.node(b.file({ name: "lot" }));
+		const buy = b.node(b.file({ name: "buy" }));
+		const sale = b.node(b.file({ name: "sale" }));
+		const other = b.node(b.file({ name: "other" }));
+		const bar: TimelineBar = {
+			lot,
+			opened: { node: buy, kind: TimelineMarkKind.BOUGHT, at: 0, weight: TimelineWeight.REPORTED },
+			closed: { node: sale, kind: TimelineMarkKind.SOLD, at: 1, weight: TimelineWeight.REPORTED },
+			quantity: 10,
+			weight: TimelineWeight.REPORTED,
+		};
+
+		expect(barStateOf(bar, other, new Set([other]))).toEqual(MarkState.DIMMED);
+	});
+
+	test("what is still open takes the state of the trade that opened it", () => {
+		const b = new GraphBuilder();
+		const buy = b.node(b.file({ name: "buy" }));
+		const bar: TimelineBar = {
+			lot: null,
+			opened: { node: buy, kind: TimelineMarkKind.BOUGHT, at: 0, weight: TimelineWeight.CONTEXT },
+			closed: null,
+			quantity: 3,
+			weight: TimelineWeight.CONTEXT,
+		};
+
+		expect(barStateOf(bar, buy, null)).toEqual(MarkState.FOCUSED);
 	});
 });

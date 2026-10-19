@@ -1,5 +1,6 @@
 import {
 	DropReason,
+	OptionRight,
 	ProvenanceChange,
 	ProvenanceEventKind,
 	ProvenanceField,
@@ -15,7 +16,7 @@ import { buildTimeline, taxYearSpan } from "~/utils/instrumentTimeline";
 const stage = ProvenanceStage.Schema.parse("Test");
 
 describe("the data behind an instrument's timeline", () => {
-	test("a sale and its buy are marks on their dates, joined by an arc for the matched lot", () => {
+	test("a sale and its buy are marks on their dates, and their matched lot a bar from the buy to the sale", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -39,7 +40,7 @@ describe("the data behind an instrument's timeline", () => {
 			currency: "USD",
 			label: "sell ACME",
 		});
-		b.match({
+		const matched = b.match({
 			instrument: acme,
 			acquired: buy,
 			sold: sell,
@@ -57,16 +58,18 @@ describe("the data behind an instrument's timeline", () => {
 		expect(timeline.marks[0]?.at).toEqual(Date.UTC(2024, 0, 10));
 		expect(timeline.marks[1]?.kind).toEqual(TimelineMarkKind.SOLD);
 		expect(timeline.marks[1]?.at).toEqual(Date.UTC(2024, 2, 10));
-		expect(timeline.arcs).toHaveLength(1);
-		expect(timeline.arcs[0]?.from).toBe(timeline.marks[0]);
-		expect(timeline.arcs[0]?.to).toBe(timeline.marks[1]);
-		expect(timeline.arcs[0]?.quantity).toEqual(10);
+		expect(timeline.bars).toHaveLength(1);
+		expect(timeline.bars[0]?.lot).toBe(b.node(matched.lot));
+		expect(timeline.bars[0]?.opened).toBe(timeline.marks[0]);
+		expect(timeline.bars[0]?.closed).toBe(timeline.marks[1]);
+		expect(timeline.bars[0]?.quantity).toEqual(10);
+		expect(timeline.points).toHaveLength(0);
 		expect(timeline.first).toEqual(Date.UTC(2024, 0, 10));
 		expect(timeline.last).toEqual(Date.UTC(2024, 2, 10));
-		expect(timeline.stackDepth).toEqual(1);
+		expect(timeline.stackDepth).toEqual(0);
 	});
 
-	test("marks on the same day stack, the trade first so the arcs meet it, the broker lot below", () => {
+	test("a mark that ends no bar, such as a broker lot, is a point under the bars", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -111,13 +114,12 @@ describe("the data behind an instrument's timeline", () => {
 		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks).toHaveLength(3);
-		expect(timeline.marks[0]?.kind).toEqual(TimelineMarkKind.BOUGHT);
-		expect(timeline.marks[0]?.stack).toEqual(0);
-		expect(timeline.marks[1]?.kind).toEqual(TimelineMarkKind.BROKER_LOT);
-		expect(timeline.marks[1]?.stack).toEqual(1);
-		expect(timeline.marks[2]?.kind).toEqual(TimelineMarkKind.SOLD);
-		expect(timeline.marks[2]?.stack).toEqual(0);
-		expect(timeline.stackDepth).toEqual(2);
+		expect(timeline.bars).toHaveLength(1);
+		expect(timeline.points).toHaveLength(1);
+		expect(timeline.points[0]?.mark.kind).toEqual(TimelineMarkKind.BROKER_LOT);
+		expect(timeline.points[0]?.mark.at).toEqual(Date.UTC(2024, 0, 10));
+		expect(timeline.points[0]?.stack).toEqual(0);
+		expect(timeline.stackDepth).toEqual(1);
 	});
 
 	test("a stock rebuilt by a split has a corporate action mark on the action's date", () => {
@@ -172,11 +174,13 @@ describe("the data behind an instrument's timeline", () => {
 		expect(timeline.marks[1]?.at).toEqual(Date.UTC(2024, 1, 1));
 		expect(timeline.marks[1]?.node).toBe(b.node(split.action));
 		expect(timeline.marks[2]?.kind).toEqual(TimelineMarkKind.SOLD);
-		expect(timeline.arcs).toHaveLength(1);
-		expect(timeline.arcs[0]?.quantity).toEqual(40);
+		expect(timeline.bars).toHaveLength(1);
+		expect(timeline.bars[0]?.quantity).toEqual(40);
+		expect(timeline.points).toHaveLength(1);
+		expect(timeline.points[0]?.mark).toBe(timeline.marks[1]);
 	});
 
-	test("a dividend payer has dividend and tax marks and no arcs", () => {
+	test("a dividend payer's dividend and tax are points stacked on their day, and it has no bars", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const tte = b.instrument({ ticker: "TTE", isin: "FR0000120271" });
@@ -205,11 +209,134 @@ describe("the data behind an instrument's timeline", () => {
 		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks).toHaveLength(2);
-		expect(timeline.marks[0]?.kind).toEqual(TimelineMarkKind.DIVIDEND);
-		expect(timeline.marks[0]?.stack).toEqual(0);
-		expect(timeline.marks[1]?.kind).toEqual(TimelineMarkKind.TAX);
-		expect(timeline.marks[1]?.stack).toEqual(1);
-		expect(timeline.arcs).toHaveLength(0);
+		expect(timeline.points[0]?.mark.kind).toEqual(TimelineMarkKind.DIVIDEND);
+		expect(timeline.points[0]?.stack).toEqual(0);
+		expect(timeline.points[1]?.mark.kind).toEqual(TimelineMarkKind.TAX);
+		expect(timeline.points[1]?.stack).toEqual(1);
+		expect(timeline.stackDepth).toEqual(2);
+		expect(timeline.bars).toHaveLength(0);
+	});
+
+	test("what's left of a buy after its lots is a bar that stays open, as context", () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const sell = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-03-10",
+			quantity: "-6",
+			price: "6",
+			currency: "USD",
+			label: "sell ACME",
+		});
+		b.match({
+			instrument: acme,
+			acquired: buy,
+			sold: sell,
+			quantity: "6",
+			boughtOn: "2024-01-10",
+			soldOn: "2024-03-10",
+		});
+		const [instrument] = b.reading().stocks;
+		assert(instrument !== undefined);
+
+		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+
+		expect(timeline.bars).toHaveLength(2);
+		expect(timeline.bars[0]?.quantity).toEqual(6);
+		expect(timeline.bars[1]?.lot).toBeNull();
+		expect(timeline.bars[1]?.opened).toBe(timeline.marks[0]);
+		expect(timeline.bars[1]?.closed).toBeNull();
+		expect(timeline.bars[1]?.quantity).toEqual(4);
+		expect(timeline.bars[1]?.weight).toEqual(TimelineWeight.CONTEXT);
+	});
+
+	test("a buy in no lot is a bar of its whole quantity that stays open", () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const zed = b.instrument({ ticker: "ZED", isin: "US0000000009" });
+		const buy = b.trade({
+			file,
+			instrument: zed,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-05-01",
+			quantity: "5",
+			price: "7",
+			currency: "USD",
+			label: "buy ZED",
+		});
+		b.graph.drop(buy.event, DropReason.POSITION_OPEN, stage, null);
+		const [instrument] = b.reading().withoutLines;
+		assert(instrument !== undefined);
+
+		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+
+		expect(timeline.bars).toHaveLength(1);
+		expect(timeline.bars[0]?.opened.node).toBe(b.node(buy.event));
+		expect(timeline.bars[0]?.closed).toBeNull();
+		expect(timeline.bars[0]?.quantity).toEqual(5);
+		expect(timeline.points).toHaveLength(0);
+	});
+
+	test("a position opened by a sale, as a written option, runs from the sale to the buy that closed it", () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const contract = b.optionContract({
+			occSymbol: "ACME  240621P00100000",
+			underlyingSymbol: "ACME",
+			expiry: "2024-06-21",
+			strike: "100",
+			right: OptionRight.PUT,
+		});
+		const sell = b.trade({
+			file,
+			instrument: contract,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-01-10",
+			quantity: "-1",
+			price: "3",
+			currency: "USD",
+			label: "sell ACME put",
+		});
+		const buy = b.trade({
+			file,
+			instrument: contract,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-03-10",
+			quantity: "1",
+			price: "1",
+			currency: "USD",
+			label: "buy ACME put",
+		});
+		b.match({
+			instrument: contract,
+			acquired: buy,
+			sold: sell,
+			quantity: "1",
+			boughtOn: "2024-03-10",
+			soldOn: "2024-01-10",
+		});
+		const [underlying] = b.reading().optionUnderlyings;
+		const instrument = underlying?.contracts[0];
+		assert(instrument !== undefined);
+
+		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+
+		expect(timeline.bars).toHaveLength(1);
+		expect(timeline.bars[0]?.opened.node).toBe(b.node(sell.event));
+		expect(timeline.bars[0]?.closed?.node).toBe(b.node(buy.event));
 	});
 
 	test("an event with no date is left off the timeline", () => {
@@ -270,7 +397,7 @@ describe("the data behind an instrument's timeline", () => {
 });
 
 describe("what an instrument's timeline draws as reported and what as context", () => {
-	test("a lot closed in the report's period is reported: its buy, its sale and its arc", () => {
+	test("a lot closed in the report's period is reported: its buy, its sale and its bar", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -311,10 +438,10 @@ describe("what an instrument's timeline draws as reported and what as context", 
 		expect(timeline.marks[0]?.weight).toEqual(TimelineWeight.REPORTED);
 		expect(timeline.marks[1]?.node).toBe(b.node(sell.event));
 		expect(timeline.marks[1]?.weight).toEqual(TimelineWeight.REPORTED);
-		expect(timeline.arcs[0]?.weight).toEqual(TimelineWeight.REPORTED);
+		expect(timeline.bars[0]?.weight).toEqual(TimelineWeight.REPORTED);
 	});
 
-	test("a lot closed outside the report's period is context: its buy, its sale and its arc", () => {
+	test("a lot closed outside the report's period is context: its buy, its sale and its bar", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -350,7 +477,7 @@ describe("what an instrument's timeline draws as reported and what as context", 
 		expect(timeline.marks[0]?.weight).toEqual(TimelineWeight.CONTEXT);
 		expect(timeline.marks[1]?.node).toBe(b.node(sell.event));
 		expect(timeline.marks[1]?.weight).toEqual(TimelineWeight.CONTEXT);
-		expect(timeline.arcs[0]?.weight).toEqual(TimelineWeight.CONTEXT);
+		expect(timeline.bars[0]?.weight).toEqual(TimelineWeight.CONTEXT);
 	});
 
 	test("a buy split over a lot closed in the period and a later one is reported, the later lot and its sale context", () => {
@@ -414,10 +541,10 @@ describe("what an instrument's timeline draws as reported and what as context", 
 		expect(timeline.marks[1]?.weight).toEqual(TimelineWeight.REPORTED);
 		expect(timeline.marks[2]?.node).toBe(b.node(sellLater.event));
 		expect(timeline.marks[2]?.weight).toEqual(TimelineWeight.CONTEXT);
-		expect(timeline.arcs[0]?.quantity).toEqual(6);
-		expect(timeline.arcs[0]?.weight).toEqual(TimelineWeight.REPORTED);
-		expect(timeline.arcs[1]?.quantity).toEqual(4);
-		expect(timeline.arcs[1]?.weight).toEqual(TimelineWeight.CONTEXT);
+		expect(timeline.bars[0]?.quantity).toEqual(6);
+		expect(timeline.bars[0]?.weight).toEqual(TimelineWeight.REPORTED);
+		expect(timeline.bars[1]?.quantity).toEqual(4);
+		expect(timeline.bars[1]?.weight).toEqual(TimelineWeight.CONTEXT);
 	});
 
 	test("a buy whose position is still open is context", () => {

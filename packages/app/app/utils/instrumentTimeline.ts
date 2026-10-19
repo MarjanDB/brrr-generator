@@ -9,14 +9,14 @@ import {
 } from "@brrr/lib";
 import { DateTime } from "luxon";
 import {
-	type ArcGeometry,
 	MarkState,
 	type Point,
 	TickGranularity,
 	type Timeline,
-	type TimelineArc,
+	type TimelineBar,
 	type TimelineMark,
 	TimelineMarkKind,
+	type TimelinePoint,
 	type TimelineTick,
 	TimelineWeight,
 	type TimeSpan,
@@ -138,38 +138,38 @@ function weightOf(draft: Draft, held: TimeSpan[], walker: ProvenanceWalker): Tim
 }
 
 function marksOf(drafts: Draft[], weightOfDraft: (draft: Draft) => TimelineWeight): TimelineMark[] {
-	const seenOnDay = new Map<number, number>();
-	return drafts.map((draft) => {
-		const stack = seenOnDay.get(draft.at) ?? 0;
-		seenOnDay.set(draft.at, stack + 1);
-		return {
-			node: draft.node,
-			kind: draft.kind,
-			at: draft.at,
-			stack,
-			weight: weightOfDraft(draft),
-		};
-	});
+	return drafts.map((draft) => ({
+		node: draft.node,
+		kind: draft.kind,
+		at: draft.at,
+		weight: weightOfDraft(draft),
+	}));
 }
 
-function arcsOf(
+function isTrade(mark: TimelineMark): boolean {
+	return mark.kind === TimelineMarkKind.BOUGHT || mark.kind === TimelineMarkKind.SOLD;
+}
+
+function lotBarsOf(
 	instrument: ReportInstrument,
 	marks: TimelineMark[],
 	walker: ProvenanceWalker,
-): TimelineArc[] {
+): TimelineBar[] {
 	const markOf = new Map(marks.map((mark) => [mark.node, mark]));
 	return instrument.matchedLots.flatMap((matched) => {
 		const { acquired, sold } = lotEventsOf(matched, walker);
-		const from = acquired === undefined ? undefined : markOf.get(acquired);
-		const to = sold === undefined ? undefined : markOf.get(sold);
-		if (from === undefined || to === undefined) {
+		const bought = acquired === undefined ? undefined : markOf.get(acquired);
+		const sale = sold === undefined ? undefined : markOf.get(sold);
+		if (bought === undefined || sale === undefined) {
 			return [];
 		}
+		// A written option opens with its sale.
+		const [opened, closed] = sale.at < bought.at ? [sale, bought] : [bought, sale];
 		return [
 			{
 				lot: matched.node,
-				from,
-				to,
+				opened,
+				closed,
 				quantity: Number(fieldOf(matched.node, ProvenanceField.QUANTITY)),
 				weight: isReported(matched) ? TimelineWeight.REPORTED : TimelineWeight.CONTEXT,
 			},
@@ -177,19 +177,107 @@ function arcsOf(
 	});
 }
 
-// The instrument's events, broker lots and corporate actions as marks on a time axis, and each
-// matched lot as an arc from its buy to its sale, each weighed as on the form or there for context.
-// Reads only nodes, edges and fields.
+// Less than this left of a trade is rounding, not a position.
+const leftover = 1e-9;
+
+// What is left of each trade once its lots took their share: a bar that stays open. An open
+// position is never on the form.
+function openBarsOf(marks: TimelineMark[], lotBars: TimelineBar[]): TimelineBar[] {
+	return marks.filter(isTrade).flatMap((mark) => {
+		const traded = Math.abs(Number(fieldOf(mark.node, ProvenanceField.QUANTITY)));
+		const inLots = lotBars
+			.filter((bar) => bar.opened === mark || bar.closed === mark)
+			.reduce((sum, bar) => sum + bar.quantity, 0);
+		const open = traded - inLots;
+		if (!Number.isFinite(open) || open <= leftover) {
+			return [];
+		}
+		return [
+			{ lot: null, opened: mark, closed: null, quantity: open, weight: TimelineWeight.CONTEXT },
+		];
+	});
+}
+
+// By the day each bar opened, then the day it closed; one still open comes last.
+function byOpening(left: TimelineBar, right: TimelineBar): number {
+	const stillOpen = Number.MAX_SAFE_INTEGER;
+	return (
+		left.opened.at - right.opened.at ||
+		(left.closed?.at ?? stillOpen) - (right.closed?.at ?? stillOpen)
+	);
+}
+
+function pointsOf(marks: TimelineMark[], bars: TimelineBar[]): TimelinePoint[] {
+	const onBars = new Set(bars.flatMap((bar) => [bar.opened, bar.closed]));
+	const seenOnDay = new Map<number, number>();
+	return marks
+		.filter((mark) => !onBars.has(mark))
+		.map((mark) => {
+			const stack = seenOnDay.get(mark.at) ?? 0;
+			seenOnDay.set(mark.at, stack + 1);
+			return { mark, stack };
+		});
+}
+
+// The instrument's events, broker lots and corporate actions as marks on a time axis, each weighed
+// as on the form or there for context. Each matched lot is a bar from the trade that opened it to
+// the one that closed it, and what no lot closed a bar that stays open; every other mark is a point
+// under the bars. Reads only nodes, edges and fields.
 export function buildTimeline(instrument: ReportInstrument, walker: ProvenanceWalker): Timeline {
 	const held = reportedHoldings(instrument, walker);
 	const marks = marksOf(draftsOf(instrument), (draft) => weightOf(draft, held, walker));
+	const lotBars = lotBarsOf(instrument, marks, walker);
+	const bars = [...lotBars, ...openBarsOf(marks, lotBars)].sort(byOpening);
+	const points = pointsOf(marks, bars);
 	return {
 		marks,
-		arcs: arcsOf(instrument, marks, walker),
+		bars,
+		points,
 		first: marks[0]?.at ?? 0,
 		last: marks[marks.length - 1]?.at ?? 0,
-		stackDepth: Math.max(0, ...marks.map((mark) => mark.stack + 1)),
+		stackDepth: Math.max(0, ...points.map((point) => point.stack + 1)),
 	};
+}
+
+// The chart's y scale puts one row in each unit: bar 0 (the top one) at `bars`, the last at 1, and
+// the points' row at 0, its stacks going down.
+export function barY(index: number, bars: number): number {
+	return bars - index;
+}
+
+export function pointY(stack: number): number {
+	return -stack;
+}
+
+export type YRange = { min: number; max: number };
+
+// The y scale's range for that layout, with room for a bar's label above the top row, for a mark's
+// size around the points, and for the tax year's label under the lowest row.
+export function timelineYRange(bars: number, stackDepth: number): YRange {
+	return {
+		min: stackDepth > 0 ? -(stackDepth - 1) - 0.9 : 0,
+		max: bars > 0 ? bars + 0.7 : 0.9,
+	};
+}
+
+const rowSpacing = 34;
+const minRowSpacing = 12;
+const roomyRows = 12;
+
+const markSpacing = 12;
+const rowGap = 4;
+
+// How big every bar, triangle and point is, in pixels: 12, whatever its quantity or weight (the
+// quantity is in the bar's label), and less only where rows are so close it must leave 4 px between
+// them.
+export function markSize(pitch: number): number {
+	return Math.min(markSpacing, pitch - rowGap);
+}
+
+// How far apart the rows are, in pixels: 34 px for up to twelve bars, which leaves room for a label
+// above each; more bars share the height of twelve, down to 12 px a row.
+export function rowPitch(bars: number): number {
+	return bars <= roomyRows ? rowSpacing : Math.max(minRowSpacing, (rowSpacing * roomyRows) / bars);
 }
 
 const day = 86_400_000;
@@ -285,33 +373,80 @@ export function markStateOf(
 	return lit.has(node) ? MarkState.LIT : MarkState.DIMMED;
 }
 
-const samples = 24;
-
-// An arc from one point of the axis to another, rising `rise` above its middle. A quadratic curve
-// reaches half way to its control point, so the control sits twice as high.
-export function arcGeometry(x1: number, x2: number, axisY: number, rise: number): ArcGeometry {
-	return {
-		start: { x: x1, y: axisY },
-		end: { x: x2, y: axisY },
-		control: { x: (x1 + x2) / 2, y: axisY - 2 * rise },
-	};
-}
-
-function pointAt(arc: ArcGeometry, t: number): Point {
-	const mirror = 1 - t;
-	return {
-		x: mirror * mirror * arc.start.x + 2 * mirror * t * arc.control.x + t * t * arc.end.x,
-		y: mirror * mirror * arc.start.y + 2 * mirror * t * arc.control.y + t * t * arc.end.y,
-	};
-}
-
-// Whether the point is within `tolerance` of the curve, measured to 24 points along it.
-export function arcHit(arc: ArcGeometry, point: Point, tolerance: number): boolean {
-	for (let index = 0; index <= samples; index++) {
-		const onCurve = pointAt(arc, index / samples);
-		if (Math.hypot(onCurve.x - point.x, onCurve.y - point.y) <= tolerance) {
-			return true;
-		}
+// A lot's bar is lit by its own state, and also when the focus is the trade that opened or closed
+// it. What is still open has no lot, so it takes the state of the trade that opened it.
+export function barStateOf(
+	bar: TimelineBar,
+	focus: ProvenanceNode | null,
+	lit: ReadonlySet<ProvenanceNode> | null,
+): MarkState {
+	const own = markStateOf(bar.lot ?? bar.opened.node, focus, lit);
+	if (own === MarkState.FOCUSED || own === MarkState.LIT) {
+		return own;
 	}
-	return false;
+	return focus !== null && (bar.opened.node === focus || bar.closed?.node === focus)
+		? MarkState.LIT
+		: own;
+}
+
+// A lot's shape on the chart: its bar, `size` tall around `y` from `x1` to `x2`, with the outer half
+// of the triangle at each end, which makes it four corners, clockwise from the top left. A buy's
+// triangle points up, so it sticks out at the bottom; a sale's points down and sticks out at the
+// top. What is still open ends square.
+export function barOutline(
+	x1: number,
+	x2: number,
+	y: number,
+	size: number,
+	opened: TimelineMarkKind,
+	closed: TimelineMarkKind | null,
+): Point[] {
+	const half = size / 2;
+	const top = y - half;
+	const bottom = y + half;
+	const openedUp = opened === TimelineMarkKind.BOUGHT;
+	const topLeft = { x: openedUp ? x1 : x1 - half, y: top };
+	const bottomLeft = { x: openedUp ? x1 - half : x1, y: bottom };
+	if (closed === null) {
+		return [topLeft, { x: x2, y: top }, { x: x2, y: bottom }, bottomLeft];
+	}
+	const closedUp = closed === TimelineMarkKind.BOUGHT;
+	return [
+		topLeft,
+		{ x: closedUp ? x2 : x2 + half, y: top },
+		{ x: closedUp ? x2 + half : x2, y: bottom },
+		bottomLeft,
+	];
+}
+
+// Where two lines cross, each given by a point and a direction.
+function crossingOf(p: Point, u: Point, q: Point, v: Point): Point {
+	const t = ((q.x - p.x) * v.y - (q.y - p.y) * v.x) / (u.x * v.y - u.y * v.x);
+	return { x: p.x + t * u.x, y: p.y + t * u.y };
+}
+
+// A convex shape's outline pushed out by `distance` from every edge: each edge moved out along its
+// normal, the corners where the moved edges meet. The shape goes clockwise on screen, where y grows
+// downward; a corner repeated is taken once.
+export function offsetPolygon(points: Point[], distance: number): Point[] {
+	const corners = points.filter((point, index) => {
+		const previous = points[(index + points.length - 1) % points.length];
+		return previous === undefined || previous.x !== point.x || previous.y !== point.y;
+	});
+	const edges = corners.map((from, index) => {
+		const to = corners[(index + 1) % corners.length] ?? from;
+		const direction = { x: to.x - from.x, y: to.y - from.y };
+		const length = Math.hypot(direction.x, direction.y);
+		return {
+			start: {
+				x: from.x + (distance * direction.y) / length,
+				y: from.y - (distance * direction.x) / length,
+			},
+			direction,
+		};
+	});
+	return edges.map((edge, index) => {
+		const previous = edges[(index + edges.length - 1) % edges.length] ?? edge;
+		return crossingOf(previous.start, previous.direction, edge.start, edge.direction);
+	});
 }
