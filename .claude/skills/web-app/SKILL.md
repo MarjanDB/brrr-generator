@@ -35,8 +35,8 @@ switches the locale starts by setting `en`. Graph tests build graphs with `utils
 `pages/index.vue` is the way in, rendered on the server: a headline, then `components/landing/LandingFlow.vue`, the brokers on
 the left, the mark in the middle and the tax offices on the right, stacked below `lg`.
 
-- The brokers are `BROKER_GUIDES`, each a `BrokerGuideCard` (`components/guide/`, shared with the upload step) that opens its
-  export guide. The tax offices are `TAX_OFFICES` (`utils/taxOffices.ts`, shapes in `types/taxOffice.ts`): what the site shows
+- The page only presents what the site supports: its cards are information, with nothing to click. The brokers are
+  `BROKER_GUIDES` as `LandingBrokerCard`s (the export guides stay in the upload step). The tax offices are `TAX_OFFICES` (`utils/taxOffices.ts`, shapes in `types/taxOffice.ts`): what the site shows
   of each, with no ids. `TAX_AUTHORITY_CARDS` builds on them and adds the `TaxAuthorityId` the configure step picks by.
 - `LandingMark` is the one way into the flow, a link to `/report/upload`.
 - The arrows render on the server: nothing is measured. Each card's `<li>` holds a `LandingConnector`, a box in the 100px

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BrokerGuideCard from "~/components/guide/BrokerGuideCard.vue";
+import LandingBrokerCard from "~/components/landing/LandingBrokerCard.vue";
 import LandingConnector from "~/components/landing/LandingConnector.vue";
 import LandingDownArrow from "~/components/landing/LandingDownArrow.vue";
 import LandingMark from "~/components/landing/LandingMark.vue";
@@ -27,7 +27,7 @@ const { t } = useI18n();
 			class="relative grid w-full auto-rows-fr gap-2.5 lg:col-start-1 lg:row-start-2 lg:max-w-72 lg:justify-self-end"
 		>
 			<li v-for="(broker, index) in BROKER_GUIDES" :key="broker.id" class="relative flex">
-				<BrokerGuideCard :broker="broker" />
+				<LandingBrokerCard :broker="broker" />
 				<LandingConnector :side="LandingSide.BROKER" :index="index" :count="BROKER_GUIDES.length" />
 			</li>
 		</ul>
