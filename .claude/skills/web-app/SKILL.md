@@ -199,7 +199,10 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
 - Shared pieces before hand-written markup: `AppBadge` (`pill` for an outlined chip), `AppCallout` (a tinted line, `as="li"`
   in a list), `InstrumentMonogram` and the graph's `NodeIcon`.
   `pages/design/` shows each of them.
-- There is one theme: no dark mode and no `dark:` classes.
+- There is one theme, and it is dark: the roles take the palette's dark stops (`page` is `stale-950`, an intent's fill its `700`),
+  `color-scheme: only dark` draws native controls to match, and there is no theme switch and no `dark:` classes. The head
+  (`app.head` in `nuxt.config.ts`) says the same before CSS loads, `<meta name="color-scheme" content="only dark">`, so
+  the browser's forced dark mode leaves the page alone, and `darkreader-lock` does the same for Dark Reader.
 - Icons are classes: `i-mdi-<name>` (Material Design Icons via `@iconify-json/mdi`).
 
 ## Build and deploy
