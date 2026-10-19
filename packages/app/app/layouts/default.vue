@@ -18,7 +18,14 @@ const currentLocale = computed({
 
 <template>
   <main class="app-container">
-    <div class="px-4 sm:px-8 min-h-screen flex flex-col">
+    <!-- Decoration pinned to the window's bottom-left corner on every page, behind the content
+         below it (relative, so it paints over). -->
+    <img
+      src="/images/fx-warrior.webp"
+      alt=""
+      class="pointer-events-none select-none fixed bottom-0 left-0 max-h-[46vh] max-w-[34vw]"
+    />
+    <div class="relative px-4 sm:px-8 min-h-screen flex flex-col">
       <!-- The site's header, on the landing page and every page of the report flow. -->
       <header class="pt-6 flex items-center justify-between gap-3 flex-wrap">
         <div class="flex items-center gap-3">
