@@ -108,6 +108,7 @@ The four steps, each a component that emits to move on:
 Its shapes are plain types in `types/provenanceGraph.ts`. The engine is pure utils: `graphModelOf(graph, reading, showEveryStep)`
 (`utils/graphModel.ts`, with lookups such as `modelNodeFor`) → `layoutGraph(model, { focus, expanded })` →
 `placeGraph(layout, defaultGraphMetrics)` (`utils/graphLayout.ts`), and `captionOf` (`utils/graphCaption.ts`).
+The layout depends on the focus. A buy or a sale (while lots are drawn as pairs, not with every step) gets a graph of its own (`layoutTrade`): on the left everything that flowed into the trade as it is now (its rows, the trade as first recorded, the corporate actions that rebuilt it; a focus on the trade as first recorded draws the same graph), and nothing that only shares a file or an action with it; then one row per lot (`GraphLayoutNode.row`), in the order of the trade on the other side, with that trade as a stub to follow and why the lot was left out. It has no bands (`GraphLayout.banded` is false), and `placeGraph` lines each row up and centres the trade on its lots (`placeRows`). Anything else (a lot, a payment, a row) gets the stage columns and the Buys/Sells bands.
 Three composables hold the rest:
 - `useGraphFocus()` (provided by `DownloadStep`): the focus, the back trail and the lit chain, with `start`, `refocus`, `back`,
   `lightNode`/`lightEdge` (the chain walk) and `remap`. The timeline lights its marks and bars from the lit chain, and a click on a mark or a bar refocuses.

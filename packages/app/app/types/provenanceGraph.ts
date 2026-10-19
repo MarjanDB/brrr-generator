@@ -92,6 +92,8 @@ export enum GraphHeading {
 	REPORT = "REPORT",
 	REPORT_PAIRS = "REPORT_PAIRS",
 	LEFT_OUT = "LEFT_OUT",
+	// In a trade's graph: the trade each lot was matched with.
+	OTHER_SIDE = "OTHER_SIDE",
 }
 
 export enum CaptionSegmentKind {
@@ -217,8 +219,12 @@ export type GraphLayoutNode = {
 	hasMore: boolean;
 	column: number;
 	lane: GraphLane;
-	// Position inside its column and lane, top to bottom.
+	// Position inside its column and lane, top to bottom; in a graph without bands, inside its column,
+	// or inside its row when it has one.
 	order: number;
+	// In a trade's graph: the row of the lot it belongs to (the lot, the trade on the other side, why
+	// it was left out), top to bottom. Null for everything else.
+	row: number | null;
 };
 
 export type GraphLayoutEdge = {
@@ -242,6 +248,8 @@ export type GraphLayout = {
 	columns: GraphColumn[];
 	// The lanes with at least one node, top to bottom.
 	lanes: GraphLane[];
+	// Whether the lanes are drawn as bands. A trade's graph has none: its lots are rows instead.
+	banded: boolean;
 	byNode: Map<GraphNode, GraphLayoutNode>;
 	bySource: Map<ProvenanceNode, GraphLayoutNode>;
 };

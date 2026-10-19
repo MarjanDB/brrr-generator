@@ -40,7 +40,7 @@ describe("the columns, lanes and order of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
 
 		expect(layoutNodeOf(layout, b.node(file))?.column).toEqual(0);
 		expect(layoutNodeOf(layout, b.node(sell.row))?.column).toEqual(1);
@@ -54,7 +54,7 @@ describe("the columns, lanes and order of a graph layout", () => {
 		expect(layout.columns[3]?.headings).toEqual([GraphHeading.REPORT_PAIRS]);
 	});
 
-	test("a trade rebuilt by a split takes the next column, and the faded action names no heading", () => {
+	test("a trade rebuilt by a split takes the next column, and an action off the main path names no heading", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -95,7 +95,7 @@ describe("the columns, lanes and order of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
+		const layout = layoutGraph(model, { focus: b.node(buy.row), expanded: new Set() });
 
 		expect(layoutNodeOf(layout, b.node(buy.event))?.column).toEqual(2);
 		expect(layoutNodeOf(layout, b.node(split.action))?.column).toEqual(2);
@@ -196,7 +196,7 @@ describe("the columns, lanes and order of a graph layout", () => {
 		expect(layout.columns[5]?.headings).toEqual([GraphHeading.REPORT]);
 	});
 
-	test("the pairs of one sale keep the order of their buys, and each buy sits beside its pair", () => {
+	test("the lots of one sale are rows in the order of their buys, and each buy shares its lot's row", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -268,12 +268,12 @@ describe("the columns, lanes and order of a graph layout", () => {
 
 		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
 
-		expect(layoutNodeOf(layout, b.node(firstMatch.lot))?.order).toEqual(0);
-		expect(layoutNodeOf(layout, b.node(secondMatch.lot))?.order).toEqual(1);
-		expect(layoutNodeOf(layout, b.node(thirdMatch.lot))?.order).toEqual(2);
-		expect(layoutNodeOf(layout, b.node(firstBuy.event))?.order).toEqual(0);
-		expect(layoutNodeOf(layout, b.node(secondBuy.event))?.order).toEqual(1);
-		expect(layoutNodeOf(layout, b.node(thirdBuy.event))?.order).toEqual(2);
+		expect(layoutNodeOf(layout, b.node(firstMatch.lot))?.row).toEqual(0);
+		expect(layoutNodeOf(layout, b.node(secondMatch.lot))?.row).toEqual(1);
+		expect(layoutNodeOf(layout, b.node(thirdMatch.lot))?.row).toEqual(2);
+		expect(layoutNodeOf(layout, b.node(firstBuy.event))?.row).toEqual(0);
+		expect(layoutNodeOf(layout, b.node(secondBuy.event))?.row).toEqual(1);
+		expect(layoutNodeOf(layout, b.node(thirdBuy.event))?.row).toEqual(2);
 		expect(layoutNodeOf(layout, b.node(firstBuy.event))?.lane).toEqual(GraphLane.ACQUIRED);
 		expect(layoutNodeOf(layout, b.node(sell.event))?.order).toEqual(0);
 	});

@@ -6,7 +6,7 @@ import { layoutGraph, layoutNodeOf } from "~/utils/graphLayout";
 import { graphModelOf, modelNodeFor } from "~/utils/graphModel";
 
 describe("the main path, stubs and stacks of a graph layout", () => {
-	test("a sale's main path runs from its file to the pair, and what else touches it is only a stub", () => {
+	test("a row's main path runs from its file to the pair, and what else touches it is only a stub", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -40,9 +40,9 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, { focus: b.node(sell.row), expanded: new Set() });
 
-		expect(layout.focus.node.source).toBe(b.node(sell.event));
+		expect(layout.focus.node.source).toBe(b.node(sell.row));
 		expect(layoutNodeOf(layout, b.node(file))?.isStub).toEqual(false);
 		expect(layoutNodeOf(layout, b.node(sell.row))?.isStub).toEqual(false);
 		expect(layoutNodeOf(layout, b.node(match.lot))?.isStub).toEqual(false);
@@ -104,7 +104,7 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 		expect(layout.edges).toHaveLength(6);
 	});
 
-	test("the other trade of a pair is a stub above the pair", () => {
+	test("the trade on the other side of a buy's lot is a stub after the lot, and that sale's other lots are not drawn", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -160,7 +160,7 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 
 		expect(layoutNodeOf(layout, b.node(firstMatch.lot))?.isStub).toEqual(false);
 		expect(layoutNodeOf(layout, b.node(sell.event))?.isStub).toEqual(true);
-		expect(layoutNodeOf(layout, b.node(sell.event))?.direction).toEqual(GraphDirection.UP);
+		expect(layoutNodeOf(layout, b.node(sell.event))?.direction).toEqual(GraphDirection.DOWN);
 		expect(layoutNodeOf(layout, b.node(sell.event))?.hasMore).toEqual(true);
 		expect(layoutNodeOf(layout, b.node(secondMatch.lot))).toBeNull();
 		expect(layoutNodeOf(layout, b.node(secondBuy.event))).toBeNull();
