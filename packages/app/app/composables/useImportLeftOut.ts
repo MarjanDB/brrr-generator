@@ -8,6 +8,7 @@ import {
 	ProvenanceReportReader,
 } from "@brrr/lib";
 import type { ComputedRef } from "vue";
+import type { ImportSources } from "~/composables/useImportSources";
 import type { ImportLeftOut, ImportLeftOutLine } from "~/types/importSources";
 
 function sameDetail(a: ProvenanceDetail | null, b: ProvenanceDetail | null): boolean {
@@ -26,9 +27,12 @@ function sameSentence(a: ProvenanceDrop, b: ProvenanceDrop): boolean {
 
 // What the import left out, one line per sentence, and what it counted once. Read from the
 // import's graph only, so a report made from it changes nothing here. The rows behind each line
-// come from the import sources an ancestor provided, read from the same graph.
-export function useImportLeftOut(graph: () => ProvenanceGraph): ComputedRef<ImportLeftOut> {
-	const sources = useImportSources();
+// come from the import sources, read from the same graph: those an ancestor provided, or those
+// the calling component provides itself (a component can't inject what it provides).
+export function useImportLeftOut(
+	graph: () => ProvenanceGraph,
+	sources: ImportSources = useImportSources(),
+): ComputedRef<ImportLeftOut> {
 	return computed(() => {
 		const reading = new ProvenanceReportReader().read(graph());
 		const lines: ImportLeftOutLine[] = [];

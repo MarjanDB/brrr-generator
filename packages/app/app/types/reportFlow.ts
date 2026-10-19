@@ -10,12 +10,11 @@ export enum ReportStep {
 export type ReportProgress = {
 	hasImport: boolean;
 	reviewConfirmed: boolean;
-	hasReport: boolean;
+	hasAuthority: boolean;
 };
 
-// How many times the flow started over, took an import and generated a report.
+// How many times the flow started over and took an import.
 export type ReportFlowCounts = {
 	starts: number;
 	imports: number;
-	reports: number;
 };

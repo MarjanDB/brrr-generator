@@ -27,7 +27,8 @@ and `test` from `vitest` (no globals, unlike lib), import the code under test ex
 `typecheck`. Utils are called directly. A composable runs inside a mounted component through
 `composables/__tests__/support/mountComposable.ts` (`mountComposableUnder` for one that injects what a parent provided), and its
 text is asserted as the English (or, after `setLocale("sl")`, Slovenian) string; the app is shared between tests, so a test that
-switches the locale starts by setting `en`. Graph tests build graphs with `utils/__tests__/support/GraphBuilder.ts`. Nuxt ignores
+switches the locale starts by setting `en`. `app/__tests__/support/Setup.ts` (vitest's `setupFiles`) pins Luxon's zone to
+`Europe/Ljubljana`, as lib's setup does, so a report compares with a test case's expected file on any machine. Graph tests build graphs with `utils/__tests__/support/GraphBuilder.ts`. Nuxt ignores
 `*.test.ts`, so they are never bundled.
 
 ## The landing page
@@ -57,7 +58,8 @@ the left, the mark in the middle and the tax offices on the right, stacked below
 `configure.vue` and `download.vue`, at `/<locale>/report/<step>` (`ReportStep` in `types/reportFlow.ts`).
 
 - `report.vue` calls `provideReportFlow()` (`composables/useReportFlow.ts`): the import, whether its review was confirmed and
-  the report, with `acceptImport` (clears everything after upload), `confirmReview`, `acceptReport` and `startOver`. Each step
+  the tax authority, with `acceptImport` (clears everything after upload), `confirmReview`, `chooseAuthority` and `startOver`.
+  The reports themselves are made on the download step. Each step
   page takes its step's component, passes its emit to the flow and navigates to the next step. The flow lives as long as
   `report.vue`; leaving the flow or reloading drops it, and `definePageMeta({ key: "report" })` keeps it through a language switch.
 - How far the flow can go is `furthestStepOf`, and the step a path may show `stepToShow` (`utils/reportFlow.ts`): a step without
@@ -65,8 +67,8 @@ the left, the mark in the middle and the tax offices on the right, stacked below
   `onBeforeRouteUpdate` when moving inside it, before the step renders. Never hide its `NuxtPage` with a `v-if`: that drops
   every kept page.
 - Step pages are kept as they were left (`<NuxtPage :keepalive>`), so going back finds the files, the detections and the
-  form as they were. `reportPageKey` gives each page a key that changes once what it shows is gone: upload when the flow starts
-  over, review and configure with a new import, download with each report.
+  year and tab as they were. `reportPageKey` gives each page a key that changes once what it shows is gone: upload when the flow
+  starts over, every later step with a new import.
 - `WizardStepper` sits on top and moves between the steps the flow can reach. The flow's pages render in the browser only
   (`routeRules` in `nuxt.config.ts`) and stay out of the sitemap.
 
@@ -80,13 +82,27 @@ The four steps, each a component that emits to move on:
    `provideImportSources` once; anything below it reads the rows behind an event with `useImportSources()`. Each trade and cash
    row has a "where from" popover (`components/review/source/`: `RowSourceButton`, mounted-when-open `RowSourcePopover`,
    `FileChip`) showing the export file(s), a "counted once" note for a deduplicated row, the row's key IBKR attributes and an "All
-   attributes" toggle. Above the table, `ImportLeftOutNote.vue` lists what the import left out (amber) and what it counted once
-   (info badge). The logic is in `composables/useImportSources.ts`, `composables/useImportLeftOut.ts` and
+   attributes" toggle. The card is capped at `max-w-screen-md` and has two reka `Tabs`: Instruments (the table) and Issues
+   (`ImportIssues.vue`), whose trigger counts what the import left out (amber) and what it counted once (info). The Issues tab
+   folds what was left out into one group per sentence, then the rows counted once into one group, each opening to its files
+   and rows. `ReviewStep` provides the import sources and reads what was left out itself, so it passes its own sources to
+   `useImportLeftOut`. The logic is in `composables/useImportSources.ts`, `composables/useImportLeftOut.ts` and
    `utils/rowAttributes.ts`, with its shapes in `types/importSources.ts`; it reads node kinds, edges and `fields`, and a label only
    as a file's name or a left-out row's own wording.
-3. **Configure** — `components/configure/ConfigureStep.vue`: tax authority cards (`utils/taxAuthorityCards.ts`), then that authority's form
-   from `authorityForms` (`SloveniaExportForm.vue`), which takes the `ImportResult` and calls `ReportPipeline.generate`.
-4. **Download** — `components/download/DownloadStep.vue`, receiving `GeneratedOutputs` (the files, the year and lot-matching method, the report's provenance graph and the import). It reads the graph once (`ProvenanceReportReader`) and lays out `DownloadHeader` (form and year, counts, the needs-a-look popover (each item with the file or row it is about) and the warnings popover (each warning with its instrument), guide, downloads, start over), `InstrumentPanel` (the report's instruments by asset type, with search, and an amber badge on a row whose instrument has warnings), `InstrumentHeader`, `InstrumentTimeline` and `FocusFacts` (the focused item's facts and the sentences about it). `DownloadStep` calls `provideGraphFocus()` for the focus every part of the step shares. The panel's logic is `utils/instrumentPanel.ts` (shapes in `types/instrumentPanel.ts`), the timeline's `useInstrumentTimeline` with `utils/instrumentTimeline.ts` (shapes in `types/timeline.ts`), and every sentence comes from `useProvenanceText` (drops, warnings, details, dates, split ratios). The submission guide comes from `utils/taxAuthorityGuides.ts`. The step reads facts from node `fields` and sentences from `ProvenanceDetail` and `DropReason`, never from a node's label.
+3. **Tax authority** — `components/configure/ConfigureStep.vue`: the tax authority cards (`utils/taxAuthorityCards.ts`) and Continue,
+   which emits the chosen `TaxAuthorityId`. That is all a report needs from the user up front.
+4. **Reports** — `components/download/ReportsStep.vue`: a tax year (`TaxYearPicker.vue`, reka's `YearPicker` in an `AppPopover`,
+   with `CalendarDate` from `@internationalized/date`; years without a trade or payment in the import, `reportYearsOf` in
+   `utils/taxYears.ts`, are disabled, and it opens on `defaultTaxYear`), Start over, and a reka `Tabs` tab per form the authority
+   makes (`utils/taxAuthorityForms.ts`: the form's own name for the tab, what it covers for the tab's tooltip, file names, and
+   whether its XML carries the taxpayer). `provideTaxYearReports`
+   (`composables/useTaxYearReports.ts`, shapes in `types/taxYearReports.ts`) makes every form for the year at once, again when the
+   year changes, and hands the step the reports, the taxpayer details given so far and `downloadXml`. A form's lines, CSV and
+   provenance don't depend on the taxpayer, so the forms are made with an empty one; the XML is written again on download, with
+   the details from `TaxpayerDialog.vue` (all optional but the country, which sets residency; `taxpayerInfoOf` in
+   `utils/taxpayer.ts`). A form whose XML has no taxpayer block (D-IFI) downloads it straight away. The details live as long as
+   the step and are never stored.
+   Each tab holds `components/download/DownloadStep.vue` for its form, receiving `GeneratedOutputs` (the CSV, the file names, the year and lot-matching method, the report's provenance graph and the import) and the form. It reads the graph once (`ProvenanceReportReader`) and lays out `DownloadHeader` (counts, the needs-a-look popover (each item with the file or row it is about) and the warnings popover (each warning with its instrument), guide, the CSV and the XML), `InstrumentPanel` (the report's instruments by asset type, with search, and an amber badge on a row whose instrument has warnings), `InstrumentHeader`, `InstrumentTimeline` and `FocusFacts` (the focused item's facts and the sentences about it). `DownloadStep` calls `provideGraphFocus()` for the focus every part of the step shares. The panel's logic is `utils/instrumentPanel.ts` (shapes in `types/instrumentPanel.ts`), the timeline's `useInstrumentTimeline` with `utils/instrumentTimeline.ts` (shapes in `types/timeline.ts`), and every sentence comes from `useProvenanceText` (drops, warnings, details, dates, split ratios). The submission guide comes from `utils/taxAuthorityGuides.ts`. The step reads facts from node `fields` and sentences from `ProvenanceDetail` and `DropReason`, never from a node's label.
 
 **Download step graph.** Under the timeline, `<LazyGraphView>` (`components/download/graph/`) draws the focused item's provenance.
 Its shapes are plain types in `types/provenanceGraph.ts`. The engine is pure utils: `graphModelOf(graph, reading, showEveryStep)`
@@ -115,7 +131,7 @@ Every icon and tint is a literal class string in `utils/nodeLook.ts` (UnoCSS can
 to the graph starts with a test in `utils/__tests__/` or `composables/__tests__/`. `GraphView` stays lazy, so the graph loads only
 once the download step draws it.
 
-The page is full width; steps 1 and 3 cap their forms at `max-w-screen-md`.
+The page is full width; steps 1, 2 and 3 cap their cards at `max-w-screen-md`.
 
 Guides (broker export instructions, tax authority submission instructions) are data (`utils/brokerGuides.ts`, `utils/taxAuthorityGuides.ts`):
 `GuideStep`s from `types/guide.ts`, shown by `GuideModal.vue` (its `trigger` slot holds the button that opens it: each broker in
