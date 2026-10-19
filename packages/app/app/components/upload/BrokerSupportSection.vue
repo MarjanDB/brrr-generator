@@ -29,7 +29,7 @@ const { t } = useI18n();
             <img
               :src="broker.iconUrl"
               :alt="t(broker.nameKey)"
-              class="h-8 w-8 shrink-0"
+              class="logo-tile h-10 w-10 shrink-0"
             />
             <div class="flex flex-col gap-0.5 flex-1 min-w-0">
               <span class="text-body font-medium app-text">{{ t(broker.nameKey) }}</span>

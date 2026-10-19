@@ -49,6 +49,9 @@ export default defineConfig({
 		["app-border-strong", "border-edge-strong"],
 		["app-border-subtle", "border-edge-subtle"],
 		["app-row-interactive", "cursor-pointer hover:bg-surface-hover transition-colors"],
+		// A broker or tax office logo keeps its published colours, which are made for a light page, so it
+		// sits on a light tile. Its box is the logo plus the tile's padding.
+		["logo-tile", "bg-surface-inverse p-1"],
 
 		// Typography
 		["app-text", "text-ink"],

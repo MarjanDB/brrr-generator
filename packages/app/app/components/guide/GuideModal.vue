@@ -29,7 +29,7 @@ function isLink(segment: Segment): segment is LinkSegment {
       <slot name="trigger" />
     </template>
     <template v-if="iconUrl" #icon>
-      <img :src="iconUrl" :alt="t(nameKey)" class="h-6 w-6 shrink-0" />
+      <img :src="iconUrl" :alt="t(nameKey)" class="logo-tile h-8 w-8 shrink-0" />
     </template>
 
     <div

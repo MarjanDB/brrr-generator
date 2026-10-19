@@ -18,7 +18,7 @@ const { t } = useI18n();
 		<img
 			:src="card.iconUrl"
 			:alt="card.name"
-			class="h-10 w-auto object-contain"
+			class="logo-tile h-12 w-auto object-contain"
 		/>
 		<div class="flex flex-col gap-0.5">
 			<span class="text-h5 leading-snug">{{ card.name }}</span>

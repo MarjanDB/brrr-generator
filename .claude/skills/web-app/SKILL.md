@@ -194,7 +194,8 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
   `app/composables/`. A class or icon written only in a `.ts` file anywhere else is never generated.
 - Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `app-surface-raised`, `app-surface-sunken`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`,
   `text-label`, `text-caption`, `input-md`, `button-filled-<intent>`, `button-ghost`, `alert-error`, `tooltip-box`,
-  `app-focus-ring`, and for tables `app-table`, `app-table-head-row`, `app-table-row`, `app-table-th`, `app-table-td` (with a
+  `app-focus-ring`, `logo-tile` (the light tile every broker and tax office logo sits on, since logos are made for a light page; size the
+  `<img>` as the logo plus the tile's padding), and for tables `app-table`, `app-table-head-row`, `app-table-row`, `app-table-th`, `app-table-td` (with a
   `-dense` set for the tables inside a dialog; cells leave alignment to the caller), …
 - Shared pieces before hand-written markup: `AppBadge` (`pill` for an outlined chip), `AppCallout` (a tinted line, `as="li"`
   in a list), `InstrumentMonogram` and the graph's `NodeIcon`.
