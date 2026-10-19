@@ -14,6 +14,7 @@ import {
 	nodeValueKeys,
 	stackKindKeys,
 } from "~/utils/i18nKeys";
+import { TAX_OFFICES } from "~/utils/taxOffices";
 import en from "~~/i18n/locales/en.json";
 import sl from "~~/i18n/locales/sl.json";
 
@@ -32,6 +33,15 @@ describe("the locale files", () => {
 		const bare = /@(?!'\})/;
 		expect(Object.entries(en).filter(([, text]) => bare.test(text))).toEqual([]);
 		expect(Object.entries(sl).filter(([, text]) => bare.test(text))).toEqual([]);
+	});
+
+	test("every tax office's country and forms have keys in the locale files", () => {
+		for (const office of TAX_OFFICES) {
+			expect(englishKeys.has(office.countryKey)).toEqual(true);
+			for (const key of office.formKeys) {
+				expect(englishKeys.has(key)).toEqual(true);
+			}
+		}
 	});
 
 	test("every drop reason has a key in the locale files", () => {

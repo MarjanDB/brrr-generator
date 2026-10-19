@@ -6,6 +6,7 @@
 	"xml_files_label": "XML datoteka(e)",
 	"tax_authority_label": "Davčna uprava",
 	"tax_authority_description": "Izberite davčno upravo, ki ji poročate",
+	"country_slovenia": "Slovenija",
 	"report_settings_title": "Nastavitve poročila",
 	"year_label": "Leto",
 	"report_type_label": "Vrsta poročila",

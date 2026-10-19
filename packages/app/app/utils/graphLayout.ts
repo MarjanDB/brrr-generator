@@ -19,6 +19,7 @@ import {
 	type SplitFactor,
 	StackKey,
 } from "~/types/provenanceGraph";
+import { edgeCurve } from "~/utils/edgeCurve";
 import {
 	headingOf,
 	modelIns,
@@ -391,9 +392,6 @@ export const defaultGraphMetrics: GraphMetrics = {
 	top: 30,
 };
 
-// Edges bend at least this far out of a node, so a short hop still reads as a curve.
-const minimumBend = 24;
-
 // Room to the right of the last column, and below the last band.
 const rightMargin = 20;
 const bottomMargin = 6;
@@ -463,12 +461,11 @@ export function placeGraph(layout: GraphLayout, metrics: GraphMetrics): GraphPla
 		}
 		const from = { x: source.x + source.width, y: source.y + source.height / 2 };
 		const to = entryPoint(edge, target, metrics);
-		const bend = Math.max(minimumBend, (to.x - from.x) / 2);
 		return {
 			edge,
 			from,
 			to,
-			path: `M${from.x},${from.y} C${from.x + bend},${from.y} ${to.x - bend},${to.y} ${to.x},${to.y}`,
+			path: edgeCurve(from, to),
 			badge: edge.split === null ? null : { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 },
 		};
 	});
