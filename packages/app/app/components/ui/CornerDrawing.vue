@@ -91,12 +91,28 @@ const screenLight = {
 		`linear-gradient(${red(room)}, ${red(room)})`,
 	].join(", "),
 };
+
+// The crash chart's plane (CrashChart draws it): placed by hand with the chart editor's four-corner
+// distort, as the CSS that maps the plane's box onto those corners. Its lengths are in cqw, hundredths
+// of the drawing's width, so it holds at any size and needs no script.
+const chartPlane = {
+	transform:
+		"translate(1.6cqw, -63.303cqw) matrix(0.786, -0.088, 0.059, 1.0721, 0, 0) perspective(380.96cqw) rotateX(-16.151deg) rotateY(-31.369deg)",
+};
 </script>
 
 <template>
-	<!-- Pinned to the window's bottom-left corner on every page; the layout paints its content over it. -->
-	<div class="pointer-events-none select-none fixed bottom-0 left-0">
-		<img :src="drawing" alt="" class="block max-h-[46vh] max-w-[34vw]" />
+	<!-- Pinned to the window's bottom-left corner on every page; the layout paints its content over it.
+	     Sized as the drawing would size itself (its own 656px, 34% of the width or 46% of the height,
+	     whichever is least), and a container, so the chart can measure itself in the drawing's width. -->
+	<div class="@container pointer-events-none select-none fixed bottom-0 left-0 w-[min(656px,34vw,29.584vh)] aspect-[656/1020]">
+		<!-- Behind the drawing: the plane starts as a box from above the monitor to past her right, then
+		     is distorted into the scene. The moving chart, or for reduced motion a still one. -->
+		<div class="absolute left-0 top-[-12%] h-full w-[175%] origin-top-left opacity-70" :style="chartPlane">
+			<CrashChart animated class="block motion-reduce:hidden" />
+			<CrashChart :animated="false" class="hidden motion-reduce:block" />
+		</div>
+		<img :src="drawing" alt="" class="relative block h-full w-full" />
 		<div class="absolute inset-0 isolate opacity-45 mix-blend-multiply bg-blend-multiply" :style="screenLight">
 			<div v-for="(style, index) in spotStyles" :key="index" class="absolute mix-blend-multiply" :style="style" />
 		</div>
