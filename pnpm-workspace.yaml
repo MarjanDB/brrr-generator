@@ -18,6 +18,7 @@ saveExact: true
 catalog:
   "@biomejs/biome": 2.5.15
   "@iconify-json/mdi": 1.2.3
+  "@internationalized/date": 3.12.4
   "@nuxt/test-utils": 4.3.4
   "@nuxtjs/i18n": 10.6.0
   "@nuxtjs/seo": 5.3.16
