@@ -27,7 +27,8 @@ and `test` from `vitest` (no globals, unlike lib), import the code under test ex
 `typecheck`. Utils are called directly. A composable runs inside a mounted component through
 `composables/__tests__/support/mountComposable.ts` (`mountComposableUnder` for one that injects what a parent provided), and its
 text is asserted as the English (or, after `setLocale("sl")`, Slovenian) string; the app is shared between tests, so a test that
-switches the locale starts by setting `en`. Graph tests build graphs with `utils/__tests__/support/GraphBuilder.ts`. Nuxt ignores
+switches the locale starts by setting `en`. `app/__tests__/support/Setup.ts` (vitest's `setupFiles`) pins Luxon's zone to
+`Europe/Ljubljana`, as lib's setup does, so a report compares with a test case's expected file on any machine. Graph tests build graphs with `utils/__tests__/support/GraphBuilder.ts`. Nuxt ignores
 `*.test.ts`, so they are never bundled.
 
 ## The landing page

@@ -11,6 +11,7 @@ export default defineVitestConfig({
 			},
 		},
 		include: ["app/**/*.test.ts"],
+		setupFiles: ["./app/__tests__/support/Setup.ts"],
 		watch: false,
 	},
 });
