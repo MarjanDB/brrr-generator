@@ -254,7 +254,7 @@ Project skills live in `.claude/skills/`:
 - **ibkr-flex-query** — the IBKR Flex Query XML, its schemas and fixtures.
 - **slovenian-tax-edavki** — eDavki forms, taxpayer fields, XSDs, Slovenian report rules.
 - **infoproviders-lookup-data** — company/country/treaty lookups and their JSON fallbacks.
-- **web-app** — the Nuxt wizard, components, i18n, styling, server routes.
+- **web-app** — the landing page and the report flow, components, i18n, styling, server routes.
 - **bumping-dependencies** — the pnpm catalog and supply-chain rules.
 
 The docs under `resources/docs/` predate the TypeScript rewrite (they describe notebooks and the Python layout). Trust the code and the

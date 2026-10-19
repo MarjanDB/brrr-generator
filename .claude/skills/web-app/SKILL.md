@@ -1,6 +1,6 @@
 ---
 name: web-app
-description: The Nuxt 4 site in packages/app/ — the four-step wizard, component layout, form components, i18n (en + sl), UnoCSS shortcuts and theme colours, charts, the lookup server routes, env config and deployment. Use when changing anything under packages/app/, adding UI text, adding a page or component, or styling.
+description: The Nuxt 4 site in packages/app/ — the landing page and the four-step report flow, component layout, form components, i18n (en + sl), UnoCSS shortcuts and theme colours, charts, the lookup server routes, env config and deployment. Use when changing anything under packages/app/, adding UI text, adding a page or component, or styling.
 ---
 
 # Web app (`packages/app/`)
@@ -30,9 +30,47 @@ text is asserted as the English (or, after `setLocale("sl")`, Slovenian) string;
 switches the locale starts by setting `en`. Graph tests build graphs with `utils/__tests__/support/GraphBuilder.ts`. Nuxt ignores
 `*.test.ts`, so they are never bundled.
 
-## The wizard
+## The landing page
 
-`packages/app/app/pages/index.vue` is the whole product: one page holding the state of four steps, each a component that emits to move on.
+`pages/index.vue` is the way in, rendered on the server: a headline, then `components/landing/LandingFlow.vue`, the brokers on
+the left, the mark in the middle and the tax offices on the right, stacked below `lg`.
+
+- The page only presents what the site supports: its cards are information, with nothing to click. The brokers are
+  `BROKER_GUIDES` as `LandingBrokerCard`s (the export guides stay in the upload step). The tax offices are `TAX_OFFICES` (`utils/taxOffices.ts`, shapes in `types/taxOffice.ts`): what the site shows
+  of each, with no ids. `TAX_AUTHORITY_CARDS` builds on them and adds the `TaxAuthorityId` the configure step picks by.
+- `LandingMark` is the one way into the flow, a link to `/report/upload`.
+- The arrows render on the server: nothing is measured. Each card's `<li>` holds a `LandingConnector`, a box in the 100px
+  gap to the mark, from the card's middle to the card's own point on the mark. Every card in a column is as tall as the
+  tallest one (`auto-rows-fr`) and the column shares its middle with the mark, so `landingConnectorOf`
+  (`utils/landingConnectors.ts`) can give the box's height as a `calc()` on the card's own height (`100%` inside its row).
+  The curve is `edgeCurve` (`utils/edgeCurve.ts`, the one the provenance graph draws its edges with) in a 100 by 100 SVG
+  stretched over the box, with a non-scaling stroke; the arrowhead is an SVG of its own. The connectors rely on the mark's
+  132px height, the 10px gap between cards and the 100px column gap: change one and change `landingConnectors.ts` with it.
+  Stacked, `LandingDownArrow` takes their place. Nothing moves.
+- **Nothing the landing page imports may import a value from `@brrr/lib`** (type-only imports are fine). Lib isn't marked free
+  of side effects, so one enum import pulls most of it, zod and inversify included, into the page. That is why the tax offices'
+  display data, `edgeCurve` and `landingConnectorOf` sit in files of their own.
+
+## The report flow
+
+`pages/report.vue` is the flow's parent; each step is a page under it: `pages/report/upload.vue`, `review.vue`,
+`configure.vue` and `download.vue`, at `/<locale>/report/<step>` (`ReportStep` in `types/reportFlow.ts`).
+
+- `report.vue` calls `provideReportFlow()` (`composables/useReportFlow.ts`): the import, whether its review was confirmed and
+  the report, with `acceptImport` (clears everything after upload), `confirmReview`, `acceptReport` and `startOver`. Each step
+  page takes its step's component, passes its emit to the flow and navigates to the next step. The flow lives as long as
+  `report.vue`; leaving the flow or reloading drops it, and `definePageMeta({ key: "report" })` keeps it through a language switch.
+- How far the flow can go is `furthestStepOf`, and the step a path may show `stepToShow` (`utils/reportFlow.ts`): a step without
+  what it needs shows the first step that's missing. `report.vue` redirects once when the flow is opened and in
+  `onBeforeRouteUpdate` when moving inside it, before the step renders. Never hide its `NuxtPage` with a `v-if`: that drops
+  every kept page.
+- Step pages are kept as they were left (`<NuxtPage :keepalive>`), so going back finds the files, the detections and the
+  form as they were. `reportPageKey` gives each page a key that changes once what it shows is gone: upload when the flow starts
+  over, review and configure with a new import, download with each report.
+- `WizardStepper` sits on top and moves between the steps the flow can reach. The flow's pages render in the browser only
+  (`routeRules` in `nuxt.config.ts`) and stay out of the sitemap.
+
+The four steps, each a component that emits to move on:
 
 1. **Upload** — `components/upload/UploadStep.vue`: reads the files, runs `ReportPipeline.read`, emits the `ImportResult`
    (detections, `FinancialEvents` and the provenance graph).
@@ -74,8 +112,8 @@ The interaction rules:
 - The layout must depend on the focus alone: lighting a chain must not redraw the graph, because the chain holds that layout's nodes.
 Every icon and tint is a literal class string in `utils/nodeLook.ts` (UnoCSS cannot see a built name), numbers go through
 `formatNumber` (`utils/provenanceFields.ts`), and all text is built at render through `t()` so a language switch redraws it. A change
-to the graph starts with a test in `utils/__tests__/` or `composables/__tests__/`. `GraphView` stays lazy, or the page chunk passes
-the 700 kB limit.
+to the graph starts with a test in `utils/__tests__/` or `composables/__tests__/`. `GraphView` stays lazy, so the graph loads only
+once the download step draws it.
 
 The page is full width; steps 1 and 3 cap their forms at `max-w-screen-md`.
 
@@ -159,18 +197,18 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
   `app-focus-ring`, and for tables `app-table`, `app-table-head-row`, `app-table-row`, `app-table-th`, `app-table-td` (with a
   `-dense` set for the tables inside a dialog; cells leave alignment to the caller), …
 - Shared pieces before hand-written markup: `AppBadge` (`pill` for an outlined chip), `AppCallout` (a tinted line, `as="li"`
-  in a list), `StepSummaryCard` (a finished wizard step folded to one line), `InstrumentMonogram` and the graph's `NodeIcon`.
+  in a list), `InstrumentMonogram` and the graph's `NodeIcon`.
   `pages/design/` shows each of them.
 - There is one theme: no dark mode and no `dark:` classes.
 - Icons are classes: `i-mdi-<name>` (Material Design Icons via `@iconify-json/mdi`).
 
 ## Build and deploy
 
-- `vite.build.chunkSizeWarningLimit` is 700 kB because the wizard page carries chart.js and the tax engine; keep it just above the
-  largest chunk rather than raising it freely. `DownloadStep` is used as `<LazyDownloadStep>` in `pages/index.vue` so the panel,
-  timeline and sentences load only once a report exists and stay out of the page chunk, and `ReviewStep` uses
-  `<LazyInstrumentModal>` (charts and the row popover) for the same reason; make the next heavy step lazy the same way
-  rather than raising the limit.
+- `vite.build.chunkSizeWarningLimit` is 500 kB, just above the largest chunk (the entry: PostHog and i18n); keep it there
+  rather than raising it freely. Each page is a chunk of its own: the tax engine (~436 kB) and chart.js (~214 kB) load only
+  with the report flow's pages, and the landing page loads neither (see "The landing page"; its mark prefetches the flow only
+  when pointed at or focused). Inside the flow, `ReviewStep` uses `<LazyInstrumentModal>` (charts and the row popover) and
+  the download step `<LazyGraphView>`; make the next heavy part lazy the same way rather than raising the limit.
 - `@nuxtjs/seo` prerenders the sitemap and OG images (`zeroRuntime`), so the server bundle holds only the lookup routes.
 - The root `Dockerfile` builds lib, then the app, and runs `.output/server/index.mjs`. Publishing a GitHub release force-pushes `master`
   to the `website` branch (`.github/workflows/sync-website-branch.yml`).

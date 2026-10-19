@@ -10,6 +10,7 @@ import {
 	TaxAuthorityLotMatchingMethod,
 } from "@brrr/lib";
 import { GraphHeading, GraphNodeKind, NodeValueKind } from "~/types/provenanceGraph";
+import { ReportStep } from "~/types/reportFlow";
 import { TimelineMarkKind } from "~/types/timeline";
 
 // The i18n key of each enum value the download step writes out. Record<Enum, string> makes a new
@@ -176,4 +177,12 @@ export const edavkiFieldKeys: Record<EDavkiProvenanceField, string> = {
 	[EDavkiProvenanceField.TRACKING_ID]: "download_edavki_field_tracking_id",
 	[EDavkiProvenanceField.DIVIDEND_AMOUNT]: "download_edavki_field_dividend_amount",
 	[EDavkiProvenanceField.FOREIGN_TAX_PAID]: "download_edavki_field_foreign_tax_paid",
+};
+
+// The report flow's steps, as the stepper names them.
+export const reportStepKeys: Record<ReportStep, string> = {
+	[ReportStep.UPLOAD]: "wizard_step_upload",
+	[ReportStep.REVIEW]: "wizard_step_review",
+	[ReportStep.CONFIGURE]: "wizard_step_configure",
+	[ReportStep.DOWNLOAD]: "wizard_step_download",
 };

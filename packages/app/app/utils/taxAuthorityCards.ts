@@ -1,17 +1,12 @@
 import { TaxAuthorityId } from "@brrr/lib";
+import type { TaxOfficeDisplay } from "~/types/taxOffice";
+import { SLOVENIA_TAX_OFFICE } from "~/utils/taxOffices";
 
-export type TaxAuthorityCard = {
+// A tax office with the id the configure step picks it by.
+export type TaxAuthorityCard = TaxOfficeDisplay & {
 	authorityId: TaxAuthorityId;
-	name: string;
-	country: string;
-	iconUrl: string;
 };
 
 export const TAX_AUTHORITY_CARDS: TaxAuthorityCard[] = [
-	{
-		authorityId: TaxAuthorityId.SLOVENIA,
-		name: "Finančna uprava Republike Slovenije",
-		country: "Slovenia",
-		iconUrl: "/icons/tax-authorities/edavki.svg",
-	},
+	{ ...SLOVENIA_TAX_OFFICE, authorityId: TaxAuthorityId.SLOVENIA },
 ];

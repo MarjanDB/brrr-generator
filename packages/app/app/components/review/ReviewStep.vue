@@ -10,7 +10,6 @@ import { shallowRef } from "vue";
 const props = defineProps<{
   financialEvents: FinancialEvents;
   provenance: ProvenanceGraph;
-  collapsed: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -65,8 +64,6 @@ const rows = computed<InstrumentRow[]>(() => {
   return [...byIsin.values(), ...noIsin];
 });
 
-const groupingCount = computed(() => rows.value.length);
-
 const modalRow = shallowRef<InstrumentRow | null>(null);
 const modalOpen = ref(false);
 // The clicked row's button, so the focus goes back to it when the dialog closes.
@@ -82,11 +79,7 @@ function openModal(row: InstrumentRow, event: MouseEvent) {
 </script>
 
 <template>
-  <StepSummaryCard v-if="collapsed" :title="t('review_instruments_title')">
-    {{ t('review_summary', { n: groupingCount }) }}
-  </StepSummaryCard>
-
-  <div v-else class="card card-padding-md flex flex-col gap-4">
+  <div class="card card-padding-md flex flex-col gap-4">
     <h2 class="text-h5">{{ t('review_instruments_title') }}</h2>
     <ImportLeftOutNote :provenance="provenance" />
     <div class="overflow-x-auto">

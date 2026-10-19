@@ -118,13 +118,12 @@ function onFormSubmit(valid: boolean) {
 		</div>
 
 		<div class="flex flex-col gap-4 border b-1 p-5">
-			<h2 class="text-h3">Callouts and step summary</h2>
+			<h2 class="text-h3">Callouts</h2>
 			<ul class="flex flex-col gap-1.5 max-w-md">
 				<AppCallout v-for="intent in intents" :key="intent.name" as="li" :color="intent.name">
 					A {{ intent.name }} callout about the item above it.
 				</AppCallout>
 			</ul>
-			<StepSummaryCard title="Select Files" class="max-w-md">2 file(s) loaded</StepSummaryCard>
 		</div>
 
 		<div class="flex flex-col gap-4 border b-1 p-5">

@@ -5,6 +5,8 @@ import type { TaxAuthorityCard } from "~/utils/taxAuthorityCards";
 defineProps<{
 	card: TaxAuthorityCard;
 }>();
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -20,7 +22,7 @@ defineProps<{
 		/>
 		<div class="flex flex-col gap-0.5">
 			<span class="text-h5 leading-snug">{{ card.name }}</span>
-			<span class="text-body-sm app-text-muted">{{ card.country }}</span>
+			<span class="text-body-sm app-text-muted">{{ t(card.countryKey) }}</span>
 		</div>
 	</RadioGroupItem>
 </template>
