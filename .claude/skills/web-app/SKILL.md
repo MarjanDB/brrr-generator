@@ -194,12 +194,16 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
   `app/composables/`. A class or icon written only in a `.ts` file anywhere else is never generated.
 - Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `app-surface-raised`, `app-surface-sunken`, `card`, `card-padding-md`, `text-h1`/`h3`/`h5`,
   `text-label`, `text-caption`, `input-md`, `button-filled-<intent>`, `button-ghost`, `alert-error`, `tooltip-box`,
-  `app-focus-ring`, and for tables `app-table`, `app-table-head-row`, `app-table-row`, `app-table-th`, `app-table-td` (with a
+  `app-focus-ring`, `logo-tile` (the light tile every broker and tax office logo sits on, since logos are made for a light page; size the
+  `<img>` as the logo plus the tile's padding), and for tables `app-table`, `app-table-head-row`, `app-table-row`, `app-table-th`, `app-table-td` (with a
   `-dense` set for the tables inside a dialog; cells leave alignment to the caller), …
 - Shared pieces before hand-written markup: `AppBadge` (`pill` for an outlined chip), `AppCallout` (a tinted line, `as="li"`
   in a list), `InstrumentMonogram` and the graph's `NodeIcon`.
   `pages/design/` shows each of them.
-- There is one theme: no dark mode and no `dark:` classes.
+- There is one theme, and it is dark: the roles take the palette's dark stops (`page` is `stale-950`, an intent's fill its `700`),
+  `color-scheme: only dark` draws native controls to match, and there is no theme switch and no `dark:` classes. The head
+  (`app.head` in `nuxt.config.ts`) says the same before CSS loads, `<meta name="color-scheme" content="only dark">`, so
+  the browser's forced dark mode leaves the page alone, and `darkreader-lock` does the same for Dark Reader.
 - Icons are classes: `i-mdi-<name>` (Material Design Icons via `@iconify-json/mdi`).
 
 ## Build and deploy

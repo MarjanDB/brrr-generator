@@ -15,6 +15,20 @@ export default defineNuxtConfig({
 		},
 	},
 
+	app: {
+		head: {
+			meta: [
+				// The site is dark and has no light theme. Saying so in the HTML, before any CSS loads, keeps the
+				// browser from forcing its own dark mode onto it ("only"), and Dark Reader's lock asks that
+				// extension to leave it alone.
+				{ name: "color-scheme", content: "only dark" },
+				// Dark Reader only looks for the name, but the head manager drops a meta tag with empty or no
+				// content, so it gets one.
+				{ name: "darkreader-lock", content: "dark" },
+			],
+		},
+	},
+
 	components: [{ path: "~/components", pathPrefix: false }],
 
 	// The report flow's pages hold nothing worth indexing, and what they show exists only in the

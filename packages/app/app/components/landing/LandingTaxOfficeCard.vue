@@ -15,7 +15,7 @@ const { t } = useI18n();
 	<div class="card card-padding-md flex h-full w-full flex-col gap-0.5">
 		<div class="flex items-center justify-between gap-2">
 			<span class="text-base font-semibold app-text">{{ t(office.countryKey) }}</span>
-			<img :src="office.iconUrl" alt="" class="h-5 w-auto shrink-0" />
+			<img :src="office.iconUrl" alt="" class="logo-tile h-7 w-auto shrink-0" />
 		</div>
 		<span class="text-body-sm">{{ office.name }}</span>
 		<div class="mt-2 flex flex-wrap gap-1.5">
