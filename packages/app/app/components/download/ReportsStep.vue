@@ -78,11 +78,13 @@ const tabTrigger =
 		</div>
 
 		<TabsRoot v-model="tab" class="flex flex-col gap-4">
-			<TabsList :aria-label="t('reports_tabs_label', { year })" class="flex gap-1 overflow-x-auto shadow-[inset_0_-1px_0_var(--color-edge)]">
-				<TabsTrigger v-for="entry in tabs" :key="entry.form.reportTypeId" :value="entry.form.reportTypeId" :class="tabTrigger">
-					{{ t(entry.form.nameKey) }}
-					<AppBadge v-if="entry.lines !== null">{{ entry.lines }}</AppBadge>
-				</TabsTrigger>
+			<TabsList :aria-label="t('reports_tabs_label', { year })" class="flex overflow-x-auto shadow-[inset_0_-1px_0_var(--color-edge)]">
+				<AppTooltip v-for="entry in tabs" :key="entry.form.reportTypeId" :content="t(entry.form.nameKey)" side="bottom">
+					<TabsTrigger :value="entry.form.reportTypeId" :class="tabTrigger">
+						{{ entry.form.code }}
+						<AppBadge v-if="entry.lines !== null">{{ entry.lines }}</AppBadge>
+					</TabsTrigger>
+				</AppTooltip>
 			</TabsList>
 
 			<TabsContent v-for="entry in tabs" :key="entry.form.reportTypeId" :value="entry.form.reportTypeId">

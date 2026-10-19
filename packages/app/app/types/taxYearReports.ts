@@ -6,6 +6,9 @@ import type { GeneratedOutputs } from "~/types/generatedOutputs";
 export type TaxAuthorityForm = {
 	authorityId: TaxAuthorityId;
 	reportTypeId: string;
+	// The form's own name, as the authority writes it, the same in every language: its tab.
+	code: string;
+	// What the form covers, in the reader's language: its tab's tooltip.
 	nameKey: string;
 	xmlFilename: string;
 	csvFilename: string;

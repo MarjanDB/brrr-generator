@@ -95,7 +95,7 @@ function openModal(row: InstrumentRow, event: MouseEvent) {
 <template>
   <div class="card card-padding-md flex flex-col gap-4 w-full max-w-screen-md mx-auto">
     <TabsRoot :default-value="ReviewTab.INSTRUMENTS" class="flex flex-col gap-4">
-      <TabsList :aria-label="t('review_tabs_label')" class="flex gap-1 overflow-x-auto shadow-[inset_0_-1px_0_var(--color-edge)]">
+      <TabsList :aria-label="t('review_tabs_label')" class="flex overflow-x-auto shadow-[inset_0_-1px_0_var(--color-edge)]">
         <TabsTrigger :value="ReviewTab.INSTRUMENTS" :class="tabTrigger">
           {{ t('review_tab_instruments') }}
           <AppBadge>{{ rows.length }}</AppBadge>

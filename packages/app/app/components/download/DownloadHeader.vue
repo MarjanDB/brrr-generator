@@ -127,7 +127,7 @@ async function downloadXml() {
     <a v-if="csvUrl" :href="csvUrl" :download="outputs.csvFilename" class="button-filled-accent">
       {{ t('download_csv_label') }}
     </a>
-    <TaxpayerDialog v-if="form.takesTaxpayer" :outputs="outputs" :form-name="t(form.nameKey)" />
+    <TaxpayerDialog v-if="form.takesTaxpayer" :outputs="outputs" :form-name="form.code" />
     <AppButton v-else :color="ColorIntent.ACCENT" :loading="savingXml" @click="downloadXml">
       {{ t('download_xml_label') }}
     </AppButton>

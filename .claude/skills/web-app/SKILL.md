@@ -93,7 +93,8 @@ The four steps, each a component that emits to move on:
 4. **Reports** — `components/download/ReportsStep.vue`: a tax year (`TaxYearPicker.vue`, reka's `YearPicker` in an `AppPopover`,
    with `CalendarDate` from `@internationalized/date`; years without a trade or payment in the import, `reportYearsOf` in
    `utils/taxYears.ts`, are disabled, and it opens on `defaultTaxYear`), Start over, and a reka `Tabs` tab per form the authority
-   makes (`utils/taxAuthorityForms.ts`: tab name, file names, and whether its XML carries the taxpayer). `provideTaxYearReports`
+   makes (`utils/taxAuthorityForms.ts`: the form's own name for the tab, what it covers for the tab's tooltip, file names, and
+   whether its XML carries the taxpayer). `provideTaxYearReports`
    (`composables/useTaxYearReports.ts`, shapes in `types/taxYearReports.ts`) makes every form for the year at once, again when the
    year changes, and hands the step the reports, the taxpayer details given so far and `downloadXml`. A form's lines, CSV and
    provenance don't depend on the taxpayer, so the forms are made with an empty one; the XML is written again on download, with
