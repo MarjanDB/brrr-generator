@@ -24,9 +24,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	activateNode: [node: GraphLayoutNode];
-	refocusNode: [node: GraphLayoutNode];
-	activateLine: [node: GraphLayoutNode, side: PairSide];
+	clickNode: [node: GraphLayoutNode];
+	clickLine: [node: GraphLayoutNode, side: PairSide];
 	spread: [node: GraphLayoutNode];
 	activateEdge: [edge: GraphLayoutEdge];
 	clearLight: [];
@@ -62,7 +61,7 @@ function stateOf(node: GraphLayoutNode): CardState {
 	if (node === props.layout.focus) {
 		return CardState.FOCUS;
 	}
-	return props.lit !== null && !node.isStub ? CardState.LIT : CardState.NORMAL;
+	return props.lit !== null ? CardState.LIT : CardState.NORMAL;
 }
 
 // The drawn card the popover hangs on; each card carries its node's key.
@@ -157,15 +156,13 @@ const headings = computed(() =>
           :state="stateOf(placed.layoutNode)"
           :lot-matching-method-key="lotMatchingMethodKey"
           :locale="locale"
-          @activate-line="(side) => emit('activateLine', placed.layoutNode, side)"
-          @refocus="emit('refocusNode', placed.layoutNode)"
+          @click-line="(side) => emit('clickLine', placed.layoutNode, side)"
         />
         <GraphNodeCard
           v-else
           :placed="placed"
           :state="stateOf(placed.layoutNode)"
-          @activate="emit('activateNode', placed.layoutNode)"
-          @refocus="emit('refocusNode', placed.layoutNode)"
+          @click="emit('clickNode', placed.layoutNode)"
         />
       </template>
     </div>

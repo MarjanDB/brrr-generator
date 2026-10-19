@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type {
 	ProvenanceGraph,
+	ProvenanceNode,
 	ProvenanceWalker,
 	ReportInstrumentKind,
 	ReportProvenance,
@@ -20,6 +21,8 @@ const props = defineProps<{
 	locale: string;
 	// The form the report lines are for, as a popover names it.
 	formName: string;
+	// What the timeline draws: the only things a click in the graph can make the focus.
+	focusable: ReadonlySet<ProvenanceNode>;
 }>();
 
 const { t } = useI18n();
@@ -31,15 +34,18 @@ const {
 	placement,
 	caption,
 	popover,
-	activateNode,
-	refocusNode,
-	activateLine,
+	clickNode,
+	clickLine,
 	spread,
 	activateEdge,
 	clearLight,
 	closePopover,
 	toggleEveryStep,
-} = useProvenanceGraph({ graph: () => props.graph, reading: () => props.reading });
+} = useProvenanceGraph({
+	graph: () => props.graph,
+	reading: () => props.reading,
+	focusable: () => props.focusable,
+});
 
 const captionContext = computed(() => ({
 	ticker: props.ticker,
@@ -67,9 +73,8 @@ const captionContext = computed(() => ({
       :popover="popover"
       :form-name="formName"
       :walker="walker"
-      @activate-node="activateNode"
-      @refocus-node="refocusNode"
-      @activate-line="activateLine"
+      @click-node="clickNode"
+      @click-line="clickLine"
       @spread="spread"
       @activate-edge="activateEdge"
       @clear-light="clearLight"

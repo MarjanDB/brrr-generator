@@ -1,7 +1,13 @@
-import type { ProvenanceChange, ProvenanceNode } from "@brrr/lib";
+import {
+	type ProvenanceChange,
+	ProvenanceEventKind,
+	ProvenanceField,
+	type ProvenanceNode,
+} from "@brrr/lib";
 import {
 	type GraphColumn,
 	GraphDirection,
+	GraphHeading,
 	GraphLane,
 	type GraphLayout,
 	type GraphLayoutEdge,
@@ -35,6 +41,8 @@ export type GraphLayoutOptions = {
 	focus: ProvenanceNode;
 	// The stacks the user spread out.
 	expanded: ReadonlySet<StackKey>;
+	// What the timeline draws: the only things a click in the graph can make the focus.
+	focusable: ReadonlySet<ProvenanceNode>;
 };
 
 // A node on its way to the layout: what is known before columns and order are.
@@ -61,6 +69,10 @@ const lanesTopToBottom = [GraphLane.ACQUIRED, GraphLane.MIDDLE, GraphLane.SOLD];
 
 export function layoutGraph(model: GraphModel, options: GraphLayoutOptions): GraphLayout {
 	const focus = modelNodeFor(model, options.focus);
+	const followOf = (node: GraphNode) => followTarget(model, node, focus, options.focusable);
+	if (isTradeFocus(model, focus)) {
+		return layoutTrade(model, focus, followOf);
+	}
 	const main = new Set<GraphNode>([
 		...closure(focus, (node) => modelIns(model, node).map((edge) => edge.from)),
 		...closure(focus, (node) => modelOuts(model, node).map((edge) => edge.to)),
@@ -147,6 +159,8 @@ export function layoutGraph(model: GraphModel, options: GraphLayoutOptions): Gra
 			column: stages.get(draft) ?? 0,
 			lane: draft.lane,
 			order: orders.get(draft) ?? 0,
+			row: null,
+			follow: followOf(draft.node),
 		});
 	}
 	const layoutEdges = edges.map((edge): GraphLayoutEdge => {
@@ -169,9 +183,264 @@ export function layoutGraph(model: GraphModel, options: GraphLayoutOptions): Gra
 		edges: layoutEdges,
 		columns: columnsOf(all, stages, model),
 		lanes: lanesTopToBottom.filter((lane) => nodes.some((node) => node.lane === lane)),
+		banded: true,
 		byNode: byNodeOf(nodes),
 		bySource: bySourceOf(nodes),
 	};
+}
+
+const tradeKinds: string[] = [ProvenanceEventKind.ACQUIRED, ProvenanceEventKind.SOLD];
+
+// A buy or a sale gets a graph of its own, while lots are drawn as pairs; with every step shown,
+// its lots are steps like any other, and the graph is laid out as for anything else.
+function isTradeFocus(model: GraphModel, focus: GraphNode): boolean {
+	return (
+		model.pairs.length > 0 &&
+		focus.kind === GraphNodeKind.EVENT &&
+		tradeKinds.includes(focus.source?.fields[ProvenanceField.EVENT_KIND] ?? "")
+	);
+}
+
+// What a click on a node makes the focus: the node, when the timeline draws it, and a trade a
+// corporate action rebuilt stands for the trade it became, which is the one the timeline draws.
+// The focus's own trade, a stack and a left-out node lead nowhere.
+function followTarget(
+	model: GraphModel,
+	node: GraphNode,
+	focus: GraphNode,
+	focusable: ReadonlySet<ProvenanceNode>,
+): ProvenanceNode | null {
+	if (node.kind === GraphNodeKind.DROP || node.kind === GraphNodeKind.STACK) {
+		return null;
+	}
+	const target = node.kind === GraphNodeKind.EVENT ? currentOf(model, node) : node;
+	const ownTrade = focus.kind === GraphNodeKind.EVENT ? currentOf(model, focus) : focus;
+	if (target === ownTrade || target.source === null || !focusable.has(target.source)) {
+		return null;
+	}
+	return target.source;
+}
+
+// The trade as it is now: one a corporate action rebuilt is followed to what it became, which is
+// what was matched into lots.
+function currentOf(model: GraphModel, trade: GraphNode): GraphNode {
+	let current = trade;
+	for (;;) {
+		const next = modelOuts(model, current)
+			.map((edge) => edge.to)
+			.find((node) => node.kind === GraphNodeKind.EVENT);
+		if (next === undefined) {
+			return current;
+		}
+		current = next;
+	}
+}
+
+// The day of the trade a lot was matched with, to order the lots by.
+function dayOf(node: GraphNode): string {
+	return node.source?.fields[ProvenanceField.DATE] ?? "";
+}
+
+type TradeRow = {
+	// What the trade went into: a lot, or why it was left out.
+	root: GraphNode;
+	// For a lot, the trade on the other side.
+	otherSides: GraphNode[];
+	// What the root went into: why a lot was left out.
+	after: GraphNode[];
+};
+
+// A buy or a sale: on the left, everything that flowed into the trade as it is now (its rows, the
+// trade as first recorded, the corporate actions that rebuilt it), and nothing that only shares a
+// file or an action with it; then one row per lot, in the order of the trade on the other side,
+// with that trade (a stub to follow) and why the lot was left out, if it was. No bands: a lot's
+// row runs straight across, and the triangles say which side is the buy. A focus on the trade as
+// first recorded draws the same graph, focused there.
+function layoutTrade(
+	model: GraphModel,
+	focus: GraphNode,
+	followOf: (node: GraphNode) => ProvenanceNode | null,
+): GraphLayout {
+	const current = currentOf(model, focus);
+	const historyDrafts = closure(current, (node) =>
+		modelIns(model, node).map((edge) => edge.from),
+	).map(
+		(node): Draft => ({
+			node,
+			isStub: false,
+			direction: null,
+			hasMore: false,
+			lane: modelLaneOf(model, node),
+		}),
+	);
+	const draftOf = new Map(historyDrafts.map((draft) => [draft.node, draft]));
+	const historyEdges: DraftEdge[] = model.edges.flatMap((edge) => {
+		const from = draftOf.get(edge.from);
+		const to = draftOf.get(edge.to);
+		return from === undefined || to === undefined
+			? []
+			: [{ from, to, isStub: false, change: edge.change, split: edge.split }];
+	});
+	const stages = columnStages(historyDrafts, model);
+	const laneOrders = orderWithinLanes(historyDrafts, historyEdges, stages);
+	const lotsColumn = Math.max(0, ...stages.values()) + 1;
+
+	const rows = modelOuts(model, current)
+		.map((edge): TradeRow => {
+			const root = edge.to;
+			return {
+				root,
+				otherSides:
+					root.kind === GraphNodeKind.PAIR
+						? modelIns(model, root)
+								.map((into) => into.from)
+								.filter((node) => node !== current)
+						: [],
+				after: modelOuts(model, root).map((out) => out.to),
+			};
+		})
+		.sort((left, right) => {
+			const leftDay = left.otherSides[0] === undefined ? null : dayOf(left.otherSides[0]);
+			const rightDay = right.otherSides[0] === undefined ? null : dayOf(right.otherSides[0]);
+			if (leftDay === null || rightDay === null) {
+				return Number(leftDay === null) - Number(rightDay === null);
+			}
+			return leftDay < rightDay ? -1 : leftDay > rightDay ? 1 : 0;
+		});
+
+	const layoutNodes = new Map<GraphNode, GraphLayoutNode>();
+	for (const [column, members] of columnMembers(historyDrafts, stages)) {
+		members
+			.sort(
+				(left, right) =>
+					lanesTopToBottom.indexOf(left.lane) - lanesTopToBottom.indexOf(right.lane) ||
+					(laneOrders.get(left) ?? 0) - (laneOrders.get(right) ?? 0),
+			)
+			.forEach((draft, order) => {
+				layoutNodes.set(draft.node, {
+					node: draft.node,
+					isStub: false,
+					direction: null,
+					hasMore: false,
+					column,
+					lane: draft.lane,
+					order,
+					row: null,
+					follow: followOf(draft.node),
+				});
+			});
+	}
+	const rowNodes: GraphLayoutNode[] = [];
+	rows.forEach(({ root, otherSides, after }, row) => {
+		const rootNode: GraphLayoutNode = {
+			node: root,
+			isStub: false,
+			direction: null,
+			hasMore: false,
+			column: lotsColumn,
+			lane: modelLaneOf(model, root),
+			order: 0,
+			row,
+			follow: followOf(root),
+		};
+		rowNodes.push(rootNode);
+		[...otherSides, ...after].forEach((node, order) => {
+			const isOtherSide = otherSides.includes(node);
+			rowNodes.push({
+				node,
+				isStub: isOtherSide,
+				// Drawn after its lot, so what it leads on to is to its right.
+				direction: isOtherSide ? GraphDirection.DOWN : null,
+				hasMore: isOtherSide && modelIns(model, node).length > 0,
+				column: lotsColumn + 1,
+				lane: modelLaneOf(model, node),
+				order,
+				row,
+				follow: followOf(node),
+			});
+		});
+	});
+	for (const node of rowNodes) {
+		layoutNodes.set(node.node, node);
+	}
+
+	const layoutOf = (node: GraphNode): GraphLayoutNode => {
+		const layoutNode = layoutNodes.get(node);
+		if (layoutNode === undefined) {
+			throw new Error("A layout edge ends on a node the layout does not draw");
+		}
+		return layoutNode;
+	};
+	const edges: GraphLayoutEdge[] = [
+		...historyEdges.map((edge) => ({
+			from: layoutOf(edge.from.node),
+			to: layoutOf(edge.to.node),
+			isStub: false,
+			change: edge.change,
+			split: edge.split,
+		})),
+		...modelOuts(model, current).map((edge) => ({
+			from: layoutOf(current),
+			to: layoutOf(edge.to),
+			isStub: false,
+			change: edge.change,
+			split: edge.split,
+		})),
+		...rows.flatMap(({ root, otherSides, after }) => [
+			// The trade on the other side went into the lot; it is drawn after it, so the edge turns.
+			...otherSides.map((node) => ({
+				from: layoutOf(root),
+				to: layoutOf(node),
+				isStub: true,
+				change: modelIns(model, root).find((edge) => edge.from === node)?.change ?? null,
+				split: null,
+			})),
+			...after.map((node) => ({
+				from: layoutOf(root),
+				to: layoutOf(node),
+				isStub: false,
+				change: modelOuts(model, root).find((edge) => edge.to === node)?.change ?? null,
+				split: null,
+			})),
+		]),
+	];
+
+	const nodes = [...layoutNodes.values()];
+	const lotsHeadings = [
+		...new Set(rows.map(({ root }) => headingOf(root, modelIsRebuilt(model, root)))),
+	];
+	const afterHeadings = [
+		...(rows.some((row) => row.otherSides.length > 0) ? [GraphHeading.OTHER_SIDE] : []),
+		...new Set(
+			rows.flatMap(({ after }) =>
+				after.map((node) => headingOf(node, modelIsRebuilt(model, node))),
+			),
+		),
+	];
+	const columns = [
+		...columnsOf(historyDrafts, stages, model),
+		...(rows.length > 0 ? [{ index: lotsColumn, headings: lotsHeadings }] : []),
+		...(afterHeadings.length > 0 ? [{ index: lotsColumn + 1, headings: afterHeadings }] : []),
+	];
+	return {
+		focus: layoutOf(focus),
+		nodes,
+		edges,
+		columns,
+		lanes: lanesTopToBottom.filter((lane) => nodes.some((node) => node.lane === lane)),
+		banded: false,
+		byNode: byNodeOf(nodes),
+		bySource: bySourceOf(nodes),
+	};
+}
+
+function columnMembers(drafts: Draft[], columnOf: Map<Draft, number>): Map<number, Draft[]> {
+	const columns = new Map<number, Draft[]>();
+	for (const draft of drafts) {
+		const index = columnOf.get(draft) ?? 0;
+		columns.set(index, [...(columns.get(index) ?? []), draft]);
+	}
+	return columns;
 }
 
 function byNodeOf(nodes: GraphLayoutNode[]): Map<GraphNode, GraphLayoutNode> {
@@ -396,16 +665,31 @@ export const defaultGraphMetrics: GraphMetrics = {
 const rightMargin = 20;
 const bottomMargin = 6;
 
+function heightOf(node: GraphLayoutNode, metrics: GraphMetrics): number {
+	return node.node.kind === GraphNodeKind.PAIR
+		? metrics.pairHeaderHeight + 2 * metrics.pairRowHeight
+		: metrics.nodeHeight;
+}
+
+// How tall nodes are stacked one under another, a row gap apart.
+function stackHeight(nodes: GraphLayoutNode[], metrics: GraphMetrics): number {
+	return (
+		nodes.reduce((sum, node) => sum + heightOf(node, metrics), 0) +
+		Math.max(0, nodes.length - 1) * metrics.rowGap
+	);
+}
+
+function columnXOf(metrics: GraphMetrics): (index: number) => number {
+	return (index) => metrics.left + index * (metrics.nodeWidth + metrics.columnGap);
+}
+
 // Puts a layout in pixels. Lanes are bands across the whole graph, as tall as their tallest column;
-// a column's nodes in a band are centred in it, in their order.
+// a column's nodes in a band are centred in it, in their order. A graph without bands is laid out
+// by `placeRows`.
 export function placeGraph(layout: GraphLayout, metrics: GraphMetrics): GraphPlacement {
-	const heightOf = (node: GraphLayoutNode): number =>
-		node.node.kind === GraphNodeKind.PAIR
-			? metrics.pairHeaderHeight + 2 * metrics.pairRowHeight
-			: metrics.nodeHeight;
-	const stackHeight = (nodes: GraphLayoutNode[]): number =>
-		nodes.reduce((sum, node) => sum + heightOf(node), 0) +
-		Math.max(0, nodes.length - 1) * metrics.rowGap;
+	if (!layout.banded) {
+		return placeRows(layout, metrics);
+	}
 	const inCell = (column: number, lane: GraphLane): GraphLayoutNode[] =>
 		layout.nodes
 			.filter((node) => node.column === column && node.lane === lane)
@@ -415,7 +699,10 @@ export function placeGraph(layout: GraphLayout, metrics: GraphMetrics): GraphPla
 	for (const lane of lanesTopToBottom) {
 		bandHeights.set(
 			lane,
-			Math.max(0, ...layout.columns.map((column) => stackHeight(inCell(column.index, lane)))),
+			Math.max(
+				0,
+				...layout.columns.map((column) => stackHeight(inCell(column.index, lane), metrics)),
+			),
 		);
 	}
 
@@ -431,28 +718,101 @@ export function placeGraph(layout: GraphLayout, metrics: GraphMetrics): GraphPla
 		}
 	}
 
-	const columnX = (index: number): number =>
-		metrics.left + index * (metrics.nodeWidth + metrics.columnGap);
+	const columnX = columnXOf(metrics);
 	const placedNodes: PlacedNode[] = [];
 	for (const column of layout.columns) {
 		for (const lane of lanesTopToBottom) {
 			const nodes = inCell(column.index, lane);
 			const bandTop = bandTops.get(lane) ?? 0;
-			let top = bandTop + ((bandHeights.get(lane) ?? 0) - stackHeight(nodes)) / 2;
+			let top = bandTop + ((bandHeights.get(lane) ?? 0) - stackHeight(nodes, metrics)) / 2;
 			for (const node of nodes) {
 				placedNodes.push({
 					layoutNode: node,
 					x: columnX(column.index),
 					y: top,
 					width: metrics.nodeWidth,
-					height: heightOf(node),
+					height: heightOf(node, metrics),
 				});
-				top += heightOf(node) + metrics.rowGap;
+				top += heightOf(node, metrics) + metrics.rowGap;
 			}
 		}
 	}
-	const placedOf = new Map(placedNodes.map((placed) => [placed.layoutNode, placed]));
 
+	const lastBand = bands[bands.length - 1];
+	return placement(
+		layout,
+		metrics,
+		placedNodes,
+		bands,
+		(lastBand === undefined ? metrics.top : lastBand.y + lastBand.height) + bottomMargin,
+	);
+}
+
+// A graph without bands: each row as tall as its tallest cell, the rows a gap apart and centred
+// together, and every node of a row centred in it, beside the others of its column in their order.
+// What has no row is stacked in its column and centred on the whole graph, so a trade sits in the
+// middle of its lots.
+function placeRows(layout: GraphLayout, metrics: GraphMetrics): GraphPlacement {
+	const columnX = columnXOf(metrics);
+	const byOrder = (a: GraphLayoutNode, b: GraphLayoutNode): number => a.order - b.order;
+	const rowCount = Math.max(-1, ...layout.nodes.map((node) => node.row ?? -1)) + 1;
+	const inRowCell = (row: number, column: number): GraphLayoutNode[] =>
+		layout.nodes.filter((node) => node.row === row && node.column === column).sort(byOrder);
+	const unrowed = (column: number): GraphLayoutNode[] =>
+		layout.nodes.filter((node) => node.row === null && node.column === column).sort(byOrder);
+
+	const rowHeights = Array.from({ length: rowCount }, (_, row) =>
+		Math.max(
+			0,
+			...layout.columns.map((column) => stackHeight(inRowCell(row, column.index), metrics)),
+		),
+	);
+	const rowsHeight =
+		rowHeights.reduce((sum, height) => sum + height, 0) +
+		Math.max(0, rowCount - 1) * metrics.rowGap;
+	const height = Math.max(
+		rowsHeight,
+		...layout.columns.map((column) => stackHeight(unrowed(column.index), metrics)),
+	);
+
+	const placedNodes: PlacedNode[] = [];
+	const stack = (nodes: GraphLayoutNode[], x: number, top: number) => {
+		let y = top;
+		for (const node of nodes) {
+			placedNodes.push({
+				layoutNode: node,
+				x,
+				y,
+				width: metrics.nodeWidth,
+				height: heightOf(node, metrics),
+			});
+			y += heightOf(node, metrics) + metrics.rowGap;
+		}
+	};
+	for (const column of layout.columns) {
+		const x = columnX(column.index);
+		const nodes = unrowed(column.index);
+		stack(nodes, x, metrics.top + (height - stackHeight(nodes, metrics)) / 2);
+		let rowTop = metrics.top + (height - rowsHeight) / 2;
+		for (const [row, rowHeight] of rowHeights.entries()) {
+			const cell = inRowCell(row, column.index);
+			stack(cell, x, rowTop + (rowHeight - stackHeight(cell, metrics)) / 2);
+			rowTop += rowHeight + metrics.rowGap;
+		}
+	}
+	return placement(layout, metrics, placedNodes, [], metrics.top + height + bottomMargin);
+}
+
+// The edges between placed nodes, and the size and headings of the whole.
+function placement(
+	layout: GraphLayout,
+	metrics: GraphMetrics,
+	placedNodes: PlacedNode[],
+	bands: PlacedBand[],
+	height: number,
+): GraphPlacement {
+	const columnX = columnXOf(metrics);
+	const placedOf = new Map(placedNodes.map((placed) => [placed.layoutNode, placed]));
 	const placedEdges = layout.edges.map((edge) => {
 		const source = placedOf.get(edge.from);
 		const target = placedOf.get(edge.to);
@@ -470,10 +830,9 @@ export function placeGraph(layout: GraphLayout, metrics: GraphMetrics): GraphPla
 		};
 	});
 
-	const lastBand = bands[bands.length - 1];
 	return {
 		width: columnX(layout.columns.length) - metrics.columnGap + rightMargin,
-		height: (lastBand === undefined ? metrics.top : lastBand.y + lastBand.height) + bottomMargin,
+		height,
 		nodes: placedNodes,
 		edges: placedEdges,
 		bands,

@@ -129,6 +129,7 @@ describe("the download step's graph focus", () => {
 		const layout = layoutGraph(graphModelOf(b.graph, b.reading(), false), {
 			focus: event,
 			expanded: new Set(),
+			focusable: new Set(),
 		});
 		const focus = await mountComposable(() => provideGraphFocus());
 		focus.start(file);
@@ -161,6 +162,7 @@ describe("the download step's graph focus", () => {
 		const layout = layoutGraph(graphModelOf(b.graph, b.reading(), false), {
 			focus: event,
 			expanded: new Set(),
+			focusable: new Set(),
 		});
 		const focus = await mountComposable(() => provideGraphFocus());
 		focus.start(event);
@@ -194,6 +196,7 @@ describe("the download step's graph focus", () => {
 		const layout = layoutGraph(graphModelOf(b.graph, b.reading(), false), {
 			focus: event,
 			expanded: new Set(),
+			focusable: new Set(),
 		});
 		const focus = await mountComposable(() => provideGraphFocus());
 		focus.start(event);
@@ -225,6 +228,7 @@ describe("the download step's graph focus", () => {
 		const layout = layoutGraph(graphModelOf(b.graph, b.reading(), false), {
 			focus: row,
 			expanded: new Set(),
+			focusable: new Set(),
 		});
 		const focus = await mountComposable(() => provideGraphFocus());
 		focus.start(event);
@@ -258,6 +262,7 @@ describe("the download step's graph focus", () => {
 		const layout = layoutGraph(graphModelOf(b.graph, b.reading(), false), {
 			focus: row,
 			expanded: new Set(),
+			focusable: new Set(),
 		});
 		const focus = await mountComposable(() => provideGraphFocus());
 		focus.start(file);
@@ -298,7 +303,7 @@ describe("the download step's graph focus", () => {
 });
 
 describe("the chain a lit node or edge stands for", () => {
-	test("the chain of a row is its file, itself, its trade and the pair, and nothing faded", async () => {
+	test("the chain of a row is its file, itself, its trade, the pair and the trade on the pair's other side", async () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -331,7 +336,11 @@ describe("the chain a lit node or edge stands for", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const sellRow = layoutNodeOf(layout, b.node(sell.row));
 		assert(sellRow !== null);
 		const focus = await mountComposable(() => provideGraphFocus());
@@ -341,8 +350,8 @@ describe("the chain a lit node or edge stands for", () => {
 		const chain = focus.lit.value;
 		assert(chain !== null);
 
-		expect(chain.nodes.size).toEqual(4);
-		expect(chain.edges.size).toEqual(3);
+		expect(chain.nodes.size).toEqual(5);
+		expect(chain.edges.size).toEqual(4);
 		expect(chain.sources.has(b.node(file))).toEqual(true);
 		expect(chain.sources.has(b.node(sell.row))).toEqual(true);
 		expect(chain.sources.has(b.node(sell.event))).toEqual(true);
@@ -350,8 +359,8 @@ describe("the chain a lit node or edge stands for", () => {
 		expect(chain.sources.has(b.node(match.acquiredLine))).toEqual(true);
 		expect(chain.sources.has(b.node(match.soldLine))).toEqual(true);
 		expect(chain.sources.has(b.node(match.soldLeg))).toEqual(true);
+		expect(chain.sources.has(b.node(buy.event))).toEqual(true);
 		expect(chain.sources.has(b.node(buy.row))).toEqual(false);
-		expect(chain.sources.has(b.node(buy.event))).toEqual(false);
 	});
 
 	test("the chain of an edge keeps what is before its start and after its end, and no other branch", async () => {
@@ -405,7 +414,11 @@ describe("the chain a lit node or edge stands for", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const toFirstPair = layout.edges.find(
 			(edge) => edge.to.node.source === b.node(firstMatch.lot) && !edge.isStub,
 		);
@@ -421,12 +434,130 @@ describe("the chain a lit node or edge stands for", () => {
 		expect(chain.sources.has(b.node(sell.row))).toEqual(true);
 		expect(chain.sources.has(b.node(sell.event))).toEqual(true);
 		expect(chain.sources.has(b.node(firstMatch.lot))).toEqual(true);
+		expect(chain.sources.has(b.node(firstBuy.event))).toEqual(true);
 		expect(chain.sources.has(b.node(secondMatch.lot))).toEqual(false);
-		expect(chain.nodes.size).toEqual(4);
-		expect(chain.edges.size).toEqual(3);
+		expect(chain.sources.has(b.node(secondBuy.event))).toEqual(false);
+		expect(chain.nodes.size).toEqual(5);
+		expect(chain.edges.size).toEqual(4);
 	});
 
-	test("a chain never includes a stack or a stub", async () => {
+	test("a lit lot lights the trade on its other side, drawn as a stub in a trade's graph", async () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const sell = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-03-10",
+			quantity: "-10",
+			price: "6",
+			currency: "USD",
+			label: "sell ACME",
+		});
+		const match = b.match({
+			instrument: acme,
+			acquired: buy,
+			sold: sell,
+			quantity: "10",
+			boughtOn: "2024-01-10",
+			soldOn: "2024-03-10",
+		});
+		const model = graphModelOf(b.graph, b.reading(), false);
+		const layout = layoutGraph(model, {
+			focus: b.node(buy.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
+		const lot = layoutNodeOf(layout, b.node(match.lot));
+		const sale = layoutNodeOf(layout, b.node(sell.event));
+		assert(lot !== null && sale !== null);
+		const toSale = layout.edges.find((edge) => edge.to === sale);
+		assert(toSale !== undefined);
+		const focus = await mountComposable(() => provideGraphFocus());
+		focus.start(b.node(buy.event));
+
+		focus.lightNode(layout, lot);
+		const chain = focus.lit.value;
+		assert(chain !== null);
+
+		expect(sale.isStub).toEqual(true);
+		expect(chain.nodes.has(sale)).toEqual(true);
+		expect(chain.edges.has(toSale)).toEqual(true);
+		expect(chain.sources.has(b.node(sell.event))).toEqual(true);
+		expect(chain.sources.has(b.node(buy.event))).toEqual(true);
+		expect(chain.sources.has(b.node(sell.row))).toEqual(false);
+	});
+
+	test("a lit stub lights the path through the edge it hangs on", async () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const sell = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-03-10",
+			quantity: "-10",
+			price: "6",
+			currency: "USD",
+			label: "sell ACME",
+		});
+		const one = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "1",
+			price: "5",
+			currency: "USD",
+			label: "buy 1",
+		});
+		const two = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-11",
+			quantity: "2",
+			price: "5",
+			currency: "USD",
+			label: "buy 2",
+		});
+		const model = graphModelOf(b.graph, b.reading(), false);
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
+		const oneRow = layoutNodeOf(layout, b.node(one.row));
+		assert(oneRow !== null);
+		const focus = await mountComposable(() => provideGraphFocus());
+		focus.start(b.node(sell.event));
+
+		focus.lightNode(layout, oneRow);
+		const chain = focus.lit.value;
+		assert(chain !== null);
+
+		expect(oneRow.isStub).toEqual(true);
+		expect(chain.nodes.size).toEqual(2);
+		expect(chain.edges.size).toEqual(1);
+		expect(chain.sources.has(b.node(one.row))).toEqual(true);
+		expect(chain.sources.has(b.node(file))).toEqual(true);
+		expect(chain.sources.has(b.node(two.row))).toEqual(false);
+		expect(chain.sources.has(b.node(sell.row))).toEqual(false);
+	});
+
+	test("a chain leaves out the stacks and stubs hanging off it", async () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -471,7 +602,11 @@ describe("the chain a lit node or edge stands for", () => {
 			label: "buy 3",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const stack = layout.nodes.find((n) => n.node.kind === GraphNodeKind.STACK);
 		assert(stack !== undefined);
 		const focus = await mountComposable(() => provideGraphFocus());

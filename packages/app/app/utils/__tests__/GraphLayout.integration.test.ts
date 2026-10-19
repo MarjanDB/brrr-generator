@@ -22,7 +22,7 @@ import { TestKit } from "@brrr/test-cases";
 import { assert, describe, expect, test } from "vitest";
 import {
 	CaptionSegmentKind,
-	GraphDirection,
+	GraphHeading,
 	GraphLane,
 	GraphNodeKind,
 	SplitFactorKind,
@@ -30,6 +30,7 @@ import {
 import { captionOf } from "~/utils/graphCaption";
 import { layoutGraph, layoutNodeOf } from "~/utils/graphLayout";
 import { graphModelOf } from "~/utils/graphModel";
+import { buildTimeline, focusableOf } from "~/utils/instrumentTimeline";
 
 // The taxpayer the expected files were generated for.
 const taxpayer = TaxpayerConfigSchema.parse({
@@ -81,7 +82,7 @@ function eventOfKind(instrument: ReportInstrument, kind: ProvenanceEventKind): P
 }
 
 describe("the graph engine on what the stages really record", () => {
-	test("a sale in the stock trade case reaches its pair from the export file", async () => {
+	test("a sale in the stock trade case reaches its lot from the export file, and the buy it was matched with follows the lot", async () => {
 		const stockTrade = TestKit.ibkr.stockTrade;
 		const report = await reportOf(
 			stockTrade.readInputs(),
@@ -96,7 +97,7 @@ describe("the graph engine on what the stages really record", () => {
 		const file = report.provenance.nodes().find((node) => node.kind === ProvenanceNodeKind.FILE);
 		assert(file !== undefined);
 
-		const layout = layoutGraph(model, { focus: sale, expanded: new Set() });
+		const layout = layoutGraph(model, { focus: sale, expanded: new Set(), focusable: new Set() });
 		const caption = captionOf(layout);
 
 		expect(
@@ -105,10 +106,11 @@ describe("the graph engine on what the stages really record", () => {
 		expect(layout.nodes.find((n) => n.node.kind === GraphNodeKind.PAIR)).toBeDefined();
 		expect(layoutNodeOf(layout, file)?.column).toEqual(0);
 		expect(layout.focus.column).toEqual(2);
-		expect(layout.columns).toHaveLength(4);
-		expect(layout.nodes).toHaveLength(7);
-		expect(layout.edges).toHaveLength(6);
-		expect(layout.lanes).toEqual([GraphLane.ACQUIRED, GraphLane.MIDDLE, GraphLane.SOLD]);
+		expect(layout.columns).toHaveLength(5);
+		expect(layout.columns[4]?.headings).toEqual([GraphHeading.OTHER_SIDE]);
+		expect(layout.nodes).toHaveLength(5);
+		expect(layout.edges).toHaveLength(4);
+		expect(layout.banded).toEqual(false);
 		expect(caption).toHaveLength(3);
 		expect(caption[0]?.kind).toEqual(CaptionSegmentKind.FOCUS);
 		expect(caption[1]?.kind).toEqual(CaptionSegmentKind.MATCHED_WITH);
@@ -131,7 +133,7 @@ describe("the graph engine on what the stages really record", () => {
 		const sale = eventOfKind(stock, ProvenanceEventKind.SOLD);
 		const model = graphModelOf(report.provenance, reading, true);
 
-		const layout = layoutGraph(model, { focus: sale, expanded: new Set() });
+		const layout = layoutGraph(model, { focus: sale, expanded: new Set(), focusable: new Set() });
 
 		expect(layout.nodes.find((n) => n.node.kind === GraphNodeKind.PAIR)).toBeUndefined();
 		expect(layout.columns).toHaveLength(8);
@@ -139,7 +141,7 @@ describe("the graph engine on what the stages really record", () => {
 		expect(layout.edges).toHaveLength(12);
 	});
 
-	test("a split trade shows the factor on its edge, and the corporate action beside it as a stub", async () => {
+	test("a split trade shows the factor on its edge, and the corporate action that rebuilt it in its history", async () => {
 		const split = TestKit.ibkr.split;
 		const report = await reportOf(split.readInputs(), split.year, SlovenianReportTypeId.KDVP);
 		const reading = new ProvenanceReportReader().read(report.provenance);
@@ -158,21 +160,52 @@ describe("the graph engine on what the stages really record", () => {
 		assert(action !== undefined);
 		const model = graphModelOf(report.provenance, reading, false);
 
-		const layout = layoutGraph(model, { focus: before, expanded: new Set() });
+		const layout = layoutGraph(model, { focus: before, expanded: new Set(), focusable: new Set() });
 		const splitEdge = layout.edges.find((edge) => edge.split !== null);
 
 		expect(splitEdge?.from.node.source).toBe(before);
 		expect(splitEdge?.to.node.source).toBe(rebuilt);
 		expect(splitEdge?.split?.kind).toEqual(SplitFactorKind.MULTIPLY);
 		expect(splitEdge?.split?.amount).toEqual(10);
-		expect(layoutNodeOf(layout, action)?.isStub).toEqual(true);
-		expect(layoutNodeOf(layout, action)?.direction).toEqual(GraphDirection.UP);
+		expect(layoutNodeOf(layout, action)?.isStub).toEqual(false);
 		expect(layoutNodeOf(layout, action)?.column).toEqual(2);
 		expect(layoutNodeOf(layout, before)?.column).toEqual(2);
 		expect(layoutNodeOf(layout, rebuilt)?.column).toEqual(3);
-		expect(layout.columns).toHaveLength(5);
-		expect(layout.nodes).toHaveLength(8);
-		expect(layout.edges).toHaveLength(7);
+		expect(layout.columns).toHaveLength(6);
+		expect(layout.nodes).toHaveLength(9);
+		expect(layout.edges).toHaveLength(10);
+	});
+
+	test("in the split case the first buy and its lot are a click from each other, and the buy as first recorded stands for the buy", async () => {
+		const split = TestKit.ibkr.split;
+		const report = await reportOf(split.readInputs(), split.year, SlovenianReportTypeId.KDVP);
+		const reading = new ProvenanceReportReader().read(report.provenance);
+		const stock = reading.stocks[0];
+		assert(stock !== undefined);
+		const walker = new ProvenanceWalker(report.provenance);
+		const buy = stock.events[0]?.node;
+		assert(buy !== undefined);
+		const lot = stock.matchedLots.find((matched) =>
+			walker.parents(matched.node).some((edge) => edge.from === buy),
+		)?.node;
+		assert(lot !== undefined);
+		const before = walker
+			.parents(buy)
+			.find((edge) => edge.from.kind === ProvenanceNodeKind.EVENT)?.from;
+		assert(before !== undefined);
+		const file = report.provenance.nodes().find((node) => node.kind === ProvenanceNodeKind.FILE);
+		assert(file !== undefined);
+		const focusable = focusableOf(buildTimeline(stock, walker));
+		const model = graphModelOf(report.provenance, reading, false);
+
+		const buyGraph = layoutGraph(model, { focus: buy, expanded: new Set(), focusable });
+		const lotGraph = layoutGraph(model, { focus: lot, expanded: new Set(), focusable });
+
+		expect(layoutNodeOf(buyGraph, lot)?.follow).toBe(lot);
+		expect(layoutNodeOf(buyGraph, before)?.follow).toBeNull();
+		expect(layoutNodeOf(lotGraph, buy)?.follow).toBe(buy);
+		expect(layoutNodeOf(lotGraph, before)?.follow).toBe(buy);
+		expect(layoutNodeOf(lotGraph, file)?.follow).toBeNull();
 	});
 
 	test("a day's dividend sum has no pair, and the dividend and its withholding sit in different lanes", async () => {
@@ -191,7 +224,7 @@ describe("the graph engine on what the stages really record", () => {
 		assert(daySum !== undefined);
 		const model = graphModelOf(report.provenance, reading, false);
 
-		const layout = layoutGraph(model, { focus: daySum, expanded: new Set() });
+		const layout = layoutGraph(model, { focus: daySum, expanded: new Set(), focusable: new Set() });
 
 		expect(layout.nodes.find((n) => n.node.kind === GraphNodeKind.PAIR)).toBeUndefined();
 		expect(layoutNodeOf(layout, eventOfKind(payer, ProvenanceEventKind.DIVIDEND))?.lane).toEqual(
@@ -220,7 +253,7 @@ describe("the graph engine on what the stages really record", () => {
 		assert(lot !== undefined);
 		const model = graphModelOf(report.provenance, reading, false);
 
-		const layout = layoutGraph(model, { focus: lot, expanded: new Set() });
+		const layout = layoutGraph(model, { focus: lot, expanded: new Set(), focusable: new Set() });
 
 		expect(layout.focus.node.kind).toEqual(GraphNodeKind.PAIR);
 		expect(layout.focus.column).toEqual(3);
@@ -241,7 +274,7 @@ describe("the graph engine on what the stages really record", () => {
 		const sale = eventOfKind(stock, ProvenanceEventKind.SOLD);
 		const model = graphModelOf(report.provenance, reading, false);
 
-		const layout = layoutGraph(model, { focus: sale, expanded: new Set() });
+		const layout = layoutGraph(model, { focus: sale, expanded: new Set(), focusable: new Set() });
 		const rows = layout.nodes.filter((n) => n.node.kind === GraphNodeKind.ROW && !n.isStub);
 		const files = layout.nodes.filter((n) => n.node.kind === GraphNodeKind.FILE);
 
@@ -249,7 +282,7 @@ describe("the graph engine on what the stages really record", () => {
 		expect(files).toHaveLength(2);
 		expect(files[0]?.isStub).toEqual(false);
 		expect(files[1]?.isStub).toEqual(false);
-		expect(layout.nodes).toHaveLength(11);
-		expect(layout.edges).toHaveLength(10);
+		expect(layout.nodes).toHaveLength(7);
+		expect(layout.edges).toHaveLength(6);
 	});
 });

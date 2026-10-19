@@ -54,14 +54,18 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set(),
+				}),
 			}),
 		);
 		focus.start(b.node(sell.event));
 		const sellRow = layoutNodeOf(view.layout.value, b.node(sell.row));
 		assert(sellRow !== null);
 
-		view.activateNode(sellRow);
+		view.clickNode(sellRow);
 
 		expect(focus.node.value).toBe(b.node(sell.event));
 		expect(focus.lit.value?.sources.has(b.node(sell.row))).toEqual(true);
@@ -88,18 +92,22 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set(),
+				}),
 			}),
 		);
 		focus.start(b.node(buy.event));
 
-		view.activateNode(view.layout.value.focus);
+		view.clickNode(view.layout.value.focus);
 
 		expect(focus.lit.value?.sources.has(b.node(buy.event))).toEqual(true);
 		expect(view.popover.value).toEqual(null);
 	});
 
-	test("clicking a stub moves the focus to it, remembers the old one and clears the light", async () => {
+	test("clicking the trade on the other side moves the focus to it, remembers the old one and clears the light", async () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -135,7 +143,11 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set([b.node(buy.event), b.node(sell.event)]),
+				}),
 			}),
 		);
 		focus.start(b.node(sell.event));
@@ -143,12 +155,121 @@ describe("what a click in the graph does", () => {
 		assert(buyStub !== null);
 		focus.lightNode(view.layout.value, view.layout.value.focus);
 
-		view.refocusNode(buyStub);
+		view.clickNode(buyStub);
 
 		expect(buyStub.isStub).toEqual(true);
 		expect(focus.node.value).toBe(b.node(buy.event));
 		expect(focus.trail.value).toEqual([b.node(sell.event)]);
 		expect(focus.lit.value).toEqual(null);
+		expect(view.popover.value).toEqual(null);
+	});
+
+	test("clicking a trade the timeline draws moves the focus to it, on the main path too", async () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const sell = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-03-10",
+			quantity: "-10",
+			price: "6",
+			currency: "USD",
+			label: "sell ACME",
+		});
+		const match = b.match({
+			instrument: acme,
+			acquired: buy,
+			sold: sell,
+			quantity: "10",
+			boughtOn: "2024-01-10",
+			soldOn: "2024-03-10",
+		});
+		const { focus, view } = await mountComposableUnder(
+			() => provideGraphFocus(),
+			() => ({
+				focus: useGraphFocus(),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set([b.node(buy.event), b.node(sell.event), b.node(match.lot)]),
+				}),
+			}),
+		);
+		focus.start(b.node(match.lot));
+		const buyCard = layoutNodeOf(view.layout.value, b.node(buy.event));
+		assert(buyCard !== null);
+
+		view.clickNode(buyCard);
+
+		expect(buyCard.isStub).toEqual(false);
+		expect(focus.node.value).toBe(b.node(buy.event));
+		expect(focus.trail.value).toEqual([b.node(match.lot)]);
+		expect(focus.lit.value).toEqual(null);
+	});
+
+	test("clicking either row of a lot in a trade's graph moves the focus to the lot", async () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const sell = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-03-10",
+			quantity: "-10",
+			price: "6",
+			currency: "USD",
+			label: "sell ACME",
+		});
+		const match = b.match({
+			instrument: acme,
+			acquired: buy,
+			sold: sell,
+			quantity: "10",
+			boughtOn: "2024-01-10",
+			soldOn: "2024-03-10",
+		});
+		const { focus, view } = await mountComposableUnder(
+			() => provideGraphFocus(),
+			() => ({
+				focus: useGraphFocus(),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set([b.node(buy.event), b.node(sell.event), b.node(match.lot)]),
+				}),
+			}),
+		);
+		focus.start(b.node(buy.event));
+		const lot = layoutNodeOf(view.layout.value, b.node(match.lot));
+		assert(lot !== null);
+
+		view.clickLine(lot, PairSide.SOLD);
+
+		expect(focus.node.value).toBe(b.node(match.lot));
+		expect(focus.trail.value).toEqual([b.node(buy.event)]);
 		expect(view.popover.value).toEqual(null);
 	});
 
@@ -210,7 +331,11 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set(),
+				}),
 			}),
 		);
 		focus.start(b.node(first.event));
@@ -247,7 +372,11 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set(),
+				}),
 			}),
 		);
 		focus.start(b.node(buy.event));
@@ -263,7 +392,7 @@ describe("what a click in the graph does", () => {
 		expect(focus.node.value).toBe(b.node(buy.event));
 	});
 
-	test("clicking a pair's row lights the pair's chain and opens that line's popover", async () => {
+	test("clicking a row of the focused lot lights the lot's chain and opens that line's popover", async () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
@@ -299,14 +428,18 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set([b.node(buy.event), b.node(sell.event), b.node(match.lot)]),
+				}),
 			}),
 		);
-		focus.start(b.node(sell.event));
+		focus.start(b.node(match.lot));
 		const pair = layoutNodeOf(view.layout.value, b.node(match.lot));
 		assert(pair !== null);
 
-		view.activateLine(pair, PairSide.SOLD);
+		view.clickLine(pair, PairSide.SOLD);
 
 		expect(focus.lit.value?.sources.has(b.node(match.soldLine))).toEqual(true);
 		expect(view.popover.value?.node.kind).toEqual(GraphNodeKind.REPORT_LINE);
@@ -332,13 +465,17 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set(),
+				}),
 			}),
 		);
 		focus.start(b.node(buy.event));
 		const row = layoutNodeOf(view.layout.value, b.node(buy.row));
 		assert(row !== null);
-		view.activateNode(row);
+		view.clickNode(row);
 
 		view.clearLight();
 
@@ -365,13 +502,17 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set(),
+				}),
 			}),
 		);
 		focus.start(b.node(buy.event));
 		const row = layoutNodeOf(view.layout.value, b.node(buy.row));
 		assert(row !== null);
-		view.activateNode(row);
+		view.clickNode(row);
 
 		document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
 
@@ -397,13 +538,17 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set(),
+				}),
 			}),
 		);
 		focus.start(b.node(buy.event));
 		const row = layoutNodeOf(view.layout.value, b.node(buy.row));
 		assert(row !== null);
-		view.activateNode(row);
+		view.clickNode(row);
 		// What reka-ui puts on the page while one of its popovers or dialogs is open.
 		const layer = document.createElement("div");
 		layer.setAttribute("data-dismissable-layer", "");
@@ -434,13 +579,17 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set(),
+				}),
 			}),
 		);
 		focus.start(b.node(buy.event));
 		const row = layoutNodeOf(view.layout.value, b.node(buy.row));
 		assert(row !== null);
-		view.activateNode(row);
+		view.clickNode(row);
 
 		view.closePopover();
 
@@ -462,14 +611,18 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set(),
+				}),
 			}),
 		);
 		focus.start(b.node(lot));
 		const dropped = view.layout.value.nodes.find((node) => node.node.kind === GraphNodeKind.DROP);
 		assert(dropped !== undefined);
 
-		view.refocusNode(dropped);
+		view.clickNode(dropped);
 
 		expect(focus.node.value).toBe(b.node(lot));
 		expect(focus.lit.value?.nodes.has(dropped)).toEqual(true);
@@ -523,7 +676,11 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set(),
+				}),
 			}),
 		);
 		focus.start(b.node(first.event));
@@ -536,7 +693,7 @@ describe("what a click in the graph does", () => {
 		);
 		expect(spreadStack).toBeUndefined();
 
-		view.activateNode(view.layout.value.focus);
+		view.clickNode(view.layout.value.focus);
 		await nextTick();
 
 		const stillSpread = view.layout.value.nodes.find(
@@ -571,13 +728,17 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set(),
+				}),
 			}),
 		);
 		focus.start(b.node(buy.event));
 		const row = layoutNodeOf(view.layout.value, b.node(buy.row));
 		assert(row !== null);
-		view.activateNode(row);
+		view.clickNode(row);
 		expect(view.popover.value).not.toBeNull();
 
 		focus.refocus(b.node(buy.row));
@@ -604,13 +765,17 @@ describe("what a click in the graph does", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set(),
+				}),
 			}),
 		);
 		focus.start(b.node(buy.event));
 		const before = view.layout.value;
 
-		view.activateNode(view.layout.value.focus);
+		view.clickNode(view.layout.value.focus);
 
 		expect(view.layout.value).toBe(before);
 	});
@@ -635,7 +800,11 @@ describe("switching which steps the graph shows", () => {
 			() => provideGraphFocus(),
 			() => ({
 				focus: useGraphFocus(),
-				view: useProvenanceGraph({ graph: () => b.graph, reading: () => b.reading() }),
+				view: useProvenanceGraph({
+					graph: () => b.graph,
+					reading: () => b.reading(),
+					focusable: () => new Set(),
+				}),
 			}),
 		);
 		focus.start(b.node(buy.record));

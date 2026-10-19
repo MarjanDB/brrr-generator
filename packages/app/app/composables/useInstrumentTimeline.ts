@@ -1,11 +1,12 @@
 import { ProvenanceField, type ProvenanceWalker, type ReportInstrument } from "@brrr/lib";
-import type { Timeline, TimelineMark, TimelineTick } from "~/types/timeline";
+import { DateTime, Duration } from "luxon";
+import type { Timeline, TimelineBar, TimelineMark } from "~/types/timeline";
 import { markKeys } from "~/utils/i18nKeys";
-import { buildTimeline, timelineTicks } from "~/utils/instrumentTimeline";
+import { buildTimeline } from "~/utils/instrumentTimeline";
 import { fieldOf } from "~/utils/provenanceFields";
 
-// An instrument's timeline: its marks and arcs, the axis ticks, and the tooltip text of a mark in
-// the reader's locale.
+// An instrument's timeline: its marks, bars and points, the tooltip text of a mark and the label of a
+// bar in the reader's locale. The axis ticks depend on the axis's width, so the chart asks for them as it lays out.
 export function useInstrumentTimeline(
 	instrument: () => ReportInstrument,
 	walker: () => ProvenanceWalker,
@@ -14,9 +15,6 @@ export function useInstrumentTimeline(
 	const { date } = useProvenanceText();
 
 	const timeline = computed<Timeline>(() => buildTimeline(instrument(), walker()));
-	const ticks = computed<TimelineTick[]>(() =>
-		timelineTicks(timeline.value.first, timeline.value.last),
-	);
 
 	function describeMark(mark: TimelineMark): string {
 		const day =
@@ -32,5 +30,29 @@ export function useInstrumentTimeline(
 		});
 	}
 
-	return { timeline, ticks, describeMark };
+	// "10 · held 2 mths": the lot's quantity and how long it was held, in whole years and months
+	// (days under a month); for what is still open, its quantity.
+	function describeBar(bar: TimelineBar): string {
+		const quantity = new Intl.NumberFormat(locale.value).format(bar.quantity);
+		if (bar.closed === null) {
+			return t("download_bar_open", { quantity });
+		}
+		const held = DateTime.fromMillis(bar.closed.at, { zone: "utc" }).diff(
+			DateTime.fromMillis(bar.opened.at, { zone: "utc" }),
+			["years", "months", "days"],
+		);
+		const units =
+			held.years > 0 || held.months > 0
+				? {
+						...(held.years > 0 ? { years: held.years } : {}),
+						...(held.months > 0 ? { months: held.months } : {}),
+					}
+				: { days: held.days };
+		const duration = Duration.fromObject(units, { locale: locale.value }).toHuman({
+			unitDisplay: "short",
+		});
+		return t("download_bar_lot", { quantity, duration });
+	}
+
+	return { timeline, describeMark, describeBar };
 }

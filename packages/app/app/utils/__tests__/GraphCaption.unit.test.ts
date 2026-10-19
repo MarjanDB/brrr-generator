@@ -68,7 +68,11 @@ describe("the caption of a graph", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const caption = captionOf(layout);
 
@@ -134,7 +138,11 @@ describe("the caption of a graph", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), true);
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const caption = captionOf(layout);
 
@@ -180,7 +188,11 @@ describe("the caption of a graph", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(buy.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const caption = captionOf(layout);
 
@@ -231,7 +243,11 @@ describe("the caption of a graph", () => {
 			soldOn: "2024-09-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(buy.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const caption = captionOf(layout);
 
@@ -273,7 +289,11 @@ describe("the caption of a graph", () => {
 			dateReceived: "2024-04-02",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(dividend.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(dividend.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const caption = captionOf(layout);
 
@@ -317,7 +337,11 @@ describe("the caption of a graph", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(match.lot),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const caption = captionOf(layout);
 
@@ -366,7 +390,11 @@ describe("the caption of a graph", () => {
 		b.graph.derive([secondBuy.event], secondRebuilt, ProvenanceChange.SPLIT, stage, null);
 		b.graph.derive([split.action], secondRebuilt, ProvenanceChange.SPLIT, stage, null);
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(split.action), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(split.action),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const caption = captionOf(layout);
 
@@ -403,7 +431,11 @@ describe("the caption of a graph", () => {
 		});
 		b.graph.derive([split.action], rescaledLot, ProvenanceChange.SPLIT, stage, null);
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(split.action), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(split.action),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const caption = captionOf(layout);
 
@@ -419,7 +451,11 @@ describe("the caption of a graph", () => {
 		b.graph.node(rename, ProvenanceNodeKind.CORPORATE_ACTION, "RENAME OLD → NEW", {});
 		b.graph.derive([file], rename, ProvenanceChange.CONVERTED, stage, null);
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(rename), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(rename),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const caption = captionOf(layout);
 
@@ -438,7 +474,11 @@ describe("the caption of a graph", () => {
 			values: {},
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(lot), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(lot),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const caption = captionOf(layout);
 

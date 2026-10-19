@@ -53,7 +53,11 @@ describe("placing a graph layout in pixels", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(match.lot),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const placement = placeGraph(layout, metrics);
 		const pair = placedNodeOf(placement, layout.focus);
@@ -100,7 +104,11 @@ describe("placing a graph layout in pixels", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(match.lot),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const placement = placeGraph(layout, metrics);
 
@@ -158,7 +166,11 @@ describe("placing a graph layout in pixels", () => {
 			label: "buy 2",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const oneLayout = layoutNodeOf(layout, b.node(one.row));
 		const twoLayout = layoutNodeOf(layout, b.node(two.row));
 		assert(oneLayout !== null);
@@ -196,7 +208,11 @@ describe("placing a graph layout in pixels", () => {
 			date: "2024-06-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(buy.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		// The acquired band holds two nodes in the trades' column (the trade and the faded action),
 		// so it is 40 + 10 + 40 = 90 tall; the trade is at its top (y 0) and the rebuilt trade, alone
@@ -231,7 +247,11 @@ describe("placing a graph layout in pixels", () => {
 			label: "buy ACME",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(buy.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const placement = placeGraph(layout, { ...metrics, columnGap: 10 });
 		const edge = placement.edges.find((e) => e.edge.to.node.source === b.node(buy.row));

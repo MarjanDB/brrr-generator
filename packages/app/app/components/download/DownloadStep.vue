@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+	type ProvenanceNode,
 	ProvenanceReportReader,
 	ProvenanceWalker,
 	type ReportInstrument,
@@ -35,12 +36,12 @@ const selected = shallowRef<ReportInstrument | null>(
 	firstEntry(sections.value)?.instrument ?? null,
 );
 if (selected.value !== null) {
-	focus.start(defaultFocus(selected.value));
+	focus.start(defaultFocus(selected.value, walker.value));
 }
 
 function select(instrument: ReportInstrument) {
 	selected.value = instrument;
-	focus.start(defaultFocus(instrument));
+	focus.start(defaultFocus(instrument, walker.value));
 }
 
 // A new report starts again from its first instrument.
@@ -48,7 +49,7 @@ watch(sections, (next) => {
 	const first = firstEntry(next)?.instrument ?? null;
 	selected.value = first;
 	if (first !== null) {
-		focus.start(defaultFocus(first));
+		focus.start(defaultFocus(first, walker.value));
 	}
 });
 
@@ -64,6 +65,12 @@ const warnings = computed(() =>
 	selected.value === null || focus.node.value === null
 		? []
 		: warningsOf(selected.value, focus.node.value),
+);
+// What the timeline draws, which is all a click in the graph can make the focus.
+const focusable = computed(() =>
+	selected.value === null
+		? new Set<ProvenanceNode>()
+		: focusableOf(buildTimeline(selected.value, walker.value)),
 );
 const timelineName = computed(
 	() => selectedEntry.value?.contract?.occSymbol ?? selectedEntry.value?.ticker ?? "",
@@ -98,6 +105,7 @@ const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
             :walker="walker"
             :locale="locale"
             :name="timelineName"
+            :year="outputs.year"
           />
         </div>
         <LazyGraphView
@@ -110,6 +118,7 @@ const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
           :lot-matching-method="outputs.lotMatchingMethod"
           :locale="locale"
           :form-name="formName"
+          :focusable="focusable"
         />
         <FocusFacts :left-out="leftOut" :warnings="warnings" />
       </div>

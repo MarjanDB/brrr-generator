@@ -144,6 +144,7 @@ export const headingKeys: Record<GraphHeading, string> = {
 	[GraphHeading.REPORT]: "download_heading_report",
 	[GraphHeading.REPORT_PAIRS]: "download_heading_report_pairs",
 	[GraphHeading.LEFT_OUT]: "download_heading_left_out",
+	[GraphHeading.OTHER_SIDE]: "download_heading_other_side",
 };
 
 export type LaneLabelKeys = {
