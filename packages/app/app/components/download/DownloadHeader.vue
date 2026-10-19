@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { type ReportProvenance, SlovenianReportTypeId } from "@brrr/lib";
+import type { ReportProvenance } from "@brrr/lib";
 import { computed, onMounted, onUnmounted, ref } from "vue";
+import TaxpayerDialog from "~/components/download/TaxpayerDialog.vue";
 import GuideModal from "~/components/guide/GuideModal.vue";
 import AppBadge from "~/components/ui/AppBadge.vue";
 import AppButton from "~/components/ui/AppButton.vue";
@@ -8,63 +9,49 @@ import AppPopover from "~/components/ui/AppPopover.vue";
 import AppTooltip from "~/components/ui/AppTooltip.vue";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
 import type { PanelSections } from "~/types/instrumentPanel";
+import type { TaxAuthorityForm } from "~/types/taxYearReports";
 import { ColorIntent } from "~/types/ui";
 import type { TaxAuthorityGuide } from "~/utils/taxAuthorityGuides";
 
 const props = defineProps<{
 	outputs: GeneratedOutputs;
+	form: TaxAuthorityForm;
 	reading: ReportProvenance;
 	sections: PanelSections;
 	guide: TaxAuthorityGuide | undefined;
 }>();
 
-const emit = defineEmits<{
-	restart: [];
-}>();
-
 const { t } = useI18n();
 const { dropSentence, warningSentence } = useProvenanceText();
+const reports = useTaxYearReports();
 
 const warningItems = computed(() => warningItemsOf(props.sections));
 
-const xmlUrl = ref<string | null>(null);
 const csvUrl = ref<string | null>(null);
 
-const formKeys: Record<SlovenianReportTypeId, string> = {
-	[SlovenianReportTypeId.KDVP]: "report_type_kdvp",
-	[SlovenianReportTypeId.DIV]: "report_type_div",
-	[SlovenianReportTypeId.IFI]: "report_type_ifi",
-};
-
-const heading = computed(() => {
-	const reportType = Object.values(SlovenianReportTypeId).find(
-		(candidate) => candidate === props.outputs.reportTypeId,
-	);
-	return t("download_heading", {
-		form: reportType === undefined ? props.outputs.reportTypeId : t(formKeys[reportType]),
-		year: props.outputs.year,
-	});
-});
-
-function revokeUrls() {
-	if (xmlUrl.value) URL.revokeObjectURL(xmlUrl.value);
-	if (csvUrl.value) URL.revokeObjectURL(csvUrl.value);
-	xmlUrl.value = null;
-	csvUrl.value = null;
-}
-
 onMounted(() => {
-	xmlUrl.value = URL.createObjectURL(new Blob([props.outputs.xml], { type: "application/xml" }));
 	csvUrl.value = URL.createObjectURL(new Blob([props.outputs.csv], { type: "text/csv" }));
 });
 
-onUnmounted(revokeUrls);
+onUnmounted(() => {
+	if (csvUrl.value) URL.revokeObjectURL(csvUrl.value);
+	csvUrl.value = null;
+});
+
+// A form whose XML has no taxpayer block downloads it straight away.
+const savingXml = ref(false);
+async function downloadXml() {
+	savingXml.value = true;
+	try {
+		await reports.downloadXml(props.outputs, reports.taxpayer.value);
+	} finally {
+		savingXml.value = false;
+	}
+}
 </script>
 
 <template>
   <div class="flex items-center gap-3 flex-wrap">
-    <h2 class="text-h5">{{ heading }}</h2>
-
     <div class="flex items-center gap-2 flex-wrap">
       <AppTooltip :content="t('download_count_lines')">
         <AppBadge :color="ColorIntent.SUCCESS" class="gap-1">
@@ -140,11 +127,9 @@ onUnmounted(revokeUrls);
     <a v-if="csvUrl" :href="csvUrl" :download="outputs.csvFilename" class="button-filled-accent">
       {{ t('download_csv_label') }}
     </a>
-    <a v-if="xmlUrl" :href="xmlUrl" :download="outputs.xmlFilename" class="button-filled-accent">
+    <TaxpayerDialog v-if="form.takesTaxpayer" :outputs="outputs" :form-name="t(form.nameKey)" />
+    <AppButton v-else :color="ColorIntent.ACCENT" :loading="savingXml" @click="downloadXml">
       {{ t('download_xml_label') }}
-    </a>
-    <AppButton :color="ColorIntent.NEUTRAL" @click="emit('restart')">
-      {{ t('restart_button') }}
     </AppButton>
   </div>
 </template>

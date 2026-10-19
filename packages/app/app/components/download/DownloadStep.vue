@@ -11,13 +11,12 @@ import InstrumentHeader from "~/components/download/InstrumentHeader.vue";
 import InstrumentPanel from "~/components/download/InstrumentPanel.vue";
 import InstrumentTimeline from "~/components/download/InstrumentTimeline.vue";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
+import type { TaxAuthorityForm } from "~/types/taxYearReports";
 
+// One form's report for the year, in its tab of the reports step.
 const props = defineProps<{
 	outputs: GeneratedOutputs;
-}>();
-
-const emit = defineEmits<{
-	restart: [];
+	form: TaxAuthorityForm;
 }>();
 
 const { t, locale } = useI18n();
@@ -74,13 +73,13 @@ const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
 </script>
 
 <template>
-  <div class="card card-padding-md flex flex-col gap-4">
+  <div class="flex flex-col gap-4">
     <DownloadHeader
       :outputs="outputs"
+      :form="form"
       :reading="reading"
       :sections="sections"
       :guide="guide"
-      @restart="emit('restart')"
     />
 
     <p v-if="selected === null" class="app-text-muted">{{ t('download_nothing') }}</p>

@@ -10,7 +10,7 @@ export const reportSteps: ReportStep[] = [
 
 // The last step the flow can show: each step needs what the steps before it made.
 export function furthestStepOf(progress: ReportProgress): ReportStep {
-	if (progress.hasReport) {
+	if (progress.hasImport && progress.reviewConfirmed && progress.hasAuthority) {
 		return ReportStep.DOWNLOAD;
 	}
 	if (progress.hasImport && progress.reviewConfirmed) {
@@ -34,16 +34,15 @@ export function reportStepOfPath(path: string): ReportStep | null {
 }
 
 // The key a step page is kept under, so going back finds it as it was left. A page starts afresh
-// once what it shows is gone: upload when the flow starts over, review and configure with a new
-// import, and download with each new report.
+// once what it shows is gone: upload when the flow starts over, every later step with a new
+// import. The download step follows a change of tax authority itself, keeping its year.
 export function reportPageKey(step: ReportStep, counts: ReportFlowCounts): string {
 	switch (step) {
 		case ReportStep.UPLOAD:
 			return `${step}:${counts.starts}`;
 		case ReportStep.REVIEW:
 		case ReportStep.CONFIGURE:
-			return `${step}:${counts.starts}:${counts.imports}`;
 		case ReportStep.DOWNLOAD:
-			return `${step}:${counts.starts}:${counts.imports}:${counts.reports}`;
+			return `${step}:${counts.starts}:${counts.imports}`;
 	}
 }

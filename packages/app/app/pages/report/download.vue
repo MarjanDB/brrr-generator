@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import DownloadStep from "~/components/download/DownloadStep.vue";
+import ReportsStep from "~/components/download/ReportsStep.vue";
 
-const { report, startOver } = useReportFlow();
+const { imported, authority, startOver } = useReportFlow();
 const localePath = useLocalePath();
 
 // Starting over drops everything the flow holds and goes back to upload.
@@ -12,5 +12,10 @@ function onRestart() {
 </script>
 
 <template>
-	<DownloadStep v-if="report !== null" :outputs="report" @restart="onRestart" />
+	<ReportsStep
+		v-if="imported !== null && authority !== null"
+		:imported="imported"
+		:authority-id="authority"
+		@restart="onRestart"
+	/>
 </template>

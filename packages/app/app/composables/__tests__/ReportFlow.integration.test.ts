@@ -1,11 +1,4 @@
-import {
-	createContainer,
-	PredefinedInfoProvider,
-	ReportPipeline,
-	SlovenianReportTypeId,
-	TaxAuthorityId,
-	TaxAuthorityLotMatchingMethod,
-} from "@brrr/lib";
+import { createContainer, PredefinedInfoProvider, ReportPipeline, TaxAuthorityId } from "@brrr/lib";
 import { TestKit } from "@brrr/test-cases";
 import { describe, expect, test } from "vitest";
 import {
@@ -23,7 +16,7 @@ describe("the report flow's state, on the test cases' real imports", () => {
 
 		expect(flow.imported.value).toBeNull();
 		expect(flow.reviewConfirmed.value).toEqual(false);
-		expect(flow.report.value).toBeNull();
+		expect(flow.authority.value).toBeNull();
 		expect(flow.furthestStep.value).toEqual(ReportStep.UPLOAD);
 	});
 
@@ -48,117 +41,42 @@ describe("the report flow's state, on the test cases' real imports", () => {
 		expect(flow.furthestStep.value).toEqual(ReportStep.CONFIGURE);
 	});
 
-	test("a report lets the flow go up to download", async () => {
+	test("choosing a tax authority lets the flow go up to download", async () => {
 		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
-		const report = {
-			xml: "<Envelope/>",
-			csv: "",
-			xmlFilename: "Doh_KDVP.xml",
-			csvFilename: "export-trades.csv",
-			authorityId: TaxAuthorityId.SLOVENIA,
-			reportTypeId: SlovenianReportTypeId.KDVP,
-			year: 2023,
-			lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
-			provenance: imported.provenance,
-			imported,
-		};
 		const flow = await mountComposable(() => provideReportFlow());
 
 		flow.acceptImport(imported);
 		flow.confirmReview();
-		flow.acceptReport(report);
+		flow.chooseAuthority(TaxAuthorityId.SLOVENIA);
 
-		expect(flow.report.value).toBe(report);
+		expect(flow.authority.value).toEqual(TaxAuthorityId.SLOVENIA);
 		expect(flow.furthestStep.value).toEqual(ReportStep.DOWNLOAD);
 	});
 
-	test("uploading again clears the review and the report, and counts a new import", async () => {
+	test("uploading again clears the review and the tax authority, and counts a new import", async () => {
 		const first = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
 		const second = pipeline.read(TestKit.ibkr.dividends.readInputs());
-		const report = {
-			xml: "<Envelope/>",
-			csv: "",
-			xmlFilename: "Doh_KDVP.xml",
-			csvFilename: "export-trades.csv",
-			authorityId: TaxAuthorityId.SLOVENIA,
-			reportTypeId: SlovenianReportTypeId.KDVP,
-			year: 2023,
-			lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
-			provenance: first.provenance,
-			imported: first,
-		};
 		const flow = await mountComposable(() => provideReportFlow());
 		flow.acceptImport(first);
 		flow.confirmReview();
-		flow.acceptReport(report);
+		flow.chooseAuthority(TaxAuthorityId.SLOVENIA);
 		const importsBefore = flow.importCount.value;
 
 		flow.acceptImport(second);
 
 		expect(flow.imported.value).toBe(second);
 		expect(flow.reviewConfirmed.value).toEqual(false);
-		expect(flow.report.value).toBeNull();
+		expect(flow.authority.value).toBeNull();
 		expect(flow.importCount.value).toEqual(importsBefore + 1);
 		expect(flow.furthestStep.value).toEqual(ReportStep.REVIEW);
 	});
 
-	test("generating again replaces the report and counts a new one", async () => {
-		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
-		const kdvp = {
-			xml: "<Envelope/>",
-			csv: "",
-			xmlFilename: "Doh_KDVP.xml",
-			csvFilename: "export-trades.csv",
-			authorityId: TaxAuthorityId.SLOVENIA,
-			reportTypeId: SlovenianReportTypeId.KDVP,
-			year: 2023,
-			lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
-			provenance: imported.provenance,
-			imported,
-		};
-		const div = {
-			xml: "<Envelope/>",
-			csv: "",
-			xmlFilename: "Doh_Div.xml",
-			csvFilename: "export-dividends.csv",
-			authorityId: TaxAuthorityId.SLOVENIA,
-			reportTypeId: SlovenianReportTypeId.DIV,
-			year: 2023,
-			lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
-			provenance: imported.provenance,
-			imported,
-		};
-		const flow = await mountComposable(() => provideReportFlow());
-		flow.acceptImport(imported);
-		flow.confirmReview();
-		flow.acceptReport(kdvp);
-		const reportsBefore = flow.reportCount.value;
-
-		flow.acceptReport(div);
-
-		expect(flow.report.value).toBe(div);
-		expect(flow.reportCount.value).toEqual(reportsBefore + 1);
-		expect(flow.reviewConfirmed.value).toEqual(true);
-	});
-
 	test("starting over clears everything", async () => {
 		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
-		const report = {
-			xml: "<Envelope/>",
-			csv: "",
-			xmlFilename: "Doh_KDVP.xml",
-			csvFilename: "export-trades.csv",
-			authorityId: TaxAuthorityId.SLOVENIA,
-			reportTypeId: SlovenianReportTypeId.KDVP,
-			year: 2023,
-			lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
-			provenance: imported.provenance,
-			imported,
-		};
 		const flow = await mountComposable(() => provideReportFlow());
 		flow.acceptImport(imported);
 		flow.confirmReview();
-		flow.acceptReport(report);
+		flow.chooseAuthority(TaxAuthorityId.SLOVENIA);
 		const startsBefore = flow.startCount.value;
 
 		flow.startOver();
@@ -166,7 +84,7 @@ describe("the report flow's state, on the test cases' real imports", () => {
 		expect(flow.startCount.value).toEqual(startsBefore + 1);
 		expect(flow.imported.value).toBeNull();
 		expect(flow.reviewConfirmed.value).toEqual(false);
-		expect(flow.report.value).toBeNull();
+		expect(flow.authority.value).toBeNull();
 		expect(flow.furthestStep.value).toEqual(ReportStep.UPLOAD);
 	});
 

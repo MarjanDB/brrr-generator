@@ -56,7 +56,6 @@ function pageKey(pageRoute: RouteLocationNormalizedLoaded): string {
 	return reportPageKey(step, {
 		starts: flow.startCount.value,
 		imports: flow.importCount.value,
-		reports: flow.reportCount.value,
 	});
 }
 </script>
