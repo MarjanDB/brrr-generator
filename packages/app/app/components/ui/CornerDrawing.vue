@@ -44,21 +44,51 @@ const outsideShadows = [
 	'<g filter="url(#b)"><rect x="-50" y="-50" width="200" height="200" fill="white" mask="url(#m)"/></g></svg>',
 ].join("");
 
-// Red light from the screen she is staring at, which faces her: strongest on her face, a pool by the
-// screen, a beam between the two and a faint red over the whole room. White is no light. The layers
-// multiply with each other and with the drawing. The mask is the drawing intersected with what lies
-// outside the shadows, so its transparency stays clear and the light stops at the monitor. Positions
-// are fractions of the drawing, so they hold at any size. The red is the artwork's, not a colour role.
+// The red light from the screen she is staring at, placed by hand in the light editor: soft spots
+// (each an ellipse, its centre and radii in percent of the drawing, turned by `angle` degrees), a beam
+// between the screen and her face, and a faint red over the whole room. Intensities run from 0 (no
+// light, white) to 1 (full red). The red is the artwork's, not a colour role.
+type Spot = { x: number; y: number; rx: number; ry: number; angle: number; core: number; mid: number };
+
+const spots: Spot[] = [
+	// Her face, turned towards the screen.
+	{ x: 64.9, y: 17.6, rx: 42.6, ry: 23.1, angle: 11, core: 0.52, mid: 0.54 },
+	// The screen's own spill across the desk and keyboard.
+	{ x: 47.9, y: 57.1, rx: 78.9, ry: 25.3, angle: 21, core: 0.91, mid: 0.64 },
+	// Her front and the desk's far edge.
+	{ x: 76.6, y: 43.4, rx: 48.4, ry: 16, angle: 13, core: 0.57, mid: 0.26 },
+];
+const beam = { angle: 155, position: 43, width: 18, intensity: 0.68 };
+const room = 0.18;
+
+const red = (intensity: number) => {
+	const other = Math.round(255 - intensity * 225);
+	return `rgb(255 ${other} ${other})`;
+};
+const percent = (value: number) => `${Math.round(value * 10) / 10}%`;
+
+// Each spot is its own box, so it can turn, and multiplies onto the layer below; outside its ellipse it
+// is white, which multiplies to no change.
+const spotStyles = spots.map((spot) => ({
+	left: percent(spot.x - spot.rx),
+	top: percent(spot.y - spot.ry),
+	width: percent(2 * spot.rx),
+	height: percent(2 * spot.ry),
+	transform: `rotate(${spot.angle}deg)`,
+	background: `radial-gradient(closest-side, ${red(spot.core)} 0%, ${red(spot.mid)} 45%, #fff 100%)`,
+}));
+
+// The layer the spots multiply onto: the beam and the room, multiplied together. It multiplies onto the
+// drawing at 45%, masked by the drawing intersected with what lies outside the shadows, so the
+// drawing's transparency stays clear and the light stops at the monitor.
 const screenLight = {
 	maskImage: `url(${drawing}), url("data:image/svg+xml,${encodeURIComponent(outsideShadows)}")`,
 	maskSize: "100% 100%",
 	maskRepeat: "no-repeat",
 	maskComposite: "intersect",
 	background: [
-		"radial-gradient(ellipse 30% 18% at 73% 15%, rgb(255 30 30) 0%, rgb(255 60 55) 45%, #fff 100%)",
-		"radial-gradient(ellipse 36% 26% at 54% 56%, rgb(255 50 50) 0%, rgb(255 110 105) 45%, #fff 100%)",
-		"linear-gradient(140deg, #fff 30%, rgb(255 150 145) 55%, #fff 80%)",
-		"linear-gradient(rgb(255 215 210), rgb(255 215 210))",
+		`linear-gradient(${beam.angle}deg, #fff ${percent(beam.position - beam.width)}, ${red(beam.intensity)} ${percent(beam.position)}, #fff ${percent(beam.position + beam.width)})`,
+		`linear-gradient(${red(room)}, ${red(room)})`,
 	].join(", "),
 };
 </script>
@@ -67,6 +97,8 @@ const screenLight = {
 	<!-- Pinned to the window's bottom-left corner on every page; the layout paints its content over it. -->
 	<div class="pointer-events-none select-none fixed bottom-0 left-0">
 		<img :src="drawing" alt="" class="block max-h-[46vh] max-w-[34vw]" />
-		<div class="absolute inset-0 opacity-45 mix-blend-multiply bg-blend-multiply" :style="screenLight" />
+		<div class="absolute inset-0 isolate opacity-45 mix-blend-multiply bg-blend-multiply" :style="screenLight">
+			<div v-for="(style, index) in spotStyles" :key="index" class="absolute mix-blend-multiply" :style="style" />
+		</div>
 	</div>
 </template>
