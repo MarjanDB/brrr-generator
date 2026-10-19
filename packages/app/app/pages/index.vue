@@ -12,9 +12,11 @@ useSeoMeta({
 </script>
 
 <template>
-  <!-- The landing page: what the site takes in, the way in, and what it makes, centred in the height
-       left under the header. Nothing here loads lib or chart.js. -->
-  <div class="flex-1 py-10 flex flex-col justify-center gap-11">
+  <!-- The landing page: what the site takes in, the way in, and what it makes, centred in the window:
+       the bottom padding matches the header above, so the space it centres in is the window's middle.
+       On a phone it is taller than the screen anyway, so it skips that. Nothing here loads lib or
+       chart.js. -->
+  <div class="flex-1 py-10 sm:pb-[calc(2.5rem+var(--header-height))] flex flex-col justify-center gap-11">
     <div class="mx-auto max-w-2xl text-center flex flex-col gap-2.5">
       <h1 class="text-3xl font-extrabold tracking-tight text-balance app-text">{{ t('landing_headline') }}</h1>
       <p class="app-text-muted">{{ t('landing_lede') }}</p>
