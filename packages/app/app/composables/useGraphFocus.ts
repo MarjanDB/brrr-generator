@@ -92,21 +92,34 @@ export function useGraphFocus(): GraphFocus {
 	return focus;
 }
 
-// Everything on the path from `upFrom` back and from `downFrom` on, over the drawn edges only.
-// Stubs and stacks are never in a chain.
+// Everything on the path from `upFrom` back and from `downFrom` on, over the main path's edges.
+// The stubs and stacks hanging off it stay out, but a lit stub's own edge is walked, and a lit lot
+// lights the trade on its other side, which a trade's graph draws as a stub after it: on the
+// timeline a lot is a bar between both its trades.
 function chainOf(
 	layout: GraphLayout,
 	upFrom: GraphLayoutNode[],
 	downFrom: GraphLayoutNode[],
 ): GraphChain {
-	const drawn = layout.edges.filter((edge) => !edge.isStub);
+	const starts = new Set([...upFrom, ...downFrom]);
+	const walked = layout.edges.filter(
+		(edge) =>
+			!edge.isStub ||
+			(edge.from.isStub && starts.has(edge.from)) ||
+			(edge.to.isStub && starts.has(edge.to)),
+	);
 	const nodes = new Set<GraphLayoutNode>([
-		...walk(upFrom, (node) => drawn.filter((edge) => edge.to === node).map((edge) => edge.from)),
-		...walk(downFrom, (node) => drawn.filter((edge) => edge.from === node).map((edge) => edge.to)),
+		...walk(upFrom, (node) => walked.filter((edge) => edge.to === node).map((edge) => edge.from)),
+		...walk(downFrom, (node) => walked.filter((edge) => edge.from === node).map((edge) => edge.to)),
 	]);
+	for (const edge of layout.edges) {
+		if (edge.isStub && edge.from.node.kind === GraphNodeKind.PAIR && nodes.has(edge.from)) {
+			nodes.add(edge.to);
+		}
+	}
 	return {
 		nodes,
-		edges: new Set(drawn.filter((edge) => nodes.has(edge.from) && nodes.has(edge.to))),
+		edges: new Set(layout.edges.filter((edge) => nodes.has(edge.from) && nodes.has(edge.to))),
 		sources: new Set([...nodes].flatMap(sourcesOf)),
 	};
 }

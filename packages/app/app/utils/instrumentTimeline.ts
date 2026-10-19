@@ -239,6 +239,15 @@ export function buildTimeline(instrument: ReportInstrument, walker: ProvenanceWa
 	};
 }
 
+// What a click in the graph can make the focus: what the timeline draws, every mark and every lot,
+// so the timeline always shows where the focus is.
+export function focusableOf(timeline: Timeline): ReadonlySet<ProvenanceNode> {
+	return new Set([
+		...timeline.marks.map((mark) => mark.node),
+		...timeline.bars.flatMap((bar) => (bar.lot === null ? [] : [bar.lot])),
+	]);
+}
+
 // The chart's y scale puts one row in each unit: bar 0 (the top one) at `bars`, the last at 1, and
 // the points' row at 0, its stacks going down.
 export function barY(index: number, bars: number): number {

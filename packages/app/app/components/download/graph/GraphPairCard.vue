@@ -11,8 +11,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	activateLine: [side: PairSide];
-	refocus: [];
+	clickLine: [side: PairSide];
 }>();
 
 const { t } = useI18n();
@@ -20,6 +19,12 @@ const { reportLineText } = useGraphText();
 
 const pair = computed(() => props.placed.layoutNode.node.pair);
 const isStub = computed(() => props.placed.layoutNode.isStub);
+// A lot a click follows says so.
+const hint = computed(() =>
+	props.placed.layoutNode.follow === null
+		? t("download_graph_pair_hint")
+		: t("download_graph_follow", { value: t("download_graph_pair_hint") }),
+);
 
 const quantity = computed(() => {
 	const lotQuantity = pair.value === null ? null : fieldOf(pair.value.lot, ProvenanceField.QUANTITY);
@@ -35,14 +40,6 @@ function lineText(line: ProvenanceNode | null | undefined): string {
 
 const acquiredText = computed(() => lineText(pair.value?.acquired.line));
 const soldText = computed(() => lineText(pair.value?.sold.line));
-
-function onRow(side: PairSide) {
-	if (isStub.value) {
-		emit("refocus");
-	} else {
-		emit("activateLine", side);
-	}
-}
 
 // UnoCSS only sees class strings written out in full.
 const stateClasses: Record<CardState, string> = {
@@ -70,7 +67,7 @@ const classes = computed(() => [
     class="absolute flex flex-col overflow-hidden rounded-md border border-edge-strong bg-surface-raised text-sm text-ink transition-opacity"
     :class="classes"
   >
-    <AppTooltip :content="t('download_graph_pair_hint')">
+    <AppTooltip :content="hint">
       <div
         class="flex items-center gap-1.5 px-2 bg-action-soft text-action-ink text-xs shrink-0"
         :style="{ height: `${defaultGraphMetrics.pairHeaderHeight}px` }"
@@ -83,7 +80,7 @@ const classes = computed(() => [
     <button
       type="button"
       class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle hover:bg-surface-hover"
-      @click.stop="onRow(PairSide.ACQUIRED)"
+      @click.stop="emit('clickLine', PairSide.ACQUIRED)"
     >
       <NodeIcon :look="acquiredLook" :small="true" />
       <span class="truncate">{{ acquiredText }}</span>
@@ -91,7 +88,7 @@ const classes = computed(() => [
     <button
       type="button"
       class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle hover:bg-surface-hover"
-      @click.stop="onRow(PairSide.SOLD)"
+      @click.stop="emit('clickLine', PairSide.SOLD)"
     >
       <NodeIcon :look="soldLook" :small="true" />
       <span class="truncate">{{ soldText }}</span>

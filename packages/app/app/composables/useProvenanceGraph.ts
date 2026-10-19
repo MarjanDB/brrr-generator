@@ -1,4 +1,4 @@
-import type { ProvenanceGraph, ReportProvenance } from "@brrr/lib";
+import type { ProvenanceGraph, ProvenanceNode, ReportProvenance } from "@brrr/lib";
 import { useEventListener } from "@vueuse/core";
 import {
 	type GraphLayoutEdge,
@@ -13,6 +13,8 @@ import {
 export type ProvenanceGraphArgs = {
 	graph: () => ProvenanceGraph;
 	reading: () => ReportProvenance;
+	// What the timeline draws: the only things a click can make the focus.
+	focusable: () => ReadonlySet<ProvenanceNode>;
 };
 
 // The open popover: the node it is about and the drawn node it hangs on.
@@ -41,8 +43,9 @@ function lineNodeOf(node: GraphNode, side: PairSide): GraphNode | null {
 }
 
 // The provenance graph around the focused node, and what a click in it does. Needs an ancestor
-// that called provideGraphFocus. A click on a node lights its chain and keeps the focus; only a
-// stub moves the focus, and then the spread stacks fold again.
+// that called provideGraphFocus. A click on something the timeline draws moves the focus there,
+// and then the spread stacks fold again; a click on anything else, or on the focus, lights its
+// chain and keeps the focus.
 export function useProvenanceGraph(args: ProvenanceGraphArgs) {
 	const focus = useGraphFocus();
 
@@ -54,14 +57,19 @@ export function useProvenanceGraph(args: ProvenanceGraphArgs) {
 	const foldedModel = computed(() => graphModelOf(args.graph(), args.reading(), false));
 	const everyStepModel = computed(() => graphModelOf(args.graph(), args.reading(), true));
 	const model = computed(() => (showEveryStep.value ? everyStepModel.value : foldedModel.value));
-	// The layout depends on the focus node and the spread stacks alone: lighting a chain must not
-	// draw the graph again, or the chain would point at nodes that no longer exist.
+	// The layout depends on the focus node, the spread stacks and what the timeline draws alone:
+	// lighting a chain must not draw the graph again, or the chain would point at nodes that no
+	// longer exist.
 	const layout = computed(() => {
 		const node = focus.node.value;
 		if (node === null) {
 			throw new Error("useProvenanceGraph: the focus was never started");
 		}
-		return layoutGraph(model.value, { focus: node, expanded: expanded.value });
+		return layoutGraph(model.value, {
+			focus: node,
+			expanded: expanded.value,
+			focusable: args.focusable(),
+		});
 	});
 	const placement = computed(() => placeGraph(layout.value, defaultGraphMetrics));
 	const caption = computed(() => captionOf(layout.value));
@@ -72,23 +80,24 @@ export function useProvenanceGraph(args: ProvenanceGraphArgs) {
 		popover.value = null;
 	});
 
-	function activateNode(node: GraphLayoutNode) {
+	function clickNode(node: GraphLayoutNode) {
+		if (node.follow !== null) {
+			popover.value = null;
+			focus.refocus(node.follow);
+			return;
+		}
 		focus.lightNode(layout.value, node);
 		popover.value = hasPopover(node.node) ? { node: node.node, anchor: node } : null;
 	}
 
-	function refocusNode(node: GraphLayoutNode) {
-		const source = node.node.source;
-		popover.value = null;
-		// A left-out node and a stack are never followed.
-		if (node.node.kind === GraphNodeKind.DROP || node.node.stack !== null || source === null) {
-			focus.lightNode(layout.value, node);
+	// A pair card's rows: a lot that can be followed is followed from either; the focused lot's row
+	// lights the lot's chain and opens that line's popover.
+	function clickLine(node: GraphLayoutNode, side: PairSide) {
+		if (node.follow !== null) {
+			popover.value = null;
+			focus.refocus(node.follow);
 			return;
 		}
-		focus.refocus(source);
-	}
-
-	function activateLine(node: GraphLayoutNode, side: PairSide) {
 		focus.lightNode(layout.value, node);
 		const line = lineNodeOf(node.node, side);
 		popover.value = line === null ? null : { node: line, anchor: node };
@@ -144,9 +153,8 @@ export function useProvenanceGraph(args: ProvenanceGraphArgs) {
 		placement,
 		caption,
 		popover,
-		activateNode,
-		refocusNode,
-		activateLine,
+		clickNode,
+		clickLine,
 		spread,
 		activateEdge,
 		clearLight,

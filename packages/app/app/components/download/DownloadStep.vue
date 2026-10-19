@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+	type ProvenanceNode,
 	ProvenanceReportReader,
 	ProvenanceWalker,
 	type ReportInstrument,
@@ -65,6 +66,12 @@ const warnings = computed(() =>
 		? []
 		: warningsOf(selected.value, focus.node.value),
 );
+// What the timeline draws, which is all a click in the graph can make the focus.
+const focusable = computed(() =>
+	selected.value === null
+		? new Set<ProvenanceNode>()
+		: focusableOf(buildTimeline(selected.value, walker.value)),
+);
 const timelineName = computed(
 	() => selectedEntry.value?.contract?.occSymbol ?? selectedEntry.value?.ticker ?? "",
 );
@@ -111,6 +118,7 @@ const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
           :lot-matching-method="outputs.lotMatchingMethod"
           :locale="locale"
           :form-name="formName"
+          :focusable="focusable"
         />
         <FocusFacts :left-out="leftOut" :warnings="warnings" />
       </div>

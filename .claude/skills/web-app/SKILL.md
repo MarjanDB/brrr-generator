@@ -106,27 +106,34 @@ The four steps, each a component that emits to move on:
 
 **Download step graph.** Under the timeline, `<LazyGraphView>` (`components/download/graph/`) draws the focused item's provenance.
 Its shapes are plain types in `types/provenanceGraph.ts`. The engine is pure utils: `graphModelOf(graph, reading, showEveryStep)`
-(`utils/graphModel.ts`, with lookups such as `modelNodeFor`) → `layoutGraph(model, { focus, expanded })` →
+(`utils/graphModel.ts`, with lookups such as `modelNodeFor`) → `layoutGraph(model, { focus, expanded, focusable })` →
 `placeGraph(layout, defaultGraphMetrics)` (`utils/graphLayout.ts`), and `captionOf` (`utils/graphCaption.ts`).
 The layout depends on the focus. A buy or a sale (while lots are drawn as pairs, not with every step) gets a graph of its own (`layoutTrade`): on the left everything that flowed into the trade as it is now (its rows, the trade as first recorded, the corporate actions that rebuilt it; a focus on the trade as first recorded draws the same graph), and nothing that only shares a file or an action with it; then one row per lot (`GraphLayoutNode.row`), in the order of the trade on the other side, with that trade as a stub to follow and why the lot was left out. It has no bands (`GraphLayout.banded` is false), and `placeGraph` lines each row up and centres the trade on its lots (`placeRows`). Anything else (a lot, a payment, a row) gets the stage columns and the Buys/Sells bands.
 Three composables hold the rest:
 - `useGraphFocus()` (provided by `DownloadStep`): the focus, the back trail and the lit chain, with `start`, `refocus`, `back`,
-  `lightNode`/`lightEdge` (the chain walk) and `remap`. The timeline lights its marks and bars from the lit chain, and a click on a mark or a bar refocuses.
-- `useProvenanceGraph({ graph, reading })` (in `GraphView`): one model per mode, the layout, placement and caption, "show every
+  `lightNode`/`lightEdge` (the chain walk) and `remap`. The timeline lights its marks and bars from the lit chain, a click on a mark or a bar refocuses, and a click on nothing clears the light.
+  The chain walks the main path's edges; the stubs and stacks hanging off it stay out, but a lit stub's own edge is walked, and a lit
+  lot lights the trade on its other side (a stub in a trade's graph), as the timeline lights both ends of a lot's bar.
+- `useProvenanceGraph({ graph, reading, focusable })` (in `GraphView`): one model per mode, the layout, placement and caption, "show every
   step", the spread stacks, the open popover (`{ node, anchor }`), and what a click or Escape does.
 - `useGraphText()`: what a node, caption segment, split badge or popover says, as finished strings.
 The interaction rules:
-- A click on a node lights its chain and keeps the focus; a broker row or a report line also opens its popover. A pair card's two rows
-  are separate targets; its header opens nothing.
-- Only a stub, a double-click or a timeline mark moves the focus (the old one joins the back trail). A left-out node can be lit, never
-  followed. A stack spreads on click, and spread stacks fold again when the focus changes.
+- Only what the timeline draws can be the focus: a buy, a sale, a lot, a dividend or its tax, a corporate action, a broker lot
+  (`focusableOf(timeline)`, which `DownloadStep` passes down). So the timeline always shows where the focus is.
+- One click on any of those moves the focus there, in the graph as on the timeline, stub or not (the old focus joins the back trail);
+  a trade a corporate action rebuilt stands for the trade it became. The layout gives each card what its click focuses
+  (`GraphLayoutNode.follow`, `followTarget`), and the cards only emit the click; there is no double-click.
+- A click on the focus, or on anything that can't be focused (a file, a row, a sum, a line, a left-out node), lights its chain and
+  keeps the focus; a broker row or a report line also opens its popover. A pair card's two rows are separate targets (on the focused
+  lot each opens its line); its header opens nothing. A stack spreads on click, and spread stacks fold again when the focus changes.
 - A click on empty canvas or Escape clears the light and the popover; an edge's hit area lights the chain through it. A click
   elsewhere outside the popover closes it and keeps the chain lit. Escape is left to any other open reka layer (a header popover,
   a tooltip, a dialog): the graph's `document` listener skips it while a `[data-dismissable-layer]` is on the page.
 - The popover is an `AppPopover` hung on the clicked card (`reference`, found by the card's `data-node-key`), portaled to the body,
   so reka places it and keeps it on screen.
 - "Show every step" remaps the focus through `modelNodeFor`, so a focus on a hidden step lands on the visible node beside it.
-- The layout must depend on the focus alone: lighting a chain must not redraw the graph, because the chain holds that layout's nodes.
+- The layout must depend on the focus, the spread stacks and what the timeline draws alone: lighting a chain must not redraw the
+  graph, because the chain holds that layout's nodes.
 Every icon and tint is a literal class string in `utils/nodeLook.ts` (UnoCSS cannot see a built name), numbers go through
 `formatNumber` (`utils/provenanceFields.ts`), and all text is built at render through `t()` so a language switch redraws it. A change
 to the graph starts with a test in `utils/__tests__/` or `composables/__tests__/`. `GraphView` stays lazy, so the graph loads only

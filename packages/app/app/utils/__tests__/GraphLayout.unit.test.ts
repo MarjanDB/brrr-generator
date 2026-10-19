@@ -40,7 +40,11 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(sell.row), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.row),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layout.focus.node.source).toBe(b.node(sell.row));
 		expect(layoutNodeOf(layout, b.node(file))?.isStub).toEqual(false);
@@ -92,7 +96,11 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(match.lot),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layout.focus.node.kind).toEqual(GraphNodeKind.PAIR);
 		expect(layoutNodeOf(layout, b.node(file))?.isStub).toEqual(false);
@@ -156,7 +164,11 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(firstBuy.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(firstBuy.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layoutNodeOf(layout, b.node(firstMatch.lot))?.isStub).toEqual(false);
 		expect(layoutNodeOf(layout, b.node(sell.event))?.isStub).toEqual(true);
@@ -213,7 +225,11 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 		const model = graphModelOf(b.graph, b.reading(), false);
 		const fileKey = modelNodeFor(model, b.node(file)).key;
 
-		const folded = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const folded = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const stack = folded.nodes.find((n) => n.node.kind === GraphNodeKind.STACK);
 
 		expect(stack?.node.stack?.memberKind).toEqual(GraphNodeKind.ROW);
@@ -226,6 +242,7 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 		const spread = layoutGraph(model, {
 			focus: b.node(sell.event),
 			expanded: new Set([key]),
+			focusable: new Set(),
 		});
 
 		expect(spread.nodes.find((n) => n.node.kind === GraphNodeKind.STACK)).toBeUndefined();
@@ -270,7 +287,11 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layout.nodes.find((n) => n.node.kind === GraphNodeKind.STACK)).toBeUndefined();
 		expect(layoutNodeOf(layout, b.node(one.row))?.isStub).toEqual(true);
@@ -323,7 +344,11 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const stack = layout.nodes.find((n) => n.node.kind === GraphNodeKind.STACK);
 
 		expect(stack?.node.stack?.owner.source).toBe(b.node(file));
@@ -346,7 +371,11 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(buy.record), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(buy.record),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layout.focus.node.source).toBe(b.node(buy.event));
 	});
@@ -356,7 +385,11 @@ describe("the main path, stubs and stacks of a graph layout", () => {
 		const file = b.file({ name: "empty.xml" });
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(file), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(file),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const [only] = layout.nodes;
 
 		assert(only !== undefined);

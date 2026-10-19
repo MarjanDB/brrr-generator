@@ -76,7 +76,11 @@ describe("the words of a graph's caption", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const [focus] = captionOf(layout);
 		assert(focus !== undefined);
 
@@ -119,7 +123,11 @@ describe("the words of a graph's caption", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const [, matched] = captionOf(layout);
 		assert(matched !== undefined);
 
@@ -162,7 +170,11 @@ describe("the words of a graph's caption", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(buy.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const [, matched] = captionOf(layout);
 		assert(matched !== undefined);
 
@@ -205,7 +217,11 @@ describe("the words of a graph's caption", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const [, , lines] = captionOf(layout);
 		assert(lines !== undefined);
 
@@ -230,7 +246,11 @@ describe("the words of a graph's caption", () => {
 		});
 		b.sumInto({ instrument: acme, events: [dividend], dateReceived: "2024-02-01" });
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(dividend.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(dividend.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const [focus, summed] = captionOf(layout);
 		assert(focus !== undefined);
 		assert(summed !== undefined);
@@ -259,7 +279,11 @@ describe("the words of a graph's caption", () => {
 		});
 		b.split({ trade: buy, instrument: acme, before: "4", after: "40", date: "2024-06-01" });
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(buy.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const [, splitInto] = captionOf(layout);
 		assert(splitInto !== undefined);
 
@@ -302,7 +326,11 @@ describe("the words of a graph's caption", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(match.lot),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const [focus, boughtAndSold] = captionOf(layout);
 		assert(focus !== undefined);
 		assert(boughtAndSold !== undefined);
@@ -337,7 +365,11 @@ describe("the words of a graph's caption", () => {
 			date: "2024-06-01",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(split.action), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(split.action),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const [focus, adjusted] = captionOf(layout);
 		assert(focus !== undefined);
 		assert(adjusted !== undefined);
@@ -361,7 +393,11 @@ describe("the words of a graph's caption", () => {
 			values: {},
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(lot), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(lot),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const [, leftOut] = captionOf(layout);
 		assert(leftOut !== undefined);
 

@@ -8,8 +8,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	activate: [];
-	refocus: [];
+	click: [];
 }>();
 
 const { t } = useI18n();
@@ -27,32 +26,17 @@ const warnings = computed(() =>
 	node.value.warnings.map((warning) => warningSentence(warning)),
 );
 
-// Files and rows say the broker's own words; a stub says it can be followed.
+// Files and rows say the broker's own words; a card a click follows says so.
 const title = computed(() => {
 	const base =
 		node.value.kind === GraphNodeKind.FILE || node.value.kind === GraphNodeKind.ROW
 			? (node.value.source?.label ?? text.value)
 			: text.value;
-	const followable = isStub.value && node.value.kind !== GraphNodeKind.DROP;
+	const followable = props.placed.layoutNode.follow !== null;
 	return [followable ? t("download_graph_follow", { value: base }) : base, ...warnings.value].join(
 		"\n",
 	);
 });
-
-// A stub is followed with a click. A left-out node is never followed.
-function onClick() {
-	if (isStub.value && node.value.kind !== GraphNodeKind.DROP) {
-		emit("refocus");
-	} else {
-		emit("activate");
-	}
-}
-
-function onDoubleClick() {
-	if (node.value.kind !== GraphNodeKind.DROP) {
-		emit("refocus");
-	}
-}
 
 // UnoCSS only sees class strings written out in full.
 const stateClasses: Record<CardState, string> = {
@@ -81,8 +65,7 @@ const classes = computed(() => [
       }"
       class="absolute flex items-center gap-2 rounded-md border border-edge-strong bg-surface-raised px-1.5 text-left text-sm text-ink transition-opacity hover:border-action-edge"
       :class="classes"
-      @click.stop="onClick"
-      @dblclick.stop="onDoubleClick"
+      @click.stop="emit('click')"
     >
       <NodeIcon :look="look" :small="false" />
       <span class="min-w-0 flex-1 truncate tabular-nums">{{ text }}</span>

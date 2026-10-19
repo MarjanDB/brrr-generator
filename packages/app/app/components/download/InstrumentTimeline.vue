@@ -147,10 +147,13 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 				if (event.x === null || event.y === null) {
 					return;
 				}
-				// A lot's bar focuses the lot; what is still open, the trade that opened it.
+				// A lot's bar focuses the lot; what is still open, the trade that opened it. A click on
+				// nothing lets go of the lit chain, as in the graph.
 				const bar = plugin.barAt({ x: event.x, y: event.y });
 				if (bar !== null) {
 					focus.refocus(bar.lot ?? bar.opened.node);
+				} else {
+					focus.clearLight();
 				}
 			},
 			onHover: (event, elements, hovered) => {

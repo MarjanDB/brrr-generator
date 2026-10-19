@@ -225,6 +225,9 @@ export type GraphLayoutNode = {
 	// In a trade's graph: the row of the lot it belongs to (the lot, the trade on the other side, why
 	// it was left out), top to bottom. Null for everything else.
 	row: number | null;
+	// What a click on it makes the focus: something the timeline draws. Null for the focus itself,
+	// a stack, a left-out node and whatever the timeline doesn't draw (files, rows, sums, lines).
+	follow: ProvenanceNode | null;
 };
 
 export type GraphLayoutEdge = {

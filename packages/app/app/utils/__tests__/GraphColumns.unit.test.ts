@@ -40,7 +40,11 @@ describe("the columns, lanes and order of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(match.lot),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layoutNodeOf(layout, b.node(file))?.column).toEqual(0);
 		expect(layoutNodeOf(layout, b.node(sell.row))?.column).toEqual(1);
@@ -95,7 +99,11 @@ describe("the columns, lanes and order of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(buy.row), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(buy.row),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layoutNodeOf(layout, b.node(buy.event))?.column).toEqual(2);
 		expect(layoutNodeOf(layout, b.node(split.action))?.column).toEqual(2);
@@ -141,7 +149,11 @@ describe("the columns, lanes and order of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(match.lot),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layoutNodeOf(layout, b.node(buy.event))?.lane).toEqual(GraphLane.ACQUIRED);
 		expect(layoutNodeOf(layout, b.node(sell.event))?.lane).toEqual(GraphLane.SOLD);
@@ -180,7 +192,11 @@ describe("the columns, lanes and order of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(sums.daySum), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sums.daySum),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layoutNodeOf(layout, b.node(dividend.event))?.column).toEqual(2);
 		expect(layoutNodeOf(layout, b.node(tax.event))?.column).toEqual(2);
@@ -266,7 +282,11 @@ describe("the columns, lanes and order of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layoutNodeOf(layout, b.node(firstMatch.lot))?.row).toEqual(0);
 		expect(layoutNodeOf(layout, b.node(secondMatch.lot))?.row).toEqual(1);
@@ -312,8 +332,16 @@ describe("the columns, lanes and order of a graph layout", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const first = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
-		const second = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const first = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
+		const second = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layoutNodeOf(second, b.node(file))?.order).toEqual(
 			layoutNodeOf(first, b.node(file))?.order,

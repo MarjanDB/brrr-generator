@@ -41,6 +41,8 @@ export type GraphLayoutOptions = {
 	focus: ProvenanceNode;
 	// The stacks the user spread out.
 	expanded: ReadonlySet<StackKey>;
+	// What the timeline draws: the only things a click in the graph can make the focus.
+	focusable: ReadonlySet<ProvenanceNode>;
 };
 
 // A node on its way to the layout: what is known before columns and order are.
@@ -67,8 +69,9 @@ const lanesTopToBottom = [GraphLane.ACQUIRED, GraphLane.MIDDLE, GraphLane.SOLD];
 
 export function layoutGraph(model: GraphModel, options: GraphLayoutOptions): GraphLayout {
 	const focus = modelNodeFor(model, options.focus);
+	const followOf = (node: GraphNode) => followTarget(model, node, focus, options.focusable);
 	if (isTradeFocus(model, focus)) {
-		return layoutTrade(model, focus);
+		return layoutTrade(model, focus, followOf);
 	}
 	const main = new Set<GraphNode>([
 		...closure(focus, (node) => modelIns(model, node).map((edge) => edge.from)),
@@ -157,6 +160,7 @@ export function layoutGraph(model: GraphModel, options: GraphLayoutOptions): Gra
 			lane: draft.lane,
 			order: orders.get(draft) ?? 0,
 			row: null,
+			follow: followOf(draft.node),
 		});
 	}
 	const layoutEdges = edges.map((edge): GraphLayoutEdge => {
@@ -197,6 +201,26 @@ function isTradeFocus(model: GraphModel, focus: GraphNode): boolean {
 	);
 }
 
+// What a click on a node makes the focus: the node, when the timeline draws it, and a trade a
+// corporate action rebuilt stands for the trade it became, which is the one the timeline draws.
+// The focus's own trade, a stack and a left-out node lead nowhere.
+function followTarget(
+	model: GraphModel,
+	node: GraphNode,
+	focus: GraphNode,
+	focusable: ReadonlySet<ProvenanceNode>,
+): ProvenanceNode | null {
+	if (node.kind === GraphNodeKind.DROP || node.kind === GraphNodeKind.STACK) {
+		return null;
+	}
+	const target = node.kind === GraphNodeKind.EVENT ? currentOf(model, node) : node;
+	const ownTrade = focus.kind === GraphNodeKind.EVENT ? currentOf(model, focus) : focus;
+	if (target === ownTrade || target.source === null || !focusable.has(target.source)) {
+		return null;
+	}
+	return target.source;
+}
+
 // The trade as it is now: one a corporate action rebuilt is followed to what it became, which is
 // what was matched into lots.
 function currentOf(model: GraphModel, trade: GraphNode): GraphNode {
@@ -232,7 +256,11 @@ type TradeRow = {
 // with that trade (a stub to follow) and why the lot was left out, if it was. No bands: a lot's
 // row runs straight across, and the triangles say which side is the buy. A focus on the trade as
 // first recorded draws the same graph, focused there.
-function layoutTrade(model: GraphModel, focus: GraphNode): GraphLayout {
+function layoutTrade(
+	model: GraphModel,
+	focus: GraphNode,
+	followOf: (node: GraphNode) => ProvenanceNode | null,
+): GraphLayout {
 	const current = currentOf(model, focus);
 	const historyDrafts = closure(current, (node) =>
 		modelIns(model, node).map((edge) => edge.from),
@@ -298,6 +326,7 @@ function layoutTrade(model: GraphModel, focus: GraphNode): GraphLayout {
 					lane: draft.lane,
 					order,
 					row: null,
+					follow: followOf(draft.node),
 				});
 			});
 	}
@@ -312,6 +341,7 @@ function layoutTrade(model: GraphModel, focus: GraphNode): GraphLayout {
 			lane: modelLaneOf(model, root),
 			order: 0,
 			row,
+			follow: followOf(root),
 		};
 		rowNodes.push(rootNode);
 		[...otherSides, ...after].forEach((node, order) => {
@@ -326,6 +356,7 @@ function layoutTrade(model: GraphModel, focus: GraphNode): GraphLayout {
 				lane: modelLaneOf(model, node),
 				order,
 				row,
+				follow: followOf(node),
 			});
 		});
 	});

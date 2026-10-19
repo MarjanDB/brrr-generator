@@ -53,7 +53,11 @@ describe("the graph of a focused buy or sale", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layoutNodeOf(layout, b.node(file))?.isStub).toEqual(false);
 		expect(layoutNodeOf(layout, b.node(sell.row))?.isStub).toEqual(false);
@@ -106,7 +110,11 @@ describe("the graph of a focused buy or sale", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(split.rebuilt), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(split.rebuilt),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const asFirstRecorded = layoutNodeOf(layout, b.node(buy.event));
 		const action = layoutNodeOf(layout, b.node(split.action));
 
@@ -160,7 +168,11 @@ describe("the graph of a focused buy or sale", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(buy.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const rebuilt = layoutNodeOf(layout, b.node(split.rebuilt));
 		const lot = layoutNodeOf(layout, b.node(match.lot));
 		assert(rebuilt !== null && lot !== null);
@@ -224,7 +236,11 @@ describe("the graph of a focused buy or sale", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layoutNodeOf(layout, b.node(earlierLot.lot))?.row).toEqual(0);
 		expect(layoutNodeOf(layout, b.node(laterLot.lot))?.row).toEqual(1);
@@ -267,7 +283,11 @@ describe("the graph of a focused buy or sale", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const lot = layoutNodeOf(layout, b.node(match.lot));
 		const otherSide = layoutNodeOf(layout, b.node(buy.event));
 		assert(lot !== null && otherSide !== null);
@@ -310,7 +330,11 @@ describe("the graph of a focused buy or sale", () => {
 		b.graph.drop(closed.soldLeg, DropReason.OUTSIDE_PERIOD, stage, null);
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(buy.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(buy.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const lot = layoutNodeOf(layout, b.node(closed.lot));
 		const otherSide = layoutNodeOf(layout, b.node(sell.event));
 		const [why] = layout.nodes.filter((node) => node.node.kind === GraphNodeKind.DROP);
@@ -360,7 +384,11 @@ describe("the graph of a focused buy or sale", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const placement = placeGraph(layout, defaultGraphMetrics);
 
 		expect(layout.banded).toEqual(false);
@@ -418,7 +446,11 @@ describe("the graph of a focused buy or sale", () => {
 			soldOn: "2024-03-10",
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		const placement = placeGraph(layout, defaultGraphMetrics);
 		const middleOf = (source: object): number => {
@@ -467,7 +499,11 @@ describe("the graph of a focused buy or sale", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, { focus: b.node(match.lot), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(match.lot),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layout.banded).toEqual(true);
 		expect(layout.nodes.every((node) => node.row === null)).toEqual(true);
@@ -507,7 +543,11 @@ describe("the graph of a focused buy or sale", () => {
 		});
 		const model = graphModelOf(b.graph, b.reading(), true);
 
-		const layout = layoutGraph(model, { focus: b.node(sell.event), expanded: new Set() });
+		const layout = layoutGraph(model, {
+			focus: b.node(sell.event),
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layout.banded).toEqual(true);
 		expect(layout.nodes.every((node) => node.row === null)).toEqual(true);

@@ -11,7 +11,7 @@ import {
 import { assert, describe, expect, test } from "vitest";
 import { TimelineMarkKind, TimelineWeight } from "~/types/timeline";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { buildTimeline, taxYearSpan } from "~/utils/instrumentTimeline";
+import { buildTimeline, focusableOf, taxYearSpan } from "~/utils/instrumentTimeline";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -943,5 +943,61 @@ describe("the tax year behind an instrument's timeline", () => {
 		const span = taxYearSpan(2024, { min: Date.UTC(2022, 0, 1), max: Date.UTC(2023, 5, 1) });
 
 		expect(span).toBeNull();
+	});
+});
+
+describe("what the graph can focus on an instrument's timeline", () => {
+	test("every mark and every lot the timeline draws, and no row or line", () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const sell = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-03-10",
+			quantity: "-6",
+			price: "6",
+			currency: "USD",
+			label: "sell ACME",
+		});
+		const match = b.match({
+			instrument: acme,
+			acquired: buy,
+			sold: sell,
+			quantity: "6",
+			boughtOn: "2024-01-10",
+			soldOn: "2024-03-10",
+		});
+		const brokerLot = {};
+		b.graph.node(brokerLot, ProvenanceNodeKind.LOT, "lot ACME", {
+			[ProvenanceField.ACQUIRED_DATE]: "2024-01-10",
+			[ProvenanceField.QUANTITY]: "10",
+		});
+		b.graph.derive([brokerLot], acme, ProvenanceChange.GROUPED, stage, null);
+		b.graph.drop(brokerLot, DropReason.NOT_USED, stage, null);
+		const [instrument] = b.reading().stocks;
+		assert(instrument !== undefined);
+		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+
+		const focusable = focusableOf(timeline);
+
+		expect(focusable.size).toEqual(4);
+		expect(focusable.has(b.node(buy.event))).toEqual(true);
+		expect(focusable.has(b.node(sell.event))).toEqual(true);
+		expect(focusable.has(b.node(match.lot))).toEqual(true);
+		expect(focusable.has(b.node(brokerLot))).toEqual(true);
+		expect(focusable.has(b.node(buy.row))).toEqual(false);
+		expect(focusable.has(b.node(match.soldLine))).toEqual(false);
 	});
 });
