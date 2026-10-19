@@ -2,7 +2,7 @@ import { ProvenanceEventKind, ProvenanceWalker, type ReportInstrument } from "@b
 import { assert, describe, expect, test } from "vitest";
 import { mountComposable } from "~/composables/__tests__/support/mountComposable";
 import { useInstrumentTimeline } from "~/composables/useInstrumentTimeline";
-import { TickGranularity, TimelineMarkKind } from "~/types/timeline";
+import { TimelineMarkKind } from "~/types/timeline";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
 
 // The timeline composable and the i18n locale it reads, so a test can switch the language. The app
@@ -82,7 +82,7 @@ function dividendAndTax(): GraphBuilder {
 }
 
 describe("the timeline of the selected instrument", () => {
-	test("its marks, arc and month ticks come from the instrument and the graph", async () => {
+	test("its marks and arc come from the instrument and the graph", async () => {
 		const b = boughtAndSold();
 		const { timeline } = await mountTimeline(b, b.reading().stocks[0]);
 
@@ -90,8 +90,6 @@ describe("the timeline of the selected instrument", () => {
 		expect(timeline.timeline.value.marks[0]?.kind).toEqual(TimelineMarkKind.BOUGHT);
 		expect(timeline.timeline.value.marks[1]?.kind).toEqual(TimelineMarkKind.SOLD);
 		expect(timeline.timeline.value.arcs).toHaveLength(1);
-		expect(timeline.ticks.value[0]?.granularity).toEqual(TickGranularity.MONTH);
-		expect(timeline.ticks.value[0]?.at).toEqual(Date.UTC(2024, 1, 1));
 	});
 });
 

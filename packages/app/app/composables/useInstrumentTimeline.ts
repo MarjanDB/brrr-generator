@@ -1,11 +1,11 @@
 import { ProvenanceField, type ProvenanceWalker, type ReportInstrument } from "@brrr/lib";
-import type { Timeline, TimelineMark, TimelineTick } from "~/types/timeline";
+import type { Timeline, TimelineMark } from "~/types/timeline";
 import { markKeys } from "~/utils/i18nKeys";
-import { buildTimeline, timelineTicks } from "~/utils/instrumentTimeline";
+import { buildTimeline } from "~/utils/instrumentTimeline";
 import { fieldOf } from "~/utils/provenanceFields";
 
-// An instrument's timeline: its marks and arcs, the axis ticks, and the tooltip text of a mark in
-// the reader's locale.
+// An instrument's timeline: its marks and arcs, and the tooltip text of a mark in the reader's
+// locale. The axis ticks depend on the axis's width, so the chart asks for them as it lays out.
 export function useInstrumentTimeline(
 	instrument: () => ReportInstrument,
 	walker: () => ProvenanceWalker,
@@ -14,9 +14,6 @@ export function useInstrumentTimeline(
 	const { date } = useProvenanceText();
 
 	const timeline = computed<Timeline>(() => buildTimeline(instrument(), walker()));
-	const ticks = computed<TimelineTick[]>(() =>
-		timelineTicks(timeline.value.first, timeline.value.last),
-	);
 
 	function describeMark(mark: TimelineMark): string {
 		const day =
@@ -32,5 +29,5 @@ export function useInstrumentTimeline(
 		});
 	}
 
-	return { timeline, ticks, describeMark };
+	return { timeline, describeMark };
 }

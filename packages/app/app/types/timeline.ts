@@ -20,7 +20,15 @@ export enum MarkState {
 	DIMMED = "DIMMED",
 }
 
+// How a mark or an arc counts on the form's timeline: on the form, or there for context (a lot
+// closed in another year, a position still open, a broker lot the lot matching doesn't use).
+export enum TimelineWeight {
+	REPORTED = "REPORTED",
+	CONTEXT = "CONTEXT",
+}
+
 export enum TickGranularity {
+	YEAR = "YEAR",
 	MONTH = "MONTH",
 	DAY = "DAY",
 }
@@ -32,6 +40,7 @@ export type TimelineMark = {
 	at: number;
 	// 0 is on the axis; marks of the same day stack downward
 	stack: number;
+	weight: TimelineWeight;
 };
 
 // A matched lot, drawn from the buy it took to the sale it filled.
@@ -40,6 +49,13 @@ export type TimelineArc = {
 	from: TimelineMark;
 	to: TimelineMark;
 	quantity: number;
+	weight: TimelineWeight;
+};
+
+// Epoch milliseconds, UTC midnight.
+export type TimeSpan = {
+	from: number;
+	to: number;
 };
 
 export type TimelineTick = {

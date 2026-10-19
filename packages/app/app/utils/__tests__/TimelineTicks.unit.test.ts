@@ -10,7 +10,7 @@ describe("the timeline's axis", () => {
 		const first = Date.UTC(2024, 0, 10);
 		const last = first + 200 * day;
 
-		const ticks = timelineTicks(first, last);
+		const ticks = timelineTicks(first, last, 1000);
 
 		expect(ticks[0]?.at).toEqual(Date.UTC(2024, 0, 1));
 		expect(ticks[0]?.granularity).toEqual(TickGranularity.MONTH);
@@ -22,7 +22,7 @@ describe("the timeline's axis", () => {
 		const first = Date.UTC(2024, 0, 10);
 		const last = first + 10 * day;
 
-		const ticks = timelineTicks(first, last);
+		const ticks = timelineTicks(first, last, 1000);
 
 		expect(ticks[0]?.granularity).toEqual(TickGranularity.DAY);
 		expect((ticks[1]?.at ?? 0) - (ticks[0]?.at ?? 0)).toEqual(2 * day);
@@ -33,7 +33,7 @@ describe("the timeline's axis", () => {
 		const first = Date.UTC(2024, 0, 10);
 		const last = first + 3 * day;
 
-		const ticks = timelineTicks(first, last);
+		const ticks = timelineTicks(first, last, 1000);
 
 		expect((ticks[1]?.at ?? 0) - (ticks[0]?.at ?? 0)).toEqual(day);
 		expect((ticks[2]?.at ?? 0) - (ticks[1]?.at ?? 0)).toEqual(day);
@@ -43,15 +43,51 @@ describe("the timeline's axis", () => {
 		const first = Date.UTC(2024, 0, 10);
 		const last = first + 30 * day;
 
-		const ticks = timelineTicks(first, last);
+		const ticks = timelineTicks(first, last, 1000);
 
 		expect((ticks[1]?.at ?? 0) - (ticks[0]?.at ?? 0)).toEqual(7 * day);
+	});
+
+	test("a holding of three years on a 1000 px axis is ticked every quarter", () => {
+		const first = Date.UTC(2021, 2, 15);
+		const last = Date.UTC(2024, 2, 18);
+
+		const ticks = timelineTicks(first, last, 1000);
+
+		expect(ticks[0]?.at).toEqual(Date.UTC(2021, 3, 1));
+		expect(ticks[0]?.granularity).toEqual(TickGranularity.MONTH);
+		expect(ticks[1]?.at).toEqual(Date.UTC(2021, 6, 1));
+		expect(ticks[2]?.at).toEqual(Date.UTC(2021, 9, 1));
+		expect(ticks).toHaveLength(13);
+	});
+
+	test("a holding of three years on a 300 px axis is ticked every year", () => {
+		const first = Date.UTC(2021, 2, 15);
+		const last = Date.UTC(2024, 2, 18);
+
+		const ticks = timelineTicks(first, last, 300);
+
+		expect(ticks[0]?.at).toEqual(Date.UTC(2022, 0, 1));
+		expect(ticks[0]?.granularity).toEqual(TickGranularity.YEAR);
+		expect(ticks[1]?.at).toEqual(Date.UTC(2023, 0, 1));
+		expect(ticks[2]?.at).toEqual(Date.UTC(2024, 0, 1));
+		expect(ticks).toHaveLength(3);
+	});
+
+	test("a span of a month on a 300 px axis is ticked every two weeks", () => {
+		const first = Date.UTC(2024, 0, 10);
+		const last = first + 30 * day;
+
+		const ticks = timelineTicks(first, last, 300);
+
+		expect(ticks[0]?.granularity).toEqual(TickGranularity.DAY);
+		expect((ticks[1]?.at ?? 0) - (ticks[0]?.at ?? 0)).toEqual(14 * day);
 	});
 
 	test("a single day still has ticks, all inside the padded range", () => {
 		const only = Date.UTC(2024, 0, 10);
 
-		const ticks = timelineTicks(only, only);
+		const ticks = timelineTicks(only, only, 1000);
 		const range = paddedRange(only, only);
 
 		expect(ticks.length).toBeGreaterThan(0);

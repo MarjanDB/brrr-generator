@@ -16,6 +16,8 @@ export type ChartThemeColors = {
 	brokerLot: string;
 	arc: string;
 	focus: string;
+	// The band behind the instrument timeline's tax year
+	taxYear: string;
 };
 
 function cssVar(name: string): string {
@@ -51,6 +53,7 @@ function readColors(): ChartThemeColors {
 		brokerLot: cssVar("--color-neutral-edge"),
 		arc: cssVar("--color-info-edge"),
 		focus: cssVar("--color-action-edge"),
+		taxYear: cssVar("--color-surface-raised"),
 	};
 }
 

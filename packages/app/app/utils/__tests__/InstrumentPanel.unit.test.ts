@@ -8,6 +8,7 @@ import {
 	ProvenanceDetailValue,
 	ProvenanceEventKind,
 	ProvenanceStage,
+	ProvenanceWalker,
 	ReportInstrumentKind,
 } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
@@ -354,7 +355,7 @@ describe("the item an instrument opens on", () => {
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
-		const focus = defaultFocus(instrument);
+		const focus = defaultFocus(instrument, new ProvenanceWalker(b.graph));
 
 		expect(focus).toBe(b.node(sell.event));
 	});
@@ -378,7 +379,7 @@ describe("the item an instrument opens on", () => {
 		const [instrument] = b.reading().withoutLines;
 		assert(instrument !== undefined);
 
-		const focus = defaultFocus(instrument);
+		const focus = defaultFocus(instrument, new ProvenanceWalker(b.graph));
 
 		expect(focus).toBe(b.node(buy.event));
 	});
@@ -410,7 +411,108 @@ describe("the item an instrument opens on", () => {
 		const [instrument] = b.reading().dividendPayers;
 		assert(instrument !== undefined);
 
-		const focus = defaultFocus(instrument);
+		const focus = defaultFocus(instrument, new ProvenanceWalker(b.graph));
+
+		expect(focus).toBe(b.node(dividend.event));
+	});
+	test("an instrument opens on its first sale on the form, not an earlier sale from another year", () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const earlyBuy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2023-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME in 2023",
+		});
+		const earlySell = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2023-03-10",
+			quantity: "-10",
+			price: "6",
+			currency: "USD",
+			label: "sell ACME in 2023",
+		});
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "7",
+			currency: "USD",
+			label: "buy ACME in 2024",
+		});
+		const sell = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-03-10",
+			quantity: "-10",
+			price: "8",
+			currency: "USD",
+			label: "sell ACME in 2024",
+		});
+		const early = b.matchClosed({
+			instrument: acme,
+			acquired: earlyBuy,
+			sold: earlySell,
+			quantity: "10",
+		});
+		b.graph.drop(early.acquiredLeg, DropReason.OUTSIDE_PERIOD, stage, null);
+		b.graph.drop(early.soldLeg, DropReason.OUTSIDE_PERIOD, stage, null);
+		b.match({
+			instrument: acme,
+			acquired: buy,
+			sold: sell,
+			quantity: "10",
+			boughtOn: "2024-01-10",
+			soldOn: "2024-03-10",
+		});
+
+		const [instrument] = b.reading().stocks;
+		assert(instrument !== undefined);
+
+		const focus = defaultFocus(instrument, new ProvenanceWalker(b.graph));
+
+		expect(focus).toBe(b.node(sell.event));
+	});
+
+	test("a dividend payer opens on its first dividend on the form, not an earlier one from another year", () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const tte = b.instrument({ ticker: "TTE", isin: "FR0000120271" });
+		const earlier = b.dividend({
+			file,
+			instrument: tte,
+			kind: ProvenanceEventKind.DIVIDEND,
+			date: "2023-04-01",
+			amount: "18",
+			currency: "EUR",
+			label: "dividend TTE in 2023",
+		});
+		const dividend = b.dividend({
+			file,
+			instrument: tte,
+			kind: ProvenanceEventKind.DIVIDEND,
+			date: "2024-04-01",
+			amount: "20",
+			currency: "EUR",
+			label: "dividend TTE in 2024",
+		});
+		b.graph.drop(earlier.event, DropReason.OUTSIDE_PERIOD, stage, null);
+		b.sumInto({ instrument: tte, events: [dividend], dateReceived: "2024-04-01" });
+
+		const [instrument] = b.reading().dividendPayers;
+		assert(instrument !== undefined);
+
+		const focus = defaultFocus(instrument, new ProvenanceWalker(b.graph));
 
 		expect(focus).toBe(b.node(dividend.event));
 	});

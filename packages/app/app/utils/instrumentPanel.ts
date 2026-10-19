@@ -5,6 +5,7 @@ import {
 	ProvenanceEventKind,
 	ProvenanceField,
 	type ProvenanceNode,
+	type ProvenanceWalker,
 	type ProvenanceWarning,
 	type ReportInstrument,
 	ReportInstrumentKind,
@@ -21,6 +22,7 @@ import type {
 } from "~/types/instrumentPanel";
 import { SplitFactorKind } from "~/types/provenanceGraph";
 import { splitFactorOf } from "~/utils/graphModel";
+import { reachesALine } from "~/utils/instrumentTimeline";
 import { fieldOf, formatNumber } from "~/utils/provenanceFields";
 
 function optionRightOf(value: string | null): OptionRight {
@@ -134,15 +136,25 @@ export function firstEntry(sections: PanelSections): PanelEntry | null {
 	);
 }
 
-// The item an instrument opens on: its first sale (the sketch opens on a sale, which has the
-// richest graph), else its first dividend, else its first event, broker lot or corporate action.
-export function defaultFocus(instrument: ReportInstrument): ProvenanceNode {
+// The item an instrument opens on: its first sale on the form (the sketch opens on a sale, which has
+// the richest graph), else its first dividend on the form; for an instrument with nothing on the
+// form, its first sale, dividend, event, broker lot or corporate action.
+export function defaultFocus(
+	instrument: ReportInstrument,
+	walker: ProvenanceWalker,
+): ProvenanceNode {
 	const events = instrument.events.map((item) => item.node);
-	const firstOf = (kind: ProvenanceEventKind): ProvenanceNode | undefined =>
-		events.find((event) => fieldOf(event, ProvenanceField.EVENT_KIND) === kind);
+	const reported = events.filter((event) => reachesALine(event, walker));
+	const firstOf = (
+		candidates: ProvenanceNode[],
+		kind: ProvenanceEventKind,
+	): ProvenanceNode | undefined =>
+		candidates.find((event) => fieldOf(event, ProvenanceField.EVENT_KIND) === kind);
 	const focus =
-		firstOf(ProvenanceEventKind.SOLD) ??
-		firstOf(ProvenanceEventKind.DIVIDEND) ??
+		firstOf(reported, ProvenanceEventKind.SOLD) ??
+		firstOf(reported, ProvenanceEventKind.DIVIDEND) ??
+		firstOf(events, ProvenanceEventKind.SOLD) ??
+		firstOf(events, ProvenanceEventKind.DIVIDEND) ??
 		events[0] ??
 		instrument.brokerLots[0]?.node ??
 		instrument.corporateActions[0];

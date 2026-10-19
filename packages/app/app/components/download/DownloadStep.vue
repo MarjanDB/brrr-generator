@@ -35,12 +35,12 @@ const selected = shallowRef<ReportInstrument | null>(
 	firstEntry(sections.value)?.instrument ?? null,
 );
 if (selected.value !== null) {
-	focus.start(defaultFocus(selected.value));
+	focus.start(defaultFocus(selected.value, walker.value));
 }
 
 function select(instrument: ReportInstrument) {
 	selected.value = instrument;
-	focus.start(defaultFocus(instrument));
+	focus.start(defaultFocus(instrument, walker.value));
 }
 
 // A new report starts again from its first instrument.
@@ -48,7 +48,7 @@ watch(sections, (next) => {
 	const first = firstEntry(next)?.instrument ?? null;
 	selected.value = first;
 	if (first !== null) {
-		focus.start(defaultFocus(first));
+		focus.start(defaultFocus(first, walker.value));
 	}
 });
 
@@ -98,6 +98,7 @@ const formName = computed(() => props.outputs.reportTypeId.toUpperCase());
             :walker="walker"
             :locale="locale"
             :name="timelineName"
+            :year="outputs.year"
           />
         </div>
         <LazyGraphView

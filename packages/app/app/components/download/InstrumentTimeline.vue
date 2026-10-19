@@ -3,8 +3,8 @@ import type { ProvenanceWalker, ReportInstrument } from "@brrr/lib";
 import { Chart, type ChartConfiguration } from "chart.js/auto";
 import { DateTime } from "luxon";
 import { computed, onMounted, onUnmounted, useTemplateRef, watch } from "vue";
-import { TickGranularity } from "~/types/timeline";
-import { paddedRange } from "~/utils/instrumentTimeline";
+import { TickGranularity, type TimelineTick } from "~/types/timeline";
+import { paddedRange, timelineTicks } from "~/utils/instrumentTimeline";
 import { type TimelineMarksPlugin, timelineMarksPlugin } from "~/utils/timelineMarksPlugin";
 
 const props = defineProps<{
@@ -13,11 +13,13 @@ const props = defineProps<{
 	locale: string;
 	// The instrument's name for the screen reader
 	name: string;
+	// The report's tax year, shaded behind the marks
+	year: number;
 }>();
 
 const { t } = useI18n();
 const focus = useGraphFocus();
-const { timeline, ticks, describeMark } = useInstrumentTimeline(
+const { timeline, describeMark } = useInstrumentTimeline(
 	() => props.instrument,
 	() => props.walker,
 );
@@ -32,8 +34,8 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 	const drawn = timeline.value;
 	const range = paddedRange(drawn.first, drawn.last);
 	const c = colors.value;
-	const tickList = ticks.value;
-	const granularityAt = new Map(tickList.map((tick) => [tick.at, tick.granularity]));
+	// Laid out again for the axis's width whenever the chart is, a resize included.
+	let tickList: TimelineTick[] = [];
 	return {
 		type: "scatter",
 		data: {
@@ -76,6 +78,7 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 					grid: { color: c.grid },
 					border: { color: c.grid },
 					afterBuildTicks: (scale) => {
+						tickList = timelineTicks(drawn.first, drawn.last, scale.width);
 						scale.ticks = tickList.map((tick) => ({ value: tick.at }));
 					},
 					ticks: {
@@ -83,7 +86,11 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 						maxRotation: 0,
 						autoSkip: false,
 						callback: (value, index, scaleTicks) =>
-							tickLabel(Number(value), scaleTicks[index - 1]?.value, granularityAt.get(Number(value))),
+							tickLabel(
+								Number(value),
+								scaleTicks[index - 1]?.value,
+								tickList.find((tick) => tick.at === Number(value))?.granularity,
+							),
 					},
 				},
 				y: {
@@ -121,13 +128,16 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 	};
 }
 
-// Month ticks read "Jan" (with the year when it changes), day ticks "10 Jan".
+// Year ticks read "2024", month ticks "Jan" (with the year when it changes), day ticks "10 Jan".
 function tickLabel(
 	value: number,
 	previous: number | undefined,
 	granularity: TickGranularity | undefined,
 ): string {
 	const at = DateTime.fromMillis(value, { zone: "utc" });
+	if (granularity === TickGranularity.YEAR) {
+		return new Intl.DateTimeFormat(props.locale, { year: "numeric", timeZone: "UTC" }).format(value);
+	}
 	if (granularity === TickGranularity.DAY) {
 		return new Intl.DateTimeFormat(props.locale, {
 			day: "numeric",
@@ -155,6 +165,7 @@ function rebuild() {
 		focus: focus.node.value,
 		lit: focus.lit.value?.sources ?? null,
 		colors: colors.value,
+		year: props.year,
 	}));
 	chart = new Chart(canvasRef.value, buildConfig(plugin));
 }
@@ -166,7 +177,7 @@ onUnmounted(() => {
 });
 
 watch(
-  () => [focus.node.value, focus.lit.value],
+  () => [focus.node.value, focus.lit.value, props.year],
   () => chart?.update("none"),
 );
 watch(timeline, rebuild);
