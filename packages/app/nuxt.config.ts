@@ -17,6 +17,13 @@ export default defineNuxtConfig({
 
 	components: [{ path: "~/components", pathPrefix: false }],
 
+	// The report flow's pages hold nothing worth indexing, and what they show exists only in the
+	// browser: they render there alone. The landing page is rendered on the server.
+	routeRules: {
+		"/en/report/**": { ssr: false },
+		"/sl/report/**": { ssr: false },
+	},
+
 	modules: [
 		"@posthog/nuxt",
 		"@unocss/nuxt",
@@ -31,8 +38,9 @@ export default defineNuxtConfig({
 	i18n: {
 		strategy: "prefix",
 		locales: [
-			{ code: "en", language: "en-US", name: "English", file: "en.json" },
-			{ code: "sl", language: "sl-SI", name: "Slovenščina", file: "sl.json" },
+			// The names are what the language switch shows.
+			{ code: "en", language: "en-US", name: "🇬🇧 English", file: "en.json" },
+			{ code: "sl", language: "sl-SI", name: "🇸🇮 Slovenščina", file: "sl.json" },
 		],
 		defaultLocale: "en",
 		langDir: "locales",
@@ -50,6 +58,8 @@ export default defineNuxtConfig({
 
 	sitemap: {
 		zeroRuntime: true,
+		// Each language gets its own copy of these.
+		exclude: ["/report", "/report/**"],
 	},
 
 	posthogConfig: {

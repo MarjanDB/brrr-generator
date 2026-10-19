@@ -12,6 +12,7 @@ import {
 	lotMatchingKeys,
 	markKeys,
 	nodeValueKeys,
+	reportStepKeys,
 	stackKindKeys,
 } from "~/utils/i18nKeys";
 import { TAX_OFFICES } from "~/utils/taxOffices";
@@ -33,6 +34,12 @@ describe("the locale files", () => {
 		const bare = /@(?!'\})/;
 		expect(Object.entries(en).filter(([, text]) => bare.test(text))).toEqual([]);
 		expect(Object.entries(sl).filter(([, text]) => bare.test(text))).toEqual([]);
+	});
+
+	test("every step of the report flow has a key in the locale files", () => {
+		for (const key of Object.values(reportStepKeys)) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
 	});
 
 	test("every tax office's country and forms have keys in the locale files", () => {

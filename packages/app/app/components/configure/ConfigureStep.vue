@@ -4,11 +4,9 @@ import { type AcceptableValue, RadioGroupRoot } from "reka-ui";
 import type { Component } from "vue";
 import SloveniaExportForm from "~/components/configure/SloveniaExportForm.vue";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
-import type { TaxAuthorityCard } from "~/utils/taxAuthorityCards";
 
 defineProps<{
   imported: ImportResult;
-  collapsed: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -25,16 +23,9 @@ const selectedAuthorityId = ref<TaxAuthorityId | null>(
   TAX_AUTHORITY_CARDS.length === 1 ? (TAX_AUTHORITY_CARDS[0]?.authorityId ?? null) : null,
 );
 
-const selectedCard = computed<TaxAuthorityCard | undefined>(
-  () => TAX_AUTHORITY_CARDS.find((c) => c.authorityId === selectedAuthorityId.value),
-);
-
 const activeForm = computed<Component | undefined>(
   () => (selectedAuthorityId.value === null ? undefined : authorityForms[selectedAuthorityId.value]),
 );
-
-// Tracks last generated summary for collapsed view
-const lastXmlFilename = ref("");
 
 const headingId = useId();
 
@@ -47,18 +38,12 @@ function onSelect(value: AcceptableValue) {
 }
 
 function onGenerated(outputs: GeneratedOutputs) {
-  lastXmlFilename.value = outputs.xmlFilename;
   emit("generated", outputs);
 }
 </script>
 
 <template>
-  <StepSummaryCard v-if="collapsed" :title="t('report_settings_title')">
-    {{ lastXmlFilename }}
-    <template v-if="selectedCard"> · {{ selectedCard.name }}</template>
-  </StepSummaryCard>
-
-  <div v-else class="flex flex-col gap-4 w-full max-w-screen-md mx-auto">
+  <div class="flex flex-col gap-4 w-full max-w-screen-md mx-auto">
     <!-- Tax authority selector -->
     <div class="card card-padding-md flex flex-col gap-3">
       <h2 :id="headingId" class="text-h5">{{ t('tax_authority_label') }}</h2>

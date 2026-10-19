@@ -3,13 +3,8 @@ import { createContainer, type ImportResult, ReportPipeline } from "@brrr/lib";
 import BrokerSupportSection from "~/components/upload/BrokerSupportSection.vue";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
-defineProps<{
-  collapsed: boolean;
-  fileCount: number;
-}>();
-
 const emit = defineEmits<{
-  processed: [imported: ImportResult, files: FileList];
+  processed: [imported: ImportResult];
 }>();
 
 const { t } = useI18n();
@@ -26,7 +21,6 @@ const xmlFiles = ref<FileList | null>(null);
 const error = ref<string | null>(null);
 const loading = ref(false);
 const processedImport = shallowRef<ImportResult | null>(null);
-const processedFiles = shallowRef<FileList | null>(null);
 const detections = ref<
   { fileName: string; detectedBroker: { id: string; name: string } | null }[]
 >([]);
@@ -41,7 +35,6 @@ async function processSelectedFiles(files: FileList) {
   loading.value = true;
   detections.value = [];
   processedImport.value = null;
-  processedFiles.value = null;
 
   const current = ++processingVersion;
   try {
@@ -59,7 +52,6 @@ async function processSelectedFiles(files: FileList) {
 
     detections.value = imported.detections;
     processedImport.value = imported;
-    processedFiles.value = files;
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
   } finally {
@@ -68,8 +60,8 @@ async function processSelectedFiles(files: FileList) {
 }
 
 function onContinue() {
-  if (!processedImport.value || !processedFiles.value) return;
-  emit("processed", processedImport.value, processedFiles.value);
+  if (!processedImport.value) return;
+  emit("processed", processedImport.value);
 }
 
 watch(xmlFiles, (v) => {
@@ -77,7 +69,6 @@ watch(xmlFiles, (v) => {
     processingVersion++;
     detections.value = [];
     processedImport.value = null;
-    processedFiles.value = null;
     error.value = null;
     loading.value = false;
     return;
@@ -87,11 +78,7 @@ watch(xmlFiles, (v) => {
 </script>
 
 <template>
-  <StepSummaryCard v-if="collapsed" :title="t('ibkr_export_title')">
-    {{ t('upload_summary', { n: fileCount }) }}
-  </StepSummaryCard>
-
-  <div v-else class="card card-padding-md flex flex-col gap-3 w-full max-w-screen-md mx-auto">
+  <div class="card card-padding-md flex flex-col gap-3 w-full max-w-screen-md mx-auto">
     <h2 class="text-h5">{{ t('ibkr_export_title') }}</h2>
     <p class="text-body-sm app-text-muted">{{ t('ibkr_export_hint') }}</p>
     
