@@ -79,6 +79,10 @@ export default defineNuxtConfig({
 	posthogConfig: {
 		clientConfig: {
 			defaults: "2026-01-30",
+			// The site is watched through session replays and pageviews alone: PostHog captures no clicks,
+			// changes or form submits by itself (rage clicks go with them), and no dead clicks.
+			autocapture: false,
+			capture_dead_clicks: false,
 			// Session replay masks what the project's "Privacy and masking" setting masks at Total privacy:
 			// every input, all text and every image. Set here, it wins over the project setting, so a change
 			// there can't unmask anyone's holdings.

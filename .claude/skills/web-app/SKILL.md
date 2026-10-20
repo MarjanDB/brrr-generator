@@ -18,8 +18,9 @@ company and country lookups. Nuxt's source directory is `packages/app/app/`.
   `NUXT_PUBLIC_POSTHOG_PUBLIC_KEY` / `NUXT_PUBLIC_POSTHOG_HOST` override the runtime config `@posthog/nuxt` sets up, and Nitro
   reads `PORT` / `HOST`. Devtools run only under `nuxt dev`. A new setting goes in `runtimeConfig`, overridden by its `NUXT_`
   variable, not read from `process.env` in `nuxt.config.ts`.
-- PostHog's session replay masks at the project's "Total privacy" level (every input, all text, every image), set in
-  `posthogConfig.clientConfig.session_recording` so it wins over the project setting. Don't loosen it.
+- PostHog is used for session replays and pageviews only. Its replay masks at the project's "Total privacy" level (every
+  input, all text, every image), set in `posthogConfig.clientConfig.session_recording` so it wins over the project setting,
+  and `autocapture` (rage clicks with it) and `capture_dead_clicks` are off. Don't loosen them.
 
 ## Tests
 
