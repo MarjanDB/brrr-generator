@@ -60,12 +60,6 @@ const expiry = computed(() => {
           {{ entry.warningCount }}
         </span>
       </AppTooltip>
-      <AppTooltip v-if="entry.notInReport > 0" :content="t('download_badge_not_in_report', { n: entry.notInReport })">
-        <AppBadge :color="ColorIntent.NEUTRAL">{{ entry.notInReport }}</AppBadge>
-      </AppTooltip>
-      <AppTooltip :content="countText(CountNoun.FORM_LINE, entry.lineCount)">
-        <AppBadge :color="ColorIntent.SUCCESS">{{ entry.lineCount }}</AppBadge>
-      </AppTooltip>
     </button>
   </AppTooltip>
 
@@ -95,12 +89,6 @@ const expiry = computed(() => {
         <span class="i-mdi-alert-outline" aria-hidden="true" />
         {{ entry.warningCount }}
       </span>
-    </AppTooltip>
-    <AppTooltip v-if="entry.notInReport > 0" :content="t('download_badge_not_in_report', { n: entry.notInReport })">
-      <AppBadge :color="ColorIntent.NEUTRAL">{{ entry.notInReport }}</AppBadge>
-    </AppTooltip>
-    <AppTooltip :content="countText(CountNoun.FORM_LINE, entry.lineCount)">
-      <AppBadge :color="ColorIntent.SUCCESS">{{ entry.lineCount }}</AppBadge>
     </AppTooltip>
   </button>
 </template>

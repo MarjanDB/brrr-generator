@@ -28,7 +28,6 @@ export type PanelEntry = {
 	// Set for an option contract.
 	contract: PanelContract | null;
 	hasCorporateAction: boolean;
-	notInReport: number;
 	lineCount: number;
 	warningCount: number;
 };
