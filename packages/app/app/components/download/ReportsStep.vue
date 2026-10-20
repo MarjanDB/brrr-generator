@@ -28,17 +28,13 @@ const { payers } = useReportFlow();
 const info = new ApiInfoProvider();
 const pipeline = createContainer(info).get(ReportPipeline);
 
-const years = computed(() => reportYearsOf(props.imported.events));
-const year = ref(defaultTaxYear(years.value, DateTime.now()));
-
-const forms = computed(() => taxAuthorityFormsOf(props.authorityId));
-const { reports, pending, error } = provideTaxYearReports({
+const { forms, years, year, reports, pending, error } = provideTaxYearReports({
 	pipeline,
 	info,
 	imported: () => props.imported,
 	authorityId: () => props.authorityId,
-	year: () => year.value,
 	payers: () => payers.value,
+	today: DateTime.now(),
 });
 
 // The open tab, by its form's report type. It stays on its form when the year changes.

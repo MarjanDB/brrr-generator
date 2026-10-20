@@ -1,15 +1,21 @@
 import {
+	type FinancialEvents,
 	type ImportResult,
 	type PredefinedInfoProvider,
 	type ReportPipeline,
-	type TaxAuthorityId,
+	SlovenianReportTypeId,
+	TaxAuthorityId,
 	TaxAuthorityLotMatchingMethod,
+	TaxpayerConfigSchema,
+	type TaxpayerInfo,
+	TaxpayerType,
 	zDateTimeFromISOString,
 } from "@brrr/lib";
-import type { InjectionKey, Ref, ShallowRef } from "vue";
+import type { DateTime } from "luxon";
+import type { ComputedRef, InjectionKey, Ref, ShallowRef } from "vue";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
 import type { DefinedPayer } from "~/types/reportFlow";
-import type { TaxpayerDetails, TaxYearReport } from "~/types/taxYearReports";
+import type { TaxAuthorityForm, TaxpayerDetails, TaxYearReport } from "~/types/taxYearReports";
 
 type TaxYearReportsArgs = {
 	pipeline: Pick<ReportPipeline, "generate">;
@@ -17,12 +23,22 @@ type TaxYearReportsArgs = {
 	info: Pick<PredefinedInfoProvider, "defineCompany" | "removeCompany">;
 	imported: () => ImportResult;
 	authorityId: () => TaxAuthorityId;
-	year: () => number;
 	// The payers defined by hand this session, by ISIN.
 	payers: () => ReadonlyMap<string, DefinedPayer>;
+	// The day the step opens, which picks the year it opens on.
+	today: DateTime;
 };
 
 export type TaxYearReports = {
+	// Every form the authority makes, in the order its tabs show them.
+	forms: ComputedRef<TaxAuthorityForm[]>;
+	// Every year a trade or a payment in the import falls in, oldest first: the years it can make
+	// reports for.
+	years: ComputedRef<number[]>;
+	// The year the forms are made for. It opens on last year, the one people file for, when the
+	// import has anything in it; else on the latest earlier year that has something, else the
+	// earliest later one; with nothing in the import, on last year.
+	year: Ref<number>;
 	// Each of the authority's forms with what it made for the year, in its tabs' order; empty until
 	// they are first made. While they are made again, the last ones stay.
 	reports: Readonly<ShallowRef<TaxYearReport[]>>;
@@ -38,6 +54,87 @@ export type TaxYearReports = {
 };
 
 const taxYearReportsKey: InjectionKey<TaxYearReports> = Symbol("TaxYearReports");
+
+// Every form each tax authority makes, in the order its tabs show them.
+const taxAuthorityForms: TaxAuthorityForm[] = [
+	{
+		authorityId: TaxAuthorityId.SLOVENIA,
+		reportTypeId: SlovenianReportTypeId.KDVP,
+		code: "Doh-KDVP",
+		nameKey: "report_type_kdvp",
+		xmlFilename: "Doh_KDVP.xml",
+		csvFilename: "export-trades.csv",
+		takesTaxpayer: true,
+	},
+	{
+		authorityId: TaxAuthorityId.SLOVENIA,
+		reportTypeId: SlovenianReportTypeId.DIV,
+		code: "Doh-Div",
+		nameKey: "report_type_div",
+		xmlFilename: "Doh_Div.xml",
+		csvFilename: "export-dividends.csv",
+		takesTaxpayer: true,
+	},
+	// D-IFI's XML has no taxpayer block.
+	{
+		authorityId: TaxAuthorityId.SLOVENIA,
+		reportTypeId: SlovenianReportTypeId.IFI,
+		code: "D-IFI",
+		nameKey: "report_type_ifi",
+		xmlFilename: "D_Ifi.xml",
+		csvFilename: "export-derivatives.csv",
+		takesTaxpayer: false,
+	},
+];
+
+function reportYearsOf(events: FinancialEvents): number[] {
+	const years = new Set<number>();
+	for (const grouping of events.groupings) {
+		for (const trade of grouping.stockTrades) {
+			years.add(trade.date.year);
+		}
+		for (const transaction of grouping.cashTransactions) {
+			years.add(transaction.date.year);
+		}
+		for (const derivative of grouping.derivativeGroupings) {
+			for (const trade of derivative.derivativeTrades) {
+				years.add(trade.date.year);
+			}
+		}
+	}
+	return [...years].sort((a, b) => a - b);
+}
+
+function defaultTaxYear(years: number[], today: DateTime): number {
+	const lastYear = today.year - 1;
+	const upToLastYear = years.filter((year) => year <= lastYear);
+	return upToLastYear.at(-1) ?? years[0] ?? lastYear;
+}
+
+// The taxpayer block a form's XML is written with, from what the download asked for. The XML's
+// header takes the tax number, name and address, and its residency the country; the rest of the
+// block isn't written into any form, so it is fixed.
+function taxpayerInfoOf(details: TaxpayerDetails): TaxpayerInfo {
+	return TaxpayerConfigSchema.parse({
+		taxNumber: details.taxNumber,
+		taxpayerType: TaxpayerType.NATURAL_PERSON,
+		name: details.name,
+		address1: details.address,
+		address2: null,
+		city: details.city,
+		postNumber: details.postNumber,
+		postName: details.postName,
+		municipalityName: "",
+		birthDate: "1990-01-01",
+		maticnaStevilka: "",
+		invalidskoPodjetje: false,
+		resident: details.countryId === "SI",
+		activityCode: "",
+		activityName: "",
+		countryId: details.countryId,
+		countryName: "",
+	});
+}
 
 function reportConfigOf(year: number, lotMatchingMethod: TaxAuthorityLotMatchingMethod) {
 	return {
@@ -63,6 +160,11 @@ const nobody: TaxpayerDetails = {
 // authority, the year or the payers defined by hand change, all at once so moving between them
 // waits for nothing, and handed to everything below the step. Only FIFO lot matching is supported.
 export function provideTaxYearReports(args: TaxYearReportsArgs): TaxYearReports {
+	const forms = computed(() =>
+		taxAuthorityForms.filter((form) => form.authorityId === args.authorityId()),
+	);
+	const years = computed(() => reportYearsOf(args.imported().events));
+	const year = ref(defaultTaxYear(years.value, args.today));
 	const reports = shallowRef<TaxYearReport[]>([]);
 	const pending = ref(true);
 	const error = ref<string | null>(null);
@@ -86,8 +188,8 @@ export function provideTaxYearReports(args: TaxYearReportsArgs): TaxYearReports 
 	}
 
 	watch(
-		[args.imported, args.authorityId, args.year, args.payers],
-		async ([imported, authorityId, year, payers]) => {
+		[args.imported, args.authorityId, year, args.payers],
+		async ([imported, authorityId, picked, payers]) => {
 			const run = ++runs;
 			pending.value = true;
 			error.value = null;
@@ -95,12 +197,12 @@ export function provideTaxYearReports(args: TaxYearReportsArgs): TaxYearReports 
 			const lotMatchingMethod = TaxAuthorityLotMatchingMethod.FIFO;
 			try {
 				const made = await Promise.all(
-					taxAuthorityFormsOf(authorityId).map(async (form): Promise<TaxYearReport> => {
+					forms.value.map(async (form): Promise<TaxYearReport> => {
 						const { csv, provenance } = await args.pipeline.generate(imported, {
 							authorityId,
 							reportTypeId: form.reportTypeId,
 							taxpayerInfo: taxpayerInfoOf(nobody),
-							reportConfig: reportConfigOf(year, lotMatchingMethod),
+							reportConfig: reportConfigOf(picked, lotMatchingMethod),
 						});
 						return {
 							form,
@@ -110,7 +212,7 @@ export function provideTaxYearReports(args: TaxYearReportsArgs): TaxYearReports 
 								csvFilename: form.csvFilename,
 								authorityId,
 								reportTypeId: form.reportTypeId,
-								year,
+								year: picked,
 								lotMatchingMethod,
 								provenance,
 								imported,
@@ -156,6 +258,9 @@ export function provideTaxYearReports(args: TaxYearReportsArgs): TaxYearReports 
 	}
 
 	const taxYearReports: TaxYearReports = {
+		forms,
+		years,
+		year,
 		reports,
 		pending,
 		error,

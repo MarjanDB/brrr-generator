@@ -1,6 +1,6 @@
 import type { ImportResult, TaxAuthorityId } from "@brrr/lib";
 import type { ComputedRef, InjectionKey, Ref, ShallowRef } from "vue";
-import type { DefinedPayer, ReportStep } from "~/types/reportFlow";
+import { type DefinedPayer, ReportStep } from "~/types/reportFlow";
 
 // What the report flow carries from page to page: the import, whether its review was confirmed,
 // the tax authority to make reports for, and the payers defined by hand. The download step makes
@@ -13,8 +13,19 @@ export type ReportFlow = {
 	// By ISIN. Only starting over drops them: a payer defined for one import is the same company in
 	// the next.
 	payers: Readonly<ShallowRef<ReadonlyMap<string, DefinedPayer>>>;
-	// The last step the flow can show with what it holds.
+	// The flow's steps in the order they're taken.
+	steps: ReportStep[];
+	// The last step the flow can show with what it holds: each step needs what the steps before it
+	// made.
 	furthestStep: ComputedRef<ReportStep>;
+	// The step a page shows when asked for a step: itself, or the first step that's still missing.
+	stepShownFor(requested: ReportStep): ReportStep;
+	// The step a flow page's path names, by its last segment; null for any other path.
+	stepOfPath(path: string): ReportStep | null;
+	// The key a step's page is kept under, so going back finds it as it was left. A page starts
+	// afresh once what it shows is gone: upload when the flow starts over, every later step with a
+	// new import. The download step follows a change of tax authority itself, keeping its year.
+	pageKeyOf(step: ReportStep): string;
 	// How many times the flow started over and how many imports it took, so a page that shows one
 	// can start afresh for the next.
 	startCount: Readonly<Ref<number>>;
@@ -31,6 +42,13 @@ export type ReportFlow = {
 
 const reportFlowKey: InjectionKey<ReportFlow> = Symbol("ReportFlow");
 
+const steps: ReportStep[] = [
+	ReportStep.UPLOAD,
+	ReportStep.REVIEW,
+	ReportStep.CONFIGURE,
+	ReportStep.DOWNLOAD,
+];
+
 // Creates the report flow's state and hands it to every step page below.
 export function provideReportFlow(): ReportFlow {
 	const imported = shallowRef<ImportResult | null>(null);
@@ -40,20 +58,42 @@ export function provideReportFlow(): ReportFlow {
 	const startCount = ref(0);
 	const importCount = ref(0);
 
-	const furthestStep = computed(() =>
-		furthestStepOf({
-			hasImport: imported.value !== null,
-			reviewConfirmed: reviewConfirmed.value,
-			hasAuthority: authority.value !== null,
-		}),
-	);
+	const furthestStep = computed(() => {
+		if (imported.value === null) {
+			return ReportStep.UPLOAD;
+		}
+		if (!reviewConfirmed.value) {
+			return ReportStep.REVIEW;
+		}
+		return authority.value === null ? ReportStep.CONFIGURE : ReportStep.DOWNLOAD;
+	});
 
 	const flow: ReportFlow = {
 		imported,
 		reviewConfirmed,
 		authority,
 		payers,
+		steps,
 		furthestStep,
+		stepShownFor(requested) {
+			return steps.indexOf(requested) <= steps.indexOf(furthestStep.value)
+				? requested
+				: furthestStep.value;
+		},
+		stepOfPath(path) {
+			const segment = path.split("/").at(-1);
+			return steps.find((step) => step === segment) ?? null;
+		},
+		pageKeyOf(step) {
+			switch (step) {
+				case ReportStep.UPLOAD:
+					return `${step}:${startCount.value}`;
+				case ReportStep.REVIEW:
+				case ReportStep.CONFIGURE:
+				case ReportStep.DOWNLOAD:
+					return `${step}:${startCount.value}:${importCount.value}`;
+			}
+		},
 		startCount,
 		importCount,
 		acceptImport(next) {

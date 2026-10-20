@@ -50,3 +50,42 @@ describe("a count with what it counts, as a button or a summary says it", () => 
 		expect(countText(CountNoun.CONTRACT, 3)).toEqual("3 pogodbe");
 	});
 });
+
+describe("the plural form a count takes in a language", () => {
+	test("English has a form for one thing and one for any other count", async () => {
+		const { countText } = await mountCountText("en");
+
+		expect(countText(CountNoun.SHARE, 1)).toEqual("1 share");
+		expect(countText(CountNoun.SHARE, 0)).toEqual("0 shares");
+		expect(countText(CountNoun.SHARE, 2)).toEqual("2 shares");
+		expect(countText(CountNoun.SHARE, 5)).toEqual("5 shares");
+	});
+
+	test("Slovenian also has forms for two, and for three and four", async () => {
+		const { countText } = await mountCountText("sl");
+
+		expect(countText(CountNoun.SHARE, 1)).toEqual("1 delnica");
+		expect(countText(CountNoun.SHARE, 2)).toEqual("2 delnici");
+		expect(countText(CountNoun.SHARE, 3)).toEqual("3 delnice");
+		expect(countText(CountNoun.SHARE, 4)).toEqual("4 delnice");
+		expect(countText(CountNoun.SHARE, 5)).toEqual("5 delnic");
+		expect(countText(CountNoun.SHARE, 0)).toEqual("0 delnic");
+	});
+
+	test("in Slovenian, a hundred or more takes the many form, whatever its last digits", async () => {
+		const { countText } = await mountCountText("sl");
+
+		expect(countText(CountNoun.SHARE, 101)).toEqual("101 delnic");
+		expect(countText(CountNoun.SHARE, 102)).toEqual("102 delnic");
+		expect(countText(CountNoun.SHARE, 103)).toEqual("103 delnic");
+		expect(countText(CountNoun.SHARE, 401)).toEqual("401 delnic");
+		expect(countText(CountNoun.SHARE, 1001)).toEqual("1001 delnic");
+		expect(countText(CountNoun.SHARE, 21)).toEqual("21 delnic");
+	});
+
+	test("in English, a hundred and one is many too", async () => {
+		const { countText } = await mountCountText("en");
+
+		expect(countText(CountNoun.SHARE, 101)).toEqual("101 shares");
+	});
+});
