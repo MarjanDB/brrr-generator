@@ -87,18 +87,33 @@ const offerOpen = computed({
 });
 const offerText = computed(() => (offered.value === null ? "" : describeNode(offered.value)));
 
-function focusAndOffer(node: ProvenanceNode, x: number, y: number) {
-	focus.refocus(node);
+// A point of the canvas, kept to the canvas as the page scrolls, for a tooltip or a card to hang on.
+function canvasPoint(x: number, y: number): ReferenceElement | undefined {
 	const canvas = canvasRef.value;
 	if (canvas === null) {
-		return;
+		return undefined;
 	}
-	anchor.value = {
+	return {
 		getBoundingClientRect: () => {
 			const box = canvas.getBoundingClientRect();
 			return new DOMRect(box.left + x, box.top + y, 0, 0);
 		},
 	};
+}
+
+// The mark under the pointer: what its tooltip says and where its centre is in the canvas.
+const hovered = shallowRef<{ text: string; x: number; y: number } | null>(null);
+const hoverAnchor = computed(() =>
+	hovered.value === null ? undefined : canvasPoint(hovered.value.x, hovered.value.y),
+);
+
+function focusAndOffer(node: ProvenanceNode, x: number, y: number) {
+	focus.refocus(node);
+	const point = canvasPoint(x, y);
+	if (point === undefined) {
+		return;
+	}
+	anchor.value = point;
 	card.offerTrace(node);
 }
 
@@ -128,20 +143,18 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 			animation: false,
 			plugins: {
 				legend: { display: false },
+				// chart.js finds the mark under the pointer; the tooltip itself is the app's own, hung on it.
 				tooltip: {
-					backgroundColor: c.tooltipBg,
-					bodyColor: c.tooltipText,
-					borderColor: c.grid,
-					borderWidth: 1,
-					displayColors: false,
+					enabled: false,
 					// The card a click opens says what the tooltip would.
 					filter: () => offered.value === null,
-					callbacks: {
-						title: () => "",
-						label: (context) => {
-							const target = hits[context.dataIndex];
-							return target === undefined ? "" : describeMark(target.mark);
-						},
+					external: ({ tooltip }) => {
+						const point = tooltip.dataPoints?.[0];
+						const target = point === undefined ? undefined : hits[point.dataIndex];
+						hovered.value =
+							tooltip.opacity === 0 || target === undefined
+								? null
+								: { text: describeMark(target.mark), x: tooltip.caretX, y: tooltip.caretY };
 					},
 				},
 			},
@@ -271,12 +284,19 @@ watch(spread, rebuild, { flush: "post" });
 
 <template>
   <div class="relative w-full" :style="{ height: `${height}px` }">
-    <canvas
-      ref="canvas"
-      role="img"
-      :aria-label="t('download_timeline_label', { name: card.name })"
-      class="w-full h-full"
-    />
+    <AppTooltip
+      :content="hovered?.text ?? ''"
+      :open="hovered !== null"
+      :reference="hoverAnchor"
+      :side-offset="hitRadius"
+    >
+      <canvas
+        ref="canvas"
+        role="img"
+        :aria-label="t('download_timeline_label', { name: card.name })"
+        class="w-full h-full"
+      />
+    </AppTooltip>
   </div>
   <div v-if="foldable" class="flex justify-end -mt-1 mb-1">
     <AppButton ghost class="px-2 py-0.5 text-xs" :aria-pressed="spread" @click="spread = !spread">

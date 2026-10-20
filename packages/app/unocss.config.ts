@@ -87,7 +87,7 @@ export default defineConfig({
 		// Floating layers (reka-ui portals them to the body)
 		[
 			"tooltip-box",
-			"z-50 max-w-80 whitespace-pre-line px-2.5 py-1.5 rounded-md text-xs bg-surface-inverse text-ink-inverse shadow-md select-none",
+			"z-50 max-w-80 whitespace-pre-line card px-2.5 py-1.5 text-xs shadow-md app-text select-none",
 		],
 
 		// Input base
