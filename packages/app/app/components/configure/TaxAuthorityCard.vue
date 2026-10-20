@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RadioGroupItem } from "reka-ui";
-import type { TaxAuthorityCard } from "~/utils/taxAuthorityCards";
+import type { TaxAuthorityCard } from "~/types/taxOffice";
 
 defineProps<{
 	card: TaxAuthorityCard;

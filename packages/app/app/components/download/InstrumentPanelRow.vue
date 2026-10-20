@@ -22,7 +22,7 @@ const emit = defineEmits<{
 
 const { t, locale } = useI18n();
 const { countText } = useCountText();
-const { problemOf, signOf } = useReportProblems();
+const { problemOf, signOf, definesPayer } = useReportProblems();
 
 // A payer problem says so in place of the ISIN, and an unknown company has no monogram of its own.
 const problem = computed(() => {
@@ -52,7 +52,7 @@ const expiry = computed(() => {
       <AppBadge :color="isCall ? ColorIntent.SUCCESS : ColorIntent.DANGER">
         {{ isCall ? t('download_option_call_short') : t('download_option_put_short') }}
       </AppBadge>
-      <span class="text-label tabular-nums">{{ formatNumber(entry.contract.strike, locale) }}</span>
+      <span class="text-label tabular-nums">{{ ProvenanceFields.formatNumber(entry.contract.strike, locale) }}</span>
       <span class="text-meta flex-1 truncate">{{ expiry }}</span>
       <AppTooltip v-if="entry.warningCount > 0" :content="countText(CountNoun.WARNING, entry.warningCount)">
         <span class="inline-flex items-center gap-0.5 text-xs font-medium tabular-nums text-warning-ink">

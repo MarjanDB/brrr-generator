@@ -1,5 +1,8 @@
 import type { ProvenanceGraph, ProvenanceNode, ReportProvenance } from "@brrr/lib";
 import { useEventListener } from "@vueuse/core";
+import { GraphCaptions } from "~/composables/provenanceGraph/graphCaptions";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
+import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import {
 	type GraphLayoutEdge,
 	type GraphLayoutNode,
@@ -54,8 +57,8 @@ export function useProvenanceGraph(args: ProvenanceGraphArgs) {
 	const popover = shallowRef<OpenPopover | null>(null);
 
 	// One model per mode, each built the first time it is read.
-	const foldedModel = computed(() => graphModelOf(args.graph(), args.reading(), false));
-	const everyStepModel = computed(() => graphModelOf(args.graph(), args.reading(), true));
+	const foldedModel = computed(() => GraphModels.of(args.graph(), args.reading(), false));
+	const everyStepModel = computed(() => GraphModels.of(args.graph(), args.reading(), true));
 	const model = computed(() => (showEveryStep.value ? everyStepModel.value : foldedModel.value));
 	// The layout depends on the focus node, the spread stacks and what the timeline draws alone:
 	// lighting a chain must not draw the graph again, or the chain would point at nodes that no
@@ -65,14 +68,14 @@ export function useProvenanceGraph(args: ProvenanceGraphArgs) {
 		if (node === null) {
 			throw new Error("useProvenanceGraph: the focus was never started");
 		}
-		return layoutGraph(model.value, {
+		return GraphLayouts.of(model.value, {
 			focus: node,
 			expanded: expanded.value,
 			focusable: args.focusable(),
 		});
 	});
-	const placement = computed(() => placeGraph(layout.value, defaultGraphMetrics));
-	const caption = computed(() => captionOf(layout.value));
+	const placement = computed(() => GraphLayouts.place(layout.value, GraphLayouts.defaultMetrics));
+	const caption = computed(() => GraphCaptions.of(layout.value));
 
 	// A new focus starts from the folded graph with nothing open.
 	watch(focus.node, () => {
@@ -132,7 +135,7 @@ export function useProvenanceGraph(args: ProvenanceGraphArgs) {
 		const next = !showEveryStep.value;
 		const nextModel = next ? everyStepModel.value : foldedModel.value;
 		// The new mode may hide the focused step, so the focus is moved first, in the same tick.
-		focus.remap((source) => modelNodeFor(nextModel, source).source ?? source);
+		focus.remap((source) => GraphModels.nodeFor(nextModel, source).source ?? source);
 		showEveryStep.value = next;
 		expanded.value = new Set();
 		popover.value = null;

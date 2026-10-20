@@ -8,6 +8,7 @@ import GraphPairCard from "~/components/download/graph/GraphPairCard.vue";
 import GraphPopover from "~/components/download/graph/GraphPopover.vue";
 import GraphStackCard from "~/components/download/graph/GraphStackCard.vue";
 import AppPopover from "~/components/ui/AppPopover.vue";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
 import { CardState, type GraphChain, GraphLane, type GraphLayout, type GraphLayoutEdge, type GraphLayoutNode, type GraphNode, GraphNodeKind, type GraphPlacement, type PairSide } from "~/types/provenanceGraph";
 
 const props = defineProps<{
@@ -84,7 +85,7 @@ const bandClasses: Record<GraphLane, string> = {
 };
 
 function bandLabel(lane: GraphLane): string {
-	const keys = laneLabelKeys(props.instrumentKind);
+	const keys = I18nKeys.laneLabels(props.instrumentKind);
 	switch (lane) {
 		case GraphLane.ACQUIRED:
 			return t(keys.acquired);
@@ -98,7 +99,7 @@ function bandLabel(lane: GraphLane): string {
 const headings = computed(() =>
 	props.placement.headings.map((heading) => ({
 		x: heading.x,
-		text: heading.column.headings.map((name) => t(headingKeys[name])).join(" · "),
+		text: heading.column.headings.map((name) => t(I18nKeys.heading[name])).join(" · "),
 	})),
 );
 </script>
@@ -131,7 +132,7 @@ const headings = computed(() =>
         v-for="heading in headings"
         :key="heading.x"
         class="absolute top-1 text-xs font-medium text-ink-muted truncate"
-        :style="{ left: `${heading.x}px`, width: `${defaultGraphMetrics.nodeWidth}px` }"
+        :style="{ left: `${heading.x}px`, width: `${GraphLayouts.defaultMetrics.nodeWidth}px` }"
       >
         {{ heading.text }}
       </span>

@@ -11,6 +11,9 @@ import {
 } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
 import { mountComposable } from "~/composables/__tests__/support/mountComposable";
+import { GraphCaptions } from "~/composables/provenanceGraph/graphCaptions";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
+import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import { useGraphText } from "~/composables/useGraphText";
 import {
 	GraphDirection,
@@ -22,9 +25,6 @@ import {
 	StackKey,
 } from "~/types/provenanceGraph";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { captionOf } from "~/utils/graphCaption";
-import { layoutGraph } from "~/utils/graphLayout";
-import { graphModelOf, modelNodeFor } from "~/utils/graphModel";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -75,13 +75,13 @@ describe("the words of a graph's caption", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const [focus] = captionOf(layout);
+		const [focus] = GraphCaptions.of(layout);
 		assert(focus !== undefined);
 
 		const sentence = text.captionText(focus, context);
@@ -122,13 +122,13 @@ describe("the words of a graph's caption", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const [, matched] = captionOf(layout);
+		const [, matched] = GraphCaptions.of(layout);
 		assert(matched !== undefined);
 
 		const sentence = text.captionText(matched, context);
@@ -169,13 +169,13 @@ describe("the words of a graph's caption", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(buy.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const [, matched] = captionOf(layout);
+		const [, matched] = GraphCaptions.of(layout);
 		assert(matched !== undefined);
 
 		const sentence = text.captionText(matched, context);
@@ -216,13 +216,13 @@ describe("the words of a graph's caption", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const [, , lines] = captionOf(layout);
+		const [, , lines] = GraphCaptions.of(layout);
 		assert(lines !== undefined);
 
 		const sentence = text.captionText(lines, context);
@@ -245,13 +245,13 @@ describe("the words of a graph's caption", () => {
 			label: "dividend ACME",
 		});
 		b.sumInto({ instrument: acme, events: [dividend], dateReceived: "2024-02-01" });
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(dividend.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const [focus, summed] = captionOf(layout);
+		const [focus, summed] = GraphCaptions.of(layout);
 		assert(focus !== undefined);
 		assert(summed !== undefined);
 
@@ -278,13 +278,13 @@ describe("the words of a graph's caption", () => {
 			label: "buy ACME",
 		});
 		b.split({ trade: buy, instrument: acme, before: "4", after: "40", date: "2024-06-01" });
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(buy.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const [, splitInto] = captionOf(layout);
+		const [, splitInto] = GraphCaptions.of(layout);
 		assert(splitInto !== undefined);
 
 		const sentence = text.captionText(splitInto, context);
@@ -325,13 +325,13 @@ describe("the words of a graph's caption", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(match.lot),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const [focus, boughtAndSold] = captionOf(layout);
+		const [focus, boughtAndSold] = GraphCaptions.of(layout);
 		assert(focus !== undefined);
 		assert(boughtAndSold !== undefined);
 
@@ -364,13 +364,13 @@ describe("the words of a graph's caption", () => {
 			after: "40",
 			date: "2024-06-01",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(split.action),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const [focus, adjusted] = captionOf(layout);
+		const [focus, adjusted] = GraphCaptions.of(layout);
 		assert(focus !== undefined);
 		assert(adjusted !== undefined);
 
@@ -392,13 +392,13 @@ describe("the words of a graph's caption", () => {
 			kind: ProvenanceDetailKind.FORM_IGNORES_BROKER_LOTS,
 			values: {},
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(lot),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const [, leftOut] = captionOf(layout);
+		const [, leftOut] = GraphCaptions.of(layout);
 		assert(leftOut !== undefined);
 
 		const sentence = text.captionText(leftOut, context);
@@ -425,9 +425,9 @@ describe("what a graph node says", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = graphModelOf(b.graph, b.reading(), true);
+		const model = GraphModels.of(b.graph, b.reading(), true);
 
-		const sentence = text.nodeText(modelNodeFor(model, b.node(buy.record)));
+		const sentence = text.nodeText(GraphModels.nodeFor(model, b.node(buy.record)));
 
 		expect(sentence).toEqual("parsed record");
 	});
@@ -465,9 +465,9 @@ describe("what a graph node says", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), true);
+		const model = GraphModels.of(b.graph, b.reading(), true);
 
-		const sentence = text.nodeText(modelNodeFor(model, b.node(match.soldLeg)));
+		const sentence = text.nodeText(GraphModels.nodeFor(model, b.node(match.soldLeg)));
 
 		expect(sentence).toEqual("sold · -10");
 	});
@@ -487,9 +487,9 @@ describe("what a graph node says", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const sentence = text.nodeText(modelNodeFor(model, b.node(buy.event)));
+		const sentence = text.nodeText(GraphModels.nodeFor(model, b.node(buy.event)));
 
 		expect(sentence).toEqual("3 @ 600 USD");
 	});
@@ -508,9 +508,9 @@ describe("what a graph node says", () => {
 			currency: "USD",
 			label: "dividend ACME",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const sentence = text.nodeText(modelNodeFor(model, b.node(dividend.event)));
+		const sentence = text.nodeText(GraphModels.nodeFor(model, b.node(dividend.event)));
 
 		expect(sentence).toEqual("12.5 USD");
 	});
@@ -537,9 +537,9 @@ describe("what a graph node says", () => {
 			after: "40",
 			date: "2024-06-01",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const sentence = text.nodeText(modelNodeFor(model, b.node(split.action)));
+		const sentence = text.nodeText(GraphModels.nodeFor(model, b.node(split.action)));
 
 		expect(sentence).toEqual("10 : 1 split");
 	});
@@ -566,8 +566,8 @@ describe("what a graph node says", () => {
 			after: "40",
 			date: "2024-06-01",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const node = modelNodeFor(model, b.node(split.action));
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const node = GraphModels.nodeFor(model, b.node(split.action));
 		await i18n.setLocale("sl");
 
 		const sentence = text.nodeText(node);
@@ -608,9 +608,9 @@ describe("what a graph node says", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), true);
+		const model = GraphModels.of(b.graph, b.reading(), true);
 
-		const sentence = text.nodeText(modelNodeFor(model, b.node(match.lot)));
+		const sentence = text.nodeText(GraphModels.nodeFor(model, b.node(match.lot)));
 
 		expect(sentence).toEqual("10 matched");
 	});
@@ -648,10 +648,10 @@ describe("what a graph node says", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), true);
+		const model = GraphModels.of(b.graph, b.reading(), true);
 
-		const bought = text.nodeText(modelNodeFor(model, b.node(match.acquiredLine)));
-		const sold = text.nodeText(modelNodeFor(model, b.node(match.soldLine)));
+		const bought = text.nodeText(GraphModels.nodeFor(model, b.node(match.acquiredLine)));
+		const sold = text.nodeText(GraphModels.nodeFor(model, b.node(match.soldLine)));
 		const boughtFromSource = text.reportLineText(b.node(match.acquiredLine));
 
 		expect(bought).toEqual("bought 10 · Jan 10");
@@ -674,9 +674,9 @@ describe("what a graph node says", () => {
 			label: "dividend ACME",
 		});
 		const sums = b.sumInto({ instrument: acme, events: [dividend], dateReceived: "2024-02-01" });
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const sentence = text.nodeText(modelNodeFor(model, b.node(sums.line)));
+		const sentence = text.nodeText(GraphModels.nodeFor(model, b.node(sums.line)));
 
 		expect(sentence).toEqual("Feb 1 · ");
 	});
@@ -716,8 +716,8 @@ describe("what a graph node says", () => {
 			currency: "USD",
 			label: "third",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const owner = modelNodeFor(model, b.node(first.event));
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const owner = GraphModels.nodeFor(model, b.node(first.event));
 		const stack: GraphNode = {
 			key: GraphNodeKey.Schema.parse("stack"),
 			kind: GraphNodeKind.STACK,
@@ -730,9 +730,9 @@ describe("what a graph node says", () => {
 				direction: GraphDirection.UP,
 				memberKind: GraphNodeKind.ROW,
 				members: [
-					modelNodeFor(model, b.node(first.row)),
-					modelNodeFor(model, b.node(second.row)),
-					modelNodeFor(model, b.node(third.row)),
+					GraphModels.nodeFor(model, b.node(first.row)),
+					GraphModels.nodeFor(model, b.node(second.row)),
+					GraphModels.nodeFor(model, b.node(third.row)),
 				],
 			},
 			warnings: [],
@@ -758,10 +758,10 @@ describe("what a graph node says", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const fileSentence = text.nodeText(modelNodeFor(model, b.node(file)));
-		const rowSentence = text.nodeText(modelNodeFor(model, b.node(buy.row)));
+		const fileSentence = text.nodeText(GraphModels.nodeFor(model, b.node(file)));
+		const rowSentence = text.nodeText(GraphModels.nodeFor(model, b.node(buy.row)));
 
 		expect(fileSentence).toEqual("U1.xml");
 		expect(rowSentence).toEqual("buy ACME");
@@ -781,9 +781,9 @@ describe("what a graph node says", () => {
 			currency: "USD",
 			label: "a trade recorded without a quantity",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const sentence = text.nodeText(modelNodeFor(model, b.node(odd.event)));
+		const sentence = text.nodeText(GraphModels.nodeFor(model, b.node(odd.event)));
 
 		expect(sentence).toEqual(" @ 12.5 USD");
 	});
@@ -828,8 +828,8 @@ describe("what a popover shows", () => {
 		const row = {};
 		b.graph.node(row, ProvenanceNodeKind.ROW, "Trade ACME", { zeta: "1", alpha: "2" });
 		b.graph.derive([file], row, ProvenanceChange.CONTAINS, stage, null);
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const node = modelNodeFor(model, b.node(row));
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const node = GraphModels.nodeFor(model, b.node(row));
 
 		const popover = text.popoverOf(node, new ProvenanceWalker(b.graph), "KDVP");
 
@@ -875,8 +875,8 @@ describe("what a popover shows", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), true);
-		const node = modelNodeFor(model, b.node(match.acquiredLine));
+		const model = GraphModels.of(b.graph, b.reading(), true);
+		const node = GraphModels.nodeFor(model, b.node(match.acquiredLine));
 
 		const popover = text.popoverOf(node, new ProvenanceWalker(b.graph), "KDVP");
 
@@ -904,10 +904,10 @@ describe("what a popover shows", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
 		const popover = text.popoverOf(
-			modelNodeFor(model, b.node(buy.event)),
+			GraphModels.nodeFor(model, b.node(buy.event)),
 			new ProvenanceWalker(b.graph),
 			"KDVP",
 		);

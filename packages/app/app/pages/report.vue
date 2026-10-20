@@ -14,11 +14,11 @@ const flow = provideReportFlow();
 
 useSeoMeta({ title: () => t("app_title") });
 
-const stepLabels = computed(() => reportSteps.map((step) => t(reportStepKeys[step])));
+const stepLabels = computed(() => flow.steps.map((step) => t(I18nKeys.reportStep[step])));
 
 // The step a path asks for, or the first step that's missing when the flow can't show it yet.
 function shownStepOf(path: string): ReportStep {
-	return stepToShow(reportStepOfPath(path) ?? ReportStep.UPLOAD, flow.furthestStep.value);
+	return flow.stepShownFor(flow.stepOfPath(path) ?? ReportStep.UPLOAD);
 }
 
 const shownStep = computed(() => shownStepOf(route.path));
@@ -30,43 +30,37 @@ function goTo(step: ReportStep, replace: boolean) {
 // A step opened without what it needs goes to the first step that's missing: here when the flow
 // is opened (a reload, a shared link, the flow's own address), and in the guard below when moving
 // inside it. Redirecting before the step renders keeps the pages kept so far.
-if (reportStepOfPath(route.path) !== shownStep.value) {
+if (flow.stepOfPath(route.path) !== shownStep.value) {
 	goTo(shownStep.value, true);
 }
 onBeforeRouteUpdate((to) => {
 	const shown = shownStepOf(to.path);
-	if (reportStepOfPath(to.path) !== shown) {
+	if (flow.stepOfPath(to.path) !== shown) {
 		return localePath(`/report/${shown}`);
 	}
 });
 
 function onNavigate(position: number) {
-	const step = reportSteps[position - 1];
+	const step = flow.steps[position - 1];
 	if (step !== undefined) {
 		goTo(step, false);
 	}
 }
 
-// Each step page is kept as it was left until what it shows is gone (see reportPageKey).
+// Each step page is kept as it was left until what it shows is gone (see the flow's pageKeyOf).
 function pageKey(pageRoute: RouteLocationNormalizedLoaded): string {
-	const step = reportStepOfPath(pageRoute.path);
-	if (step === null) {
-		return pageRoute.path;
-	}
-	return reportPageKey(step, {
-		starts: flow.startCount.value,
-		imports: flow.importCount.value,
-	});
+	const step = flow.stepOfPath(pageRoute.path);
+	return step === null ? pageRoute.path : flow.pageKeyOf(step);
 }
 </script>
 
 <template>
 	<div class="py-8 flex flex-col gap-6">
-		<h1 class="sr-only">{{ t(reportStepKeys[shownStep]) }}</h1>
+		<h1 class="sr-only">{{ t(I18nKeys.reportStep[shownStep]) }}</h1>
 		<WizardStepper
 			:steps="stepLabels"
-			:current-step="reportSteps.indexOf(shownStep) + 1"
-			:max-step="reportSteps.indexOf(flow.furthestStep.value) + 1"
+			:current-step="flow.steps.indexOf(shownStep) + 1"
+			:max-step="flow.steps.indexOf(flow.furthestStep.value) + 1"
 			@navigate="onNavigate"
 		/>
 		<NuxtPage :keepalive="{ max: 8 }" :page-key="pageKey" />

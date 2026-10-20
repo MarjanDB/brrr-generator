@@ -9,7 +9,7 @@ const props = defineProps<{
 	content: GraphPopoverText;
 }>();
 
-const look = computed(() => nodeLookOf(props.node));
+const look = computed(() => NodeLooks.of(props.node));
 const isRow = computed(() => props.node.kind === GraphNodeKind.ROW);
 </script>
 

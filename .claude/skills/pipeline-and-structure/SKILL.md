@@ -85,15 +85,15 @@ before checking them.
    service, the lot matching and each `convert`, and have `convert` record each line it builds as a `REPORT_LINE` made from what's
    behind it, plus a drop for anything the report leaves out (see the Slovenian generators). `drop` and `warn` take a
    `ProvenanceDetail` (a `ProvenanceDetailKind` plus named `ProvenanceDetailValue`s), never a sentence; a new kind needs a member in
-   `ProvenanceDetailKind`, a key for it in `detailKindKeys` (`packages/app/app/utils/i18nKeys.ts`) and that
+   `ProvenanceDetailKind`, a key for it in `I18nKeys.detailKind` (`packages/app/app/utils/i18nKeys.ts`) and that
    key's text in both locale files.
 2. Bind everything in `<Country>Module.ts`, load it from `TaxAuthoritiesModule.ts`, and add the provider to `TaxAuthorityRegistry`
    (constructor, `listAuthorities`, `generateExports`).
 3. If the country needs taxpayer fields `TaxpayerConfigSchema` lacks, extend the schema; the CLI and `config/userConfig.example.yml`
    follow it.
-4. Site: a card in `packages/app/app/utils/taxAuthorityCards.ts` (icon in `packages/app/public/icons/tax-authorities/`), a form component
-   registered in `authorityForms` in `ConfigureStep.vue`, a submission guide in `packages/app/app/utils/taxAuthorityGuides.ts`,
-   i18n keys in both locale files.
+4. Site: a card in `packages/app/app/utils/taxAuthorityCards.ts` (icon in `packages/app/public/icons/tax-authorities/`), its forms
+   in `taxAuthorityForms` in `packages/app/app/composables/useTaxYearReports.ts`, a submission guide in
+   `packages/app/app/utils/taxAuthorityGuides.ts`, i18n keys in both locale files.
 
 ## Adding a report type to an existing country
 

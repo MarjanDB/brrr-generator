@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { createContainer, type ImportResult, ReportPipeline } from "@brrr/lib";
 import BrokerSupportSection from "~/components/upload/BrokerSupportSection.vue";
-import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
 const emit = defineEmits<{
   processed: [imported: ImportResult];
 }>();
 
 const { t } = useI18n();
+const info = useInfoProvider();
 
 const brokerIconById: Record<string, string> = {
   ibkr: "/icons/brokers/ibkr.svg",
@@ -40,7 +40,7 @@ async function processSelectedFiles(files: FileList) {
   try {
     const xmlContents = await Promise.all(Array.from(files).map((f) => f.text()));
     if (current !== processingVersion) return;
-    const container = createContainer(new ApiInfoProvider());
+    const container = createContainer(info);
 
     const normalized = xmlContents.map((xml, i) => ({
       fileName: files.item(i)?.name ?? `file-${i + 1}.xml`,
@@ -82,7 +82,7 @@ watch(xmlFiles, (v) => {
     <h2 class="text-heading">{{ t('ibkr_export_title') }}</h2>
     <p class="text-body text-ink-muted">{{ t('ibkr_export_hint') }}</p>
     
-    <BrokerSupportSection :brokers="BROKER_GUIDES" />
+    <BrokerSupportSection :brokers="BrokerGuides.all" />
     
     <AppForm @submit="() => onContinue()">
       <div class="flex flex-col gap-4">

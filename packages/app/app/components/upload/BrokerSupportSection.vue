@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BrokerGuide } from "~/utils/brokerGuides";
+import type { BrokerGuide } from "~/types/guide";
 import GuideModal from "../guide/GuideModal.vue";
 
 defineProps<{

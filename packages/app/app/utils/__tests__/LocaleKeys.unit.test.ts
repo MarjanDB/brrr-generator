@@ -1,26 +1,7 @@
 import { ReportInstrumentKind } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
-import {
-	chipKindKeys,
-	countKeys,
-	detailKindKeys,
-	detectedDetailKeys,
-	detectedPartKeys,
-	detectedVerdictKeys,
-	dropCategoryKeys,
-	dropReasonKeys,
-	edavkiFieldKeys,
-	eventKindKeys,
-	headingKeys,
-	laneLabelKeys,
-	legSideKeys,
-	lotMatchingKeys,
-	markKeys,
-	nodeValueKeys,
-	reportStepKeys,
-	stackKindKeys,
-} from "~/utils/i18nKeys";
-import { TAX_OFFICES } from "~/utils/taxOffices";
+import { I18nKeys } from "~/utils/i18nKeys";
+import { TaxOffices } from "~/utils/taxOffices";
 import en from "~~/i18n/locales/en.json";
 import sl from "~~/i18n/locales/sl.json";
 
@@ -42,13 +23,13 @@ describe("the locale files", () => {
 	});
 
 	test("every step of the report flow has a key in the locale files", () => {
-		for (const key of Object.values(reportStepKeys)) {
+		for (const key of Object.values(I18nKeys.reportStep)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("every tax office's country and forms have keys in the locale files", () => {
-		for (const office of TAX_OFFICES) {
+		for (const office of TaxOffices.all) {
 			expect(englishKeys.has(office.countryKey)).toEqual(true);
 			for (const key of office.formKeys) {
 				expect(englishKeys.has(key)).toEqual(true);
@@ -57,74 +38,74 @@ describe("the locale files", () => {
 	});
 
 	test("every drop reason has a key in the locale files", () => {
-		for (const key of Object.values(dropReasonKeys)) {
+		for (const key of Object.values(I18nKeys.dropReason)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("every detail kind has a key in the locale files", () => {
-		for (const key of Object.values(detailKindKeys)) {
+		for (const key of Object.values(I18nKeys.detailKind)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("every event kind has a key in the locale files", () => {
-		for (const key of Object.values(eventKindKeys)) {
+		for (const key of Object.values(I18nKeys.eventKind)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("every kind of timeline mark has a key in the locale files", () => {
-		for (const key of Object.values(markKeys)) {
+		for (const key of Object.values(I18nKeys.mark)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("every drop category has a key in the locale files", () => {
-		for (const key of Object.values(dropCategoryKeys)) {
+		for (const key of Object.values(I18nKeys.dropCategory)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("every lot-matching method has a key in the locale files", () => {
-		for (const key of Object.values(lotMatchingKeys)) {
+		for (const key of Object.values(I18nKeys.lotMatching)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("every kind of node value has a key in the locale files", () => {
-		for (const key of Object.values(nodeValueKeys)) {
+		for (const key of Object.values(I18nKeys.nodeValue)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("every side of a leg has a key in the locale files", () => {
-		for (const key of Object.values(legSideKeys)) {
+		for (const key of Object.values(I18nKeys.legSide)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("every kind of node has a noun in the locale files", () => {
-		for (const key of Object.values(stackKindKeys)) {
+		for (const key of Object.values(I18nKeys.stackKind)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("every report line field has a key in the locale files", () => {
-		for (const key of Object.values(edavkiFieldKeys)) {
+		for (const key of Object.values(I18nKeys.edavkiField)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("every column heading has a key in the locale files", () => {
-		for (const key of Object.values(headingKeys)) {
+		for (const key of Object.values(I18nKeys.heading)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("the lane labels for trades and for dividends have keys in the locale files", () => {
-		const trades = laneLabelKeys(ReportInstrumentKind.STOCK);
-		const dividends = laneLabelKeys(ReportInstrumentKind.DIVIDEND_PAYER);
+		const trades = I18nKeys.laneLabels(ReportInstrumentKind.STOCK);
+		const dividends = I18nKeys.laneLabels(ReportInstrumentKind.DIVIDEND_PAYER);
 
 		expect(englishKeys.has(trades.acquired)).toEqual(true);
 		expect(englishKeys.has(trades.sold)).toEqual(true);
@@ -133,23 +114,23 @@ describe("the locale files", () => {
 	});
 
 	test("every corporate action chip has a key in the locale files", () => {
-		for (const key of Object.values(chipKindKeys)) {
+		for (const key of Object.values(I18nKeys.chipKind)) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("every reason in everything detected has its verdict and details in the locale files", () => {
 		for (const key of [
-			...Object.values(detectedVerdictKeys),
-			...Object.values(detectedDetailKeys),
-			...Object.values(detectedPartKeys),
+			...Object.values(I18nKeys.detectedVerdict),
+			...Object.values(I18nKeys.detectedDetail),
+			...Object.values(I18nKeys.detectedPart),
 		]) {
 			expect(englishKeys.has(key)).toEqual(true);
 		}
 	});
 
 	test("every counted noun has every plural form in the locale files", () => {
-		for (const forms of Object.values(countKeys)) {
+		for (const forms of Object.values(I18nKeys.count)) {
 			for (const key of Object.values(forms)) {
 				expect(englishKeys.has(key)).toEqual(true);
 			}

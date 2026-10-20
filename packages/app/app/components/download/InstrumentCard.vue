@@ -62,16 +62,16 @@ const traced = computed(() => (focus.node.value === null ? "" : describeNode(foc
       <InstrumentTimeline />
     </div>
     <TabsRoot v-model="tab" class="flex flex-col">
-      <TabsList :aria-label="t('download_tabs_label', { name: card.name })" :class="[tabListClasses, 'px-2']">
-        <TabsTrigger :value="InstrumentCardTab.ON_THE_FORM" :class="tabTriggerClasses">
+      <TabsList :aria-label="t('download_tabs_label', { name: card.name })" :class="[TabClasses.list, 'px-2']">
+        <TabsTrigger :value="InstrumentCardTab.ON_THE_FORM" :class="TabClasses.trigger">
           {{ t('download_tab_on_the_form') }}
           <AppBadge>{{ onTheForm }}</AppBadge>
         </TabsTrigger>
-        <TabsTrigger :value="InstrumentCardTab.DETECTED" :class="tabTriggerClasses">
+        <TabsTrigger :value="InstrumentCardTab.DETECTED" :class="TabClasses.trigger">
           {{ t('download_tab_detected') }}
           <AppBadge>{{ detected.length }}</AppBadge>
         </TabsTrigger>
-        <TabsTrigger :value="InstrumentCardTab.TRACE" :class="tabTriggerClasses">
+        <TabsTrigger :value="InstrumentCardTab.TRACE" :class="TabClasses.trigger">
           {{ t('download_tab_trace') }}
           <span v-if="traced !== ''" class="max-w-64 truncate font-normal text-ink-muted">· {{ traced }}</span>
         </TabsTrigger>

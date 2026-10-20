@@ -18,7 +18,7 @@ const text = computed(() => splitBadge(props.factor));
 
 // The ratio as the corporate action chip writes it: 4 shares into 40 is 10 : 1.
 const hint = computed(() => {
-	const amount = formatNumber(String(props.factor.amount), props.locale);
+	const amount = ProvenanceFields.formatNumber(String(props.factor.amount), props.locale);
 	return props.factor.kind === SplitFactorKind.MULTIPLY
 		? t("download_graph_split_hint", { before: amount, after: "1", n: amount })
 		: t("download_graph_split_hint_reverse", { before: "1", after: amount, n: amount });

@@ -7,6 +7,7 @@ import {
 	ReportInstrumentKind,
 } from "@brrr/lib";
 import { DateTime, Duration } from "luxon";
+import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import { CountNoun } from "~/types/counts";
 import {
 	type Timeline,
@@ -16,10 +17,9 @@ import {
 	type TimelineRow,
 	TimelineRowKind,
 } from "~/types/timeline";
-import { eventKindKeys, markKeys } from "~/utils/i18nKeys";
-import { chipOf } from "~/utils/instrumentPanel";
-import { buildTimeline } from "~/utils/instrumentTimeline";
-import { fieldOf } from "~/utils/provenanceFields";
+import { I18nKeys } from "~/utils/i18nKeys";
+import { ProvenanceFields } from "~/utils/provenanceFields";
+import { ReportInstruments } from "~/utils/reportInstruments";
 
 // An instrument's timeline: its marks, bars and points, and what the timeline, the tables under it
 // and the Trace tab say about them, in the reader's locale. The axis ticks depend on the axis's
@@ -32,7 +32,7 @@ export function useInstrumentTimeline(
 	const { date, chipText } = useProvenanceText();
 	const { countText } = useCountText();
 
-	const timeline = computed<Timeline>(() => buildTimeline(instrument(), walker()));
+	const timeline = computed<Timeline>(() => Timelines.build(instrument(), walker()));
 
 	// "10 shares", "1 contract": a quantity with its unit.
 	function describeQuantity(quantity: number): string {
@@ -46,15 +46,16 @@ export function useInstrumentTimeline(
 
 	function describeMark(mark: TimelineMark): string {
 		const day =
-			fieldOf(mark.node, ProvenanceField.DATE) ?? fieldOf(mark.node, ProvenanceField.ACQUIRED_DATE);
-		const quantity = Number(fieldOf(mark.node, ProvenanceField.QUANTITY));
-		return t(markKeys[mark.kind], {
+			ProvenanceFields.of(mark.node, ProvenanceField.DATE) ??
+			ProvenanceFields.of(mark.node, ProvenanceField.ACQUIRED_DATE);
+		const quantity = Number(ProvenanceFields.of(mark.node, ProvenanceField.QUANTITY));
+		return t(I18nKeys.mark[mark.kind], {
 			date: day === null ? "" : date(day),
 			quantity: describeQuantity(Math.abs(quantity)),
 			amount: new Intl.NumberFormat(locale.value).format(
-				Math.abs(Number(fieldOf(mark.node, ProvenanceField.PRICE))),
+				Math.abs(Number(ProvenanceFields.of(mark.node, ProvenanceField.PRICE))),
 			),
-			currency: fieldOf(mark.node, ProvenanceField.CURRENCY) ?? "",
+			currency: ProvenanceFields.of(mark.node, ProvenanceField.CURRENCY) ?? "",
 		});
 	}
 
@@ -88,15 +89,15 @@ export function useInstrumentTimeline(
 	// What a mark is: a trade or a payment by its kind, a corporate action by its chip.
 	function describeWhat(mark: TimelineMark): string {
 		const kind = Object.values(ProvenanceEventKind).find(
-			(candidate) => candidate === fieldOf(mark.node, ProvenanceField.EVENT_KIND),
+			(candidate) => candidate === ProvenanceFields.of(mark.node, ProvenanceField.EVENT_KIND),
 		);
 		if (kind !== undefined) {
-			return t(eventKindKeys[kind]);
+			return t(I18nKeys.eventKind[kind]);
 		}
 		if (mark.kind === TimelineMarkKind.BROKER_LOT) {
 			return t("download_what_broker_lot");
 		}
-		const chip = chipOf(mark.node);
+		const chip = ReportInstruments.chipOf(mark.node);
 		return chip === null ? t("download_what_corporate_action") : chipText(chip);
 	}
 

@@ -14,7 +14,7 @@ const { captionText } = useGraphText();
 const parts = computed(() =>
 	props.segments.map((segment) => ({
 		sentence: captionText(segment, props.context),
-		look: segment.node === null ? null : nodeLookOf(segment.node.node),
+		look: segment.node === null ? null : NodeLooks.of(segment.node.node),
 	})),
 );
 </script>

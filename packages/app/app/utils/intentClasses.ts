@@ -4,7 +4,7 @@ import { ColorIntent } from "~/types/ui";
 // one is a literal here, and callers look them up instead of building `bg-${intent}`.
 
 // A tinted background with the intent's text: badges, monograms, icon tiles, callouts.
-export const softIntentClasses: Record<ColorIntent, string> = {
+const softIntentClasses: Record<ColorIntent, string> = {
 	[ColorIntent.ACTION]: "bg-action-soft text-action-ink",
 	[ColorIntent.ACCENT]: "bg-accent-soft text-accent-ink",
 	[ColorIntent.NEUTRAL]: "bg-neutral-soft text-neutral-ink",
@@ -15,7 +15,7 @@ export const softIntentClasses: Record<ColorIntent, string> = {
 };
 
 // The intent's fill with the text that sits on it.
-export const solidIntentClasses: Record<ColorIntent, string> = {
+const solidIntentClasses: Record<ColorIntent, string> = {
 	[ColorIntent.ACTION]: "bg-action text-action-on",
 	[ColorIntent.ACCENT]: "bg-accent text-accent-on",
 	[ColorIntent.NEUTRAL]: "bg-neutral text-neutral-on",
@@ -26,7 +26,7 @@ export const solidIntentClasses: Record<ColorIntent, string> = {
 };
 
 // The intent's border, for an outlined shape.
-export const edgeIntentClasses: Record<ColorIntent, string> = {
+const edgeIntentClasses: Record<ColorIntent, string> = {
 	[ColorIntent.ACTION]: "border-action-edge",
 	[ColorIntent.ACCENT]: "border-accent-edge",
 	[ColorIntent.NEUTRAL]: "border-neutral-edge",
@@ -34,4 +34,11 @@ export const edgeIntentClasses: Record<ColorIntent, string> = {
 	[ColorIntent.WARNING]: "border-warning-edge",
 	[ColorIntent.DANGER]: "border-danger-edge",
 	[ColorIntent.INFO]: "border-info-edge",
+};
+
+// The classes each intent is drawn with.
+export const IntentClasses = {
+	soft: softIntentClasses,
+	solid: solidIntentClasses,
+	edge: edgeIntentClasses,
 };

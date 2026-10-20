@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { CompanyDefinition } from "@brrr/lib";
-import type { KnownCountry } from "@brrr/lib/info/node";
-import { computed, onMounted, ref, shallowRef } from "vue";
+import { onMounted, ref } from "vue";
 import { ButtonVariant } from "~/types/ui";
 
 // A dividend payer defined by hand: what the form needs of the company (its name, street, city and
@@ -17,29 +16,20 @@ const emit = defineEmits<{
 	cancel: [];
 }>();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
+const { options, loadError, load, known } = useCountries();
+onMounted(load);
 
 const name = ref(props.initial?.name ?? "");
 const street = ref(props.initial?.street ?? "");
 const city = ref(props.initial?.city ?? "");
 const countryCode = ref(props.initial?.countryCode ?? "");
 
-const countries = shallowRef<KnownCountry[]>([]);
-const loadError = ref<string | null>(null);
-onMounted(async () => {
-	try {
-		countries.value = await $fetch<KnownCountry[]>("/api/countries");
-	} catch (caught) {
-		loadError.value = caught instanceof Error ? caught.message : String(caught);
-	}
-});
-const options = computed(() => countryOptionsOf(countries.value, locale.value));
-
 const required = (value: string) => (value.trim() === "" ? t("validation_required") : null);
 
 function onSubmit(valid: boolean) {
-	const country = countries.value.find((candidate) => candidate.code === countryCode.value);
-	if (!valid || country === undefined) {
+	const country = known(countryCode.value);
+	if (!valid || country === null) {
 		return;
 	}
 	emit("save", {

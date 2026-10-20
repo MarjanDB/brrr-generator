@@ -28,39 +28,43 @@ const facts = computed<Fact[]>(() => {
 	}
 	const result: Fact[] = [];
 	const kind = Object.values(ProvenanceEventKind).find(
-		(candidate) => candidate === fieldOf(node, ProvenanceField.EVENT_KIND),
+		(candidate) => candidate === ProvenanceFields.of(node, ProvenanceField.EVENT_KIND),
 	);
 	if (kind !== undefined) {
-		result.push({ label: t("download_fact_kind"), value: t(eventKindKeys[kind]) });
+		result.push({ label: t("download_fact_kind"), value: t(I18nKeys.eventKind[kind]) });
 	}
 	const date =
-		fieldOf(node, ProvenanceField.DATE) ?? fieldOf(node, ProvenanceField.ACQUIRED_DATE);
+		ProvenanceFields.of(node, ProvenanceField.DATE) ??
+		ProvenanceFields.of(node, ProvenanceField.ACQUIRED_DATE);
 	if (date !== null) {
 		result.push({
 			label: t("download_fact_date"),
 			value: dateText(date),
 		});
 	}
-	const quantity = fieldOf(node, ProvenanceField.QUANTITY);
-	const price = fieldOf(node, ProvenanceField.PRICE);
-	const currency = fieldOf(node, ProvenanceField.CURRENCY) ?? "";
+	const quantity = ProvenanceFields.of(node, ProvenanceField.QUANTITY);
+	const price = ProvenanceFields.of(node, ProvenanceField.PRICE);
+	const currency = ProvenanceFields.of(node, ProvenanceField.CURRENCY) ?? "";
 	if (kind !== undefined && cashKinds.includes(kind)) {
 		// A cash transaction is one unit of its amount: show the amount, not a quantity and a price.
-		const amount = cashAmountOf(node);
+		const amount = ProvenanceFields.cashAmountOf(node);
 		if (amount !== null) {
-			const value = `${formatNumber(amount, locale.value)} ${currency}`.trim();
+			const value = `${ProvenanceFields.formatNumber(amount, locale.value)} ${currency}`.trim();
 			result.push({ label: t("download_fact_amount"), value });
 		}
 	} else {
 		if (quantity !== null) {
-			result.push({ label: t("download_fact_quantity"), value: formatNumber(quantity, locale.value) });
+			result.push({
+				label: t("download_fact_quantity"),
+				value: ProvenanceFields.formatNumber(quantity, locale.value),
+			});
 		}
 		if (price !== null) {
-			const value = `${formatNumber(price, locale.value)} ${currency}`.trim();
+			const value = `${ProvenanceFields.formatNumber(price, locale.value)} ${currency}`.trim();
 			result.push({ label: t("download_fact_price"), value });
 		}
 	}
-	const transaction = fieldOf(node, ProvenanceField.TRANSACTION_ID);
+	const transaction = ProvenanceFields.of(node, ProvenanceField.TRANSACTION_ID);
 	if (transaction !== null) {
 		result.push({ label: t("download_fact_transaction_id"), value: transaction });
 	}
@@ -91,7 +95,7 @@ const categoryColors: Record<DropCategory, ColorIntent> = {
         :color="categoryColors[item.category]"
         class="flex items-center gap-2"
       >
-        <span class="font-medium">{{ t(dropCategoryKeys[item.category]) }}</span>
+        <span class="font-medium">{{ t(I18nKeys.dropCategory[item.category]) }}</span>
         <span>{{ dropSentence(item.drop) }}</span>
       </AppCallout>
       <AppCallout

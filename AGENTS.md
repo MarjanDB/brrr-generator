@@ -184,7 +184,13 @@ The app is laid out the Nuxt way, not like lib:
 - `components/` holds only `.vue` files.
 - State, and anything reactive or translated, is a composable in `composables/` (`useX`, calling `useI18n` itself). State a whole
   step shares is provided once (`provideX`) and injected below (`useX`).
-- Pure helpers that several files share are in `utils/`; Nuxt auto-imports composables and utils, so their exported names are unique.
+- A helper lives with what uses it: in the component, or unexported in the composable's file (a component that needs it gets it
+  from the composable). A feature's bigger stateless pieces (the graph engine, the timeline) sit in a folder beside its composable
+  (`composables/provenanceGraph/`), which Nuxt doesn't auto-import, so they are imported by path. Stateless helpers several
+  features share are in `utils/`. Nuxt auto-imports composables and utils, so their exported names are unique.
+- A `utils/` file or a composable's module exports one object named after it in the plural (`ProvenanceFields.of`,
+  `I18nKeys.eventKind`, `GraphLayouts.place`), never loose functions. The plural keeps it apart from the type it works on and from
+  a component's name, and a member doesn't repeat the object's name (`GraphModels.of`, not `graphModelOf`).
 - Shapes several files share are plain `type`s and enums in `types/<feature>.ts`; a type used by one file stays in it.
 - No classes: lib's model rules above (classes with args constructors, one model per file, `@brrr/*` imports) are lib's. Enums and
   nominal identifiers apply here too.
@@ -192,8 +198,9 @@ The app is laid out the Nuxt way, not like lib:
 ### Tests
 
 Vitest in lib and in the app. Lib's tests use globals (`describe`, `it`, `expect`, `vi` need no import). The app's run inside Nuxt's test environment
-(`@nuxt/test-utils`, happy-dom) and import Vitest explicitly: utils are called directly, composables run inside a mounted component
-(`mountComposable`), and integration tests run them on the test cases' real graphs. Tests sit in `__tests__/` next to the code they cover. A change in
+(`@nuxt/test-utils`, happy-dom) and import Vitest explicitly: utils and a composable's modules are called directly, composables run inside a mounted
+component (`mountComposable`), a component's own logic is tested by mounting it and reading what it renders, and integration
+tests run them on the test cases' real graphs. Tests sit in `__tests__/` next to the code they cover. A change in
 behaviour gets a test that fails before it and passes after.
 
 Every test file names its kind:

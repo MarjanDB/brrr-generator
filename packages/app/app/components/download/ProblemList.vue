@@ -9,7 +9,8 @@ const { t } = useI18n();
 const { countText } = useCountText();
 const { dropSentence } = useProvenanceText();
 const problems = useReportProblems();
-const { groups, leftOut, selected, selectedLeftOut, select, titleOf } = problems;
+const { groups, leftOut, selected, selectedLeftOut, select, titleOf, definesPayer, leftOutKey } =
+	problems;
 
 // A group's name, with how many it holds on the right.
 const groupHeading = "flex items-baseline justify-between px-2 pt-3 pb-1 text-subheading";
@@ -19,7 +20,7 @@ const groupHeading = "flex items-baseline justify-between px-2 pt-3 pb-1 text-su
   <div class="flex flex-col gap-0.5">
     <section v-for="group in groups" :key="group.kind" class="flex flex-col gap-0.5">
       <h3 :class="groupHeading">
-        {{ t(warningGroupKeys[group.kind]) }}
+        {{ t(I18nKeys.warningGroup[group.kind]) }}
         <span class="text-meta tabular-nums">{{ group.problems.length }}</span>
       </h3>
       <button

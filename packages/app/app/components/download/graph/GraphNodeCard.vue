@@ -17,7 +17,7 @@ const { nodeText } = useGraphText();
 
 const node = computed(() => props.placed.layoutNode.node);
 const isStub = computed(() => props.placed.layoutNode.isStub);
-const look = computed(() => nodeLookOf(node.value));
+const look = computed(() => NodeLooks.of(node.value));
 
 // What the node says: a left-out node its sentence, anything else its value.
 const text = computed(() => nodeText(node.value));

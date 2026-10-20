@@ -15,7 +15,7 @@ const { t } = useI18n();
 const { nodeText } = useGraphText();
 
 const node = computed(() => props.placed.layoutNode.node);
-const look = computed(() => nodeLookOf(node.value));
+const look = computed(() => NodeLooks.of(node.value));
 const text = computed(() => nodeText(node.value));
 
 // UnoCSS only sees class strings written out in full.

@@ -18,7 +18,7 @@ import { TimelineMarkKind } from "~/types/timeline";
 
 // The i18n key of each enum value the download step writes out. Record<Enum, string> makes a new
 // value fail to compile until it has a key.
-export const dropReasonKeys: Record<DropReason, string> = {
+const dropReasonKeys: Record<DropReason, string> = {
 	[DropReason.NOT_RECOGNISED]: "download_drop_not_recognised",
 	[DropReason.UNREADABLE]: "download_drop_unreadable",
 	[DropReason.NOT_SUPPORTED]: "download_drop_not_supported",
@@ -30,7 +30,7 @@ export const dropReasonKeys: Record<DropReason, string> = {
 	[DropReason.POSITION_OPEN]: "download_drop_position_open",
 };
 
-export const detailKindKeys: Record<ProvenanceDetailKind, string> = {
+const detailKindKeys: Record<ProvenanceDetailKind, string> = {
 	[ProvenanceDetailKind.FILE_ERROR]: "download_detail_file_error",
 	[ProvenanceDetailKind.ASSET_CLASS_NOT_SUPPORTED]: "download_detail_asset_class_not_supported",
 	[ProvenanceDetailKind.CLOSED_OUTSIDE_PERIOD]: "download_detail_closed_outside_period",
@@ -43,7 +43,7 @@ export const detailKindKeys: Record<ProvenanceDetailKind, string> = {
 };
 
 // The heading of a group of the report's problems of one kind, in the problems view's list.
-export const warningGroupKeys: Record<ProvenanceDetailKind, string> = {
+const warningGroupKeys: Record<ProvenanceDetailKind, string> = {
 	[ProvenanceDetailKind.FILE_ERROR]: "download_warning_group_file_error",
 	[ProvenanceDetailKind.ASSET_CLASS_NOT_SUPPORTED]:
 		"download_warning_group_asset_class_not_supported",
@@ -58,7 +58,7 @@ export const warningGroupKeys: Record<ProvenanceDetailKind, string> = {
 };
 
 // The name each value of a detail has in its sentence's text: {error}, {assetClass}, {date}, ...
-export const detailValueParams: Record<ProvenanceDetailValue, string> = {
+const detailValueParams: Record<ProvenanceDetailValue, string> = {
 	[ProvenanceDetailValue.ERROR]: "error",
 	[ProvenanceDetailValue.ASSET_CLASS]: "assetClass",
 	[ProvenanceDetailValue.DATE]: "date",
@@ -66,12 +66,12 @@ export const detailValueParams: Record<ProvenanceDetailValue, string> = {
 	[ProvenanceDetailValue.ISIN]: "isin",
 };
 
-export const dropCategoryKeys: Record<DropCategory, string> = {
+const dropCategoryKeys: Record<DropCategory, string> = {
 	[DropCategory.NOT_IN_THIS_REPORT]: "download_category_not_in_report",
 	[DropCategory.NEEDS_A_LOOK]: "download_category_needs_look",
 };
 
-export const eventKindKeys: Record<ProvenanceEventKind, string> = {
+const eventKindKeys: Record<ProvenanceEventKind, string> = {
 	[ProvenanceEventKind.ACQUIRED]: "download_fact_kind_acquired",
 	[ProvenanceEventKind.SOLD]: "download_fact_kind_sold",
 	[ProvenanceEventKind.DIVIDEND]: "download_fact_kind_dividend",
@@ -81,14 +81,14 @@ export const eventKindKeys: Record<ProvenanceEventKind, string> = {
 		"download_fact_kind_withholding_tax_on_payment_in_lieu",
 };
 
-export const lotMatchingKeys: Record<TaxAuthorityLotMatchingMethod, string> = {
+const lotMatchingKeys: Record<TaxAuthorityLotMatchingMethod, string> = {
 	[TaxAuthorityLotMatchingMethod.NONE]: "download_lot_matching_none",
 	[TaxAuthorityLotMatchingMethod.FIFO]: "download_lot_matching_fifo",
 	[TaxAuthorityLotMatchingMethod.PROVIDED]: "download_lot_matching_provided",
 };
 
 // The tooltip text of each kind of mark on the timeline.
-export const markKeys: Record<TimelineMarkKind, string> = {
+const markKeys: Record<TimelineMarkKind, string> = {
 	[TimelineMarkKind.BROKER_LOT]: "download_mark_broker_lot",
 	[TimelineMarkKind.BOUGHT]: "download_mark_bought",
 	[TimelineMarkKind.CORPORATE_ACTION]: "download_mark_corporate_action",
@@ -98,14 +98,14 @@ export const markKeys: Record<TimelineMarkKind, string> = {
 };
 
 // What a corporate action's chip says, by the kind of change.
-export const chipKindKeys: Record<IdentifierChangeType, string> = {
+const chipKindKeys: Record<IdentifierChangeType, string> = {
 	[IdentifierChangeType.SPLIT]: "download_chip_split",
 	[IdentifierChangeType.REVERSE_SPLIT]: "download_chip_reverse_split",
 	[IdentifierChangeType.RENAME]: "download_chip_rename",
 };
 
 // The verdict on the badge of each reason in "Everything detected".
-export const detectedVerdictKeys: Record<DetectedReason, string> = {
+const detectedVerdictKeys: Record<DetectedReason, string> = {
 	[DetectedReason.REPORTED]: "download_verdict_reported",
 	[DetectedReason.CLOSED_BEFORE_YEAR]: "download_verdict_excluded",
 	[DetectedReason.CLOSED_AFTER_YEAR]: "download_verdict_excluded",
@@ -118,7 +118,7 @@ export const detectedVerdictKeys: Record<DetectedReason, string> = {
 
 // The detail after the verdict, when the reason covers the whole item ({form}, {year}, {years}).
 // A reason the report gave itself says the report's sentence instead, when it has one.
-export const detectedDetailKeys: Record<DetectedReason, string> = {
+const detectedDetailKeys: Record<DetectedReason, string> = {
 	[DetectedReason.REPORTED]: "download_reason_reported",
 	[DetectedReason.CLOSED_BEFORE_YEAR]: "download_reason_closed_before",
 	[DetectedReason.CLOSED_AFTER_YEAR]: "download_reason_closed_after",
@@ -131,7 +131,7 @@ export const detectedDetailKeys: Record<DetectedReason, string> = {
 
 // The detail when a trade is split between reasons, which says how much of it each covers
 // ({quantity}). Only a trade is split, so the other reasons keep their whole detail.
-export const detectedPartKeys: Record<DetectedReason, string> = {
+const detectedPartKeys: Record<DetectedReason, string> = {
 	[DetectedReason.REPORTED]: "download_reason_reported_part",
 	[DetectedReason.CLOSED_BEFORE_YEAR]: "download_reason_closed_before_part",
 	[DetectedReason.CLOSED_AFTER_YEAR]: "download_reason_closed_after_part",
@@ -143,7 +143,7 @@ export const detectedPartKeys: Record<DetectedReason, string> = {
 };
 
 // A count with what it counts, in each plural form ({count}).
-export const countKeys: Record<CountNoun, Record<PluralForm, string>> = {
+const countKeys: Record<CountNoun, Record<PluralForm, string>> = {
 	[CountNoun.SHARE]: {
 		[PluralForm.ONE]: "download_unit_share_one",
 		[PluralForm.TWO]: "download_unit_share_two",
@@ -189,7 +189,7 @@ export const countKeys: Record<CountNoun, Record<PluralForm, string>> = {
 };
 
 // The text each kind of node value is written with.
-export const nodeValueKeys: Record<NodeValueKind, string> = {
+const nodeValueKeys: Record<NodeValueKind, string> = {
 	[NodeValueKind.TEXT]: "download_node_text",
 	[NodeValueKind.TRADE]: "download_node_trade",
 	[NodeValueKind.CASH]: "download_node_cash",
@@ -209,13 +209,13 @@ export const nodeValueKeys: Record<NodeValueKind, string> = {
 };
 
 // The side of a matched lot a leg is.
-export const legSideKeys: Record<ProvenanceLegSide, string> = {
+const legSideKeys: Record<ProvenanceLegSide, string> = {
 	[ProvenanceLegSide.ACQUIRED]: "download_leg_acquired",
 	[ProvenanceLegSide.SOLD]: "download_leg_sold",
 };
 
 // The noun for each kind of node, as in "6 × rows".
-export const stackKindKeys: Record<GraphNodeKind, string> = {
+const stackKindKeys: Record<GraphNodeKind, string> = {
 	[GraphNodeKind.FILE]: "download_kind_file",
 	[GraphNodeKind.ROW]: "download_kind_row",
 	[GraphNodeKind.RECORD]: "download_kind_record",
@@ -235,7 +235,7 @@ export const stackKindKeys: Record<GraphNodeKind, string> = {
 };
 
 // The name each column can carry.
-export const headingKeys: Record<GraphHeading, string> = {
+const headingKeys: Record<GraphHeading, string> = {
 	[GraphHeading.EXPORT]: "download_heading_export",
 	[GraphHeading.ROW]: "download_heading_row",
 	[GraphHeading.PARSED]: "download_heading_parsed",
@@ -256,13 +256,13 @@ export const headingKeys: Record<GraphHeading, string> = {
 	[GraphHeading.OTHER_SIDE]: "download_heading_other_side",
 };
 
-export type LaneLabelKeys = {
+type LaneLabelKeys = {
 	acquired: string;
 	sold: string;
 };
 
 // The names of the two bands: buys and sells for trades, paid and withheld for dividends.
-export function laneLabelKeys(kind: ReportInstrumentKind): LaneLabelKeys {
+function laneLabelKeys(kind: ReportInstrumentKind): LaneLabelKeys {
 	switch (kind) {
 		case ReportInstrumentKind.STOCK:
 		case ReportInstrumentKind.OPTION_CONTRACT:
@@ -273,7 +273,7 @@ export function laneLabelKeys(kind: ReportInstrumentKind): LaneLabelKeys {
 }
 
 // The name of each field a report line carries, as the form names it.
-export const edavkiFieldKeys: Record<EDavkiProvenanceField, string> = {
+const edavkiFieldKeys: Record<EDavkiProvenanceField, string> = {
 	[EDavkiProvenanceField.BOUGHT_ON]: "download_edavki_field_bought_on",
 	[EDavkiProvenanceField.SOLD_ON]: "download_edavki_field_sold_on",
 	[EDavkiProvenanceField.GAIN_TYPE]: "download_edavki_field_gain_type",
@@ -290,9 +290,33 @@ export const edavkiFieldKeys: Record<EDavkiProvenanceField, string> = {
 };
 
 // The report flow's steps, as the stepper names them.
-export const reportStepKeys: Record<ReportStep, string> = {
+const reportStepKeys: Record<ReportStep, string> = {
 	[ReportStep.UPLOAD]: "wizard_step_upload",
 	[ReportStep.REVIEW]: "wizard_step_review",
 	[ReportStep.CONFIGURE]: "wizard_step_configure",
 	[ReportStep.DOWNLOAD]: "wizard_step_download",
+};
+
+// The i18n keys of the sentences about each enum value.
+export const I18nKeys = {
+	dropReason: dropReasonKeys,
+	detailKind: detailKindKeys,
+	warningGroup: warningGroupKeys,
+	detailValueParams,
+	dropCategory: dropCategoryKeys,
+	eventKind: eventKindKeys,
+	lotMatching: lotMatchingKeys,
+	mark: markKeys,
+	chipKind: chipKindKeys,
+	detectedVerdict: detectedVerdictKeys,
+	detectedDetail: detectedDetailKeys,
+	detectedPart: detectedPartKeys,
+	count: countKeys,
+	nodeValue: nodeValueKeys,
+	legSide: legSideKeys,
+	stackKind: stackKindKeys,
+	heading: headingKeys,
+	laneLabels: laneLabelKeys,
+	edavkiField: edavkiFieldKeys,
+	reportStep: reportStepKeys,
 };

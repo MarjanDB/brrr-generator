@@ -23,6 +23,11 @@ const variantClasses: Record<ButtonVariant, string> = {
 	[ButtonVariant.SECONDARY]: "button-secondary",
 	[ButtonVariant.QUIET]: "button-quiet",
 };
+const sizeClasses: Record<ControlSize, string> = {
+	[ControlSize.MD]: "control-md",
+	[ControlSize.SM]: "control-sm",
+	[ControlSize.ICON]: "control-icon",
+};
 </script>
 
 <template>
@@ -32,7 +37,7 @@ const variantClasses: Record<ButtonVariant, string> = {
 		:disabled="disabled || loading"
 		:aria-busy="loading || undefined"
 		class="relative"
-		:class="[variantClasses[variant], controlSizeClasses[size], { 'disabled:opacity-100': loading }]"
+		:class="[variantClasses[variant], sizeClasses[size], { 'disabled:opacity-100': loading }]"
 	>
 		<span v-if="loading" class="i-mdi-loading animate-spin absolute" aria-hidden="true" />
 		<span class="inline-flex items-center gap-2" :class="{ invisible: loading }"><slot /></span>

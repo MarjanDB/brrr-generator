@@ -8,6 +8,8 @@ import type {
 	TaxAuthorityLotMatchingMethod,
 } from "@brrr/lib";
 import type { ComputedRef, InjectionKey, Ref } from "vue";
+import { InstrumentRows } from "~/composables/instrumentCard/instrumentRows";
+import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import {
 	type DetectedPartText,
 	DetectedReason,
@@ -17,6 +19,7 @@ import {
 } from "~/types/instrumentCard";
 import type { PanelEntry } from "~/types/instrumentPanel";
 import type { Timeline, TimelineBar, TimelineMark, TimelineRow } from "~/types/timeline";
+import { ReportInstruments } from "~/utils/reportInstruments";
 
 export type InstrumentCardArgs = {
 	entry: PanelEntry;
@@ -94,10 +97,10 @@ export function provideInstrumentCard(args: InstrumentCardArgs): InstrumentCardS
 		() => args.walker,
 	);
 	const focus = provideGraphFocus();
-	focus.start(args.startAt ?? defaultFocus(instrument, args.walker));
+	focus.start(args.startAt ?? ReportInstruments.defaultFocus(instrument, args.walker));
 	const tab = ref(InstrumentCardTab.ON_THE_FORM);
 	const offered = shallowRef<ProvenanceNode | null>(null);
-	const formLots = computed(() => formLotsOf(instrument, timeline.value));
+	const formLots = computed(() => InstrumentRows.formLotsOf(instrument, timeline.value));
 
 	// A trade split between reasons says how much of it each covers. A reason the report gave
 	// itself says the report's sentences.
@@ -110,13 +113,13 @@ export function provideInstrumentCard(args: InstrumentCardArgs): InstrumentCardS
 			const detail =
 				part.reason === DetectedReason.LEFT_OUT && sentences.length > 0
 					? sentences.join(" ")
-					: t((split ? detectedPartKeys : detectedDetailKeys)[part.reason], {
+					: t((split ? I18nKeys.detectedPart : I18nKeys.detectedDetail)[part.reason], {
 							form: args.formCode,
 							year: String(args.year),
 							years: years(part.years),
 							quantity: part.quantity === null ? "" : describeQuantity(part.quantity),
 						});
-			return { reason: part.reason, verdict: t(detectedVerdictKeys[part.reason]), detail };
+			return { reason: part.reason, verdict: t(I18nKeys.detectedVerdict[part.reason]), detail };
 		});
 	}
 	const card: InstrumentCardState = {
@@ -129,18 +132,18 @@ export function provideInstrumentCard(args: InstrumentCardArgs): InstrumentCardS
 		describeHeld,
 		describeWhat,
 		describeNode,
-		focusable: computed(() => focusableOf(timeline.value)),
+		focusable: computed(() => Timelines.focusableOf(timeline.value)),
 		focus,
 		leftOut: computed(() =>
-			focus.node.value === null ? [] : leftOutOf(instrument, focus.node.value),
+			focus.node.value === null ? [] : ReportInstruments.leftOutOf(instrument, focus.node.value),
 		),
 		warnings: computed(() =>
-			focus.node.value === null ? [] : warningsOf(instrument, focus.node.value),
+			focus.node.value === null ? [] : ReportInstruments.warningsOf(instrument, focus.node.value),
 		),
 		formLots,
-		formTotal: computed(() => formTotalOf(formLots.value)),
-		formPayments: computed(() => formPaymentsOf(timeline.value)),
-		detected: computed(() => detectedRowsOf(instrument, timeline.value, args.year)),
+		formTotal: computed(() => InstrumentRows.formTotalOf(formLots.value)),
+		formPayments: computed(() => InstrumentRows.formPaymentsOf(timeline.value)),
+		detected: computed(() => InstrumentRows.detectedRowsOf(instrument, timeline.value, args.year)),
 		describeParts,
 		tab,
 		showTrace: (node) => {

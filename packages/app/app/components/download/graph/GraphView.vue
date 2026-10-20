@@ -46,7 +46,7 @@ const captionContext = computed(() => ({
       :placement="placement"
       :lit="focus.lit.value"
       :instrument-kind="card.entry.kind"
-      :lot-matching-method-key="lotMatchingKeys[card.lotMatchingMethod]"
+      :lot-matching-method-key="I18nKeys.lotMatching[card.lotMatchingMethod]"
       :locale="locale"
       :popover="popover"
       :form-name="card.formName"

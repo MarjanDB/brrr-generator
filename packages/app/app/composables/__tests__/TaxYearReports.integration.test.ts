@@ -9,8 +9,9 @@ import {
 	TaxAuthorityId,
 } from "@brrr/lib";
 import { TestKit } from "@brrr/test-cases";
+import { DateTime } from "luxon";
 import { describe, expect, test, vi } from "vitest";
-import { ref, shallowRef } from "vue";
+import { shallowRef } from "vue";
 import { mountComposable } from "~/composables/__tests__/support/mountComposable";
 import { provideTaxYearReports } from "~/composables/useTaxYearReports";
 import type { DefinedPayer } from "~/types/reportFlow";
@@ -24,26 +25,26 @@ describe("every form a tax authority makes for a year, on the test cases' real i
 		const stockTrade = TestKit.ibkr.stockTrade;
 		const imported = pipeline.read(stockTrade.readInputs());
 
-		const year = await mountComposable(() =>
+		const taxYear = await mountComposable(() =>
 			provideTaxYearReports({
 				pipeline,
 				info,
 				imported: () => imported,
 				authorityId: () => TaxAuthorityId.SLOVENIA,
-				year: () => 2022,
+				today: DateTime.fromISO("2023-06-01"),
 				payers: () => noPayers,
 			}),
 		);
-		await vi.waitFor(() => expect(year.pending.value).toEqual(false));
+		await vi.waitFor(() => expect(taxYear.pending.value).toEqual(false));
 
-		expect(year.error.value).toBeNull();
-		expect(year.reports.value).toHaveLength(3);
-		expect(year.reports.value[0]?.form.reportTypeId).toEqual(SlovenianReportTypeId.KDVP);
-		expect(year.reports.value[1]?.form.reportTypeId).toEqual(SlovenianReportTypeId.DIV);
-		expect(year.reports.value[2]?.form.reportTypeId).toEqual(SlovenianReportTypeId.IFI);
-		expect(year.reports.value[0]?.outputs.year).toEqual(2022);
-		expect(year.reports.value[0]?.outputs.csvFilename).toEqual("export-trades.csv");
-		expect(year.reports.value[0]?.outputs.csv).toEqual(
+		expect(taxYear.error.value).toBeNull();
+		expect(taxYear.reports.value).toHaveLength(3);
+		expect(taxYear.reports.value[0]?.form.reportTypeId).toEqual(SlovenianReportTypeId.KDVP);
+		expect(taxYear.reports.value[1]?.form.reportTypeId).toEqual(SlovenianReportTypeId.DIV);
+		expect(taxYear.reports.value[2]?.form.reportTypeId).toEqual(SlovenianReportTypeId.IFI);
+		expect(taxYear.reports.value[0]?.outputs.year).toEqual(2022);
+		expect(taxYear.reports.value[0]?.outputs.csvFilename).toEqual("export-trades.csv");
+		expect(taxYear.reports.value[0]?.outputs.csv).toEqual(
 			readFileSync(stockTrade.expected.slovenia.kdvpFifo.csvPath, "utf-8"),
 		);
 	});
@@ -51,46 +52,46 @@ describe("every form a tax authority makes for a year, on the test cases' real i
 	test("the taxpayer's details start empty, but for the country", async () => {
 		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
 
-		const year = await mountComposable(() =>
+		const taxYear = await mountComposable(() =>
 			provideTaxYearReports({
 				pipeline,
 				info,
 				imported: () => imported,
 				authorityId: () => TaxAuthorityId.SLOVENIA,
-				year: () => 2022,
+				today: DateTime.fromISO("2023-06-01"),
 				payers: () => noPayers,
 			}),
 		);
 
-		expect(year.taxpayer.value.taxNumber).toEqual("");
-		expect(year.taxpayer.value.name).toEqual("");
-		expect(year.taxpayer.value.address).toEqual("");
-		expect(year.taxpayer.value.city).toEqual("");
-		expect(year.taxpayer.value.postNumber).toEqual("");
-		expect(year.taxpayer.value.postName).toEqual("");
-		expect(year.taxpayer.value.countryId).toEqual("SI");
+		expect(taxYear.taxpayer.value.taxNumber).toEqual("");
+		expect(taxYear.taxpayer.value.name).toEqual("");
+		expect(taxYear.taxpayer.value.address).toEqual("");
+		expect(taxYear.taxpayer.value.city).toEqual("");
+		expect(taxYear.taxpayer.value.postNumber).toEqual("");
+		expect(taxYear.taxpayer.value.postName).toEqual("");
+		expect(taxYear.taxpayer.value.countryId).toEqual("SI");
 	});
 
 	test("a form's XML is written with the taxpayer's details when it's downloaded", async () => {
 		const stockTrade = TestKit.ibkr.stockTrade;
 		const imported = pipeline.read(stockTrade.readInputs());
-		const year = await mountComposable(() =>
+		const taxYear = await mountComposable(() =>
 			provideTaxYearReports({
 				pipeline,
 				info,
 				imported: () => imported,
 				authorityId: () => TaxAuthorityId.SLOVENIA,
-				year: () => 2022,
+				today: DateTime.fromISO("2023-06-01"),
 				payers: () => noPayers,
 			}),
 		);
-		await vi.waitFor(() => expect(year.pending.value).toEqual(false));
-		const kdvp = year.reports.value[0];
+		await vi.waitFor(() => expect(taxYear.pending.value).toEqual(false));
+		const kdvp = taxYear.reports.value[0];
 		if (kdvp === undefined) {
 			throw new Error("no Doh-KDVP report");
 		}
 
-		const xml = await year.xmlWith(kdvp.outputs, {
+		const xml = await taxYear.xmlWith(kdvp.outputs, {
 			taxNumber: "12345678",
 			name: "Ime Priimek",
 			address: "Naslov 1",
@@ -105,33 +106,31 @@ describe("every form a tax authority makes for a year, on the test cases' real i
 
 	test("picking another year makes the forms again, for that year", async () => {
 		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
-		const picked = ref(2022);
-		const year = await mountComposable(() =>
+		const taxYear = await mountComposable(() =>
 			provideTaxYearReports({
 				pipeline,
 				info,
 				imported: () => imported,
 				authorityId: () => TaxAuthorityId.SLOVENIA,
-				year: () => picked.value,
+				today: DateTime.fromISO("2023-06-01"),
 				payers: () => noPayers,
 			}),
 		);
-		await vi.waitFor(() => expect(year.pending.value).toEqual(false));
+		await vi.waitFor(() => expect(taxYear.pending.value).toEqual(false));
 
-		picked.value = 2023;
-		await vi.waitFor(() => expect(year.reports.value[0]?.outputs.year).toEqual(2023));
+		taxYear.year.value = 2023;
+		await vi.waitFor(() => expect(taxYear.reports.value[0]?.outputs.year).toEqual(2023));
 
-		expect(year.pending.value).toEqual(false);
-		expect(year.reports.value[1]?.outputs.year).toEqual(2023);
-		expect(year.reports.value[2]?.outputs.year).toEqual(2023);
+		expect(taxYear.pending.value).toEqual(false);
+		expect(taxYear.reports.value[1]?.outputs.year).toEqual(2023);
+		expect(taxYear.reports.value[2]?.outputs.year).toEqual(2023);
 	});
 
 	test("picking another year keeps the last year's forms until the new ones are made", async () => {
 		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
-		const picked = ref(2022);
 		let gate: Promise<void> = Promise.resolve();
 		let release = () => {};
-		const year = await mountComposable(() =>
+		const taxYear = await mountComposable(() =>
 			provideTaxYearReports({
 				pipeline: {
 					generate: async (from, request) => {
@@ -142,26 +141,26 @@ describe("every form a tax authority makes for a year, on the test cases' real i
 				info,
 				imported: () => imported,
 				authorityId: () => TaxAuthorityId.SLOVENIA,
-				year: () => picked.value,
+				today: DateTime.fromISO("2023-06-01"),
 				payers: () => noPayers,
 			}),
 		);
-		await vi.waitFor(() => expect(year.pending.value).toEqual(false));
+		await vi.waitFor(() => expect(taxYear.pending.value).toEqual(false));
 		gate = new Promise((resolve) => {
 			release = resolve;
 		});
 
-		picked.value = 2023;
-		await vi.waitFor(() => expect(year.pending.value).toEqual(true));
+		taxYear.year.value = 2023;
+		await vi.waitFor(() => expect(taxYear.pending.value).toEqual(true));
 
-		expect(year.reports.value[0]?.outputs.year).toEqual(2022);
-		expect(year.reports.value[1]?.outputs.year).toEqual(2022);
-		expect(year.reports.value[2]?.outputs.year).toEqual(2022);
+		expect(taxYear.reports.value[0]?.outputs.year).toEqual(2022);
+		expect(taxYear.reports.value[1]?.outputs.year).toEqual(2022);
+		expect(taxYear.reports.value[2]?.outputs.year).toEqual(2022);
 
 		release();
-		await vi.waitFor(() => expect(year.pending.value).toEqual(false));
+		await vi.waitFor(() => expect(taxYear.pending.value).toEqual(false));
 
-		expect(year.reports.value[0]?.outputs.year).toEqual(2023);
+		expect(taxYear.reports.value[0]?.outputs.year).toEqual(2023);
 	});
 
 	test("a payer defined for the session goes on Doh-Div, made again with it", async () => {
@@ -169,18 +168,18 @@ describe("every form a tax authority makes for a year, on the test cases' real i
 		const ownPipeline = createContainer(lookups).get(ReportPipeline);
 		const imported = ownPipeline.read(TestKit.ibkr.dividends.readInputs());
 		const payers = shallowRef<ReadonlyMap<string, DefinedPayer>>(new Map());
-		const year = await mountComposable(() =>
+		const taxYear = await mountComposable(() =>
 			provideTaxYearReports({
 				pipeline: ownPipeline,
 				info: lookups,
 				imported: () => imported,
 				authorityId: () => TaxAuthorityId.SLOVENIA,
-				year: () => 2022,
+				today: DateTime.fromISO("2023-06-01"),
 				payers: () => payers.value,
 			}),
 		);
-		await vi.waitFor(() => expect(year.pending.value).toEqual(false));
-		const before = year.reports.value[1];
+		await vi.waitFor(() => expect(taxYear.pending.value).toEqual(false));
+		const before = taxYear.reports.value[1];
 		if (before === undefined) {
 			throw new Error("no Doh-Div report");
 		}
@@ -204,10 +203,10 @@ describe("every form a tax authority makes for a year, on the test cases' real i
 				},
 			],
 		]);
-		await vi.waitFor(() => expect(year.reports.value[1]).not.toBe(before));
-		await vi.waitFor(() => expect(year.pending.value).toEqual(false));
+		await vi.waitFor(() => expect(taxYear.reports.value[1]).not.toBe(before));
+		await vi.waitFor(() => expect(taxYear.pending.value).toEqual(false));
 
-		const after = year.reports.value[1];
+		const after = taxYear.reports.value[1];
 		if (after === undefined) {
 			throw new Error("no Doh-Div report");
 		}
@@ -239,28 +238,28 @@ describe("every form a tax authority makes for a year, on the test cases' real i
 				],
 			]),
 		);
-		const year = await mountComposable(() =>
+		const taxYear = await mountComposable(() =>
 			provideTaxYearReports({
 				pipeline: ownPipeline,
 				info: lookups,
 				imported: () => imported,
 				authorityId: () => TaxAuthorityId.SLOVENIA,
-				year: () => 2022,
+				today: DateTime.fromISO("2023-06-01"),
 				payers: () => payers.value,
 			}),
 		);
-		await vi.waitFor(() => expect(year.pending.value).toEqual(false));
-		const before = year.reports.value[1];
+		await vi.waitFor(() => expect(taxYear.pending.value).toEqual(false));
+		const before = taxYear.reports.value[1];
 		if (before === undefined) {
 			throw new Error("no Doh-Div report");
 		}
 		expect(before.outputs.csv).toContain("TotalEnergies SE");
 
 		payers.value = new Map();
-		await vi.waitFor(() => expect(year.reports.value[1]).not.toBe(before));
-		await vi.waitFor(() => expect(year.pending.value).toEqual(false));
+		await vi.waitFor(() => expect(taxYear.reports.value[1]).not.toBe(before));
+		await vi.waitFor(() => expect(taxYear.pending.value).toEqual(false));
 
-		const after = year.reports.value[1];
+		const after = taxYear.reports.value[1];
 		if (after === undefined) {
 			throw new Error("no Doh-Div report");
 		}
@@ -268,5 +267,233 @@ describe("every form a tax authority makes for a year, on the test cases' real i
 		const warningsAfter = new ProvenanceReportReader().read(after.outputs.provenance).warnings;
 		expect(warningsAfter).toHaveLength(1);
 		expect(warningsAfter[0]?.detail.kind).toEqual(ProvenanceDetailKind.COMPANY_NOT_FOUND);
+	});
+});
+
+describe("the forms, the years an import can make reports for, and the year the step opens on", () => {
+	test("the forms are the authority's, in their tabs' order", async () => {
+		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
+
+		const taxYear = await mountComposable(() =>
+			provideTaxYearReports({
+				pipeline,
+				info,
+				imported: () => imported,
+				authorityId: () => TaxAuthorityId.SLOVENIA,
+				payers: () => noPayers,
+				today: DateTime.fromISO("2023-06-01"),
+			}),
+		);
+
+		expect(taxYear.forms.value).toHaveLength(3);
+		expect(taxYear.forms.value[0]?.code).toEqual("Doh-KDVP");
+		expect(taxYear.forms.value[1]?.code).toEqual("Doh-Div");
+		expect(taxYear.forms.value[2]?.code).toEqual("D-IFI");
+	});
+
+	test("every year a trade or a payment falls in, oldest first", async () => {
+		const imported = pipeline.read([
+			...TestKit.ibkr.optionTrade.readInputs(),
+			...TestKit.ibkr.stockTrade.readInputs(),
+		]);
+
+		const taxYear = await mountComposable(() =>
+			provideTaxYearReports({
+				pipeline,
+				info,
+				imported: () => imported,
+				authorityId: () => TaxAuthorityId.SLOVENIA,
+				payers: () => noPayers,
+				today: DateTime.fromISO("2024-06-01"),
+			}),
+		);
+
+		expect(taxYear.years.value).toEqual([2022, 2023]);
+	});
+
+	test("a year counts once, however much falls in it", async () => {
+		const imported = pipeline.read(TestKit.ibkr.split.readInputs());
+
+		const taxYear = await mountComposable(() =>
+			provideTaxYearReports({
+				pipeline,
+				info,
+				imported: () => imported,
+				authorityId: () => TaxAuthorityId.SLOVENIA,
+				payers: () => noPayers,
+				today: DateTime.fromISO("2025-06-01"),
+			}),
+		);
+
+		expect(taxYear.years.value).toEqual([2024]);
+	});
+
+	test("an import with nothing in it has no years", async () => {
+		const imported = pipeline.read([
+			TestKit.ibkr.corporateAction.inputs.simpleCorporateAction.read(),
+		]);
+
+		const taxYear = await mountComposable(() =>
+			provideTaxYearReports({
+				pipeline,
+				info,
+				imported: () => imported,
+				authorityId: () => TaxAuthorityId.SLOVENIA,
+				payers: () => noPayers,
+				today: DateTime.fromISO("2026-10-19"),
+			}),
+		);
+
+		expect(taxYear.years.value).toEqual([]);
+	});
+
+	test("it opens on last year, when the import has something in it", async () => {
+		const imported = pipeline.read([
+			...TestKit.ibkr.optionTrade.readInputs(),
+			...TestKit.ibkr.stockTrade.readInputs(),
+		]);
+
+		const taxYear = await mountComposable(() =>
+			provideTaxYearReports({
+				pipeline,
+				info,
+				imported: () => imported,
+				authorityId: () => TaxAuthorityId.SLOVENIA,
+				payers: () => noPayers,
+				today: DateTime.fromISO("2024-06-01"),
+			}),
+		);
+
+		expect(taxYear.year.value).toEqual(2023);
+	});
+
+	test("it opens on the latest year before last year, when last year has nothing", async () => {
+		const imported = pipeline.read([
+			...TestKit.ibkr.optionTrade.readInputs(),
+			...TestKit.ibkr.stockTrade.readInputs(),
+		]);
+
+		const taxYear = await mountComposable(() =>
+			provideTaxYearReports({
+				pipeline,
+				info,
+				imported: () => imported,
+				authorityId: () => TaxAuthorityId.SLOVENIA,
+				payers: () => noPayers,
+				today: DateTime.fromISO("2025-10-19"),
+			}),
+		);
+
+		expect(taxYear.year.value).toEqual(2023);
+	});
+
+	test("it opens on the earliest year after last year, when the import has nothing up to last year", async () => {
+		const imported = pipeline.read([
+			...TestKit.ibkr.optionTrade.readInputs(),
+			...TestKit.ibkr.stockTrade.readInputs(),
+		]);
+
+		const taxYear = await mountComposable(() =>
+			provideTaxYearReports({
+				pipeline,
+				info,
+				imported: () => imported,
+				authorityId: () => TaxAuthorityId.SLOVENIA,
+				payers: () => noPayers,
+				today: DateTime.fromISO("2022-06-01"),
+			}),
+		);
+
+		expect(taxYear.year.value).toEqual(2022);
+	});
+
+	test("it opens on last year, when the import has nothing at all", async () => {
+		const imported = pipeline.read([
+			TestKit.ibkr.corporateAction.inputs.simpleCorporateAction.read(),
+		]);
+
+		const taxYear = await mountComposable(() =>
+			provideTaxYearReports({
+				pipeline,
+				info,
+				imported: () => imported,
+				authorityId: () => TaxAuthorityId.SLOVENIA,
+				payers: () => noPayers,
+				today: DateTime.fromISO("2026-10-19"),
+			}),
+		);
+
+		expect(taxYear.year.value).toEqual(2025);
+	});
+});
+
+describe("the taxpayer block a form's XML is written with", () => {
+	test("leaves what wasn't filled in empty", async () => {
+		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
+		const taxYear = await mountComposable(() =>
+			provideTaxYearReports({
+				pipeline,
+				info,
+				imported: () => imported,
+				authorityId: () => TaxAuthorityId.SLOVENIA,
+				payers: () => noPayers,
+				today: DateTime.fromISO("2023-06-01"),
+			}),
+		);
+		await vi.waitFor(() => expect(taxYear.pending.value).toEqual(false));
+		const kdvp = taxYear.reports.value[0];
+		if (kdvp === undefined) {
+			throw new Error("no Doh-KDVP report");
+		}
+
+		const xml = await taxYear.xmlWith(kdvp.outputs, {
+			taxNumber: "",
+			name: "",
+			address: "",
+			city: "",
+			postNumber: "",
+			postName: "",
+			countryId: "SI",
+		});
+
+		expect(xml).toContain("<edp:taxNumber></edp:taxNumber>");
+		expect(xml).toContain("<edp:taxpayerType>FO</edp:taxpayerType>");
+		expect(xml).toContain("<edp:name></edp:name>");
+		expect(xml).toContain("<edp:address1></edp:address1>");
+		expect(xml).toContain("<edp:city></edp:city>");
+		expect(xml).toContain("<edp:postNumber></edp:postNumber>");
+		expect(xml).toContain("<edp:postName></edp:postName>");
+		expect(xml).toContain("<IsResident>true</IsResident>");
+	});
+
+	test("a taxpayer from another country isn't a resident", async () => {
+		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
+		const taxYear = await mountComposable(() =>
+			provideTaxYearReports({
+				pipeline,
+				info,
+				imported: () => imported,
+				authorityId: () => TaxAuthorityId.SLOVENIA,
+				payers: () => noPayers,
+				today: DateTime.fromISO("2023-06-01"),
+			}),
+		);
+		await vi.waitFor(() => expect(taxYear.pending.value).toEqual(false));
+		const kdvp = taxYear.reports.value[0];
+		if (kdvp === undefined) {
+			throw new Error("no Doh-KDVP report");
+		}
+
+		const xml = await taxYear.xmlWith(kdvp.outputs, {
+			taxNumber: "",
+			name: "",
+			address: "",
+			city: "",
+			postNumber: "",
+			postName: "",
+			countryId: "AT",
+		});
+
+		expect(xml).toContain("<IsResident>false</IsResident>");
 	});
 });

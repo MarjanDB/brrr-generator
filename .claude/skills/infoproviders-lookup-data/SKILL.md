@@ -1,6 +1,6 @@
 ---
 name: infoproviders-lookup-data
-description: Company, country and treaty lookups (IInfoProvider, PredefinedInfoProvider, NodeInfoProvider, the site's ApiInfoProvider) and the JSON fallback files in packages/lib/src/InfoProviders/Node/Data. Use when a dividend report has a blank or wrong payer name, address, country or treaty paragraph, when Yahoo Finance can't resolve an ISIN, or when adding fallback data.
+description: Company, country and treaty lookups (IInfoProvider, PredefinedInfoProvider, NodeInfoProvider, the site's useInfoProvider) and the JSON fallback files in packages/lib/src/InfoProviders/Node/Data. Use when a dividend report has a blank or wrong payer name, address, country or treaty paragraph, when Yahoo Finance can't resolve an ISIN, or when adding fallback data.
 ---
 
 # InfoProviders and lookup data
@@ -15,7 +15,7 @@ payer's name, address, country and treaty paragraph from the ISIN.
 | `IInfoProvider` | `Interfaces/IInfoProvider.ts` | The interface: `getCompanyInfo(isin)`, `getCountry(name)`, plus add/update/remove/list overrides. `IInfoProvider.Token` is its Inversify key. The data it returns, `CompanyInfo`, `CompanyLocationInfo`, `Country` and `TreatyType`, is in `Models/`, one per file. |
 | `PredefinedInfoProvider` | `Predefined/PredefinedInfoProvider.ts` | In-memory maps only. Use it in tests, filled with exactly the data the test needs. `defineCompany({ isin, name, street, city, countryName, countryCode })` adds a company from plain strings (the caller never builds lib's ids): a payer someone defines by hand. Both country fields are needed: the form writes the code, and the treaty is found by the name. |
 | `NodeInfoProvider` | `Node/NodeInfoProvider.ts`, exported as `@brrr/lib/info/node` | The real lookup, Node-only (uses `yahoo-finance2`). Used by the CLI and by the site's server routes. `knownCountries()` lists every country `getCountry` understands, once per code under its first name (`KnownCountry`), behind the site's `/api/countries`. |
-| `ApiInfoProvider` | `packages/app/app/utils/ApiInfoProvider.ts` | The browser side: asks `/api/isin/[isin]` and `/api/country/[name]` (`packages/app/server/api/`, which run `NodeInfoProvider`) and caches the answers. The payers defined by hand on the reports step's Problems tab (`defineCompany`) come first; they last the session. |
+| `useInfoProvider()` | `packages/app/app/composables/useInfoProvider.ts` | The browser side, a plain object implementing `IInfoProvider`: asks `/api/isin/[isin]` and `/api/country/[name]` (`packages/app/server/api/`, which run `NodeInfoProvider`) and caches the answers. The payers defined by hand on the reports step's Problems tab (`defineCompany`) come first; they last the session. |
 
 `createContainer(infoProvider)` takes whichever one the caller needs.
 

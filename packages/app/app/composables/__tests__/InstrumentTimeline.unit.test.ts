@@ -11,10 +11,10 @@ import {
 } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
 import { mountComposable } from "~/composables/__tests__/support/mountComposable";
+import { TimelineGeometry } from "~/composables/instrumentTimeline/timelineGeometry";
 import { useInstrumentTimeline } from "~/composables/useInstrumentTimeline";
 import { TimelineMarkKind } from "~/types/timeline";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { timelineRows } from "~/utils/instrumentTimeline";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -286,7 +286,7 @@ describe("what a folded row of the timeline says", () => {
 		const b = closedAndOpen();
 		const { timeline } = await mountTimeline(b, b.reading().withoutLines[0]);
 
-		const [otherYears, stillOpen] = timelineRows(timeline.timeline.value.bars, false);
+		const [otherYears, stillOpen] = TimelineGeometry.rows(timeline.timeline.value.bars, false);
 		assert(otherYears !== undefined && stillOpen !== undefined);
 
 		expect(timeline.describeRow(otherYears)).toEqual("Closed in other years: 2");
@@ -296,7 +296,7 @@ describe("what a folded row of the timeline says", () => {
 	test("in Slovenian", async () => {
 		const b = closedAndOpen();
 		const { timeline, i18n } = await mountTimeline(b, b.reading().withoutLines[0]);
-		const [otherYears, stillOpen] = timelineRows(timeline.timeline.value.bars, false);
+		const [otherYears, stillOpen] = TimelineGeometry.rows(timeline.timeline.value.bars, false);
 		assert(otherYears !== undefined && stillOpen !== undefined);
 		await i18n.setLocale("sl");
 

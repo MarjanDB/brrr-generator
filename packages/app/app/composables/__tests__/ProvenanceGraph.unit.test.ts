@@ -9,11 +9,11 @@ import {
 import { assert, describe, expect, onTestFinished, test } from "vitest";
 import { nextTick } from "vue";
 import { mountComposableUnder } from "~/composables/__tests__/support/mountComposable";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
 import { provideGraphFocus, useGraphFocus } from "~/composables/useGraphFocus";
 import { useProvenanceGraph } from "~/composables/useProvenanceGraph";
 import { GraphNodeKind, PairSide } from "~/types/provenanceGraph";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { layoutNodeOf } from "~/utils/graphLayout";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -62,7 +62,7 @@ describe("what a click in the graph does", () => {
 			}),
 		);
 		focus.start(b.node(sell.event));
-		const sellRow = layoutNodeOf(view.layout.value, b.node(sell.row));
+		const sellRow = GraphLayouts.nodeOf(view.layout.value, b.node(sell.row));
 		assert(sellRow !== null);
 
 		view.clickNode(sellRow);
@@ -151,7 +151,7 @@ describe("what a click in the graph does", () => {
 			}),
 		);
 		focus.start(b.node(sell.event));
-		const buyStub = layoutNodeOf(view.layout.value, b.node(buy.event));
+		const buyStub = GraphLayouts.nodeOf(view.layout.value, b.node(buy.event));
 		assert(buyStub !== null);
 		focus.lightNode(view.layout.value, view.layout.value.focus);
 
@@ -208,7 +208,7 @@ describe("what a click in the graph does", () => {
 			}),
 		);
 		focus.start(b.node(match.lot));
-		const buyCard = layoutNodeOf(view.layout.value, b.node(buy.event));
+		const buyCard = GraphLayouts.nodeOf(view.layout.value, b.node(buy.event));
 		assert(buyCard !== null);
 
 		view.clickNode(buyCard);
@@ -263,7 +263,7 @@ describe("what a click in the graph does", () => {
 			}),
 		);
 		focus.start(b.node(buy.event));
-		const lot = layoutNodeOf(view.layout.value, b.node(match.lot));
+		const lot = GraphLayouts.nodeOf(view.layout.value, b.node(match.lot));
 		assert(lot !== null);
 
 		view.clickLine(lot, PairSide.SOLD);
@@ -436,7 +436,7 @@ describe("what a click in the graph does", () => {
 			}),
 		);
 		focus.start(b.node(match.lot));
-		const pair = layoutNodeOf(view.layout.value, b.node(match.lot));
+		const pair = GraphLayouts.nodeOf(view.layout.value, b.node(match.lot));
 		assert(pair !== null);
 
 		view.clickLine(pair, PairSide.SOLD);
@@ -473,7 +473,7 @@ describe("what a click in the graph does", () => {
 			}),
 		);
 		focus.start(b.node(buy.event));
-		const row = layoutNodeOf(view.layout.value, b.node(buy.row));
+		const row = GraphLayouts.nodeOf(view.layout.value, b.node(buy.row));
 		assert(row !== null);
 		view.clickNode(row);
 
@@ -510,7 +510,7 @@ describe("what a click in the graph does", () => {
 			}),
 		);
 		focus.start(b.node(buy.event));
-		const row = layoutNodeOf(view.layout.value, b.node(buy.row));
+		const row = GraphLayouts.nodeOf(view.layout.value, b.node(buy.row));
 		assert(row !== null);
 		view.clickNode(row);
 
@@ -546,7 +546,7 @@ describe("what a click in the graph does", () => {
 			}),
 		);
 		focus.start(b.node(buy.event));
-		const row = layoutNodeOf(view.layout.value, b.node(buy.row));
+		const row = GraphLayouts.nodeOf(view.layout.value, b.node(buy.row));
 		assert(row !== null);
 		view.clickNode(row);
 		// What reka-ui puts on the page while one of its popovers or dialogs is open.
@@ -587,7 +587,7 @@ describe("what a click in the graph does", () => {
 			}),
 		);
 		focus.start(b.node(buy.event));
-		const row = layoutNodeOf(view.layout.value, b.node(buy.row));
+		const row = GraphLayouts.nodeOf(view.layout.value, b.node(buy.row));
 		assert(row !== null);
 		view.clickNode(row);
 
@@ -736,7 +736,7 @@ describe("what a click in the graph does", () => {
 			}),
 		);
 		focus.start(b.node(buy.event));
-		const row = layoutNodeOf(view.layout.value, b.node(buy.row));
+		const row = GraphLayouts.nodeOf(view.layout.value, b.node(buy.row));
 		assert(row !== null);
 		view.clickNode(row);
 		expect(view.popover.value).not.toBeNull();

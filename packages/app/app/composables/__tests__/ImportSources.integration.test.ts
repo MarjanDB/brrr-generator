@@ -17,7 +17,6 @@ import {
 import { useImportLeftOut } from "~/composables/useImportLeftOut";
 import { provideImportSources } from "~/composables/useImportSources";
 import { RowSourceKind } from "~/types/importSources";
-import { keyAttributesOf } from "~/utils/rowAttributes";
 
 const pipeline = createContainer(new PredefinedInfoProvider()).get(ReportPipeline);
 
@@ -29,7 +28,7 @@ describe("the broker rows behind the test cases' real imports", () => {
 		assert(buy instanceof TradeEventStockAcquired);
 
 		const found = sources.of(buy);
-		const keys = keyAttributesOf(found.row.row, RowSourceKind.TRADE);
+		const keys = sources.keyAttributesOf(found.row.row, RowSourceKind.TRADE);
 		const leftOut = await mountComposableUnder(
 			() => provideImportSources(() => imported.provenance),
 			() => useImportLeftOut(() => imported.provenance),
@@ -60,8 +59,11 @@ describe("the broker rows behind the test cases' real imports", () => {
 		assert(withholding instanceof TradeEventCashTransactionWithholdingTax);
 
 		const dividendFound = sources.of(dividend);
-		const dividendKeys = keyAttributesOf(dividendFound.row.row, RowSourceKind.CASH_TRANSACTION);
-		const withholdingKeys = keyAttributesOf(
+		const dividendKeys = sources.keyAttributesOf(
+			dividendFound.row.row,
+			RowSourceKind.CASH_TRANSACTION,
+		);
+		const withholdingKeys = sources.keyAttributesOf(
 			sources.of(withholding).row.row,
 			RowSourceKind.CASH_TRANSACTION,
 		);
@@ -92,7 +94,7 @@ describe("the broker rows behind the test cases' real imports", () => {
 		assert(trade instanceof TradeEventDerivativeAcquired);
 
 		const found = sources.of(trade);
-		const keys = keyAttributesOf(found.row.row, RowSourceKind.TRADE);
+		const keys = sources.keyAttributesOf(found.row.row, RowSourceKind.TRADE);
 
 		expect(found.row.fileName).toEqual("SimpleOptionTrade.xml");
 		expect(keys).toHaveLength(7);

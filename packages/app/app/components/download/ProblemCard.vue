@@ -14,9 +14,11 @@ import { ButtonVariant, ColorIntent, ControlSize } from "~/types/ui";
 // a way to it on the form), and its fix where the site has one. A payer the lookup couldn't find is
 // defined here, for the session; the reports are made again with it, and the problem shows the
 // payer, to edit or remove.
-const { t, locale } = useI18n();
+const { t } = useI18n();
+const { labelOf: countryLabelOf } = useCountries();
 const { dropSentence, nodeDate, nodeAmount } = useProvenanceText();
-const { selected, selectedLeftOut, titleOf, sentenceOf, showOnForm } = useReportProblems();
+const { selected, selectedLeftOut, titleOf, sentenceOf, showOnForm, definesPayer } =
+	useReportProblems();
 const { definePayer, removePayer } = useReportFlow();
 
 const editing = ref(false);
@@ -34,9 +36,9 @@ const defined = computed(() => selected.value?.defined?.definition ?? null);
 // What an affected item is: a dividend, a tax, a trade.
 function whatOf(node: ProvenanceNode): string {
 	const kind = Object.values(ProvenanceEventKind).find(
-		(candidate) => candidate === fieldOf(node, ProvenanceField.EVENT_KIND),
+		(candidate) => candidate === ProvenanceFields.of(node, ProvenanceField.EVENT_KIND),
 	);
-	return kind === undefined ? "" : t(eventKindKeys[kind]);
+	return kind === undefined ? "" : t(I18nKeys.eventKind[kind]);
 }
 
 function save(definition: CompanyDefinition) {
@@ -100,7 +102,7 @@ function save(definition: CompanyDefinition) {
             <div class="min-w-48 flex-1">
               <p class="text-label">{{ defined.name }}</p>
               <p class="text-meta">
-                {{ defined.street }}, {{ defined.city }}, {{ countryLabelOf(defined.countryCode, locale) }}
+                {{ defined.street }}, {{ defined.city }}, {{ countryLabelOf(defined.countryCode) }}
               </p>
             </div>
             <AppButton :variant="ButtonVariant.SECONDARY" :size="ControlSize.SM" @click="editing = true">

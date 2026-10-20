@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ProvenanceField, type ProvenanceNode } from "@brrr/lib";
 import { computed } from "vue";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
 import { CardState, PairSide, type PlacedNode } from "~/types/provenanceGraph";
 
 const props = defineProps<{
@@ -27,8 +28,9 @@ const hint = computed(() =>
 );
 
 const quantity = computed(() => {
-	const lotQuantity = pair.value === null ? null : fieldOf(pair.value.lot, ProvenanceField.QUANTITY);
-	return lotQuantity === null ? "" : formatNumber(lotQuantity, props.locale);
+	const lotQuantity =
+		pair.value === null ? null : ProvenanceFields.of(pair.value.lot, ProvenanceField.QUANTITY);
+	return lotQuantity === null ? "" : ProvenanceFields.formatNumber(lotQuantity, props.locale);
 });
 
 // A side whose line was left out has nothing to say.
@@ -70,7 +72,7 @@ const classes = computed(() => [
     <AppTooltip :content="hint">
       <div
         class="flex items-center gap-1.5 px-2 bg-action-soft text-action-ink text-xs shrink-0"
-        :style="{ height: `${defaultGraphMetrics.pairHeaderHeight}px` }"
+        :style="{ height: `${GraphLayouts.defaultMetrics.pairHeaderHeight}px` }"
       >
         <span class="i-mdi-link-variant" aria-hidden="true" />
         <span class="tabular-nums">{{ quantity }}</span>
@@ -82,7 +84,7 @@ const classes = computed(() => [
       class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle cursor-pointer transition-colors hover:bg-surface-hover active:bg-surface app-focus-ring-inset"
       @click.stop="emit('clickLine', PairSide.ACQUIRED)"
     >
-      <NodeIcon :look="acquiredLook" :small="true" />
+      <NodeIcon :look="NodeLooks.acquired" :small="true" />
       <span class="truncate">{{ acquiredText }}</span>
     </button>
     <button
@@ -90,7 +92,7 @@ const classes = computed(() => [
       class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle cursor-pointer transition-colors hover:bg-surface-hover active:bg-surface app-focus-ring-inset"
       @click.stop="emit('clickLine', PairSide.SOLD)"
     >
-      <NodeIcon :look="soldLook" :small="true" />
+      <NodeIcon :look="NodeLooks.sold" :small="true" />
       <span class="truncate">{{ soldText }}</span>
     </button>
   </div>

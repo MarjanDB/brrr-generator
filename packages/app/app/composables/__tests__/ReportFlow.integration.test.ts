@@ -179,3 +179,137 @@ describe("the report flow's state, on the test cases' real imports", () => {
 		);
 	});
 });
+
+describe("the step a flow page shows", () => {
+	test("a step past the furthest one shows the first step that's missing", async () => {
+		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
+		const flow = await mountComposable(() => provideReportFlow());
+		flow.acceptImport(imported);
+
+		expect(flow.stepShownFor(ReportStep.CONFIGURE)).toEqual(ReportStep.REVIEW);
+	});
+
+	test("download shows upload when nothing is uploaded", async () => {
+		const flow = await mountComposable(() => provideReportFlow());
+
+		expect(flow.stepShownFor(ReportStep.DOWNLOAD)).toEqual(ReportStep.UPLOAD);
+	});
+
+	test("an earlier step than the furthest one shows itself", async () => {
+		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
+		const flow = await mountComposable(() => provideReportFlow());
+		flow.acceptImport(imported);
+		flow.confirmReview();
+		flow.chooseAuthority(TaxAuthorityId.SLOVENIA);
+
+		expect(flow.stepShownFor(ReportStep.REVIEW)).toEqual(ReportStep.REVIEW);
+	});
+
+	test("the furthest step shows itself", async () => {
+		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
+		const flow = await mountComposable(() => provideReportFlow());
+		flow.acceptImport(imported);
+		flow.confirmReview();
+		flow.chooseAuthority(TaxAuthorityId.SLOVENIA);
+
+		expect(flow.stepShownFor(ReportStep.DOWNLOAD)).toEqual(ReportStep.DOWNLOAD);
+	});
+});
+
+describe("the step a flow page's path names", () => {
+	test("an English path names its step", async () => {
+		const flow = await mountComposable(() => provideReportFlow());
+
+		expect(flow.stepOfPath("/en/report/configure")).toEqual(ReportStep.CONFIGURE);
+	});
+
+	test("a Slovenian path names its step", async () => {
+		const flow = await mountComposable(() => provideReportFlow());
+
+		expect(flow.stepOfPath("/sl/report/review")).toEqual(ReportStep.REVIEW);
+	});
+
+	test("the flow's own path names no step", async () => {
+		const flow = await mountComposable(() => provideReportFlow());
+
+		expect(flow.stepOfPath("/en/report")).toBeNull();
+	});
+
+	test("the landing page's path names no step", async () => {
+		const flow = await mountComposable(() => provideReportFlow());
+
+		expect(flow.stepOfPath("/en")).toBeNull();
+	});
+});
+
+describe("the key a step page is kept under while the flow moves on", () => {
+	test("upload keeps its page until the flow starts over", async () => {
+		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
+		const flow = await mountComposable(() => provideReportFlow());
+		const before = flow.pageKeyOf(ReportStep.UPLOAD);
+
+		flow.acceptImport(imported);
+		const afterAnImport = flow.pageKeyOf(ReportStep.UPLOAD);
+		flow.startOver();
+		const afterStartingOver = flow.pageKeyOf(ReportStep.UPLOAD);
+
+		expect(afterAnImport).toEqual(before);
+		expect(afterStartingOver).not.toEqual(before);
+	});
+
+	test("configure keeps its page until a new import", async () => {
+		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
+		const flow = await mountComposable(() => provideReportFlow());
+		flow.acceptImport(imported);
+		const before = flow.pageKeyOf(ReportStep.CONFIGURE);
+
+		flow.confirmReview();
+		const afterConfirming = flow.pageKeyOf(ReportStep.CONFIGURE);
+		flow.acceptImport(imported);
+		const afterAnImport = flow.pageKeyOf(ReportStep.CONFIGURE);
+
+		expect(afterConfirming).toEqual(before);
+		expect(afterAnImport).not.toEqual(before);
+	});
+
+	test("review keeps its page until a new import", async () => {
+		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
+		const flow = await mountComposable(() => provideReportFlow());
+		flow.acceptImport(imported);
+		const before = flow.pageKeyOf(ReportStep.REVIEW);
+
+		flow.acceptImport(imported);
+		const afterAnImport = flow.pageKeyOf(ReportStep.REVIEW);
+
+		expect(afterAnImport).not.toEqual(before);
+	});
+
+	test("download keeps its page, with its year and tab, until a new import", async () => {
+		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
+		const flow = await mountComposable(() => provideReportFlow());
+		flow.acceptImport(imported);
+		flow.confirmReview();
+		flow.chooseAuthority(TaxAuthorityId.SLOVENIA);
+		const before = flow.pageKeyOf(ReportStep.DOWNLOAD);
+
+		flow.chooseAuthority(TaxAuthorityId.SLOVENIA);
+		const afterChoosingAgain = flow.pageKeyOf(ReportStep.DOWNLOAD);
+		flow.acceptImport(imported);
+		const afterAnImport = flow.pageKeyOf(ReportStep.DOWNLOAD);
+
+		expect(afterChoosingAgain).toEqual(before);
+		expect(afterAnImport).not.toEqual(before);
+	});
+
+	test("no page outlives starting over", async () => {
+		const imported = pipeline.read(TestKit.ibkr.stockTrade.readInputs());
+		const flow = await mountComposable(() => provideReportFlow());
+		flow.acceptImport(imported);
+		const before = flow.pageKeyOf(ReportStep.REVIEW);
+
+		flow.startOver();
+		const afterStartingOver = flow.pageKeyOf(ReportStep.REVIEW);
+
+		expect(afterStartingOver).not.toEqual(before);
+	});
+});
