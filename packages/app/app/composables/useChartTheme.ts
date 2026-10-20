@@ -5,7 +5,6 @@ export type ChartThemeColors = {
 	fill: string;
 	grid: string;
 	ticks: string;
-	tooltipBg: string;
 	tooltipText: string;
 	// The instrument timeline's marks, its arcs and the ring around the focus.
 	bought: string;
@@ -18,6 +17,8 @@ export type ChartThemeColors = {
 	focus: string;
 	// The band behind the instrument timeline's tax year
 	taxYear: string;
+	// A label inside a solid bar of the timeline
+	barLabel: string;
 };
 
 function cssVar(name: string): string {
@@ -36,14 +37,12 @@ function readColors(): ChartThemeColors {
 	const line = cssVar("--color-accent-edge");
 	const grid = hexWithOpacity(cssVar("--color-edge-strong"), 0.4);
 	const ticks = cssVar("--color-ink-muted");
-	const tooltipBg = cssVar("--color-surface");
 	const tooltipText = cssVar("--color-ink");
 	return {
 		line,
 		fill: hexWithOpacity(line, 0.12),
 		grid,
 		ticks,
-		tooltipBg,
 		tooltipText,
 		bought: cssVar("--color-success-edge"),
 		sold: cssVar("--color-danger-edge"),
@@ -54,6 +53,7 @@ function readColors(): ChartThemeColors {
 		arc: cssVar("--color-info-edge"),
 		focus: cssVar("--color-action-edge"),
 		taxYear: cssVar("--color-surface-raised"),
+		barLabel: cssVar("--color-page"),
 	};
 }
 

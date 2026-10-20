@@ -1,69 +1,121 @@
 <script setup lang="ts">
-import type { ProvenanceWalker, ReportInstrument } from "@brrr/lib";
+import type { ProvenanceNode } from "@brrr/lib";
 import { Chart, type ChartConfiguration } from "chart.js/auto";
 import { DateTime } from "luxon";
-import { computed, onMounted, onUnmounted, useTemplateRef, watch } from "vue";
-import { TickGranularity, type TimelineMark, type TimelineTick } from "~/types/timeline";
+import type { ReferenceElement } from "reka-ui";
+import { computed, onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
+import {
+	TickGranularity,
+	type TimelineMark,
+	type TimelineRow,
+	TimelineRowKind,
+	type TimelineTick,
+} from "~/types/timeline";
 import {
 	barY,
+	isFoldable,
 	markSize,
 	paddedRange,
 	pointY,
 	rowPitch,
+	timelineRows,
 	timelineTicks,
 	timelineYRange,
 } from "~/utils/instrumentTimeline";
 import { type TimelineMarksPlugin, timelineMarksPlugin } from "~/utils/timelineMarksPlugin";
 
-const props = defineProps<{
-	instrument: ReportInstrument;
-	walker: ProvenanceWalker;
-	locale: string;
-	// The instrument's name for the screen reader
-	name: string;
-	// The report's tax year, shaded behind the marks
-	year: number;
-}>();
-
-const { t } = useI18n();
-const focus = useGraphFocus();
-const { timeline, describeMark, describeBar } = useInstrumentTimeline(
-	() => props.instrument,
-	() => props.walker,
-);
+// The card's instrument over time, with the report's tax year shaded behind it. The card is made
+// once per instrument, so the chart is built once it is mounted, at the height of its own rows. A
+// click on a mark or a bar moves the focus there and offers its trace in a small card by the click.
+const { t, locale } = useI18n();
+const card = useInstrumentCard();
+const { timeline, describeMark, describeRow, describeNode, focus, offered, showTrace } = card;
 const { colors } = useChartTheme();
 const canvasRef = useTemplateRef<HTMLCanvasElement>("canvas");
 let chart: Chart<"scatter"> | null = null;
 
-const yRange = computed(() =>
-	timelineYRange(timeline.value.bars.length, timeline.value.stackDepth),
-);
+// Folded, the rows follow the form: the lots of other years share one row, what is still open
+// another. Spread, every bar has its own.
+const spread = ref(false);
+const rows = computed(() => timelineRows(timeline.value.bars, spread.value));
+const foldable = computed(() => isFoldable(timeline.value.bars));
+
+const yRange = computed(() => timelineYRange(rows.value.length, timeline.value.stackDepth));
 // The rows' height plus room for the axis's labels.
 const height = computed(() =>
 	Math.max(
 		120,
-		Math.round(30 + rowPitch(timeline.value.bars.length) * (yRange.value.max - yRange.value.min)),
+		Math.round(30 + rowPitch(rows.value.length) * (yRange.value.max - yRange.value.min)),
 	),
 );
 
 // What the chart's own, invisible points stand for, so chart.js finds what is under the pointer
-// and shows its tooltip: every point under the bars, and each end of a bar.
+// and shows its tooltip: every point under the bars, each end of a bar, and each trade on the row
+// of what is still open. A row of other years' lots has none: a click spreads it.
 type HitTarget = { mark: TimelineMark; y: number };
+function rowTargets(row: TimelineRow, y: number): HitTarget[] {
+	switch (row.kind) {
+		case TimelineRowKind.BAR:
+			return row.bars.flatMap((bar) =>
+				(bar.closed === null ? [bar.opened] : [bar.opened, bar.closed]).map((mark) => ({ mark, y })),
+			);
+		case TimelineRowKind.STILL_OPEN:
+			return row.bars.map((bar) => ({ mark: bar.opened, y }));
+		case TimelineRowKind.OTHER_YEARS:
+			return [];
+	}
+}
 const targets = computed<HitTarget[]>(() => {
-	const drawn = timeline.value;
+	const drawn = rows.value;
 	return [
-		...drawn.points.map((point) => ({ mark: point.mark, y: pointY(point.stack) })),
-		...drawn.bars.flatMap((bar, index) => {
-			const y = barY(index, drawn.bars.length);
-			const ends = bar.closed === null ? [bar.opened] : [bar.opened, bar.closed];
-			return ends.map((mark) => ({ mark, y }));
-		}),
+		...timeline.value.points.map((point) => ({ mark: point.mark, y: pointY(point.stack) })),
+		...drawn.flatMap((row, index) => rowTargets(row, barY(index, drawn.length))),
 	];
 });
 // A mark is hit a little beyond its edge, and never through less than a fingertip.
-const hitRadius = computed(() =>
-	Math.max(8, markSize(rowPitch(timeline.value.bars.length)) / 2 + 3),
+const hitRadius = computed(() => Math.max(8, markSize(rowPitch(rows.value.length)) / 2 + 3));
+
+// The point in the canvas the offered trace's card hangs on, kept to the canvas as the page scrolls.
+const anchor = shallowRef<ReferenceElement | undefined>(undefined);
+const offerOpen = computed({
+	get: () => offered.value !== null,
+	set: (open: boolean) => {
+		if (!open) {
+			card.dismissOffer();
+		}
+	},
+});
+const offerText = computed(() => (offered.value === null ? "" : describeNode(offered.value)));
+
+// A point of the canvas, kept to the canvas as the page scrolls, for a tooltip or a card to hang on.
+function canvasPoint(x: number, y: number): ReferenceElement | undefined {
+	const canvas = canvasRef.value;
+	if (canvas === null) {
+		return undefined;
+	}
+	return {
+		getBoundingClientRect: () => {
+			const box = canvas.getBoundingClientRect();
+			return new DOMRect(box.left + x, box.top + y, 0, 0);
+		},
+	};
+}
+
+// The mark under the pointer: what its tooltip says and where its centre is in the canvas.
+const hovered = shallowRef<{ text: string; x: number; y: number } | null>(null);
+const hoverAnchor = computed(() =>
+	hovered.value === null ? undefined : canvasPoint(hovered.value.x, hovered.value.y),
 );
+
+function focusAndOffer(node: ProvenanceNode, x: number, y: number) {
+	focus.refocus(node);
+	const point = canvasPoint(x, y);
+	if (point === undefined) {
+		return;
+	}
+	anchor.value = point;
+	card.offerTrace(node);
+}
 
 function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter"> {
 	const drawn = timeline.value;
@@ -91,18 +143,18 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 			animation: false,
 			plugins: {
 				legend: { display: false },
+				// chart.js finds the mark under the pointer; the tooltip itself is the app's own, hung on it.
 				tooltip: {
-					backgroundColor: c.tooltipBg,
-					bodyColor: c.tooltipText,
-					borderColor: c.grid,
-					borderWidth: 1,
-					displayColors: false,
-					callbacks: {
-						title: () => "",
-						label: (context) => {
-							const target = hits[context.dataIndex];
-							return target === undefined ? "" : describeMark(target.mark);
-						},
+					enabled: false,
+					// The card a click opens says what the tooltip would.
+					filter: () => offered.value === null,
+					external: ({ tooltip }) => {
+						const point = tooltip.dataPoints?.[0];
+						const target = point === undefined ? undefined : hits[point.dataIndex];
+						hovered.value =
+							tooltip.opacity === 0 || target === undefined
+								? null
+								: { text: describeMark(target.mark), x: tooltip.caretX, y: tooltip.caretY };
 					},
 				},
 			},
@@ -140,18 +192,21 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 				if (element !== undefined) {
 					const target = hits[element.index];
 					if (target !== undefined) {
-						focus.refocus(target.mark.node);
+						focusAndOffer(target.mark.node, element.element.x, element.element.y);
 					}
 					return;
 				}
 				if (event.x === null || event.y === null) {
 					return;
 				}
-				// A lot's bar focuses the lot; what is still open, the trade that opened it. A click on
-				// nothing lets go of the lit chain, as in the graph.
-				const bar = plugin.barAt({ x: event.x, y: event.y });
-				if (bar !== null) {
-					focus.refocus(bar.lot ?? bar.opened.node);
+				// A lot's bar focuses the lot; what is still open, the trade that opened it. A folded
+				// row spreads. A click on nothing lets go of the lit chain, as in the graph.
+				const row = plugin.rowAt({ x: event.x, y: event.y });
+				const bar = row?.kind === TimelineRowKind.BAR ? row.bars[0] : undefined;
+				if (bar !== undefined) {
+					focusAndOffer(bar.lot ?? bar.opened.node, event.x, event.y);
+				} else if (row !== null) {
+					spread.value = true;
 				} else {
 					focus.clearLight();
 				}
@@ -159,7 +214,7 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 			onHover: (event, elements, hovered) => {
 				const overBar =
 					elements.length === 0 && event.x !== null && event.y !== null
-						? plugin.barAt({ x: event.x, y: event.y }) !== null
+						? plugin.rowAt({ x: event.x, y: event.y }) !== null
 						: false;
 				hovered.canvas.style.cursor = elements.length > 0 || overBar ? "pointer" : "default";
 			},
@@ -176,10 +231,10 @@ function tickLabel(
 ): string {
 	const at = DateTime.fromMillis(value, { zone: "utc" });
 	if (granularity === TickGranularity.YEAR) {
-		return new Intl.DateTimeFormat(props.locale, { year: "numeric", timeZone: "UTC" }).format(value);
+		return new Intl.DateTimeFormat(locale.value, { year: "numeric", timeZone: "UTC" }).format(value);
 	}
 	if (granularity === TickGranularity.DAY) {
-		return new Intl.DateTimeFormat(props.locale, {
+		return new Intl.DateTimeFormat(locale.value, {
 			day: "numeric",
 			month: "short",
 			timeZone: "UTC",
@@ -187,7 +242,7 @@ function tickLabel(
 	}
 	const yearChanged =
 		previous === undefined || DateTime.fromMillis(previous, { zone: "utc" }).year !== at.year;
-	return new Intl.DateTimeFormat(props.locale, {
+	return new Intl.DateTimeFormat(locale.value, {
 		month: "short",
 		...(yearChanged ? { year: "numeric" } : {}),
 		timeZone: "UTC",
@@ -202,11 +257,12 @@ function rebuild() {
 	}
 	const plugin = timelineMarksPlugin(() => ({
 		timeline: timeline.value,
+		rows: rows.value,
 		focus: focus.node.value,
 		lit: focus.lit.value?.sources ?? null,
 		colors: colors.value,
-		year: props.year,
-		describeBar,
+		year: card.year,
+		describeRow,
 	}));
 	chart = new Chart(canvasRef.value, buildConfig(plugin));
 }
@@ -218,20 +274,47 @@ onUnmounted(() => {
 });
 
 watch(
-  () => [focus.node.value, focus.lit.value, props.year],
+  () => [focus.node.value, focus.lit.value],
   () => chart?.update("none"),
 );
-watch(timeline, rebuild);
 watch(colors, rebuild);
+// Folding changes the rows and the height: the chart is built again once the page has the new one.
+watch(spread, rebuild, { flush: "post" });
 </script>
 
 <template>
   <div class="relative w-full" :style="{ height: `${height}px` }">
-    <canvas
-      ref="canvas"
-      role="img"
-      :aria-label="t('download_timeline_label', { name })"
-      class="w-full h-full"
-    />
+    <AppTooltip
+      :content="hovered?.text ?? ''"
+      :open="hovered !== null"
+      :reference="hoverAnchor"
+      :side-offset="hitRadius"
+    >
+      <canvas
+        ref="canvas"
+        role="img"
+        :aria-label="t('download_timeline_label', { name: card.name })"
+        class="w-full h-full"
+      />
+    </AppTooltip>
   </div>
+  <div v-if="foldable" class="flex justify-end -mt-1 mb-1">
+    <AppButton ghost class="px-2 py-0.5 text-xs" :aria-pressed="spread" @click="spread = !spread">
+      {{ spread ? t('download_timeline_fold') : t('download_timeline_spread') }}
+    </AppButton>
+  </div>
+  <AppPopover
+    v-model:open="offerOpen"
+    :reference="anchor"
+    side="bottom"
+    align="center"
+    :aria-label="offerText"
+    class="w-64"
+  >
+    <p class="text-sm text-ink">{{ offerText }}</p>
+    <AppButton class="mt-2 gap-1 px-2 py-1 text-xs" @click="offered !== null && showTrace(offered)">
+      <span class="i-mdi-graph-outline" aria-hidden="true" />
+      {{ t('download_view_trace') }}
+    </AppButton>
+  </AppPopover>
 </template>

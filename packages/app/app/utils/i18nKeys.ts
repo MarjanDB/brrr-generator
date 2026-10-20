@@ -2,6 +2,7 @@ import {
 	DropCategory,
 	DropReason,
 	EDavkiProvenanceField,
+	IdentifierChangeType,
 	ProvenanceDetailKind,
 	ProvenanceDetailValue,
 	ProvenanceEventKind,
@@ -9,6 +10,7 @@ import {
 	ReportInstrumentKind,
 	TaxAuthorityLotMatchingMethod,
 } from "@brrr/lib";
+import { DetectedReason, PluralForm, QuantityUnit } from "~/types/instrumentCard";
 import { GraphHeading, GraphNodeKind, NodeValueKind } from "~/types/provenanceGraph";
 import { ReportStep } from "~/types/reportFlow";
 import { TimelineMarkKind } from "~/types/timeline";
@@ -77,6 +79,67 @@ export const markKeys: Record<TimelineMarkKind, string> = {
 	[TimelineMarkKind.DIVIDEND]: "download_mark_dividend",
 	[TimelineMarkKind.SOLD]: "download_mark_sold",
 	[TimelineMarkKind.TAX]: "download_mark_tax",
+};
+
+// What a corporate action's chip says, by the kind of change.
+export const chipKindKeys: Record<IdentifierChangeType, string> = {
+	[IdentifierChangeType.SPLIT]: "download_chip_split",
+	[IdentifierChangeType.REVERSE_SPLIT]: "download_chip_reverse_split",
+	[IdentifierChangeType.RENAME]: "download_chip_rename",
+};
+
+// The verdict on the badge of each reason in "Everything detected".
+export const detectedVerdictKeys: Record<DetectedReason, string> = {
+	[DetectedReason.REPORTED]: "download_verdict_reported",
+	[DetectedReason.CLOSED_BEFORE_YEAR]: "download_verdict_excluded",
+	[DetectedReason.CLOSED_AFTER_YEAR]: "download_verdict_excluded",
+	[DetectedReason.STILL_OPEN]: "download_verdict_excluded",
+	[DetectedReason.PAID_OUTSIDE_YEAR]: "download_verdict_excluded",
+	[DetectedReason.LEFT_OUT]: "download_verdict_excluded",
+	[DetectedReason.APPLIED]: "download_verdict_applied",
+	[DetectedReason.NO_EFFECT]: "download_verdict_no_effect",
+};
+
+// The detail after the verdict, when the reason covers the whole item ({form}, {year}, {years}).
+// A reason the report gave itself says the report's sentence instead, when it has one.
+export const detectedDetailKeys: Record<DetectedReason, string> = {
+	[DetectedReason.REPORTED]: "download_reason_reported",
+	[DetectedReason.CLOSED_BEFORE_YEAR]: "download_reason_closed_before",
+	[DetectedReason.CLOSED_AFTER_YEAR]: "download_reason_closed_after",
+	[DetectedReason.STILL_OPEN]: "download_reason_still_open",
+	[DetectedReason.PAID_OUTSIDE_YEAR]: "download_reason_paid_outside",
+	[DetectedReason.LEFT_OUT]: "download_reason_left_out",
+	[DetectedReason.APPLIED]: "download_reason_applied",
+	[DetectedReason.NO_EFFECT]: "download_reason_no_effect",
+};
+
+// The detail when a trade is split between reasons, which says how much of it each covers
+// ({quantity}). Only a trade is split, so the other reasons keep their whole detail.
+export const detectedPartKeys: Record<DetectedReason, string> = {
+	[DetectedReason.REPORTED]: "download_reason_reported_part",
+	[DetectedReason.CLOSED_BEFORE_YEAR]: "download_reason_closed_before_part",
+	[DetectedReason.CLOSED_AFTER_YEAR]: "download_reason_closed_after_part",
+	[DetectedReason.STILL_OPEN]: "download_reason_still_open_part",
+	[DetectedReason.PAID_OUTSIDE_YEAR]: "download_reason_paid_outside",
+	[DetectedReason.LEFT_OUT]: "download_reason_left_out",
+	[DetectedReason.APPLIED]: "download_reason_applied",
+	[DetectedReason.NO_EFFECT]: "download_reason_no_effect",
+};
+
+// A quantity with its unit, in each plural form ({quantity}).
+export const quantityUnitKeys: Record<QuantityUnit, Record<PluralForm, string>> = {
+	[QuantityUnit.SHARE]: {
+		[PluralForm.ONE]: "download_unit_share_one",
+		[PluralForm.TWO]: "download_unit_share_two",
+		[PluralForm.FEW]: "download_unit_share_few",
+		[PluralForm.OTHER]: "download_unit_share_other",
+	},
+	[QuantityUnit.CONTRACT]: {
+		[PluralForm.ONE]: "download_unit_contract_one",
+		[PluralForm.TWO]: "download_unit_contract_two",
+		[PluralForm.FEW]: "download_unit_contract_few",
+		[PluralForm.OTHER]: "download_unit_contract_other",
+	},
 };
 
 // The text each kind of node value is written with.

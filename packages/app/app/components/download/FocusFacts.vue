@@ -3,19 +3,13 @@ import {
 	DropCategory,
 	ProvenanceEventKind,
 	ProvenanceField,
-	type ProvenanceWarning,
-	type ReportLeftOut,
 } from "@brrr/lib";
 import { computed } from "vue";
 import { ColorIntent } from "~/types/ui";
 
-defineProps<{
-	leftOut: ReportLeftOut[];
-	warnings: ProvenanceWarning[];
-}>();
-
+// The card's focused item: its facts, and what the report left out or warns about it.
 const { t, locale } = useI18n();
-const focus = useGraphFocus();
+const { focus, leftOut, warnings } = useInstrumentCard();
 const { dropSentence, warningSentence, date: dateText } = useProvenanceText();
 
 type Fact = { label: string; value: string };
@@ -52,9 +46,10 @@ const facts = computed<Fact[]>(() => {
 	const currency = fieldOf(node, ProvenanceField.CURRENCY) ?? "";
 	if (kind !== undefined && cashKinds.includes(kind)) {
 		// A cash transaction is one unit of its amount: show the amount, not a quantity and a price.
-		if (price !== null) {
-			const amount = formatNumber(String(Number(price) * Number(quantity ?? "1")), locale.value);
-			result.push({ label: t("download_fact_amount"), value: `${amount} ${currency}`.trim() });
+		const amount = cashAmountOf(node);
+		if (amount !== null) {
+			const value = `${formatNumber(amount, locale.value)} ${currency}`.trim();
+			result.push({ label: t("download_fact_amount"), value });
 		}
 	} else {
 		if (quantity !== null) {

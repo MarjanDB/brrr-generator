@@ -1,32 +1,10 @@
 <script setup lang="ts">
-import type {
-	ProvenanceGraph,
-	ProvenanceNode,
-	ProvenanceWalker,
-	ReportInstrumentKind,
-	ReportProvenance,
-	TaxAuthorityLotMatchingMethod,
-} from "@brrr/lib";
 import GraphCanvas from "~/components/download/graph/GraphCanvas.vue";
 import GraphToolbar from "~/components/download/graph/GraphToolbar.vue";
 
-const props = defineProps<{
-	graph: ProvenanceGraph;
-	reading: ReportProvenance;
-	// For the popovers: where a broker row came from.
-	walker: ProvenanceWalker;
-	instrumentKind: ReportInstrumentKind;
-	ticker: string;
-	lotMatchingMethod: TaxAuthorityLotMatchingMethod;
-	locale: string;
-	// The form the report lines are for, as a popover names it.
-	formName: string;
-	// What the timeline draws: the only things a click in the graph can make the focus.
-	focusable: ReadonlySet<ProvenanceNode>;
-}>();
-
-const { t } = useI18n();
-
+// The focused item's provenance, under the timeline of the card it is in.
+const { t, locale } = useI18n();
+const card = useInstrumentCard();
 const focus = useGraphFocus();
 const {
 	showEveryStep,
@@ -42,14 +20,14 @@ const {
 	closePopover,
 	toggleEveryStep,
 } = useProvenanceGraph({
-	graph: () => props.graph,
-	reading: () => props.reading,
-	focusable: () => props.focusable,
+	graph: () => card.graph,
+	reading: () => card.reading,
+	focusable: () => card.focusable.value,
 });
 
 const captionContext = computed(() => ({
-	ticker: props.ticker,
-	lotMatchingMethod: props.lotMatchingMethod,
+	ticker: card.name,
+	lotMatchingMethod: card.lotMatchingMethod,
 }));
 </script>
 
@@ -67,12 +45,12 @@ const captionContext = computed(() => ({
       :layout="layout"
       :placement="placement"
       :lit="focus.lit.value"
-      :instrument-kind="instrumentKind"
-      :lot-matching-method-key="lotMatchingKeys[lotMatchingMethod]"
+      :instrument-kind="card.entry.kind"
+      :lot-matching-method-key="lotMatchingKeys[card.lotMatchingMethod]"
       :locale="locale"
       :popover="popover"
-      :form-name="formName"
-      :walker="walker"
+      :form-name="card.formName"
+      :walker="card.walker"
       @click-node="clickNode"
       @click-line="clickLine"
       @spread="spread"

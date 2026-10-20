@@ -17,6 +17,8 @@ import {
 	type TimelineMark,
 	TimelineMarkKind,
 	type TimelinePoint,
+	type TimelineRow,
+	TimelineRowKind,
 	type TimelineTick,
 	TimelineWeight,
 	type TimeSpan,
@@ -273,14 +275,63 @@ const rowSpacing = 34;
 const minRowSpacing = 12;
 const roomyRows = 12;
 
-const markSpacing = 12;
+const markSpacing = 16;
 const rowGap = 4;
 
-// How big every bar, triangle and point is, in pixels: 12, whatever its quantity or weight (the
-// quantity is in the bar's label), and less only where rows are so close it must leave 4 px between
-// them.
+// How big every bar, triangle and point is, in pixels: 16, whatever its quantity or weight (the
+// quantity is in the bar's label, inside it), and less only where rows are so close it must leave
+// 4 px between them.
 export function markSize(pitch: number): number {
 	return Math.min(markSpacing, pitch - rowGap);
+}
+
+// Text of the timeline's 11 px font needs a bar this thick around it.
+const labelledThickness = 14;
+// The text keeps this far from the inner half of each triangle.
+const labelPadding = 4;
+
+// Whether a label goes inside a bar: one thick enough for the text, long enough for it between the
+// halves of the triangles at its ends. A label that doesn't fit is left out.
+export function labelFits(thickness: number, textWidth: number, barWidth: number): boolean {
+	return (
+		thickness >= labelledThickness && textWidth + 2 * (thickness / 2 + labelPadding) <= barWidth
+	);
+}
+
+function otherYearsOf(bars: TimelineBar[]): TimelineBar[] {
+	return bars.filter((bar) => bar.closed !== null && bar.weight === TimelineWeight.CONTEXT);
+}
+
+function stillOpenOf(bars: TimelineBar[]): TimelineBar[] {
+	return bars.filter((bar) => bar.closed === null);
+}
+
+// A group of one keeps a row of its own: folding it would save nothing.
+function foldedRows(kind: TimelineRowKind, group: TimelineBar[]): TimelineRow[] {
+	return group.length > 1
+		? [{ kind, bars: group }]
+		: group.map((bar) => ({ kind: TimelineRowKind.BAR, bars: [bar] }));
+}
+
+// The timeline's rows. Folded, each lot on the form has a row of its own, then the lots closed in
+// other years share one row, and what is still open another, so the height follows the form.
+// Spread, every bar has a row of its own, in the order they opened.
+export function timelineRows(bars: TimelineBar[], spread: boolean): TimelineRow[] {
+	if (spread) {
+		return bars.map((bar) => ({ kind: TimelineRowKind.BAR, bars: [bar] }));
+	}
+	return [
+		...bars
+			.filter((bar) => bar.closed !== null && bar.weight === TimelineWeight.REPORTED)
+			.map((bar) => ({ kind: TimelineRowKind.BAR, bars: [bar] })),
+		...foldedRows(TimelineRowKind.OTHER_YEARS, otherYearsOf(bars)),
+		...foldedRows(TimelineRowKind.STILL_OPEN, stillOpenOf(bars)),
+	];
+}
+
+// Whether spreading the rows would show anything more.
+export function isFoldable(bars: TimelineBar[]): boolean {
+	return otherYearsOf(bars).length > 1 || stillOpenOf(bars).length > 1;
 }
 
 // How far apart the rows are, in pixels: 34 px for up to twelve bars, which leaves room for a label

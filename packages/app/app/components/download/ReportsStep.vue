@@ -59,11 +59,6 @@ const tabs = computed(() =>
 		};
 	}),
 );
-
-// An underline marks the open tab, drawn over the list's base line. The list scrolls sideways when
-// the tabs don't fit, which clips anything outside it, so the focus ring is drawn inside the tab.
-const tabTrigger =
-	"flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-muted rounded-t-sm transition-colors hover:text-ink aria-selected:border-accent-edge aria-selected:text-ink app-focus-ring focus-visible:-outline-offset-2";
 </script>
 
 <template>
@@ -78,9 +73,9 @@ const tabTrigger =
 		</div>
 
 		<TabsRoot v-model="tab" class="flex flex-col gap-4">
-			<TabsList :aria-label="t('reports_tabs_label', { year })" class="flex overflow-x-auto shadow-[inset_0_-1px_0_var(--color-edge)]">
+			<TabsList :aria-label="t('reports_tabs_label', { year })" :class="tabListClasses">
 				<AppTooltip v-for="entry in tabs" :key="entry.form.reportTypeId" :content="t(entry.form.nameKey)" side="bottom">
-					<TabsTrigger :value="entry.form.reportTypeId" :class="tabTrigger">
+					<TabsTrigger :value="entry.form.reportTypeId" :class="tabTriggerClasses">
 						{{ entry.form.code }}
 						<AppBadge v-if="entry.lines !== null">{{ entry.lines }}</AppBadge>
 					</TabsTrigger>

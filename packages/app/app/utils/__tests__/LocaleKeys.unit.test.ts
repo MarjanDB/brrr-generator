@@ -1,7 +1,11 @@
 import { ReportInstrumentKind } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
 import {
+	chipKindKeys,
 	detailKindKeys,
+	detectedDetailKeys,
+	detectedPartKeys,
+	detectedVerdictKeys,
 	dropCategoryKeys,
 	dropReasonKeys,
 	edavkiFieldKeys,
@@ -12,6 +16,7 @@ import {
 	lotMatchingKeys,
 	markKeys,
 	nodeValueKeys,
+	quantityUnitKeys,
 	reportStepKeys,
 	stackKindKeys,
 } from "~/utils/i18nKeys";
@@ -125,5 +130,29 @@ describe("the locale files", () => {
 		expect(englishKeys.has(trades.sold)).toEqual(true);
 		expect(englishKeys.has(dividends.acquired)).toEqual(true);
 		expect(englishKeys.has(dividends.sold)).toEqual(true);
+	});
+
+	test("every corporate action chip has a key in the locale files", () => {
+		for (const key of Object.values(chipKindKeys)) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
+	});
+
+	test("every reason in everything detected has its verdict and details in the locale files", () => {
+		for (const key of [
+			...Object.values(detectedVerdictKeys),
+			...Object.values(detectedDetailKeys),
+			...Object.values(detectedPartKeys),
+		]) {
+			expect(englishKeys.has(key)).toEqual(true);
+		}
+	});
+
+	test("every unit has every plural form in the locale files", () => {
+		for (const forms of Object.values(quantityUnitKeys)) {
+			for (const key of Object.values(forms)) {
+				expect(englishKeys.has(key)).toEqual(true);
+			}
+		}
 	});
 });

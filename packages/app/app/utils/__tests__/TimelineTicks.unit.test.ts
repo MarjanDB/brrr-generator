@@ -9,6 +9,7 @@ import {
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
 import {
 	barStateOf,
+	labelFits,
 	markSize,
 	markStateOf,
 	paddedRange,
@@ -140,13 +141,24 @@ describe("the timeline's rows", () => {
 		expect(rowPitch(100)).toEqual(12);
 	});
 
-	test("every bar, triangle and point is 12 px, whatever its quantity or weight", () => {
-		expect(markSize(rowPitch(3))).toEqual(12);
-		expect(markSize(rowPitch(24))).toEqual(12);
+	test("every bar, triangle and point is 16 px, whatever its quantity or weight, so a label fits in a bar", () => {
+		expect(markSize(rowPitch(3))).toEqual(16);
+		expect(markSize(rowPitch(12))).toEqual(16);
 	});
 
-	test("rows closer than 16 px shrink every mark to leave 4 px between rows", () => {
+	test("rows closer than 20 px shrink every mark to leave 4 px between rows", () => {
+		expect(markSize(rowPitch(24))).toEqual(13);
 		expect(markSize(rowPitch(100))).toEqual(8);
+	});
+
+	test("a label goes inside a bar at least 14 px thick, between the halves of its triangles", () => {
+		expect(labelFits(16, 80, 104)).toEqual(true);
+		expect(labelFits(14, 80, 102)).toEqual(true);
+	});
+
+	test("a label is left out of a thinner bar, or of one too short for it", () => {
+		expect(labelFits(13, 20, 200)).toEqual(false);
+		expect(labelFits(16, 80, 103)).toEqual(false);
 	});
 
 	test("the bars sit above the points' row, with room around both", () => {

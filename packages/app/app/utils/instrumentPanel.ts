@@ -245,21 +245,25 @@ function chipKindOf(value: string | null): IdentifierChangeType | null {
 	return Object.values(IdentifierChangeType).find((kind) => kind === value) ?? null;
 }
 
-// One chip per corporate action behind the instrument, from the facts the action recorded.
+// A corporate action's chip, from the facts it recorded; null for a kind it has no chip for.
+export function chipOf(action: ProvenanceNode): SplitChip | null {
+	const kind = chipKindOf(fieldOf(action, ProvenanceField.CORPORATE_ACTION_KIND));
+	if (kind === null) {
+		return null;
+	}
+	return {
+		kind,
+		before: fieldOf(action, ProvenanceField.SPLIT_BEFORE),
+		after: fieldOf(action, ProvenanceField.SPLIT_AFTER),
+		fromIsin: fieldOf(action, ProvenanceField.FROM_ISIN),
+		fromTicker: fieldOf(action, ProvenanceField.FROM_TICKER),
+	};
+}
+
+// One chip per corporate action behind the instrument.
 export function chipsOf(instrument: ReportInstrument): SplitChip[] {
 	return instrument.corporateActions.flatMap((action) => {
-		const kind = chipKindOf(fieldOf(action, ProvenanceField.CORPORATE_ACTION_KIND));
-		if (kind === null) {
-			return [];
-		}
-		return [
-			{
-				kind,
-				before: fieldOf(action, ProvenanceField.SPLIT_BEFORE),
-				after: fieldOf(action, ProvenanceField.SPLIT_AFTER),
-				fromIsin: fieldOf(action, ProvenanceField.FROM_ISIN),
-				fromTicker: fieldOf(action, ProvenanceField.FROM_TICKER),
-			},
-		];
+		const chip = chipOf(action);
+		return chip === null ? [] : [chip];
 	});
 }

@@ -6,6 +6,7 @@ import {
 	TradeEventStockAcquired,
 } from "@brrr/lib";
 import type { DateTime } from "luxon";
+import { BASE_CURRENCY } from "~/utils/baseCurrency";
 
 export type CumulativePoint = {
 	date: DateTime;
@@ -49,10 +50,6 @@ function toCumulative(
 
 	return result;
 }
-
-// Lib holds amounts in the account's base currency without recording which one it is. The Slovenian
-// reports read them in euros, and so does the review step.
-const BASE_CURRENCY = "EUR";
 
 function valueInBase(event: {
 	multiplier: number;
