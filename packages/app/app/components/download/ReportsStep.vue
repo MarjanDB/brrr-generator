@@ -11,7 +11,6 @@ import { TabsContent, TabsList, TabsRoot, TabsTrigger } from "reka-ui";
 import DownloadStep from "~/components/download/DownloadStep.vue";
 import TaxYearPicker from "~/components/download/TaxYearPicker.vue";
 import { ButtonVariant } from "~/types/ui";
-import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
 const props = defineProps<{
 	imported: ImportResult;
@@ -25,7 +24,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const { payers } = useReportFlow();
 
-const info = new ApiInfoProvider();
+const info = useInfoProvider();
 const pipeline = createContainer(info).get(ReportPipeline);
 
 const { forms, years, year, reports, pending, error } = provideTaxYearReports({

@@ -40,3 +40,6 @@ export type ImportLeftOut = {
 	// The records found in more than one export.
 	merged: RowSources[];
 };
+
+// One attribute of a broker row, by the name the export gives it.
+export type RowAttribute = { name: string; value: string };

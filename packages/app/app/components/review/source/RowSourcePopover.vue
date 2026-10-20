@@ -12,8 +12,8 @@ const { t } = useI18n();
 const sources = useImportSources();
 
 const rows = computed(() => sources.of(props.subject));
-const keys = computed(() => keyAttributesOf(rows.value.row.row, props.kind));
-const all = computed(() => allAttributesOf(rows.value.row.row));
+const keys = computed(() => sources.keyAttributesOf(rows.value.row.row, props.kind));
+const all = computed(() => sources.allAttributesOf(rows.value.row.row));
 </script>
 
 <template>
