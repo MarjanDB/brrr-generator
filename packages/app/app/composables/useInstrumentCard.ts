@@ -62,6 +62,11 @@ export type InstrumentCardState = InstrumentCardArgs & {
 	tab: Ref<InstrumentCardTab>;
 	// Moves the focus to a node and opens the Trace tab on it.
 	showTrace: (node: ProvenanceNode) => void;
+	// What a click on the timeline offers to trace, in a small card by the click; null when no card
+	// is open. The Trace tab follows the focus, so nothing is offered there.
+	offered: Readonly<Ref<ProvenanceNode | null>>;
+	offerTrace: (node: ProvenanceNode) => void;
+	dismissOffer: () => void;
 };
 
 const instrumentCardKey: InjectionKey<InstrumentCardState> = Symbol("InstrumentCard");
@@ -88,6 +93,7 @@ export function provideInstrumentCard(args: InstrumentCardArgs): InstrumentCardS
 	const focus = provideGraphFocus();
 	focus.start(defaultFocus(instrument, args.walker));
 	const tab = ref(InstrumentCardTab.ON_THE_FORM);
+	const offered = shallowRef<ProvenanceNode | null>(null);
 	const formLots = computed(() => formLotsOf(instrument, timeline.value));
 
 	// A trade split between reasons says how much of it each covers. A reason the report gave
@@ -135,8 +141,18 @@ export function provideInstrumentCard(args: InstrumentCardArgs): InstrumentCardS
 		describeParts,
 		tab,
 		showTrace: (node) => {
+			offered.value = null;
 			focus.refocus(node);
 			tab.value = InstrumentCardTab.TRACE;
+		},
+		offered,
+		offerTrace: (node) => {
+			if (tab.value !== InstrumentCardTab.TRACE) {
+				offered.value = node;
+			}
+		},
+		dismissOffer: () => {
+			offered.value = null;
 		},
 	};
 	provide(instrumentCardKey, card);

@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import type { ProvenanceNode } from "@brrr/lib";
 import { Chart, type ChartConfiguration } from "chart.js/auto";
 import { DateTime } from "luxon";
-import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
+import type { ReferenceElement } from "reka-ui";
+import { computed, onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
 import {
 	TickGranularity,
 	type TimelineMark,
@@ -23,10 +25,11 @@ import {
 import { type TimelineMarksPlugin, timelineMarksPlugin } from "~/utils/timelineMarksPlugin";
 
 // The card's instrument over time, with the report's tax year shaded behind it. The card is made
-// once per instrument, so the chart is built once it is mounted, at the height of its own rows.
+// once per instrument, so the chart is built once it is mounted, at the height of its own rows. A
+// click on a mark or a bar moves the focus there and offers its trace in a small card by the click.
 const { t, locale } = useI18n();
 const card = useInstrumentCard();
-const { timeline, describeMark, describeRow, focus } = card;
+const { timeline, describeMark, describeRow, describeNode, focus, offered, showTrace } = card;
 const { colors } = useChartTheme();
 const canvasRef = useTemplateRef<HTMLCanvasElement>("canvas");
 let chart: Chart<"scatter"> | null = null;
@@ -72,6 +75,33 @@ const targets = computed<HitTarget[]>(() => {
 // A mark is hit a little beyond its edge, and never through less than a fingertip.
 const hitRadius = computed(() => Math.max(8, markSize(rowPitch(rows.value.length)) / 2 + 3));
 
+// The point in the canvas the offered trace's card hangs on, kept to the canvas as the page scrolls.
+const anchor = shallowRef<ReferenceElement | undefined>(undefined);
+const offerOpen = computed({
+	get: () => offered.value !== null,
+	set: (open: boolean) => {
+		if (!open) {
+			card.dismissOffer();
+		}
+	},
+});
+const offerText = computed(() => (offered.value === null ? "" : describeNode(offered.value)));
+
+function focusAndOffer(node: ProvenanceNode, x: number, y: number) {
+	focus.refocus(node);
+	const canvas = canvasRef.value;
+	if (canvas === null) {
+		return;
+	}
+	anchor.value = {
+		getBoundingClientRect: () => {
+			const box = canvas.getBoundingClientRect();
+			return new DOMRect(box.left + x, box.top + y, 0, 0);
+		},
+	};
+	card.offerTrace(node);
+}
+
 function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter"> {
 	const drawn = timeline.value;
 	const hits = targets.value;
@@ -104,6 +134,8 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 					borderColor: c.grid,
 					borderWidth: 1,
 					displayColors: false,
+					// The card a click opens says what the tooltip would.
+					filter: () => offered.value === null,
 					callbacks: {
 						title: () => "",
 						label: (context) => {
@@ -147,7 +179,7 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 				if (element !== undefined) {
 					const target = hits[element.index];
 					if (target !== undefined) {
-						focus.refocus(target.mark.node);
+						focusAndOffer(target.mark.node, element.element.x, element.element.y);
 					}
 					return;
 				}
@@ -159,7 +191,7 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 				const row = plugin.rowAt({ x: event.x, y: event.y });
 				const bar = row?.kind === TimelineRowKind.BAR ? row.bars[0] : undefined;
 				if (bar !== undefined) {
-					focus.refocus(bar.lot ?? bar.opened.node);
+					focusAndOffer(bar.lot ?? bar.opened.node, event.x, event.y);
 				} else if (row !== null) {
 					spread.value = true;
 				} else {
@@ -251,4 +283,18 @@ watch(spread, rebuild, { flush: "post" });
       {{ spread ? t('download_timeline_fold') : t('download_timeline_spread') }}
     </AppButton>
   </div>
+  <AppPopover
+    v-model:open="offerOpen"
+    :reference="anchor"
+    side="bottom"
+    align="center"
+    :aria-label="offerText"
+    class="w-64"
+  >
+    <p class="text-sm text-ink">{{ offerText }}</p>
+    <AppButton class="mt-2 gap-1 px-2 py-1 text-xs" @click="offered !== null && showTrace(offered)">
+      <span class="i-mdi-graph-outline" aria-hidden="true" />
+      {{ t('download_view_trace') }}
+    </AppButton>
+  </AppPopover>
 </template>

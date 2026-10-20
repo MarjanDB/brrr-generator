@@ -317,6 +317,70 @@ describe("one instrument's card on the reports step", () => {
 		expect(card.tab.value).toEqual(InstrumentCardTab.TRACE);
 	});
 
+	test("a click on the timeline offers the item's trace, except on the Trace tab, which follows the focus", async () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const sell = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-03-10",
+			quantity: "-10",
+			price: "6",
+			currency: "USD",
+			label: "sell ACME",
+		});
+		b.match({
+			instrument: acme,
+			acquired: buy,
+			sold: sell,
+			quantity: "10",
+			boughtOn: "2024-01-10",
+			soldOn: "2024-03-10",
+		});
+		const reading = b.reading();
+		const entry = firstEntry(buildPanel(reading));
+		assert(entry !== null);
+		const card = await mountComposable(() =>
+			provideInstrumentCard({
+				entry,
+				reading,
+				walker: new ProvenanceWalker(b.graph),
+				graph: b.graph,
+				year: 2024,
+				lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
+				formName: "KDVP",
+				formCode: "Doh-KDVP",
+			}),
+		);
+		expect(card.offered.value).toBeNull();
+
+		card.offerTrace(b.node(buy.event));
+		expect(card.offered.value).toBe(b.node(buy.event));
+
+		card.dismissOffer();
+		expect(card.offered.value).toBeNull();
+
+		card.offerTrace(b.node(buy.event));
+		card.showTrace(b.node(buy.event));
+		expect(card.offered.value).toBeNull();
+		expect(card.tab.value).toEqual(InstrumentCardTab.TRACE);
+
+		card.offerTrace(b.node(sell.event));
+		expect(card.offered.value).toBeNull();
+	});
+
 	test("everything detected says, in tax terms, why each item is or isn't on the form", async () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });

@@ -190,6 +190,7 @@
 	"download_tab_detected": "Vse zaznano",
 	"download_tab_trace": "Izvor",
 	"download_trace_button_label": "Izvor: {what}",
+	"download_view_trace": "Pokaži izvor",
 	"download_col_bought": "Kupljeno",
 	"download_col_sold": "Prodano",
 	"download_col_buy_price": "Nakupna cena",

@@ -190,6 +190,7 @@
 	"download_tab_detected": "Everything detected",
 	"download_tab_trace": "Trace",
 	"download_trace_button_label": "Trace: {what}",
+	"download_view_trace": "View trace",
 	"download_col_bought": "Bought",
 	"download_col_sold": "Sold",
 	"download_col_buy_price": "Buy price",
