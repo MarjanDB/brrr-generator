@@ -1,19 +1,6 @@
 <script setup lang="ts">
-const { locale, setLocale, locales, t } = useI18n();
+const { t } = useI18n();
 const localePath = useLocalePath();
-
-const localeOptions = computed(() =>
-  locales.value.map((l) => ({ value: l.code, label: l.name ?? l.code })),
-);
-const currentLocale = computed({
-  get: () => locale.value,
-  set: (value) => {
-    const next = locales.value.find((l) => l.code === value);
-    if (next !== undefined) {
-      setLocale(next.code);
-    }
-  },
-});
 </script>
 
 <template>
@@ -36,8 +23,8 @@ const currentLocale = computed({
             :aria-label="t('github_link_label')"
             class="i-mdi-github text-2xl app-text-muted hover:app-text transition-colors"
           />
+          <LanguageSwitch />
         </div>
-        <AppSelect v-model="currentLocale" :options="localeOptions" :aria-label="t('language_label')" />
       </header>
       <slot />
     </div>

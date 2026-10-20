@@ -68,7 +68,7 @@
 	"dialog_close": "Zapri",
 	"wizard_steps_label": "Koraki",
 	"review_chart_label": "Kumulativni graf",
-	"language_label": "Jezik",
+	"language_label": "Jezik: {language}",
 	"github_link_label": "Repozitorij na GitHubu",
 	"landing_headline": "Vstavite izvoz borznega posrednika, prejmite davčne obrazce.",
 	"landing_lede": "Vse obdelano v vašem brskalniku.",

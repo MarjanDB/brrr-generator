@@ -53,8 +53,8 @@ export default defineNuxtConfig({
 		strategy: "prefix",
 		locales: [
 			// The names are what the language switch shows.
-			{ code: "en", language: "en-US", name: "🇬🇧 English", file: "en.json" },
-			{ code: "sl", language: "sl-SI", name: "🇸🇮 Slovenščina", file: "sl.json" },
+			{ code: "en", language: "en-US", name: "English", file: "en.json" },
+			{ code: "sl", language: "sl-SI", name: "Slovenščina", file: "sl.json" },
 		],
 		defaultLocale: "en",
 		langDir: "locales",

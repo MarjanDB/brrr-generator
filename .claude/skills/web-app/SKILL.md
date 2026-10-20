@@ -167,7 +167,10 @@ step 1, the guide button in the download header), with screenshots under `packag
   components and composables use them without import lines and their exported names must be unique.
 - Forms: wrap fields in `AppForm` (emits `submit` with `valid`) and use `AppTextInput`, `AppNumberInput`, `AppSelect`, `AppCheckbox`,
   `AppFileInput`. Each takes a `validate` function returning an error string or `null`, registers itself with the surrounding form, and
-  links its label through `useId()`. A select with no visible label (the language switch) takes `ariaLabel`.
+  links its label through `useId()`. A select with no visible label takes `ariaLabel`.
+- The header's language switch (`ui/LanguageSwitch.vue`), right of the GitHub link, is a reka `DropdownMenu`: the current language's
+  flag (`public/icons/flags/<country>.svg`, mapped from the locale code in the component), opening a radio list of every language
+  by its flag and the `name` set in `nuxt.config.ts`.
 - Buttons are `AppButton`: `color` (a `ColorIntent`, filled) or `ghost`, plus `loading` and `disabled`; it renders the
   `button-filled-<intent>` / `button-ghost` shortcut itself, so callers add only layout classes. The `button` shortcut carries
   `app-focus-ring`. A link styled as a button (the downloads) uses the shortcut directly.
