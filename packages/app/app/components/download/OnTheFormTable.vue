@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ReportInstrumentKind } from "@brrr/lib";
+import { type ProvenanceNode, ReportInstrumentKind } from "@brrr/lib";
 import { computed } from "vue";
 
 // The "On the form" tab: the lots on the form with the form's own figures (prices per unit and the
@@ -18,6 +18,17 @@ const {
 	showTrace,
 } = card;
 const { nodeDate, nodeQuantity, nodeAmount, formPrice, formChange } = useProvenanceText();
+const { openProblemAt, sentenceOf } = useReportProblems();
+
+// A payment whose line has an open problem starts with a warning sign, its tooltip the problem's
+// sentence; while any has one, every row keeps room for it, so the dates line up.
+const flagged = computed(() =>
+	formPayments.value.some((mark) => openProblemAt(mark.node) !== null),
+);
+function problemSentence(node: ProvenanceNode): string | null {
+	const problem = openProblemAt(node);
+	return problem === null ? null : sentenceOf(problem);
+}
 
 const isPayer = card.entry.kind === ReportInstrumentKind.DIVIDEND_PAYER;
 const lit = computed(() => focus.lit.value?.sources ?? null);
@@ -52,11 +63,21 @@ function changeClass(value: number | null): string {
         <tr
           v-for="mark in formPayments"
           :key="mark.node.id"
-          class="app-table-row app-row-interactive"
+          class="app-table-row row-selectable"
           v-bind="rowStateAttributes(markStateOf(mark.node, focus.node.value, lit))"
           @click="focus.refocus(mark.node)"
         >
-          <td class="app-table-td pl-3 whitespace-nowrap">{{ nodeDate(mark.node) }}</td>
+          <td class="app-table-td pl-3 whitespace-nowrap">
+            <span class="inline-flex items-center gap-1.5">
+              <template v-if="flagged">
+                <AppTooltip v-if="problemSentence(mark.node) !== null" :content="problemSentence(mark.node) ?? ''">
+                  <span role="img" class="i-mdi-alert-outline size-4 text-warning-ink" :aria-label="problemSentence(mark.node) ?? ''" />
+                </AppTooltip>
+                <span v-else class="size-4" aria-hidden="true" />
+              </template>
+              {{ nodeDate(mark.node) }}
+            </span>
+          </td>
           <td class="app-table-td">{{ describeWhat(mark) }}</td>
           <td class="app-table-td text-right whitespace-nowrap">{{ nodeAmount(mark.node) }}</td>
           <td class="app-table-td pr-3 text-right">
@@ -82,7 +103,7 @@ function changeClass(value: number | null): string {
         <tr
           v-for="row in formLots"
           :key="row.lot.id"
-          class="app-table-row app-row-interactive"
+          class="app-table-row row-selectable"
           v-bind="rowStateAttributes(barStateOf(row.bar, focus.node.value, lit))"
           @click="focus.refocus(row.lot)"
         >

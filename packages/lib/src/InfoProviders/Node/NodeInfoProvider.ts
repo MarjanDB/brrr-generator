@@ -140,6 +140,12 @@ const isinToCompanyLookup = missingCompaniesLookup as Record<
 	}
 >;
 
+// A country the lookup knows by name, with its ISO 3166-1 alpha-2 code.
+export type KnownCountry = {
+	name: string;
+	code: string;
+};
+
 // Takes plain strings like PredefinedInfoProvider, for the site's lookup routes and the CLI.
 export class NodeInfoProvider implements IInfoProvider {
 	private readonly predefined = new PredefinedInfoProvider();
@@ -176,6 +182,18 @@ export class NodeInfoProvider implements IInfoProvider {
 
 	public listCountries(): Map<CountryName, Country> {
 		return this.predefined.listCountries();
+	}
+
+	// Every country getCountry understands, once per code, under the first name it's known by.
+	public knownCountries(): KnownCountry[] {
+		const byCode = new Map<string, KnownCountry>();
+		const names = { ...ISO_COUNTRY_NAME_TO_ALPHA2, ...problematicCountryMappings };
+		for (const [name, code] of Object.entries(names)) {
+			if (!byCode.has(code)) {
+				byCode.set(code, { name, code });
+			}
+		}
+		return [...byCode.values()];
 	}
 
 	public async getCountry(name: string): Promise<Country | null> {

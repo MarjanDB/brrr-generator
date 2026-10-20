@@ -14,11 +14,11 @@ import {
 	type ReportProvenance,
 } from "@brrr/lib";
 import type {
+	LeftOutGroup,
 	PanelContract,
 	PanelEntry,
 	PanelSections,
 	SplitChip,
-	WarningItem,
 } from "~/types/instrumentPanel";
 import { SplitFactorKind } from "~/types/provenanceGraph";
 import { splitFactorOf } from "~/utils/graphModel";
@@ -108,7 +108,8 @@ export function filterPanel(sections: PanelSections, rawQuery: string): PanelSec
 	};
 }
 
-function entriesOf(sections: PanelSections): PanelEntry[] {
+// Every entry of the panel, in its sections' order.
+export function entriesOf(sections: PanelSections): PanelEntry[] {
 	return [
 		...sections.stocks,
 		...sections.underlyings.flatMap((underlying) => underlying.contracts),
@@ -123,6 +124,20 @@ export function findEntry(
 	instrument: ReportInstrument,
 ): PanelEntry | null {
 	return entriesOf(sections).find((entry) => entry.instrument === instrument) ?? null;
+}
+
+// The same instrument's entry in a report made again, whose nodes are new: the one of its kind with
+// its ticker, ISIN and contract.
+export function sameEntryIn(sections: PanelSections, entry: PanelEntry): PanelEntry | null {
+	return (
+		entriesOf(sections).find(
+			(candidate) =>
+				candidate.kind === entry.kind &&
+				candidate.ticker === entry.ticker &&
+				candidate.isin === entry.isin &&
+				candidate.contract?.occSymbol === entry.contract?.occSymbol,
+		) ?? null
+	);
 }
 
 // The entry the step opens on: stocks, then contracts, then payers, then instruments without lines.
@@ -164,14 +179,23 @@ export function defaultFocus(
 	return focus;
 }
 
-function warningItemsOfEntry(entry: PanelEntry): WarningItem[] {
-	const title = entry.contract?.occSymbol ?? entry.ticker;
-	return entry.instrument.warnings.map((warning) => ({ title, warning }));
+// Items in groups by a key, the groups in the order their keys first come.
+function groupsBy<Item>(items: Item[], keyOf: (item: Item) => string): Item[][] {
+	const groups = new Map<string, Item[]>();
+	for (const item of items) {
+		const key = keyOf(item);
+		groups.set(key, [...(groups.get(key) ?? []), item]);
+	}
+	return [...groups.values()];
 }
 
-// Every warning in the report, each with the instrument it belongs to, in the panel's order.
-export function warningItemsOf(sections: PanelSections): WarningItem[] {
-	return entriesOf(sections).flatMap(warningItemsOfEntry);
+// What was left out, grouped by its reason and how it was said, as the review step groups the
+// import's: rows of an asset class we don't support are one group, another asset class another.
+export function leftOutGroupsOf(leftOut: ReportLeftOut[]): LeftOutGroup[] {
+	return groupsBy(leftOut, (item) => dropKey(item.drop)).flatMap((group) => {
+		const [first] = group;
+		return first === undefined ? [] : [{ drop: first.drop, items: group }];
+	});
 }
 
 function matchedLotOf(instrument: ReportInstrument, node: ProvenanceNode): ReportMatchedLot | null {

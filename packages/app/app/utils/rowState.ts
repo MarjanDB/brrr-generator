@@ -4,9 +4,8 @@ import { MarkState } from "~/types/timeline";
 // item's row and the rows it lights (the lots of a focused sale, the trades of a focused lot, the
 // chain picked in the graph) look selected alike, tinted with a bar on their left. Only the focused
 // item's row is current; its table scrolls to it, or to the first selected row when none is.
-// The tint stays under the pointer, where an interactive row would otherwise turn grey.
-const selectedClasses =
-	"bg-accent-soft hover:bg-accent-soft shadow-[inset_3px_0_0_var(--color-accent-edge)]";
+// `row-selected` is every list's selected look, and keeps its tint under the pointer.
+const selectedClasses = "row-selected";
 
 export type RowStateAttributes = {
 	class: string;

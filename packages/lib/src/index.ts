@@ -28,6 +28,7 @@ export type { CompanyInfo } from "@brrr/InfoProviders/Models/CompanyInfo";
 export type { CompanyLocationInfo } from "@brrr/InfoProviders/Models/CompanyLocationInfo";
 export type { Country } from "@brrr/InfoProviders/Models/Country";
 export { TreatyType } from "@brrr/InfoProviders/Models/TreatyType";
+export type { CompanyDefinition } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
 export { PredefinedInfoProvider } from "@brrr/InfoProviders/Predefined/PredefinedInfoProvider";
 
 // Pipeline

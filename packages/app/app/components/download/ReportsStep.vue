@@ -10,7 +10,7 @@ import { DateTime } from "luxon";
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from "reka-ui";
 import DownloadStep from "~/components/download/DownloadStep.vue";
 import TaxYearPicker from "~/components/download/TaxYearPicker.vue";
-import { ColorIntent } from "~/types/ui";
+import { ButtonVariant } from "~/types/ui";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
 const props = defineProps<{
@@ -23,8 +23,10 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const { payers } = useReportFlow();
 
-const pipeline = createContainer(new ApiInfoProvider()).get(ReportPipeline);
+const info = new ApiInfoProvider();
+const pipeline = createContainer(info).get(ReportPipeline);
 
 const years = computed(() => reportYearsOf(props.imported.events));
 const year = ref(defaultTaxYear(years.value, DateTime.now()));
@@ -32,9 +34,11 @@ const year = ref(defaultTaxYear(years.value, DateTime.now()));
 const forms = computed(() => taxAuthorityFormsOf(props.authorityId));
 const { reports, pending, error } = provideTaxYearReports({
 	pipeline,
+	info,
 	imported: () => props.imported,
 	authorityId: () => props.authorityId,
 	year: () => year.value,
+	payers: () => payers.value,
 });
 
 // The open tab, by its form's report type. It stays on its form when the year changes.
@@ -67,7 +71,7 @@ const tabs = computed(() =>
 			<span class="text-label">{{ t('tax_year_label') }}</span>
 			<TaxYearPicker v-model="year" :years="years" />
 			<span class="flex-1" />
-			<AppButton :color="ColorIntent.NEUTRAL" @click="emit('restart')">
+			<AppButton :variant="ButtonVariant.SECONDARY" @click="emit('restart')">
 				{{ t('restart_button') }}
 			</AppButton>
 		</div>
@@ -83,11 +87,12 @@ const tabs = computed(() =>
 			</TabsList>
 
 			<TabsContent v-for="entry in tabs" :key="entry.form.reportTypeId" :value="entry.form.reportTypeId">
-				<p v-if="pending" class="flex items-center gap-2 text-sm app-text-muted">
+				<!-- While the forms are made again, the last ones stay, under a note. -->
+				<p v-if="pending" role="status" class="flex items-center gap-2 text-meta mb-3">
 					<span class="i-mdi-loading animate-spin" aria-hidden="true" />
 					{{ t('reports_making', { year }) }}
 				</p>
-				<div v-else-if="error !== null" class="alert-error">{{ error }}</div>
+				<div v-if="error !== null" class="alert-error">{{ error }}</div>
 				<DownloadStep v-else-if="entry.report !== null" :outputs="entry.report.outputs" :form="entry.form" />
 			</TabsContent>
 		</TabsRoot>

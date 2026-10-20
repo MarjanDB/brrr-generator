@@ -29,7 +29,7 @@ const xMax = computed(() => stats.value.overallCumulativeSeries[stats.value.over
 <template>
   <AppDialog v-model:open="open" :title="name" :size="DialogSize.FULL" :return-focus="returnFocus">
     <template #description>
-      <span class="font-mono">{{ isin }}</span>
+      <span>{{ isin }}</span>
     </template>
 
     <div class="flex flex-col gap-6">

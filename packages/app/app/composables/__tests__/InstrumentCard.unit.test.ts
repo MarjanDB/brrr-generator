@@ -72,10 +72,65 @@ describe("one instrument's card on the reports step", () => {
 				lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 				formName: "KDVP",
 				formCode: "Doh-KDVP",
+				startAt: null,
 			}),
 		);
 
 		expect(card.focus.node.value).toBe(b.node(sell.event));
+		expect(card.focus.trail.value).toHaveLength(0);
+	});
+
+	test("a card started at an item focuses it, with nothing to go back to", async () => {
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const buy = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.ACQUIRED,
+			date: "2024-01-10",
+			quantity: "10",
+			price: "5",
+			currency: "USD",
+			label: "buy ACME",
+		});
+		const sell = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-03-10",
+			quantity: "-10",
+			price: "6",
+			currency: "USD",
+			label: "sell ACME",
+		});
+		b.match({
+			instrument: acme,
+			acquired: buy,
+			sold: sell,
+			quantity: "10",
+			boughtOn: "2024-01-10",
+			soldOn: "2024-03-10",
+		});
+		const reading = b.reading();
+		const entry = firstEntry(buildPanel(reading));
+		assert(entry !== null);
+
+		const card = await mountComposable(() =>
+			provideInstrumentCard({
+				entry,
+				reading,
+				walker: new ProvenanceWalker(b.graph),
+				graph: b.graph,
+				year: 2024,
+				lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
+				formName: "KDVP",
+				formCode: "Doh-KDVP",
+				startAt: b.node(buy.event),
+			}),
+		);
+
+		expect(card.focus.node.value).toBe(b.node(buy.event));
 		expect(card.focus.trail.value).toHaveLength(0);
 	});
 
@@ -125,6 +180,7 @@ describe("one instrument's card on the reports step", () => {
 				lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 				formName: "KDVP",
 				formCode: "Doh-KDVP",
+				startAt: null,
 			}),
 		);
 
@@ -192,6 +248,7 @@ describe("one instrument's card on the reports step", () => {
 				lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 				formName: "KDVP",
 				formCode: "Doh-KDVP",
+				startAt: null,
 			}),
 		);
 		expect(card.leftOut.value).toHaveLength(0);
@@ -249,6 +306,7 @@ describe("one instrument's card on the reports step", () => {
 				lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 				formName: "KDVP",
 				formCode: "Doh-KDVP",
+				startAt: null,
 			}),
 		);
 
@@ -307,6 +365,7 @@ describe("one instrument's card on the reports step", () => {
 				lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 				formName: "KDVP",
 				formCode: "Doh-KDVP",
+				startAt: null,
 			}),
 		);
 
@@ -362,6 +421,7 @@ describe("one instrument's card on the reports step", () => {
 				lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 				formName: "KDVP",
 				formCode: "Doh-KDVP",
+				startAt: null,
 			}),
 		);
 		expect(card.offered.value).toBeNull();
@@ -456,6 +516,7 @@ describe("one instrument's card on the reports step", () => {
 				lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 				formName: "KDVP",
 				formCode: "Doh-KDVP",
+				startAt: null,
 			}),
 			i18n: useI18n(),
 		}));
@@ -548,6 +609,7 @@ describe("one instrument's card on the reports step", () => {
 					lotMatchingMethod: TaxAuthorityLotMatchingMethod.FIFO,
 					formName: "KDVP",
 					formCode: "Doh-KDVP",
+					startAt: null,
 				});
 			},
 			() => ({ card: useInstrumentCard(), focus: useGraphFocus() }),

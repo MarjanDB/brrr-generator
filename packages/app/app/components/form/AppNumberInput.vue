@@ -62,8 +62,7 @@ if (form) {
 			:min="min"
 			:max="max"
 			:step="step"
-			:class="error ? 'input-md-error' : 'input-md'"
-			class="w-full"
+			:class="error ? 'field field-invalid' : 'field'"
 			@input="onInput"
 			@blur="onBlur"
 		/>

@@ -40,6 +40,8 @@ export type TimelineDrawState = {
 	year: number;
 	// The text inside a row's bar, where it fits
 	describeRow: (row: TimelineRow) => string;
+	// The marks a problem of the report still affects, each with a small badge.
+	flagged: ReadonlySet<ProvenanceNode>;
 };
 
 // A chart.js plugin, plus the rows' hit test: bars are not chart elements, so the component asks.
@@ -68,6 +70,8 @@ const dimmedAlpha = 0.25;
 const barHitHalfHeight = 6;
 
 const brokerLotLine = 1.5;
+const badgeRadius = 4;
+const badgeRing = 2;
 const focusLine = 2;
 // The gap between a focused lot and its outline, the same from every edge.
 const outlineGap = 2;
@@ -245,6 +249,28 @@ function drawBarEnd(
 	ctx.fillStyle = state.colors[markColors[mark.kind]];
 	ctx.fill();
 	ctx.restore();
+	if (state.flagged.has(mark.node)) {
+		drawBadge(ctx, { x, y: placed.y }, placed.thickness / 2, state);
+	}
+}
+
+// The sign that a problem affects a mark: a ring in the warning colour on its upper right, cut into
+// the mark in the page's colour, so it stands off a mark of the same hue (a dividend).
+function drawBadge(
+	ctx: CanvasRenderingContext2D,
+	at: Point,
+	radius: number,
+	state: TimelineDrawState,
+) {
+	ctx.save();
+	ctx.beginPath();
+	ctx.arc(at.x + radius * 0.8, at.y - radius * 0.8, badgeRadius, 0, Math.PI * 2);
+	ctx.fillStyle = state.colors.barLabel;
+	ctx.strokeStyle = state.colors.warning;
+	ctx.lineWidth = badgeRing;
+	ctx.fill();
+	ctx.stroke();
+	ctx.restore();
 }
 
 // A focused or lit lot is outlined around its whole shape, the bar and the outer halves of its
@@ -392,6 +418,9 @@ function drawPoint(
 		ctx.fill();
 	}
 	ctx.restore();
+	if (state.flagged.has(mark.node)) {
+		drawBadge(ctx, at, radius, state);
+	}
 }
 
 // Draws the tax year under the grid, the rows' bars under the chart's own points, and their ends,

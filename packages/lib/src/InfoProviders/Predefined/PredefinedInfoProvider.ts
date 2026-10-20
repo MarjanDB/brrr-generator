@@ -1,7 +1,17 @@
-import { CountryName, Isin } from "@brrr/Core/Models/Identifiers";
+import { CountryCode, CountryName, Isin } from "@brrr/Core/Models/Identifiers";
 import type { IInfoProvider } from "@brrr/InfoProviders/Interfaces/IInfoProvider";
 import type { CompanyInfo } from "@brrr/InfoProviders/Models/CompanyInfo";
 import type { Country } from "@brrr/InfoProviders/Models/Country";
+
+// A company someone defines by hand, where the lookup found none: what a dividend form needs of it.
+export type CompanyDefinition = {
+	isin: string;
+	name: string;
+	street: string;
+	city: string;
+	countryName: string;
+	countryCode: string;
+};
 
 // Takes plain strings, so the site and the CLI can use it without building lib's identifiers.
 export class PredefinedInfoProvider implements IInfoProvider {
@@ -18,6 +28,22 @@ export class PredefinedInfoProvider implements IInfoProvider {
 
 	public addCompany(isin: string, info: CompanyInfo): void {
 		this.companies.set(Isin.Schema.parse(isin), info);
+	}
+
+	public defineCompany(definition: CompanyDefinition): void {
+		this.companies.set(Isin.Schema.parse(definition.isin), {
+			shortName: definition.name,
+			longName: definition.name,
+			location: {
+				country: CountryName.Schema.parse(definition.countryName),
+				address1: definition.street,
+				address2: null,
+				zipCode: "",
+				city: definition.city,
+				state: null,
+				shortCodeCountry2: CountryCode.Schema.parse(definition.countryCode),
+			},
+		});
 	}
 
 	public updateCompany(isin: string, info: CompanyInfo): void {

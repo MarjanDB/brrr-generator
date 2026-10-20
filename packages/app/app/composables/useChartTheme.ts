@@ -1,3 +1,4 @@
+import { defaults } from "chart.js";
 import { onMounted, ref } from "vue";
 
 export type ChartThemeColors = {
@@ -17,8 +18,10 @@ export type ChartThemeColors = {
 	focus: string;
 	// The band behind the instrument timeline's tax year
 	taxYear: string;
-	// A label inside a solid bar of the timeline
+	// A label inside a solid bar of the timeline, and the inside of a problem's badge
 	barLabel: string;
+	// A problem's badge on a mark of the timeline
+	warning: string;
 };
 
 function cssVar(name: string): string {
@@ -54,6 +57,7 @@ function readColors(): ChartThemeColors {
 		focus: cssVar("--color-action-edge"),
 		taxYear: cssVar("--color-surface-raised"),
 		barLabel: cssVar("--color-page"),
+		warning: cssVar("--color-warning-ink"),
 	};
 }
 
@@ -62,6 +66,9 @@ export function useChartTheme() {
 
 	onMounted(() => {
 		colors.value = readColors();
+		// The charts write in the page's font, not chart.js's own Helvetica. Set before the chart that
+		// asked is built, since its onMounted runs after this one.
+		defaults.font.family = getComputedStyle(document.body).fontFamily;
 	});
 
 	return { colors };

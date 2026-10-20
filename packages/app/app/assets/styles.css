@@ -271,6 +271,7 @@
 /* Components use only these roles (unocss.config.ts exposes nothing else); branding changes only this block. */
 /* Charts read --color-accent-edge and --color-edge-strong and add opacity to them, so keep those two as #rrggbb. */
 /* The theme is dark: each role takes the stop that mirrors its light one (300 → 700, 990 → 10), as the old dark mode did. */
+/* Each intent has its fill (-hover a step lighter, -pressed a step darker) and its soft tint (-soft-hover lighter, -soft-pressed darker). */
 
 :root {
 	/* Native controls (the file picker's button, scrollbars) draw themselves dark too, and "only" keeps the
@@ -294,56 +295,77 @@
 	/* Intent: action */
 	--color-action: var(--primary-700);
 	--color-action-hover: var(--primary-650);
+	--color-action-pressed: var(--primary-750);
 	--color-action-on: var(--primary-10);
 	--color-action-soft: var(--primary-850);
+	--color-action-soft-hover: var(--primary-800);
+	--color-action-soft-pressed: var(--primary-900);
 	--color-action-ink: var(--primary-300);
 	--color-action-edge: var(--primary-400);
 
 	/* Intent: accent */
 	--color-accent: var(--secondary-700);
 	--color-accent-hover: var(--secondary-650);
+	--color-accent-pressed: var(--secondary-750);
 	--color-accent-on: var(--secondary-10);
 	--color-accent-soft: var(--secondary-850);
+	--color-accent-soft-hover: var(--secondary-800);
+	--color-accent-soft-pressed: var(--secondary-900);
 	--color-accent-ink: var(--secondary-300);
 	--color-accent-edge: var(--secondary-400);
 
 	/* Intent: neutral */
 	--color-neutral: var(--neutral-700);
 	--color-neutral-hover: var(--neutral-650);
+	--color-neutral-pressed: var(--neutral-750);
 	--color-neutral-on: var(--neutral-10);
 	--color-neutral-soft: var(--neutral-850);
+	--color-neutral-soft-hover: var(--neutral-800);
+	--color-neutral-soft-pressed: var(--neutral-900);
 	--color-neutral-ink: var(--neutral-300);
 	--color-neutral-edge: var(--neutral-400);
 
 	/* Intent: success */
 	--color-success: var(--success-700);
 	--color-success-hover: var(--success-650);
+	--color-success-pressed: var(--success-750);
 	--color-success-on: var(--success-10);
 	--color-success-soft: var(--success-850);
+	--color-success-soft-hover: var(--success-800);
+	--color-success-soft-pressed: var(--success-900);
 	--color-success-ink: var(--success-300);
 	--color-success-edge: var(--success-400);
 
 	/* Intent: warning */
 	--color-warning: var(--warning-700);
 	--color-warning-hover: var(--warning-650);
+	--color-warning-pressed: var(--warning-750);
 	--color-warning-on: var(--warning-10);
 	--color-warning-soft: var(--warning-850);
+	--color-warning-soft-hover: var(--warning-800);
+	--color-warning-soft-pressed: var(--warning-900);
 	--color-warning-ink: var(--warning-300);
 	--color-warning-edge: var(--warning-400);
 
 	/* Intent: danger */
 	--color-danger: var(--error-700);
 	--color-danger-hover: var(--error-650);
+	--color-danger-pressed: var(--error-750);
 	--color-danger-on: var(--error-10);
 	--color-danger-soft: var(--error-850);
+	--color-danger-soft-hover: var(--error-800);
+	--color-danger-soft-pressed: var(--error-900);
 	--color-danger-ink: var(--error-300);
 	--color-danger-edge: var(--error-400);
 
 	/* Intent: info */
 	--color-info: var(--info-700);
 	--color-info-hover: var(--info-650);
+	--color-info-pressed: var(--info-750);
 	--color-info-on: var(--info-10);
 	--color-info-soft: var(--info-850);
+	--color-info-soft-hover: var(--info-800);
+	--color-info-soft-pressed: var(--info-900);
 	--color-info-ink: var(--info-300);
 	--color-info-edge: var(--info-400);
 }

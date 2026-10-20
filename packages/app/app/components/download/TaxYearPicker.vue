@@ -51,11 +51,11 @@ function onPicked(picked: DateValue | DateValue[] | undefined) {
 		<template #trigger>
 			<button
 				type="button"
-				class="input-md flex items-center gap-2 cursor-pointer app-focus-ring"
+				class="button-secondary control-md"
 				:aria-label="t('tax_year_button', { year })"
 			>
 				<span class="i-mdi-calendar-blank-outline text-ink-muted" aria-hidden="true" />
-				<span class="font-medium">{{ year }}</span>
+				<span class="tabular-nums">{{ year }}</span>
 				<span class="i-mdi-chevron-down text-ink-muted" aria-hidden="true" />
 			</button>
 		</template>
@@ -75,11 +75,11 @@ function onPicked(picked: DateValue | DateValue[] | undefined) {
 			@update:model-value="onPicked"
 		>
 			<YearPickerHeader class="flex items-center justify-between gap-2">
-				<YearPickerPrev class="button-ghost p-1 disabled:opacity-40" :aria-label="t('tax_year_previous')">
+				<YearPickerPrev class="button-quiet control-icon" :aria-label="t('tax_year_previous')">
 					<span class="i-mdi-chevron-left text-lg block" aria-hidden="true" />
 				</YearPickerPrev>
 				<YearPickerHeading class="text-label" />
-				<YearPickerNext class="button-ghost p-1 disabled:opacity-40" :aria-label="t('tax_year_next')">
+				<YearPickerNext class="button-quiet control-icon" :aria-label="t('tax_year_next')">
 					<span class="i-mdi-chevron-right text-lg block" aria-hidden="true" />
 				</YearPickerNext>
 			</YearPickerHeader>
@@ -89,7 +89,7 @@ function onPicked(picked: DateValue | DateValue[] | undefined) {
 						<YearPickerCell v-for="cell in row" :key="cell.toString()" :date="cell">
 							<YearPickerCellTrigger
 								:year="cell"
-								class="w-full rounded-sm py-1.5 text-sm text-center app-text cursor-pointer transition-colors hover:bg-surface-hover data-[selected]:bg-accent data-[selected]:text-accent-on data-[disabled]:cursor-not-allowed data-[disabled]:text-ink-muted data-[disabled]:opacity-40 data-[disabled]:hover:bg-transparent app-focus-ring"
+								class="w-full h-8 rounded-sm text-sm text-center tabular-nums cursor-pointer transition-colors hover:bg-surface-hover active:bg-surface-raised data-[selected]:!bg-accent-soft data-[selected]:ring-1 data-[selected]:ring-inset data-[selected]:ring-accent-edge data-[disabled]:opacity-50 data-[disabled]:pointer-events-none app-focus-ring"
 							/>
 						</YearPickerCell>
 					</YearPickerGridRow>

@@ -50,7 +50,7 @@ function cashTxLabel(tx: CashTx): string {
           :key="tx.id"
           class="app-table-row-dense"
         >
-          <td class="app-table-td-dense font-mono">{{ formatDate(tx.date) }}</td>
+          <td class="app-table-td-dense tabular-nums">{{ formatDate(tx.date) }}</td>
           <td class="app-table-td-dense">{{ cashTxLabel(tx) }}</td>
           <td class="app-table-td-dense text-right">
             {{ formatAmount(tx.exchangedMoney.quantity * tx.exchangedMoney.priceInBase, baseCurrency) }}

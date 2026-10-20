@@ -24,10 +24,10 @@ export class ProvenanceGraph implements IProvenanceRecorder {
 	// How many nodes come before this graph's own: the parent can't grow once it has a layer.
 	private readonly parentNodeCount: number;
 	private readonly subjects = new Map<object, ProvenanceNode>();
-	private readonly ownNodes: ProvenanceNode[] = [];
-	private readonly ownEdges: ProvenanceEdge[] = [];
-	private readonly ownDrops: ProvenanceDrop[] = [];
-	private readonly ownWarnings: ProvenanceWarning[] = [];
+	private readonly recordedNodes: ProvenanceNode[] = [];
+	private readonly recordedEdges: ProvenanceEdge[] = [];
+	private readonly recordedDrops: ProvenanceDrop[] = [];
+	private readonly recordedWarnings: ProvenanceWarning[] = [];
 	private sealed = false;
 
 	public constructor(args: ProvenanceGraphArgs) {
@@ -50,7 +50,7 @@ export class ProvenanceGraph implements IProvenanceRecorder {
 		if (this.find(subject) !== null) {
 			return;
 		}
-		const position = this.parentNodeCount + this.ownNodes.length + 1;
+		const position = this.parentNodeCount + this.recordedNodes.length + 1;
 		const node = new ProvenanceNode({
 			id: ProvenanceNodeId.Schema.parse(`n${position}`),
 			kind,
@@ -58,7 +58,7 @@ export class ProvenanceGraph implements IProvenanceRecorder {
 			fields,
 		});
 		this.subjects.set(subject, node);
-		this.ownNodes.push(node);
+		this.recordedNodes.push(node);
 	}
 
 	public derive(
@@ -71,7 +71,7 @@ export class ProvenanceGraph implements IProvenanceRecorder {
 		this.assertOpen();
 		const target = this.nodeOf(to);
 		for (const source of from) {
-			this.ownEdges.push(
+			this.recordedEdges.push(
 				new ProvenanceEdge({ from: this.nodeOf(source), to: target, change, by, detail }),
 			);
 		}
@@ -84,12 +84,12 @@ export class ProvenanceGraph implements IProvenanceRecorder {
 		detail: ProvenanceDetail | null,
 	): void {
 		this.assertOpen();
-		this.ownDrops.push(new ProvenanceDrop({ node: this.nodeOf(subject), reason, by, detail }));
+		this.recordedDrops.push(new ProvenanceDrop({ node: this.nodeOf(subject), reason, by, detail }));
 	}
 
 	public warn(subject: object, by: ProvenanceStage, detail: ProvenanceDetail): void {
 		this.assertOpen();
-		this.ownWarnings.push(new ProvenanceWarning({ node: this.nodeOf(subject), by, detail }));
+		this.recordedWarnings.push(new ProvenanceWarning({ node: this.nodeOf(subject), by, detail }));
 	}
 
 	public nodeOf(subject: object): ProvenanceNode {
@@ -101,19 +101,29 @@ export class ProvenanceGraph implements IProvenanceRecorder {
 	}
 
 	public nodes(): ProvenanceNode[] {
-		return [...(this.parent?.nodes() ?? []), ...this.ownNodes];
+		return [...(this.parent?.nodes() ?? []), ...this.recordedNodes];
 	}
 
 	public edges(): ProvenanceEdge[] {
-		return [...(this.parent?.edges() ?? []), ...this.ownEdges];
+		return [...(this.parent?.edges() ?? []), ...this.recordedEdges];
 	}
 
 	public drops(): ProvenanceDrop[] {
-		return [...(this.parent?.drops() ?? []), ...this.ownDrops];
+		return [...(this.parent?.drops() ?? []), ...this.recordedDrops];
 	}
 
 	public warnings(): ProvenanceWarning[] {
-		return [...(this.parent?.warnings() ?? []), ...this.ownWarnings];
+		return [...(this.parent?.warnings() ?? []), ...this.recordedWarnings];
+	}
+
+	// What this graph recorded itself, without its parent's: for a report's layer, what the report
+	// step dropped and warned about, apart from its import.
+	public ownDrops(): ProvenanceDrop[] {
+		return [...this.recordedDrops];
+	}
+
+	public ownWarnings(): ProvenanceWarning[] {
+		return [...this.recordedWarnings];
 	}
 
 	private find(subject: object): ProvenanceNode | null {

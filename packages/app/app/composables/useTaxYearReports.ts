@@ -1,5 +1,6 @@
 import {
 	type ImportResult,
+	type PredefinedInfoProvider,
 	type ReportPipeline,
 	type TaxAuthorityId,
 	TaxAuthorityLotMatchingMethod,
@@ -7,18 +8,23 @@ import {
 } from "@brrr/lib";
 import type { InjectionKey, Ref, ShallowRef } from "vue";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
+import type { DefinedPayer } from "~/types/reportFlow";
 import type { TaxpayerDetails, TaxYearReport } from "~/types/taxYearReports";
 
 type TaxYearReportsArgs = {
-	pipeline: ReportPipeline;
+	pipeline: Pick<ReportPipeline, "generate">;
+	// The lookups the pipeline was built with, which take the payers defined by hand.
+	info: Pick<PredefinedInfoProvider, "defineCompany" | "removeCompany">;
 	imported: () => ImportResult;
 	authorityId: () => TaxAuthorityId;
 	year: () => number;
+	// The payers defined by hand this session, by ISIN.
+	payers: () => ReadonlyMap<string, DefinedPayer>;
 };
 
 export type TaxYearReports = {
-	// Each of the authority's forms with what it made for the year, in its tabs' order; empty while
-	// they are being made.
+	// Each of the authority's forms with what it made for the year, in its tabs' order; empty until
+	// they are first made. While they are made again, the last ones stay.
 	reports: Readonly<ShallowRef<TaxYearReport[]>>;
 	pending: Readonly<Ref<boolean>>;
 	error: Readonly<Ref<string | null>>;
@@ -54,8 +60,8 @@ const nobody: TaxpayerDetails = {
 };
 
 // Every form a tax authority makes for a year, made from the import whenever the import, the
-// authority or the year changes, all at once so moving between them waits for nothing, and handed
-// to everything below the step. Only FIFO lot matching is supported.
+// authority, the year or the payers defined by hand change, all at once so moving between them
+// waits for nothing, and handed to everything below the step. Only FIFO lot matching is supported.
 export function provideTaxYearReports(args: TaxYearReportsArgs): TaxYearReports {
 	const reports = shallowRef<TaxYearReport[]>([]);
 	const pending = ref(true);
@@ -63,14 +69,29 @@ export function provideTaxYearReports(args: TaxYearReportsArgs): TaxYearReports 
 	const taxpayer = ref<TaxpayerDetails>({ ...nobody });
 	// Each change starts a run; one that a later run overtook drops what it made.
 	let runs = 0;
+	// The ISINs whose payers the lookups were last given.
+	let defined = new Set<string>();
+
+	// The lookups take the payers as they are now: a removed one is looked up again.
+	function definePayers(payers: ReadonlyMap<string, DefinedPayer>) {
+		for (const isin of defined) {
+			if (!payers.has(isin)) {
+				args.info.removeCompany(isin);
+			}
+		}
+		for (const payer of payers.values()) {
+			args.info.defineCompany(payer.definition);
+		}
+		defined = new Set(payers.keys());
+	}
 
 	watch(
-		[args.imported, args.authorityId, args.year],
-		async ([imported, authorityId, year]) => {
+		[args.imported, args.authorityId, args.year, args.payers],
+		async ([imported, authorityId, year, payers]) => {
 			const run = ++runs;
-			reports.value = [];
 			pending.value = true;
 			error.value = null;
+			definePayers(payers);
 			const lotMatchingMethod = TaxAuthorityLotMatchingMethod.FIFO;
 			try {
 				const made = await Promise.all(
@@ -102,6 +123,7 @@ export function provideTaxYearReports(args: TaxYearReportsArgs): TaxYearReports 
 				}
 			} catch (caught) {
 				if (run === runs) {
+					reports.value = [];
 					error.value = caught instanceof Error ? caught.message : String(caught);
 				}
 			} finally {

@@ -11,6 +11,7 @@ import {
 	TimelineRowKind,
 	type TimelineTick,
 } from "~/types/timeline";
+import { ButtonVariant, ControlSize } from "~/types/ui";
 import {
 	barY,
 	isFoldable,
@@ -31,6 +32,22 @@ const { t, locale } = useI18n();
 const card = useInstrumentCard();
 const { timeline, describeMark, describeRow, describeNode, focus, offered, showTrace } = card;
 const { colors } = useChartTheme();
+const { openProblemAt, sentenceOf } = useReportProblems();
+
+// The marks a problem of the report still affects: each has a badge, and its tooltip adds the
+// problem's sentence.
+const flagged = computed(
+	() =>
+		new Set(
+			timeline.value.marks
+				.filter((mark) => openProblemAt(mark.node) !== null)
+				.map((mark) => mark.node),
+		),
+);
+function markText(mark: TimelineMark): string {
+	const problem = openProblemAt(mark.node);
+	return problem === null ? describeMark(mark) : `${describeMark(mark)}\n${sentenceOf(problem)}`;
+}
 const canvasRef = useTemplateRef<HTMLCanvasElement>("canvas");
 let chart: Chart<"scatter"> | null = null;
 
@@ -154,7 +171,7 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 						hovered.value =
 							tooltip.opacity === 0 || target === undefined
 								? null
-								: { text: describeMark(target.mark), x: tooltip.caretX, y: tooltip.caretY };
+								: { text: markText(target.mark), x: tooltip.caretX, y: tooltip.caretY };
 					},
 				},
 			},
@@ -263,6 +280,7 @@ function rebuild() {
 		colors: colors.value,
 		year: card.year,
 		describeRow,
+		flagged: flagged.value,
 	}));
 	chart = new Chart(canvasRef.value, buildConfig(plugin));
 }
@@ -299,7 +317,12 @@ watch(spread, rebuild, { flush: "post" });
     </AppTooltip>
   </div>
   <div v-if="foldable" class="flex justify-end -mt-1 mb-1">
-    <AppButton ghost class="px-2 py-0.5 text-xs" :aria-pressed="spread" @click="spread = !spread">
+    <AppButton
+      :variant="ButtonVariant.QUIET"
+      :size="ControlSize.SM"
+      :aria-pressed="spread"
+      @click="spread = !spread"
+    >
       {{ spread ? t('download_timeline_fold') : t('download_timeline_spread') }}
     </AppButton>
   </div>
@@ -311,8 +334,8 @@ watch(spread, rebuild, { flush: "post" });
     :aria-label="offerText"
     class="w-64"
   >
-    <p class="text-sm text-ink">{{ offerText }}</p>
-    <AppButton class="mt-2 gap-1 px-2 py-1 text-xs" @click="offered !== null && showTrace(offered)">
+    <p class="text-body">{{ offerText }}</p>
+    <AppButton :size="ControlSize.SM" class="mt-2" @click="offered !== null && showTrace(offered)">
       <span class="i-mdi-graph-outline" aria-hidden="true" />
       {{ t('download_view_trace') }}
     </AppButton>

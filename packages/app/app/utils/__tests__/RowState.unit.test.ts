@@ -6,9 +6,7 @@ describe("how a row under the timeline shows the focus", () => {
 	test("the focused item's row is selected and current", () => {
 		const focused = rowStateAttributes(MarkState.FOCUSED);
 
-		expect(focused.class).toEqual(
-			"bg-accent-soft hover:bg-accent-soft shadow-[inset_3px_0_0_var(--color-accent-edge)]",
-		);
+		expect(focused.class).toEqual("row-selected");
 		expect(focused["aria-current"]).toEqual(true);
 		expect(focused["data-selected"]).toEqual(true);
 	});
@@ -16,9 +14,7 @@ describe("how a row under the timeline shows the focus", () => {
 	test("a row the focus lights, such as a lot of the focused sale, looks selected the same way, without being current", () => {
 		const lit = rowStateAttributes(MarkState.LIT);
 
-		expect(lit.class).toEqual(
-			"bg-accent-soft hover:bg-accent-soft shadow-[inset_3px_0_0_var(--color-accent-edge)]",
-		);
+		expect(lit.class).toEqual("row-selected");
 		expect(lit["aria-current"]).toBeUndefined();
 		expect(lit["data-selected"]).toEqual(true);
 	});

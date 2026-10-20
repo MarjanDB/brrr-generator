@@ -61,10 +61,10 @@ function onStep(step: number) {
 		>
 			<StepperTrigger
 				class="flex flex-col items-center gap-1 min-w-0 flex-shrink-0 bg-transparent border-0 p-0 rounded-md app-focus-ring"
-				:class="canNavigate(index + 1) ? 'cursor-pointer' : 'cursor-default'"
+				:class="canNavigate(index + 1) ? 'group cursor-pointer' : 'cursor-default'"
 			>
 				<StepperIndicator
-					class="size-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors"
+					class="size-8 rounded-full flex items-center justify-center text-sm font-semibold transition-[background-color,filter] group-hover:brightness-115 group-active:brightness-90"
 					:class="indicatorClass(index + 1)"
 				>
 					<span v-if="index + 1 < currentStep" class="i-mdi-check text-base" />
@@ -73,7 +73,7 @@ function onStep(step: number) {
 				<StepperTitle
 					as="span"
 					class="block text-xs text-center leading-tight"
-					:class="index + 1 === currentStep ? 'app-text font-medium' : 'app-text-muted'"
+					:class="index + 1 === currentStep ? 'text-ink font-medium' : 'text-ink-muted group-hover:text-ink'"
 				>
 					{{ label }}
 				</StepperTitle>

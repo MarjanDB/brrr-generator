@@ -56,8 +56,7 @@ if (form) {
 			type="text"
 			:placeholder="placeholder"
 			:disabled="disabled"
-			:class="error ? 'input-md-error' : 'input-md'"
-			class="w-full"
+			:class="error ? 'field field-invalid' : 'field'"
 			@input="onInput"
 			@blur="onBlur"
 		/>

@@ -30,7 +30,7 @@ const cards = computed(() => [
 <template>
   <div class="grid grid-cols-3 gap-3">
     <div v-for="card in cards" :key="card.key" class="card p-3 flex flex-col gap-1">
-      <span class="text-caption">{{ card.label }}</span>
+      <span class="text-meta">{{ card.label }}</span>
       <span class="text-base font-semibold tabular-nums app-text">
         {{ fmt.format(card.value) }}
       </span>

@@ -54,21 +54,6 @@ export type FormLot = {
 	netChange: number | null;
 };
 
-// What a quantity is counted in: shares, or an option's contracts.
-export enum QuantityUnit {
-	SHARE = "SHARE",
-	CONTRACT = "CONTRACT",
-}
-
-// The plural forms the locales' words take (Intl.PluralRules' categories): English has one and
-// other, Slovenian also two and few.
-export enum PluralForm {
-	ONE = "one",
-	TWO = "two",
-	FEW = "few",
-	OTHER = "other",
-}
-
 // What a row of "Everything detected" says for one of its reasons: the verdict on its badge, and
 // the detail after it.
 export type DetectedPartText = {

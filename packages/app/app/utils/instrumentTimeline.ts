@@ -79,23 +79,28 @@ function draftsOf(instrument: ReportInstrument): Draft[] {
 	);
 }
 
-// Whether the node became one of the report's lines. The walk never enters a grouping: every line is
-// made with its instrument's grouping, so through it every member would reach every line.
-export function reachesALine(node: ProvenanceNode, walker: ProvenanceWalker): boolean {
+// The report's lines the node became. The walk never enters a grouping: every line is made with its
+// instrument's grouping, so through it every member would reach every line.
+export function linesReachedBy(node: ProvenanceNode, walker: ProvenanceWalker): ProvenanceNode[] {
+	const lines = new Set<ProvenanceNode>();
 	const pending = [node];
 	const seen = new Set(pending);
 	for (const current of pending) {
 		for (const { to } of walker.children(current)) {
 			if (to.kind === ProvenanceNodeKind.REPORT_LINE) {
-				return true;
-			}
-			if (to.kind !== ProvenanceNodeKind.GROUPING && !seen.has(to)) {
+				lines.add(to);
+			} else if (to.kind !== ProvenanceNodeKind.GROUPING && !seen.has(to)) {
 				seen.add(to);
 				pending.push(to);
 			}
 		}
 	}
-	return false;
+	return [...lines];
+}
+
+// Whether the node became one of the report's lines.
+export function reachesALine(node: ProvenanceNode, walker: ProvenanceWalker): boolean {
+	return linesReachedBy(node, walker).length > 0;
 }
 
 // A matched lot is on the form when one of its legs became a line: it closed in the report's period.

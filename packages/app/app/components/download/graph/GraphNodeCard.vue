@@ -63,7 +63,7 @@ const classes = computed(() => [
         width: `${placed.width}px`,
         height: `${placed.height}px`,
       }"
-      class="absolute flex items-center gap-2 rounded-md border border-edge-strong bg-surface-raised px-1.5 text-left text-sm text-ink transition-opacity hover:border-action-edge"
+      class="absolute flex items-center gap-2 rounded-md border border-edge-strong bg-surface-raised px-1.5 text-left text-sm text-ink cursor-pointer transition-[opacity,background-color] hover:bg-surface-hover active:bg-surface app-focus-ring"
       :class="classes"
       @click.stop="emit('click')"
     >

@@ -68,8 +68,8 @@ if (form) {
 				:id="id"
 				:aria-label="label === undefined ? ariaLabel : undefined"
 				:class="[
-					error ? 'input-md-error' : 'input-md',
-					'w-full flex items-center justify-between gap-2',
+					error ? 'button-secondary control-md !border-danger-edge' : 'button-secondary control-md',
+					'w-full justify-between',
 				]"
 			>
 				<span :class="selectedLabel ? '' : 'text-ink-muted'">
@@ -81,17 +81,17 @@ if (form) {
 				<SelectContent
 					position="popper"
 					:side-offset="4"
-					class="z-50 min-w-[var(--reka-select-trigger-width)] bg-surface border app-border-strong rounded-md shadow-md overflow-hidden"
+					class="menu-box min-w-[var(--reka-select-trigger-width)] max-h-[min(20rem,var(--reka-select-content-available-height))] overflow-hidden"
 				>
 					<SelectViewport class="p-1">
 						<SelectItem
 							v-for="opt in options"
 							:key="opt.value"
 							:value="opt.value"
-							class="flex items-center gap-2 px-3 py-2 text-base app-text rounded-sm cursor-pointer select-none outline-none hover:bg-surface-hover data-[highlighted]:bg-surface-hover data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed"
+							class="menu-item"
 						>
 							<SelectItemIndicator>
-								<span class="i-mdi-check text-icon-confirm" />
+								<span class="i-mdi-check text-accent-ink" />
 							</SelectItemIndicator>
 							<SelectItemText>{{ opt.label }}</SelectItemText>
 						</SelectItem>

@@ -183,6 +183,40 @@ test("what a layer records stays out of its parent", () => {
 	expect(layer.drops()).toHaveLength(1);
 });
 
+test("a layer's own drops and warnings leave out its parent's, which its drops and warnings include", () => {
+	const parent = new ProvenanceGraph({ parent: null });
+	const row = {};
+	parent.node(row, ProvenanceNodeKind.ROW, "Trade 1001", {});
+	parent.drop(row, DropReason.NOT_SUPPORTED, stage, null);
+	parent.warn(
+		row,
+		stage,
+		new ProvenanceDetail({ kind: ProvenanceDetailKind.FILE_ERROR, values: {} }),
+	);
+	const layer = parent.layer();
+	const line = {};
+	layer.node(line, ProvenanceNodeKind.REPORT_LINE, "DOH_DIV 2022-04-02", {});
+	layer.drop(line, DropReason.OUTSIDE_PERIOD, stage, null);
+	layer.warn(
+		line,
+		stage,
+		new ProvenanceDetail({
+			kind: ProvenanceDetailKind.COMPANY_NOT_FOUND,
+			values: { [ProvenanceDetailValue.ISIN]: "FR1" },
+		}),
+	);
+
+	expect(layer.drops()).toHaveLength(2);
+	expect(layer.warnings()).toHaveLength(2);
+	expect(layer.ownDrops()).toHaveLength(1);
+	expect(layer.ownDrops()[0].reason).toEqual(DropReason.OUTSIDE_PERIOD);
+	expect(layer.ownWarnings()).toHaveLength(1);
+	expect(layer.ownWarnings()[0].detail.kind).toEqual(ProvenanceDetailKind.COMPANY_NOT_FOUND);
+	expect(parent.ownDrops()).toHaveLength(1);
+	expect(parent.ownDrops()[0].reason).toEqual(DropReason.NOT_SUPPORTED);
+	expect(parent.ownWarnings()).toHaveLength(1);
+});
+
 test("recording a parent's object in a layer keeps the parent's node", () => {
 	const parent = new ProvenanceGraph({ parent: null });
 	const row = {};

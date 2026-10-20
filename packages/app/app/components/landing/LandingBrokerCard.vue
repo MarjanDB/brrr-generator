@@ -15,7 +15,7 @@ const { t } = useI18n();
 		<img :src="broker.iconUrl" alt="" class="logo-tile h-10 w-10 shrink-0" />
 		<div class="flex min-w-0 flex-col gap-0.5">
 			<span class="text-base font-semibold app-text">{{ t(broker.nameKey) }}</span>
-			<span class="text-body-sm">{{ t(broker.taglineKey) }}</span>
+			<span class="text-body text-ink-muted">{{ t(broker.taglineKey) }}</span>
 		</div>
 	</div>
 </template>

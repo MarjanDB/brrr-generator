@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { type ProvenanceWalker, ReportInstrumentKind, type ReportProvenance } from "@brrr/lib";
+import {
+	type ProvenanceNode,
+	type ProvenanceWalker,
+	ReportInstrumentKind,
+	type ReportProvenance,
+} from "@brrr/lib";
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from "reka-ui";
 import { computed } from "vue";
 import DetectedTable from "~/components/download/DetectedTable.vue";
@@ -22,6 +27,8 @@ const props = defineProps<{
 	walker: ProvenanceWalker;
 	// The form's own name: Doh-KDVP, Doh-Div, D-IFI.
 	formCode: string;
+	// Where its focus starts, when a problem asked to show one of its items.
+	startAt: ProvenanceNode | null;
 }>();
 
 const { t } = useI18n();
@@ -35,6 +42,7 @@ const card = provideInstrumentCard({
 	// The report type's own id.
 	formName: props.outputs.reportTypeId.toUpperCase(),
 	formCode: props.formCode,
+	startAt: props.startAt,
 });
 const { tab, focus, formLots, formPayments, detected, describeNode } = card;
 
