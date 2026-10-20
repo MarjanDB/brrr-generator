@@ -95,7 +95,7 @@ function openModal(row: InstrumentRow, event: MouseEvent) {
 </script>
 
 <template>
-  <div class="card card-padding-md flex flex-col gap-4 w-full max-w-screen-md mx-auto">
+  <div class="step-card card-padding-md flex flex-col gap-4 w-full max-w-screen-md mx-auto">
     <TabsRoot v-model="tab" class="flex flex-col gap-4">
       <TabsList :aria-label="t('review_tabs_label')" :class="TabClasses.list">
         <TabsTrigger :value="ReviewTab.INSTRUMENTS" :class="TabClasses.trigger">

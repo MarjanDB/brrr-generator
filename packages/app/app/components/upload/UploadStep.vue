@@ -78,7 +78,7 @@ watch(xmlFiles, (v) => {
 </script>
 
 <template>
-  <div class="card card-padding-md flex flex-col gap-3 w-full max-w-screen-md mx-auto">
+  <div class="step-card card-padding-md flex flex-col gap-3 w-full max-w-screen-md mx-auto">
     <h2 class="text-heading">{{ t('ibkr_export_title') }}</h2>
     <p class="text-body text-ink-muted">{{ t('ibkr_export_hint') }}</p>
     
