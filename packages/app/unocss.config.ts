@@ -117,6 +117,17 @@ export default defineConfig({
 			"button-quiet",
 			"control bg-transparent text-ink-muted border-transparent hover:bg-surface-hover hover:text-ink active:bg-surface-raised active:text-ink aria-expanded:bg-surface-hover aria-expanded:text-ink aria-pressed:bg-accent-soft aria-pressed:text-accent-ink",
 		],
+		// A problem: a button that names it and opens it. Danger for what is on no form, warning for a
+		// value on it that needs checking.
+		[
+			"button-issue-danger",
+			"control bg-danger-soft text-danger-ink border-danger-edge hover:bg-danger-soft-hover active:bg-danger-soft-pressed aria-expanded:bg-danger-soft-pressed",
+		],
+		[
+			"button-issue-warning",
+			"control bg-warning-soft text-warning-ink border-warning-edge hover:bg-warning-soft-hover active:bg-warning-soft-pressed aria-expanded:bg-warning-soft-pressed",
+		],
+
 		// Fields you type into show their focus on any focus, since that is where the caret is.
 		[
 			"field",

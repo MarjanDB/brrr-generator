@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from "reka-ui";
 import type { ImportLeftOut } from "~/types/importSources";
-import { ColorIntent } from "~/types/ui";
 
 defineProps<{
   leftOut: ImportLeftOut;
@@ -30,9 +29,9 @@ const groupTrigger =
       <h3 class="text-subheading">{{ t("review_left_out_heading") }}</h3>
       <CollapsibleRoot v-for="(line, index) in leftOut.lines" :key="index" v-slot="{ open }" :class="group">
         <CollapsibleTrigger :class="groupTrigger">
-          <span class="i-mdi-alert-outline shrink-0 text-warning-ink" aria-hidden="true" />
+          <span class="i-mdi-alert-circle-outline shrink-0 text-danger-ink" aria-hidden="true" />
           <span class="flex-1 text-body">{{ dropSentence(line.drop) }}</span>
-          <AppBadge :color="ColorIntent.WARNING">{{ line.files.length + line.rows.length }}</AppBadge>
+          <AppBadge>{{ line.files.length + line.rows.length }}</AppBadge>
           <span class="shrink-0 app-text-muted" :class="open ? 'i-mdi-chevron-up' : 'i-mdi-chevron-down'" />
         </CollapsibleTrigger>
         <CollapsibleContent class="flex flex-col items-start gap-1 px-3 pb-3">
@@ -51,7 +50,7 @@ const groupTrigger =
         <CollapsibleTrigger :class="groupTrigger">
           <span class="i-mdi-call-merge shrink-0 text-info-ink" aria-hidden="true" />
           <span class="flex-1 text-body">{{ t("review_merged_group") }}</span>
-          <AppBadge :color="ColorIntent.INFO">{{ leftOut.merged.length }}</AppBadge>
+          <AppBadge>{{ leftOut.merged.length }}</AppBadge>
           <span class="shrink-0 app-text-muted" :class="open ? 'i-mdi-chevron-up' : 'i-mdi-chevron-down'" />
         </CollapsibleTrigger>
         <CollapsibleContent class="flex flex-col items-start gap-1 px-3 pb-3">

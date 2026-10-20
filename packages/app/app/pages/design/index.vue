@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BadgeVariant, ButtonVariant, ColorIntent, ControlSize } from "~/types/ui";
+import { BadgeVariant, ButtonVariant, ColorIntent, ControlSize, IssueSeverity } from "~/types/ui";
 
 const neutralRoles = [
 	"page",
@@ -143,6 +143,11 @@ function onFormSubmit(valid: boolean) {
 				<button type="button" class="button-secondary control-md" aria-expanded="true">
 					2023 <span class="i-mdi-chevron-up text-ink-muted" aria-hidden="true" />
 				</button>
+			</div>
+			<div class="flex flex-row gap-3 items-center flex-wrap">
+				<span class="text-meta w-24">issue</span>
+				<IssueButton :severity="IssueSeverity.DANGER" opens>2 items need a look</IssueButton>
+				<IssueButton :severity="IssueSeverity.WARNING" opens>2 warnings</IssueButton>
 			</div>
 			<div class="flex flex-row gap-3 items-center flex-wrap">
 				<span class="text-meta w-24">field</span>

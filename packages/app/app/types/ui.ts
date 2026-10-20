@@ -35,3 +35,10 @@ export enum ControlSize {
 	SM = "sm",
 	ICON = "icon",
 }
+
+// How serious a problem is: danger for what ends up on no form, warning for a value on the form
+// that needs checking.
+export enum IssueSeverity {
+	DANGER = "danger",
+	WARNING = "warning",
+}

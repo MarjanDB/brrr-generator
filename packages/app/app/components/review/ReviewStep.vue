@@ -6,8 +6,9 @@ import {
   TradeEventCashTransactionDividend,
 } from "@brrr/lib";
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from "reka-ui";
-import { shallowRef } from "vue";
-import { ColorIntent } from "~/types/ui";
+import { ref, shallowRef } from "vue";
+import { CountNoun } from "~/types/counts";
+import { IssueSeverity } from "~/types/ui";
 
 const props = defineProps<{
   financialEvents: FinancialEvents;
@@ -19,6 +20,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const { countText } = useCountText();
 
 // Built once per import: where each imported row came from, for every row's popover below.
 const sources = provideImportSources(() => props.provenance);
@@ -29,6 +31,11 @@ enum ReviewTab {
   INSTRUMENTS = "INSTRUMENTS",
   ISSUES = "ISSUES",
 }
+
+// The Instruments tab opens first; its issue button switches to Issues.
+const tab = ref(ReviewTab.INSTRUMENTS);
+// Everything the Issues tab lists: what was left out, and what was counted once.
+const issueCount = computed(() => leftOut.value.needsALook + leftOut.value.merged.length);
 
 interface InstrumentRow {
   name: string;
@@ -89,7 +96,7 @@ function openModal(row: InstrumentRow, event: MouseEvent) {
 
 <template>
   <div class="card card-padding-md flex flex-col gap-4 w-full max-w-screen-md mx-auto">
-    <TabsRoot :default-value="ReviewTab.INSTRUMENTS" class="flex flex-col gap-4">
+    <TabsRoot v-model="tab" class="flex flex-col gap-4">
       <TabsList :aria-label="t('review_tabs_label')" :class="tabListClasses">
         <TabsTrigger :value="ReviewTab.INSTRUMENTS" :class="tabTriggerClasses">
           {{ t('review_tab_instruments') }}
@@ -97,20 +104,20 @@ function openModal(row: InstrumentRow, event: MouseEvent) {
         </TabsTrigger>
         <TabsTrigger :value="ReviewTab.ISSUES" :class="tabTriggerClasses">
           {{ t('review_tab_issues') }}
-          <AppBadge v-if="leftOut.needsALook > 0" :color="ColorIntent.WARNING" class="gap-1">
-            <span class="i-mdi-alert-outline" aria-hidden="true" />
-            <span aria-hidden="true">{{ leftOut.needsALook }}</span>
-            <span class="sr-only">{{ t('review_left_out_count', { n: leftOut.needsALook }) }}</span>
-          </AppBadge>
-          <AppBadge v-if="leftOut.merged.length > 0" :color="ColorIntent.INFO" class="gap-1">
-            <span class="i-mdi-call-merge" aria-hidden="true" />
-            <span aria-hidden="true">{{ leftOut.merged.length }}</span>
-            <span class="sr-only">{{ t('review_merged_count', { n: leftOut.merged.length }) }}</span>
-          </AppBadge>
+          <AppBadge v-if="issueCount > 0">{{ issueCount }}</AppBadge>
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent :value="ReviewTab.INSTRUMENTS" class="overflow-x-auto">
+      <TabsContent :value="ReviewTab.INSTRUMENTS" class="flex flex-col gap-3 overflow-x-auto">
+        <!-- What the import left out is on no form: seen here, before "Looks good, continue". -->
+        <IssueButton
+          v-if="leftOut.needsALook > 0"
+          :severity="IssueSeverity.DANGER"
+          class="self-start"
+          @click="tab = ReviewTab.ISSUES"
+        >
+          {{ countText(CountNoun.ITEM_LEFT_OUT, leftOut.needsALook) }}
+        </IssueButton>
         <table class="app-table">
           <thead>
             <tr class="app-table-head-row">
