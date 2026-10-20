@@ -79,6 +79,14 @@ export default defineNuxtConfig({
 	posthogConfig: {
 		clientConfig: {
 			defaults: "2026-01-30",
+			// Session replay masks what the project's "Privacy and masking" setting masks at Total privacy:
+			// every input, all text and every image. Set here, it wins over the project setting, so a change
+			// there can't unmask anyone's holdings.
+			session_recording: {
+				maskAllInputs: true,
+				maskTextSelector: "*",
+				blockSelector: "img",
+			},
 		},
 	},
 });
