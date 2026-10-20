@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BrokerGuide } from "~/utils/brokerGuides";
+import type { BrokerGuide } from "~/types/guide";
 
 defineProps<{
 	broker: BrokerGuide;

@@ -1,5 +1,5 @@
 import { type CountNoun, PluralForm } from "~/types/counts";
-import { countKeys } from "~/utils/i18nKeys";
+import { I18nKeys } from "~/utils/i18nKeys";
 
 // The plural form a count takes in a locale. Intl's rules (CLDR's) look only at the last two digits,
 // so Slovenian would say "401 postavka" and "102 delnici"; here only counts under a hundred take
@@ -18,7 +18,7 @@ export function useCountText() {
 	const { t, locale } = useI18n();
 
 	function countText(noun: CountNoun, count: number): string {
-		return t(countKeys[noun][pluralFormOf(locale.value, count)], {
+		return t(I18nKeys.count[noun][pluralFormOf(locale.value, count)], {
 			count: new Intl.NumberFormat(locale.value).format(count),
 		});
 	}

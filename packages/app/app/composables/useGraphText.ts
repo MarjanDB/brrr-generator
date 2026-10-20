@@ -20,15 +20,8 @@ import {
 	type SplitFactor,
 	SplitFactorKind,
 } from "~/types/provenanceGraph";
-import {
-	edavkiFieldKeys,
-	eventKindKeys,
-	legSideKeys,
-	lotMatchingKeys,
-	nodeValueKeys,
-	stackKindKeys,
-} from "~/utils/i18nKeys";
-import { fieldOf, formatNumber } from "~/utils/provenanceFields";
+import { I18nKeys } from "~/utils/i18nKeys";
+import { ProvenanceFields } from "~/utils/provenanceFields";
 import { ReportInstruments } from "~/utils/reportInstruments";
 
 export type CaptionContext = {
@@ -79,7 +72,7 @@ function value(
 	params: Record<string, string>,
 	keyParams: readonly string[] = [],
 ): NodeValue {
-	return { kind, key: nodeValueKeys[kind], params, keyParams };
+	return { kind, key: I18nKeys.nodeValue[kind], params, keyParams };
 }
 
 function keyed(
@@ -102,7 +95,7 @@ function shortDate(iso: string | null, locale: string): string {
 }
 
 function number(text: string | null, locale: string): string {
-	return text === null ? "" : formatNumber(text, locale);
+	return text === null ? "" : ProvenanceFields.formatNumber(text, locale);
 }
 
 function unsigned(quantity: string | null | undefined, locale: string): string {
@@ -110,7 +103,9 @@ function unsigned(quantity: string | null | undefined, locale: string): string {
 		return "";
 	}
 	const parsed = Number(quantity);
-	return Number.isFinite(parsed) ? formatNumber(String(Math.abs(parsed)), locale) : quantity;
+	return Number.isFinite(parsed)
+		? ProvenanceFields.formatNumber(String(Math.abs(parsed)), locale)
+		: quantity;
 }
 
 function eventValue(node: GraphNode, locale: string): NodeValue {
@@ -118,19 +113,19 @@ function eventValue(node: GraphNode, locale: string): NodeValue {
 	if (source === null) {
 		return value(NodeValueKind.TEXT, { text: "" });
 	}
-	const currency = fieldOf(source, ProvenanceField.CURRENCY) ?? "";
-	const price = fieldOf(source, ProvenanceField.PRICE);
+	const currency = ProvenanceFields.of(source, ProvenanceField.CURRENCY) ?? "";
+	const price = ProvenanceFields.of(source, ProvenanceField.PRICE);
 	const kind = Object.values(ProvenanceEventKind).find(
-		(candidate) => candidate === fieldOf(source, ProvenanceField.EVENT_KIND),
+		(candidate) => candidate === ProvenanceFields.of(source, ProvenanceField.EVENT_KIND),
 	);
 	if (kind !== undefined && cashKinds.includes(kind)) {
 		// A cash transaction is one unit of its amount, or a quantity of the amount each.
-		const quantity = fieldOf(source, ProvenanceField.QUANTITY);
+		const quantity = ProvenanceFields.of(source, ProvenanceField.QUANTITY);
 		const amount = price === null ? null : String(Number(price) * Number(quantity ?? "1"));
 		return value(NodeValueKind.CASH, { amount: number(amount, locale), currency });
 	}
 	return value(NodeValueKind.TRADE, {
-		quantity: number(fieldOf(source, ProvenanceField.QUANTITY), locale),
+		quantity: number(ProvenanceFields.of(source, ProvenanceField.QUANTITY), locale),
 		price: number(price, locale),
 		currency,
 	});
@@ -142,7 +137,7 @@ function corporateActionValue(node: GraphNode, locale: string): NodeValue {
 		return value(NodeValueKind.TEXT, { text: "" });
 	}
 	const kind = Object.values(IdentifierChangeType).find(
-		(candidate) => candidate === fieldOf(source, ProvenanceField.CORPORATE_ACTION_KIND),
+		(candidate) => candidate === ProvenanceFields.of(source, ProvenanceField.CORPORATE_ACTION_KIND),
 	);
 	switch (kind) {
 		case IdentifierChangeType.SPLIT:
@@ -150,8 +145,8 @@ function corporateActionValue(node: GraphNode, locale: string): NodeValue {
 			const ratio = ReportInstruments.splitRatioOf(
 				{
 					kind,
-					before: fieldOf(source, ProvenanceField.SPLIT_BEFORE),
-					after: fieldOf(source, ProvenanceField.SPLIT_AFTER),
+					before: ProvenanceFields.of(source, ProvenanceField.SPLIT_BEFORE),
+					after: ProvenanceFields.of(source, ProvenanceField.SPLIT_AFTER),
 					fromIsin: null,
 					fromTicker: null,
 				},
@@ -164,8 +159,8 @@ function corporateActionValue(node: GraphNode, locale: string): NodeValue {
 		}
 		case IdentifierChangeType.RENAME:
 			return value(NodeValueKind.RENAME, {
-				from: fieldOf(source, ProvenanceField.FROM_TICKER) ?? "",
-				to: fieldOf(source, ProvenanceField.TO_TICKER) ?? "",
+				from: ProvenanceFields.of(source, ProvenanceField.FROM_TICKER) ?? "",
+				to: ProvenanceFields.of(source, ProvenanceField.TO_TICKER) ?? "",
 			});
 		case undefined:
 			return value(NodeValueKind.TEXT, { text: source.label });
@@ -174,16 +169,16 @@ function corporateActionValue(node: GraphNode, locale: string): NodeValue {
 
 function legValue(node: GraphNode, locale: string): NodeValue {
 	const source = node.source;
-	const recorded = source === null ? null : fieldOf(source, ProvenanceField.LEG_SIDE);
+	const recorded = source === null ? null : ProvenanceFields.of(source, ProvenanceField.LEG_SIDE);
 	const side = Object.values(ProvenanceLegSide).find((candidate) => candidate === recorded);
 	if (source === null || side === undefined) {
-		return value(NodeValueKind.STEP, { kind: stackKindKeys[GraphNodeKind.LEG] }, ["kind"]);
+		return value(NodeValueKind.STEP, { kind: I18nKeys.stackKind[GraphNodeKind.LEG] }, ["kind"]);
 	}
 	return value(
 		NodeValueKind.LEG,
 		{
-			side: legSideKeys[side],
-			quantity: number(fieldOf(source, ProvenanceField.QUANTITY), locale),
+			side: I18nKeys.legSide[side],
+			quantity: number(ProvenanceFields.of(source, ProvenanceField.QUANTITY), locale),
 		},
 		["side"],
 	);
@@ -207,7 +202,7 @@ function reportLineValue(source: ProvenanceNode, locale: string): NodeValue {
 			amount: number(source.fields[EDavkiProvenanceField.DIVIDEND_AMOUNT] ?? null, locale),
 		});
 	}
-	return value(NodeValueKind.LINE_OTHER, { text: stackKindKeys[GraphNodeKind.REPORT_LINE] }, [
+	return value(NodeValueKind.LINE_OTHER, { text: I18nKeys.stackKind[GraphNodeKind.REPORT_LINE] }, [
 		"text",
 	]);
 }
@@ -226,7 +221,7 @@ function nodeValueOf(node: GraphNode, locale: string): NodeValue {
 		case GraphNodeKind.STAGING_LOT:
 		case GraphNodeKind.STAGING_CORPORATE_ACTION:
 			// These carry no facts of their own (their core twin does), so they say what step they are.
-			return value(NodeValueKind.STEP, { kind: stackKindKeys[node.kind] }, ["kind"]);
+			return value(NodeValueKind.STEP, { kind: I18nKeys.stackKind[node.kind] }, ["kind"]);
 		case GraphNodeKind.LEG:
 			return legValue(node, locale);
 		case GraphNodeKind.EVENT:
@@ -234,11 +229,11 @@ function nodeValueOf(node: GraphNode, locale: string): NodeValue {
 		case GraphNodeKind.LOT:
 			return value(NodeValueKind.LOT, {
 				quantity: number(
-					source === null ? null : fieldOf(source, ProvenanceField.QUANTITY),
+					source === null ? null : ProvenanceFields.of(source, ProvenanceField.QUANTITY),
 					locale,
 				),
 				date: shortDate(
-					source === null ? null : fieldOf(source, ProvenanceField.ACQUIRED_DATE),
+					source === null ? null : ProvenanceFields.of(source, ProvenanceField.ACQUIRED_DATE),
 					locale,
 				),
 			});
@@ -247,7 +242,7 @@ function nodeValueOf(node: GraphNode, locale: string): NodeValue {
 		case GraphNodeKind.MATCHED_LOT:
 			return value(NodeValueKind.MATCHED, {
 				quantity: number(
-					source === null ? null : fieldOf(source, ProvenanceField.QUANTITY),
+					source === null ? null : ProvenanceFields.of(source, ProvenanceField.QUANTITY),
 					locale,
 				),
 			});
@@ -265,7 +260,7 @@ function nodeValueOf(node: GraphNode, locale: string): NodeValue {
 				NodeValueKind.STACK,
 				{
 					count: String(node.stack?.members.length ?? 0),
-					kind: stackKindKeys[node.stack?.memberKind ?? GraphNodeKind.ROW],
+					kind: I18nKeys.stackKind[node.stack?.memberKind ?? GraphNodeKind.ROW],
 				},
 				["kind"],
 			);
@@ -284,8 +279,8 @@ function lineQuantity(line: ProvenanceNode | null | undefined, locale: string): 
 function focusText(node: GraphLayoutNode, context: CaptionContext, locale: string): KeyedText {
 	const graphNode = node.node;
 	if (graphNode.pair !== null) {
-		return keyed(nodeValueKeys[NodeValueKind.MATCHED], {
-			quantity: unsigned(fieldOf(graphNode.pair.lot, ProvenanceField.QUANTITY), locale),
+		return keyed(I18nKeys.nodeValue[NodeValueKind.MATCHED], {
+			quantity: unsigned(ProvenanceFields.of(graphNode.pair.lot, ProvenanceField.QUANTITY), locale),
 		});
 	}
 	const kind = Object.values(ProvenanceEventKind).find(
@@ -297,7 +292,7 @@ function focusText(node: GraphLayoutNode, context: CaptionContext, locale: strin
 			return keyed(
 				"download_caption_cash",
 				{
-					kind: eventKindKeys[kind],
+					kind: I18nKeys.eventKind[kind],
 					amount: nodeValue.params.amount ?? "",
 					currency: nodeValue.params.currency ?? "",
 				},
@@ -307,7 +302,7 @@ function focusText(node: GraphLayoutNode, context: CaptionContext, locale: strin
 		return keyed(
 			"download_caption_trade",
 			{
-				kind: eventKindKeys[kind],
+				kind: I18nKeys.eventKind[kind],
 				quantity: unsigned(graphNode.source?.fields[ProvenanceField.QUANTITY], locale),
 				ticker: context.ticker,
 			},
@@ -329,7 +324,7 @@ function captionKeyed(
 	switch (segment.kind) {
 		case CaptionSegmentKind.FOCUS:
 			return node === null
-				? keyed(nodeValueKeys[NodeValueKind.TEXT], { text: "" })
+				? keyed(I18nKeys.nodeValue[NodeValueKind.TEXT], { text: "" })
 				: focusText(node, context, locale);
 		case CaptionSegmentKind.SPLIT_INTO:
 			return keyed("download_caption_split_into", {
@@ -340,7 +335,7 @@ function captionKeyed(
 				segment.opposite === ProvenanceEventKind.ACQUIRED
 					? "download_caption_matched_buys"
 					: "download_caption_matched_sells",
-				{ count, method: lotMatchingKeys[context.lotMatchingMethod] },
+				{ count, method: I18nKeys.lotMatching[context.lotMatchingMethod] },
 				["method"],
 			);
 		case CaptionSegmentKind.REPORT_LINES:
@@ -394,7 +389,7 @@ export function useGraphText() {
 	// The multiplier on a split badge: ×10 when the quantity grew tenfold, ÷4 when it shrank by four.
 	function splitBadge(factor: SplitFactor): string {
 		const sign = factor.kind === SplitFactorKind.MULTIPLY ? "×" : "÷";
-		return `${sign}${formatNumber(String(factor.amount), locale.value)}`;
+		return `${sign}${ProvenanceFields.formatNumber(String(factor.amount), locale.value)}`;
 	}
 
 	// What the popover of a node lists: a broker row's attributes, exactly as in the export, or a
@@ -434,9 +429,9 @@ export function useGraphText() {
 						}
 						return [
 							{
-								name: t(edavkiFieldKeys[field]),
+								name: t(I18nKeys.edavkiField[field]),
 								value: numericFields.includes(field)
-									? formatNumber(recorded, locale.value)
+									? ProvenanceFields.formatNumber(recorded, locale.value)
 									: recorded,
 							},
 						];

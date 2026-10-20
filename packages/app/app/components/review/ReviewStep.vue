@@ -97,12 +97,12 @@ function openModal(row: InstrumentRow, event: MouseEvent) {
 <template>
   <div class="card card-padding-md flex flex-col gap-4 w-full max-w-screen-md mx-auto">
     <TabsRoot v-model="tab" class="flex flex-col gap-4">
-      <TabsList :aria-label="t('review_tabs_label')" :class="tabListClasses">
-        <TabsTrigger :value="ReviewTab.INSTRUMENTS" :class="tabTriggerClasses">
+      <TabsList :aria-label="t('review_tabs_label')" :class="TabClasses.list">
+        <TabsTrigger :value="ReviewTab.INSTRUMENTS" :class="TabClasses.trigger">
           {{ t('review_tab_instruments') }}
           <AppBadge>{{ rows.length }}</AppBadge>
         </TabsTrigger>
-        <TabsTrigger :value="ReviewTab.ISSUES" :class="tabTriggerClasses">
+        <TabsTrigger :value="ReviewTab.ISSUES" :class="TabClasses.trigger">
           {{ t('review_tab_issues') }}
           <AppBadge v-if="issueCount > 0">{{ issueCount }}</AppBadge>
         </TabsTrigger>

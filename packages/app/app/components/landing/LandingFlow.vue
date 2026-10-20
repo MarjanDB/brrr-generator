@@ -23,9 +23,9 @@ const { t } = useI18n();
 				{{ t('landing_brokers_heading') }}
 			</h2>
 			<ul aria-labelledby="landing-brokers" class="relative grid w-full auto-rows-fr gap-2.5">
-				<li v-for="(broker, index) in BROKER_GUIDES" :key="broker.id" class="relative flex">
+				<li v-for="(broker, index) in BrokerGuides.all" :key="broker.id" class="relative flex">
 					<LandingBrokerCard :broker="broker" />
-					<LandingConnector :side="LandingSide.BROKER" :index="index" :count="BROKER_GUIDES.length" />
+					<LandingConnector :side="LandingSide.BROKER" :index="index" :count="BrokerGuides.all.length" />
 				</li>
 			</ul>
 		</div>
@@ -39,9 +39,9 @@ const { t } = useI18n();
 				{{ t('landing_offices_heading') }}
 			</h2>
 			<ul aria-labelledby="landing-offices" class="relative grid w-full auto-rows-fr gap-2.5">
-				<li v-for="(office, index) in TAX_OFFICES" :key="office.countryKey" class="relative flex">
+				<li v-for="(office, index) in TaxOffices.all" :key="office.countryKey" class="relative flex">
 					<LandingTaxOfficeCard :office="office" />
-					<LandingConnector :side="LandingSide.OFFICE" :index="index" :count="TAX_OFFICES.length" />
+					<LandingConnector :side="LandingSide.OFFICE" :index="index" :count="TaxOffices.all.length" />
 				</li>
 			</ul>
 		</div>

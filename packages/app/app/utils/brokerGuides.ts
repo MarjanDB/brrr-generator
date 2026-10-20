@@ -1,17 +1,8 @@
-import type { GuideStep } from "~/types/guide";
-
-export type BrokerGuide = {
-	id: string;
-	nameKey: string;
-	modalTitleKey: string;
-	taglineKey: string;
-	iconUrl: string;
-	steps: GuideStep[];
-};
+import type { BrokerGuide } from "~/types/guide";
 
 const IBKR_SCREENSHOTS = "/screenshots/brokers/ibkr";
 
-export const BROKER_GUIDES: BrokerGuide[] = [
+const BROKER_GUIDES: BrokerGuide[] = [
 	{
 		id: "ibkr",
 		nameKey: "broker_ibkr_name",
@@ -70,3 +61,8 @@ export const BROKER_GUIDES: BrokerGuide[] = [
 		],
 	},
 ];
+
+// The brokers the site reads exports from, with their export guides.
+export const BrokerGuides = {
+	all: BROKER_GUIDES,
+};

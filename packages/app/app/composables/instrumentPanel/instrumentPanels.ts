@@ -6,7 +6,7 @@ import {
 	type ReportProvenance,
 } from "@brrr/lib";
 import type { PanelContract, PanelEntry, PanelSections } from "~/types/instrumentPanel";
-import { fieldOf } from "~/utils/provenanceFields";
+import { ProvenanceFields } from "~/utils/provenanceFields";
 
 function optionRightOf(value: string | null): OptionRight {
 	const right = Object.values(OptionRight).find((candidate) => candidate === value);
@@ -22,11 +22,11 @@ function contractOf(instrument: ReportInstrument): PanelContract | null {
 	}
 	const node = instrument.node;
 	return {
-		underlyingSymbol: fieldOf(node, ProvenanceField.UNDERLYING_SYMBOL) ?? "",
-		expiry: fieldOf(node, ProvenanceField.EXPIRY) ?? "",
-		strike: fieldOf(node, ProvenanceField.STRIKE) ?? "",
-		right: optionRightOf(fieldOf(node, ProvenanceField.OPTION_RIGHT)),
-		occSymbol: fieldOf(node, ProvenanceField.TICKER) ?? "",
+		underlyingSymbol: ProvenanceFields.of(node, ProvenanceField.UNDERLYING_SYMBOL) ?? "",
+		expiry: ProvenanceFields.of(node, ProvenanceField.EXPIRY) ?? "",
+		strike: ProvenanceFields.of(node, ProvenanceField.STRIKE) ?? "",
+		right: optionRightOf(ProvenanceFields.of(node, ProvenanceField.OPTION_RIGHT)),
+		occSymbol: ProvenanceFields.of(node, ProvenanceField.TICKER) ?? "",
 	};
 }
 
@@ -34,8 +34,8 @@ function entryOf(instrument: ReportInstrument): PanelEntry {
 	return {
 		instrument,
 		kind: instrument.kind,
-		ticker: fieldOf(instrument.node, ProvenanceField.TICKER) ?? "",
-		isin: fieldOf(instrument.node, ProvenanceField.ISIN),
+		ticker: ProvenanceFields.of(instrument.node, ProvenanceField.TICKER) ?? "",
+		isin: ProvenanceFields.of(instrument.node, ProvenanceField.ISIN),
 		contract: contractOf(instrument),
 		hasCorporateAction: instrument.corporateActions.length > 0,
 		notInReport: instrument.notInReport,

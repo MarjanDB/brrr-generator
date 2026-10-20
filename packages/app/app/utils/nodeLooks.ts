@@ -1,7 +1,7 @@
 import { DropCategory, dropCategoryOf, ProvenanceEventKind, ProvenanceField } from "@brrr/lib";
-import { type GraphNode, GraphNodeKind } from "~/types/provenanceGraph";
+import { type GraphNode, GraphNodeKind, type NodeLook } from "~/types/provenanceGraph";
 import { ColorIntent } from "~/types/ui";
-import { softIntentClasses } from "~/utils/intentClasses";
+import { IntentClasses } from "~/utils/intentClasses";
 
 const intents: ColorIntent[] = [
 	ColorIntent.ACTION,
@@ -13,7 +13,7 @@ const intents: ColorIntent[] = [
 ];
 
 // A ticker's colour: a stable hash of it into the intents that read as colours (never NEUTRAL).
-export function monogramIntent(ticker: string): ColorIntent {
+function monogramIntent(ticker: string): ColorIntent {
 	let hash = 0;
 	for (const character of ticker) {
 		hash = (hash * 31 + character.charCodeAt(0)) % 997;
@@ -22,28 +22,23 @@ export function monogramIntent(ticker: string): ColorIntent {
 }
 
 // The letters in the monogram: a short ticker as it is, a longer one cut to its first three.
-export function monogramText(ticker: string): string {
+function monogramText(ticker: string): string {
 	return ticker.length <= 4 ? ticker : ticker.slice(0, 3);
 }
 
-export type NodeLook = {
-	icon: string;
-	tint: string;
-};
-
 // UnoCSS only sees class strings written out in full, so every icon is a literal and every tint
-// comes from softIntentClasses.
-const neutral = softIntentClasses[ColorIntent.NEUTRAL];
-const action = softIntentClasses[ColorIntent.ACTION];
-const accent = softIntentClasses[ColorIntent.ACCENT];
-const success = softIntentClasses[ColorIntent.SUCCESS];
-const danger = softIntentClasses[ColorIntent.DANGER];
-const info = softIntentClasses[ColorIntent.INFO];
-const warning = softIntentClasses[ColorIntent.WARNING];
+// comes from IntentClasses.soft.
+const neutral = IntentClasses.soft[ColorIntent.NEUTRAL];
+const action = IntentClasses.soft[ColorIntent.ACTION];
+const accent = IntentClasses.soft[ColorIntent.ACCENT];
+const success = IntentClasses.soft[ColorIntent.SUCCESS];
+const danger = IntentClasses.soft[ColorIntent.DANGER];
+const info = IntentClasses.soft[ColorIntent.INFO];
+const warning = IntentClasses.soft[ColorIntent.WARNING];
 
 // A buy and a sale, as an event card and a pair card's two rows show them.
-export const acquiredLook: NodeLook = { icon: "i-mdi-triangle", tint: success };
-export const soldLook: NodeLook = { icon: "i-mdi-triangle-down", tint: danger };
+const acquiredLook: NodeLook = { icon: "i-mdi-triangle", tint: success };
+const soldLook: NodeLook = { icon: "i-mdi-triangle-down", tint: danger };
 
 function eventLook(node: GraphNode): NodeLook {
 	switch (node.source?.fields[ProvenanceField.EVENT_KIND]) {
@@ -63,7 +58,7 @@ function eventLook(node: GraphNode): NodeLook {
 }
 
 // The icon and the colour of a node, from its kind (and for a trade, what it is).
-export function nodeLookOf(node: GraphNode): NodeLook {
+function nodeLookOf(node: GraphNode): NodeLook {
 	switch (node.kind) {
 		case GraphNodeKind.FILE:
 			return { icon: "i-mdi-file-xml-box", tint: neutral };
@@ -98,3 +93,12 @@ export function nodeLookOf(node: GraphNode): NodeLook {
 			return { icon: "i-mdi-layers", tint: neutral };
 	}
 }
+
+// The icon and tint each kind of node and monogram is drawn with.
+export const NodeLooks = {
+	of: nodeLookOf,
+	acquired: acquiredLook,
+	sold: soldLook,
+	monogramIntent,
+	monogramText,
+};

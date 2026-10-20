@@ -129,7 +129,7 @@ export function provideReportProblems(args: ReportProblemsArgs): ReportProblems 
 		if (problem.kind === ProvenanceDetailKind.COMPANY_LOOKUP_FAILED) {
 			return t("problems_sign_company_lookup_failed");
 		}
-		return t(warningGroupKeys[problem.kind]);
+		return t(I18nKeys.warningGroup[problem.kind]);
 	}
 
 	const view: ReportProblems = {

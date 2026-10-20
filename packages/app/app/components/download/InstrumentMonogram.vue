@@ -10,12 +10,16 @@ const props = defineProps<{
 	unknown: boolean;
 }>();
 
-const text = computed(() => (props.unknown ? "?" : monogramText(props.ticker)));
+const text = computed(() => (props.unknown ? "?" : NodeLooks.monogramText(props.ticker)));
 // An unknown company is drawn dashed, in the warning colour.
 const tint = computed(() =>
 	props.unknown
-		? [softIntentClasses[ColorIntent.WARNING], edgeIntentClasses[ColorIntent.WARNING], "border border-dashed"]
-		: softIntentClasses[monogramIntent(props.ticker)],
+		? [
+				IntentClasses.soft[ColorIntent.WARNING],
+				IntentClasses.edge[ColorIntent.WARNING],
+				"border border-dashed",
+			]
+		: IntentClasses.soft[NodeLooks.monogramIntent(props.ticker)],
 );
 </script>
 

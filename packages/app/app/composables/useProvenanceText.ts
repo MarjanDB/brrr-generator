@@ -9,15 +9,9 @@ import {
 } from "@brrr/lib";
 import { DateTime } from "luxon";
 import type { SplitChip } from "~/types/instrumentPanel";
-import { BASE_CURRENCY } from "~/utils/baseCurrency";
-import {
-	chipKindKeys,
-	detailKindKeys,
-	detailValueParams,
-	dropReasonKeys,
-	lotMatchingKeys,
-} from "~/utils/i18nKeys";
-import { cashAmountOf, fieldOf, formatNumber } from "~/utils/provenanceFields";
+import { Currencies } from "~/utils/currencies";
+import { I18nKeys } from "~/utils/i18nKeys";
+import { ProvenanceFields } from "~/utils/provenanceFields";
 import { ReportInstruments } from "~/utils/reportInstruments";
 
 // The sentences and values the download step writes about the provenance graph, finished and in
@@ -37,7 +31,7 @@ export function useProvenanceText() {
 			const method = Object.values(TaxAuthorityLotMatchingMethod).find(
 				(candidate) => candidate === value,
 			);
-			return method === undefined ? value : t(lotMatchingKeys[method]);
+			return method === undefined ? value : t(I18nKeys.lotMatching[method]);
 		}
 		return value;
 	}
@@ -49,16 +43,16 @@ export function useProvenanceText() {
 		for (const [recorded, value] of Object.entries(detail.values)) {
 			const name = Object.values(ProvenanceDetailValue).find((candidate) => candidate === recorded);
 			if (name !== undefined && value !== undefined) {
-				params[detailValueParams[name]] = valueText(name, value);
+				params[I18nKeys.detailValueParams[name]] = valueText(name, value);
 			}
 		}
-		return t(detailKindKeys[detail.kind], params);
+		return t(I18nKeys.detailKind[detail.kind], params);
 	}
 
 	// What the report says about something it left out: its detail when it has one, else its reason.
 	function dropSentence(drop: ProvenanceDrop): string {
 		if (drop.detail === null) {
-			return t(dropReasonKeys[drop.reason], {});
+			return t(I18nKeys.dropReason[drop.reason], {});
 		}
 		return detailSentence(drop.detail);
 	}
@@ -76,7 +70,7 @@ export function useProvenanceText() {
 	// What a corporate action's chip says: the split's ratio, or the name it had before.
 	function chipText(chip: SplitChip): string {
 		const ratio = splitRatio(chip);
-		return t(chipKindKeys[chip.kind], {
+		return t(I18nKeys.chipKind[chip.kind], {
 			before: ratio?.before ?? chip.before ?? "",
 			after: ratio?.after ?? chip.after ?? "",
 			isin: chip.fromIsin ?? "",
@@ -86,32 +80,36 @@ export function useProvenanceText() {
 
 	// A node's day (a broker lot's, the day it was acquired); "" without one.
 	function nodeDate(node: ProvenanceNode): string {
-		const day = fieldOf(node, ProvenanceField.DATE) ?? fieldOf(node, ProvenanceField.ACQUIRED_DATE);
+		const day =
+			ProvenanceFields.of(node, ProvenanceField.DATE) ??
+			ProvenanceFields.of(node, ProvenanceField.ACQUIRED_DATE);
 		return day === null ? "" : date(day);
 	}
 
 	// How many, without a sale's sign; "" without a quantity.
 	function nodeQuantity(node: ProvenanceNode): string {
-		const quantity = fieldOf(node, ProvenanceField.QUANTITY);
-		return quantity === null ? "" : formatNumber(quantity.replace(/^-/, ""), locale.value);
+		const quantity = ProvenanceFields.of(node, ProvenanceField.QUANTITY);
+		return quantity === null
+			? ""
+			: ProvenanceFields.formatNumber(quantity.replace(/^-/, ""), locale.value);
 	}
 
 	function withCurrency(node: ProvenanceNode, value: string | null): string {
 		if (value === null) {
 			return "";
 		}
-		const currency = fieldOf(node, ProvenanceField.CURRENCY) ?? "";
-		return `${formatNumber(value, locale.value)} ${currency}`.trim();
+		const currency = ProvenanceFields.of(node, ProvenanceField.CURRENCY) ?? "";
+		return `${ProvenanceFields.formatNumber(value, locale.value)} ${currency}`.trim();
 	}
 
 	// A trade's price with its currency; "" without a price.
 	function nodePrice(node: ProvenanceNode): string {
-		return withCurrency(node, fieldOf(node, ProvenanceField.PRICE));
+		return withCurrency(node, ProvenanceFields.of(node, ProvenanceField.PRICE));
 	}
 
 	// A payment's amount with its currency; "" without one.
 	function nodeAmount(node: ProvenanceNode): string {
-		return withCurrency(node, cashAmountOf(node));
+		return withCurrency(node, ProvenanceFields.cashAmountOf(node));
 	}
 
 	// A price the form holds, in the base currency: two to four decimals.
@@ -120,7 +118,7 @@ export function useProvenanceText() {
 			minimumFractionDigits: 2,
 			maximumFractionDigits: 4,
 		}).format(value);
-		return `${number} ${BASE_CURRENCY}`;
+		return `${number} ${Currencies.base}`;
 	}
 
 	// A change the form's figures add up to, in the base currency, with its sign.
@@ -130,7 +128,7 @@ export function useProvenanceText() {
 			maximumFractionDigits: 2,
 			signDisplay: "exceptZero",
 		}).format(value);
-		return `${number} ${BASE_CURRENCY}`;
+		return `${number} ${Currencies.base}`;
 	}
 
 	return {

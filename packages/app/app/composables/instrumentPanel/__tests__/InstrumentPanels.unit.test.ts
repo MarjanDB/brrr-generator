@@ -14,7 +14,7 @@ import { assert, describe, expect, test } from "vitest";
 import { InstrumentPanels } from "~/composables/instrumentPanel/instrumentPanels";
 import { ColorIntent } from "~/types/ui";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { monogramIntent, monogramText } from "~/utils/nodeLook";
+import { NodeLooks } from "~/utils/nodeLooks";
 import { ReportInstruments } from "~/utils/reportInstruments";
 
 const stage = ProvenanceStage.Schema.parse("Test");
@@ -730,22 +730,22 @@ describe("finding an instrument's entry", () => {
 
 describe("the monogram", () => {
 	test("a ticker always gets the same intent, never the neutral one", () => {
-		expect(monogramIntent("ACME")).toEqual(monogramIntent("ACME"));
-		expect(monogramIntent("ACME")).not.toEqual(ColorIntent.NEUTRAL);
-		expect(monogramIntent("TTE")).not.toEqual(ColorIntent.NEUTRAL);
+		expect(NodeLooks.monogramIntent("ACME")).toEqual(NodeLooks.monogramIntent("ACME"));
+		expect(NodeLooks.monogramIntent("ACME")).not.toEqual(ColorIntent.NEUTRAL);
+		expect(NodeLooks.monogramIntent("TTE")).not.toEqual(ColorIntent.NEUTRAL);
 	});
 
 	test("two tickers have the intents they were given", () => {
-		expect(monogramIntent("ACME")).toEqual(ColorIntent.WARNING);
-		expect(monogramIntent("TTE")).toEqual(ColorIntent.DANGER);
+		expect(NodeLooks.monogramIntent("ACME")).toEqual(ColorIntent.WARNING);
+		expect(NodeLooks.monogramIntent("TTE")).toEqual(ColorIntent.DANGER);
 	});
 
 	test("a ticker of up to four characters is its own text", () => {
-		expect(monogramText("AAPL")).toEqual("AAPL");
+		expect(NodeLooks.monogramText("AAPL")).toEqual("AAPL");
 	});
 
 	test("a longer ticker is cut to three characters", () => {
-		expect(monogramText("SMCI.OLD")).toEqual("SMC");
+		expect(NodeLooks.monogramText("SMCI.OLD")).toEqual("SMC");
 	});
 });
 

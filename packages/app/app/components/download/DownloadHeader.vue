@@ -7,9 +7,9 @@ import AppButton from "~/components/ui/AppButton.vue";
 import IssueButton from "~/components/ui/IssueButton.vue";
 import { CountNoun } from "~/types/counts";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
+import type { TaxAuthorityGuide } from "~/types/guide";
 import type { TaxAuthorityForm } from "~/types/taxYearReports";
 import { ButtonVariant, IssueSeverity } from "~/types/ui";
-import type { TaxAuthorityGuide } from "~/utils/taxAuthorityGuides";
 
 const props = defineProps<{
 	outputs: GeneratedOutputs;

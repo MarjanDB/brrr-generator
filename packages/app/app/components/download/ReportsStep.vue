@@ -72,9 +72,9 @@ const tabs = computed(() =>
 		</div>
 
 		<TabsRoot v-model="tab" class="flex flex-col gap-4">
-			<TabsList :aria-label="t('reports_tabs_label', { year })" :class="tabListClasses">
+			<TabsList :aria-label="t('reports_tabs_label', { year })" :class="TabClasses.list">
 				<AppTooltip v-for="entry in tabs" :key="entry.form.reportTypeId" :content="t(entry.form.nameKey)" side="bottom">
-					<TabsTrigger :value="entry.form.reportTypeId" :class="tabTriggerClasses">
+					<TabsTrigger :value="entry.form.reportTypeId" :class="TabClasses.trigger">
 						{{ entry.form.code }}
 						<AppBadge v-if="entry.lines !== null">{{ entry.lines }}</AppBadge>
 					</TabsTrigger>

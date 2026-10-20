@@ -7,13 +7,13 @@ import { MarkState } from "~/types/timeline";
 // `row-selected` is every list's selected look, and keeps its tint under the pointer.
 const selectedClasses = "row-selected";
 
-export type RowStateAttributes = {
+type RowStateAttributes = {
 	class: string;
 	"aria-current": true | undefined;
 	"data-selected": true | undefined;
 };
 
-export function rowStateAttributes(state: MarkState): RowStateAttributes {
+function rowStateAttributes(state: MarkState): RowStateAttributes {
 	const selected = state === MarkState.FOCUSED || state === MarkState.LIT;
 	return {
 		class: selected ? selectedClasses : "",
@@ -21,3 +21,8 @@ export function rowStateAttributes(state: MarkState): RowStateAttributes {
 		"data-selected": selected ? true : undefined,
 	};
 }
+
+// How a table's row shows the focus.
+export const RowStates = {
+	attributesOf: rowStateAttributes,
+};

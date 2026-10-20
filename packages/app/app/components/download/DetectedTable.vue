@@ -55,7 +55,7 @@ const verdictColors: Record<DetectedReason, ColorIntent> = {
           v-for="row in detected"
           :key="row.mark.node.id"
           class="app-table-row row-selectable"
-          v-bind="rowStateAttributes(InstrumentRows.detectedRowStateOf(row.mark, timeline, focus.node.value, lit))"
+          v-bind="RowStates.attributesOf(InstrumentRows.detectedRowStateOf(row.mark, timeline, focus.node.value, lit))"
           @click="focus.refocus(row.mark.node)"
         >
           <td class="app-table-td pl-3 whitespace-nowrap">{{ nodeDate(row.mark.node) }}</td>

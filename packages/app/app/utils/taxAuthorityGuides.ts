@@ -1,16 +1,9 @@
 import { SlovenianReportTypeId, TaxAuthorityId } from "@brrr/lib";
-import type { GuideStep } from "~/types/guide";
+import type { TaxAuthorityGuide } from "~/types/guide";
 
 const SLOVENIA_SCREENSHOTS = "/screenshots/tax-authorities/slovenia-edavki";
 
-export type TaxAuthorityGuide = {
-	authorityId: TaxAuthorityId;
-	reportTypeId: string;
-	nameKey: string;
-	steps: GuideStep[];
-};
-
-export const TAX_AUTHORITY_GUIDES: TaxAuthorityGuide[] = [
+const TAX_AUTHORITY_GUIDES: TaxAuthorityGuide[] = [
 	{
 		authorityId: TaxAuthorityId.SLOVENIA,
 		reportTypeId: SlovenianReportTypeId.KDVP,
@@ -88,7 +81,7 @@ export const TAX_AUTHORITY_GUIDES: TaxAuthorityGuide[] = [
 	},
 ];
 
-export function findTaxAuthorityGuide(
+function findTaxAuthorityGuide(
 	authorityId: TaxAuthorityId,
 	reportTypeId: string,
 ): TaxAuthorityGuide | undefined {
@@ -96,3 +89,8 @@ export function findTaxAuthorityGuide(
 		(g) => g.authorityId === authorityId && g.reportTypeId === reportTypeId,
 	);
 }
+
+// How to submit each form to its tax authority.
+export const TaxAuthorityGuides = {
+	find: findTaxAuthorityGuide,
+};

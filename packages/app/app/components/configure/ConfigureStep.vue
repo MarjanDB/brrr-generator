@@ -15,14 +15,14 @@ const { t } = useI18n();
 
 const selectedAuthorityId = ref<TaxAuthorityId | null>(
   props.chosen ??
-    (TAX_AUTHORITY_CARDS.length === 1 ? (TAX_AUTHORITY_CARDS[0]?.authorityId ?? null) : null),
+    (TaxAuthorityCards.all.length === 1 ? (TaxAuthorityCards.all[0]?.authorityId ?? null) : null),
 );
 
 const headingId = useId();
 
 // The radio group hands back the chosen card's value; the card itself carries the typed id.
 function onSelect(value: AcceptableValue) {
-  const card = TAX_AUTHORITY_CARDS.find((candidate) => candidate.authorityId === value);
+  const card = TaxAuthorityCards.all.find((candidate) => candidate.authorityId === value);
   if (card !== undefined && card.authorityId !== selectedAuthorityId.value) {
     selectedAuthorityId.value = card.authorityId;
   }
@@ -44,11 +44,11 @@ function onContinue() {
       :model-value="selectedAuthorityId ?? undefined"
       :aria-labelledby="headingId"
       class="grid gap-3"
-      :class="TAX_AUTHORITY_CARDS.length === 1 ? 'grid-cols-1 max-w-xs' : 'grid-cols-2 sm:grid-cols-3'"
+      :class="TaxAuthorityCards.all.length === 1 ? 'grid-cols-1 max-w-xs' : 'grid-cols-2 sm:grid-cols-3'"
       @update:model-value="onSelect"
     >
       <TaxAuthorityCard
-        v-for="card in TAX_AUTHORITY_CARDS"
+        v-for="card in TaxAuthorityCards.all"
         :key="card.authorityId"
         :card="card"
       />

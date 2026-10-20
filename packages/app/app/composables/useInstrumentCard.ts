@@ -113,13 +113,13 @@ export function provideInstrumentCard(args: InstrumentCardArgs): InstrumentCardS
 			const detail =
 				part.reason === DetectedReason.LEFT_OUT && sentences.length > 0
 					? sentences.join(" ")
-					: t((split ? detectedPartKeys : detectedDetailKeys)[part.reason], {
+					: t((split ? I18nKeys.detectedPart : I18nKeys.detectedDetail)[part.reason], {
 							form: args.formCode,
 							year: String(args.year),
 							years: years(part.years),
 							quantity: part.quantity === null ? "" : describeQuantity(part.quantity),
 						});
-			return { reason: part.reason, verdict: t(detectedVerdictKeys[part.reason]), detail };
+			return { reason: part.reason, verdict: t(I18nKeys.detectedVerdict[part.reason]), detail };
 		});
 	}
 	const card: InstrumentCardState = {

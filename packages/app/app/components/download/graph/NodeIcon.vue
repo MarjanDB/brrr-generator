@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NodeLook } from "~/utils/nodeLook";
+import type { NodeLook } from "~/types/provenanceGraph";
 
 // A node's icon on its tint: on the cards and in the popover, and small in the caption and a pair's rows.
 defineProps<{

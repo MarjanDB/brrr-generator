@@ -22,7 +22,7 @@ const { t } = useI18n();
 const { payers } = useReportFlow();
 
 const guide = computed(() =>
-	findTaxAuthorityGuide(props.outputs.authorityId, props.outputs.reportTypeId),
+	TaxAuthorityGuides.find(props.outputs.authorityId, props.outputs.reportTypeId),
 );
 
 // The report is read once.
@@ -60,12 +60,12 @@ const tab = computed(() =>
       <InstrumentPanel v-if="!problems.hasProblems.value" :sections="sections" :selected="selected" @select="select" />
       <!-- With problems, the column has a tab for them beside the instruments. -->
       <TabsRoot v-else v-model="problems.tab.value" class="flex flex-col gap-2 min-w-0">
-        <TabsList :aria-label="t('problems_tabs_label')" :class="tabListClasses">
-          <TabsTrigger :value="ReportPanelTab.INSTRUMENTS" :class="tabTriggerClasses">
+        <TabsList :aria-label="t('problems_tabs_label')" :class="TabClasses.list">
+          <TabsTrigger :value="ReportPanelTab.INSTRUMENTS" :class="TabClasses.trigger">
             {{ t('problems_tab_instruments') }}
             <AppBadge>{{ panel.entryCount.value }}</AppBadge>
           </TabsTrigger>
-          <TabsTrigger :value="ReportPanelTab.PROBLEMS" :class="tabTriggerClasses">
+          <TabsTrigger :value="ReportPanelTab.PROBLEMS" :class="TabClasses.trigger">
             {{ t('problems_tab_problems') }}
             <AppBadge :color="problems.openCount.value > 0 ? ColorIntent.WARNING : ColorIntent.NEUTRAL">
               {{ problems.openCount.value }}

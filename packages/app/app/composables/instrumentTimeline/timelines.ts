@@ -18,7 +18,7 @@ import {
 	TimelineWeight,
 	type TimeSpan,
 } from "~/types/timeline";
-import { fieldOf } from "~/utils/provenanceFields";
+import { ProvenanceFields } from "~/utils/provenanceFields";
 
 const eventMarkKinds: Record<ProvenanceEventKind, TimelineMarkKind> = {
 	[ProvenanceEventKind.ACQUIRED]: TimelineMarkKind.BOUGHT,
@@ -34,7 +34,7 @@ const markKindOrder = Object.values(TimelineMarkKind);
 type Draft = { node: ProvenanceNode; kind: TimelineMarkKind; at: number };
 
 function millisOf(node: ProvenanceNode, field: ProvenanceField): number | null {
-	const value = fieldOf(node, field);
+	const value = ProvenanceFields.of(node, field);
 	if (value === null) {
 		return null;
 	}
@@ -43,7 +43,7 @@ function millisOf(node: ProvenanceNode, field: ProvenanceField): number | null {
 }
 
 function eventKindOf(node: ProvenanceNode): ProvenanceEventKind | null {
-	const value = fieldOf(node, ProvenanceField.EVENT_KIND);
+	const value = ProvenanceFields.of(node, ProvenanceField.EVENT_KIND);
 	return Object.values(ProvenanceEventKind).find((kind) => kind === value) ?? null;
 }
 
@@ -172,7 +172,7 @@ function lotBarsOf(
 				lot: matched.node,
 				opened,
 				closed,
-				quantity: Number(fieldOf(matched.node, ProvenanceField.QUANTITY)),
+				quantity: Number(ProvenanceFields.of(matched.node, ProvenanceField.QUANTITY)),
 				weight: isReported(matched) ? TimelineWeight.REPORTED : TimelineWeight.CONTEXT,
 			},
 		];
@@ -186,7 +186,7 @@ const leftover = 1e-9;
 // position is never on the form.
 function openBarsOf(marks: TimelineMark[], lotBars: TimelineBar[]): TimelineBar[] {
 	return marks.filter(isTrade).flatMap((mark) => {
-		const traded = Math.abs(Number(fieldOf(mark.node, ProvenanceField.QUANTITY)));
+		const traded = Math.abs(Number(ProvenanceFields.of(mark.node, ProvenanceField.QUANTITY)));
 		const inLots = lotBars
 			.filter((bar) => bar.opened === mark || bar.closed === mark)
 			.reduce((sum, bar) => sum + bar.quantity, 0);

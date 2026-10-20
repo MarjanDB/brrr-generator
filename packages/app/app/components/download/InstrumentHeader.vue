@@ -30,7 +30,8 @@ const title = computed(() => {
 	}
 	const right =
 		contract.right === OptionRight.CALL ? t("download_option_call") : t("download_option_put");
-	return `${contract.underlyingSymbol} ${formatNumber(contract.strike, locale.value)} ${right}`;
+	const strike = ProvenanceFields.formatNumber(contract.strike, locale.value);
+	return `${contract.underlyingSymbol} ${strike} ${right}`;
 });
 
 const subtitle = computed(() => {

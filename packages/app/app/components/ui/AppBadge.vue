@@ -14,9 +14,9 @@ const props = withDefaults(defineProps<{
 
 const classes = computed(() => [
 	props.variant === BadgeVariant.SOLID
-		? solidIntentClasses[props.color]
-		: softIntentClasses[props.color],
-	props.pill ? `rounded-full border ${edgeIntentClasses[props.color]}` : "rounded-sm",
+		? IntentClasses.solid[props.color]
+		: IntentClasses.soft[props.color],
+	props.pill ? `rounded-full border ${IntentClasses.edge[props.color]}` : "rounded-sm",
 ]);
 </script>
 

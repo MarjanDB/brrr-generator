@@ -36,9 +36,9 @@ const defined = computed(() => selected.value?.defined?.definition ?? null);
 // What an affected item is: a dividend, a tax, a trade.
 function whatOf(node: ProvenanceNode): string {
 	const kind = Object.values(ProvenanceEventKind).find(
-		(candidate) => candidate === fieldOf(node, ProvenanceField.EVENT_KIND),
+		(candidate) => candidate === ProvenanceFields.of(node, ProvenanceField.EVENT_KIND),
 	);
-	return kind === undefined ? "" : t(eventKindKeys[kind]);
+	return kind === undefined ? "" : t(I18nKeys.eventKind[kind]);
 }
 
 function save(definition: CompanyDefinition) {

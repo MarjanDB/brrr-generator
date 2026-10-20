@@ -82,7 +82,7 @@ watch(xmlFiles, (v) => {
     <h2 class="text-heading">{{ t('ibkr_export_title') }}</h2>
     <p class="text-body text-ink-muted">{{ t('ibkr_export_hint') }}</p>
     
-    <BrokerSupportSection :brokers="BROKER_GUIDES" />
+    <BrokerSupportSection :brokers="BrokerGuides.all" />
     
     <AppForm @submit="() => onContinue()">
       <div class="flex flex-col gap-4">

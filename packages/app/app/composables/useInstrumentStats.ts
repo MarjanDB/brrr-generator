@@ -6,7 +6,7 @@ import {
 	TradeEventStockAcquired,
 } from "@brrr/lib";
 import type { DateTime } from "luxon";
-import { BASE_CURRENCY } from "~/utils/baseCurrency";
+import { Currencies } from "~/utils/currencies";
 
 export type CumulativePoint = {
 	date: DateTime;
@@ -117,7 +117,7 @@ export function useInstrumentStats(groupings: FinancialGrouping[]): InstrumentSt
 		totalBought,
 		totalSold,
 		totalDividends,
-		baseCurrency: BASE_CURRENCY,
+		baseCurrency: Currencies.base,
 		overallCumulativeSeries: toCumulative(allPoints, globalStart, globalEnd),
 		stockCumulativeSeries: toCumulative(stockPoints, globalStart, globalEnd),
 		dividendCumulativeSeries: toCumulative(dividendPoints, globalStart, globalEnd),

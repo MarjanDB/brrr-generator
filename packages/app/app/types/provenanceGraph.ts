@@ -338,7 +338,7 @@ export type GraphMetrics = {
 	top: number;
 };
 
-// What a node says, by kind; each kind has its own i18n text and params (`nodeValueKeys`).
+// What a node says, by kind; each kind has its own i18n text and params (`I18nKeys.nodeValue`).
 export enum NodeValueKind {
 	// A file name or a broker row's own label: { text }.
 	TEXT = "TEXT",
@@ -372,3 +372,8 @@ export enum NodeValueKind {
 	// { side, quantity }: side is the key of the leg's side.
 	LEG = "LEG",
 }
+
+export type NodeLook = {
+	icon: string;
+	tint: string;
+};

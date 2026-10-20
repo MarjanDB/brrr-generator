@@ -14,7 +14,7 @@ const flow = provideReportFlow();
 
 useSeoMeta({ title: () => t("app_title") });
 
-const stepLabels = computed(() => flow.steps.map((step) => t(reportStepKeys[step])));
+const stepLabels = computed(() => flow.steps.map((step) => t(I18nKeys.reportStep[step])));
 
 // The step a path asks for, or the first step that's missing when the flow can't show it yet.
 function shownStepOf(path: string): ReportStep {
@@ -56,7 +56,7 @@ function pageKey(pageRoute: RouteLocationNormalizedLoaded): string {
 
 <template>
 	<div class="py-8 flex flex-col gap-6">
-		<h1 class="sr-only">{{ t(reportStepKeys[shownStep]) }}</h1>
+		<h1 class="sr-only">{{ t(I18nKeys.reportStep[shownStep]) }}</h1>
 		<WizardStepper
 			:steps="stepLabels"
 			:current-step="flow.steps.indexOf(shownStep) + 1"

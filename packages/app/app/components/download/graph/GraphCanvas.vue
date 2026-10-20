@@ -85,7 +85,7 @@ const bandClasses: Record<GraphLane, string> = {
 };
 
 function bandLabel(lane: GraphLane): string {
-	const keys = laneLabelKeys(props.instrumentKind);
+	const keys = I18nKeys.laneLabels(props.instrumentKind);
 	switch (lane) {
 		case GraphLane.ACQUIRED:
 			return t(keys.acquired);
@@ -99,7 +99,7 @@ function bandLabel(lane: GraphLane): string {
 const headings = computed(() =>
 	props.placement.headings.map((heading) => ({
 		x: heading.x,
-		text: heading.column.headings.map((name) => t(headingKeys[name])).join(" · "),
+		text: heading.column.headings.map((name) => t(I18nKeys.heading[name])).join(" · "),
 	})),
 );
 </script>

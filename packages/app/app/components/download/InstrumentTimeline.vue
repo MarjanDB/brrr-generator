@@ -53,7 +53,9 @@ const yRange = computed(() => TimelineGeometry.yRange(rows.value.length, timelin
 const height = computed(() =>
 	Math.max(
 		120,
-		Math.round(30 + TimelineGeometry.rowPitch(rows.value.length) * (yRange.value.max - yRange.value.min)),
+		Math.round(
+			30 + TimelineGeometry.rowPitch(rows.value.length) * (yRange.value.max - yRange.value.min),
+		),
 	),
 );
 

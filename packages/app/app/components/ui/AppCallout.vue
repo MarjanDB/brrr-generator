@@ -13,7 +13,7 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-	<component :is="as" class="rounded-sm px-2 py-1 text-sm" :class="softIntentClasses[color]">
+	<component :is="as" class="rounded-sm px-2 py-1 text-sm" :class="IntentClasses.soft[color]">
 		<slot />
 	</component>
 </template>

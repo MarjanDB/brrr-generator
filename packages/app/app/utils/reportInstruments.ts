@@ -14,7 +14,7 @@ import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import type { LeftOutGroup, SplitChip } from "~/types/instrumentPanel";
 import { SplitFactorKind } from "~/types/provenanceGraph";
-import { fieldOf, formatNumber } from "~/utils/provenanceFields";
+import { ProvenanceFields } from "~/utils/provenanceFields";
 
 // The item an instrument opens on: its first sale on the form (the sketch opens on a sale, which has
 // the richest graph), else its first dividend on the form; for an instrument with nothing on the
@@ -26,7 +26,7 @@ function defaultFocus(instrument: ReportInstrument, walker: ProvenanceWalker): P
 		candidates: ProvenanceNode[],
 		kind: ProvenanceEventKind,
 	): ProvenanceNode | undefined =>
-		candidates.find((event) => fieldOf(event, ProvenanceField.EVENT_KIND) === kind);
+		candidates.find((event) => ProvenanceFields.of(event, ProvenanceField.EVENT_KIND) === kind);
 	const focus =
 		firstOf(reported, ProvenanceEventKind.SOLD) ??
 		firstOf(reported, ProvenanceEventKind.DIVIDEND) ??
@@ -115,7 +115,7 @@ function splitRatioOf(chip: SplitChip, locale: string): { before: string; after:
 	if (factor === null) {
 		return null;
 	}
-	const amount = formatNumber(String(factor.amount), locale);
+	const amount = ProvenanceFields.formatNumber(String(factor.amount), locale);
 	return factor.kind === SplitFactorKind.MULTIPLY
 		? { before: amount, after: "1" }
 		: { before: "1", after: amount };
@@ -127,16 +127,16 @@ function chipKindOf(value: string | null): IdentifierChangeType | null {
 
 // A corporate action's chip, from the facts it recorded; null for a kind it has no chip for.
 function chipOf(action: ProvenanceNode): SplitChip | null {
-	const kind = chipKindOf(fieldOf(action, ProvenanceField.CORPORATE_ACTION_KIND));
+	const kind = chipKindOf(ProvenanceFields.of(action, ProvenanceField.CORPORATE_ACTION_KIND));
 	if (kind === null) {
 		return null;
 	}
 	return {
 		kind,
-		before: fieldOf(action, ProvenanceField.SPLIT_BEFORE),
-		after: fieldOf(action, ProvenanceField.SPLIT_AFTER),
-		fromIsin: fieldOf(action, ProvenanceField.FROM_ISIN),
-		fromTicker: fieldOf(action, ProvenanceField.FROM_TICKER),
+		before: ProvenanceFields.of(action, ProvenanceField.SPLIT_BEFORE),
+		after: ProvenanceFields.of(action, ProvenanceField.SPLIT_AFTER),
+		fromIsin: ProvenanceFields.of(action, ProvenanceField.FROM_ISIN),
+		fromTicker: ProvenanceFields.of(action, ProvenanceField.FROM_TICKER),
 	};
 }
 

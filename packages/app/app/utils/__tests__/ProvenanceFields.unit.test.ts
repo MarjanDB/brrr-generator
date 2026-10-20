@@ -1,7 +1,7 @@
 import { ProvenanceEventKind, ProvenanceField } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { cashAmountOf, fieldOf, formatNumber } from "~/utils/provenanceFields";
+import { ProvenanceFields } from "~/utils/provenanceFields";
 
 describe("a node's fields", () => {
 	test("a field the node has comes back as it was recorded", () => {
@@ -21,8 +21,8 @@ describe("a node's fields", () => {
 
 		const event = b.node(buy.event);
 
-		expect(fieldOf(event, ProvenanceField.QUANTITY)).toEqual("10");
-		expect(fieldOf(event, ProvenanceField.DATE)).toEqual("2024-01-10");
+		expect(ProvenanceFields.of(event, ProvenanceField.QUANTITY)).toEqual("10");
+		expect(ProvenanceFields.of(event, ProvenanceField.DATE)).toEqual("2024-01-10");
 	});
 
 	test("a field the node lacks is null", () => {
@@ -31,29 +31,29 @@ describe("a node's fields", () => {
 
 		const node = b.node(file);
 
-		expect(fieldOf(node, ProvenanceField.ISIN)).toBeNull();
+		expect(ProvenanceFields.of(node, ProvenanceField.ISIN)).toBeNull();
 	});
 });
 
 describe("numbers as a person reads them", () => {
 	test("float noise from a rescaled price is rounded away", () => {
-		expect(formatNumber("60.00000000000001", "en")).toEqual("60");
+		expect(ProvenanceFields.formatNumber("60.00000000000001", "en")).toEqual("60");
 	});
 
 	test("the decimals a price really has are kept", () => {
-		expect(formatNumber("8.554", "en")).toEqual("8.554");
+		expect(ProvenanceFields.formatNumber("8.554", "en")).toEqual("8.554");
 	});
 
 	test("Slovenian writes a decimal comma", () => {
-		expect(formatNumber("8.554", "sl")).toEqual("8,554");
+		expect(ProvenanceFields.formatNumber("8.554", "sl")).toEqual("8,554");
 	});
 
 	test("a sold quantity keeps its sign", () => {
-		expect(formatNumber("-45", "en")).toEqual("-45");
+		expect(ProvenanceFields.formatNumber("-45", "en")).toEqual("-45");
 	});
 
 	test("a value that isn't a number is shown as it was recorded", () => {
-		expect(formatNumber("n/a", "en")).toEqual("n/a");
+		expect(ProvenanceFields.formatNumber("n/a", "en")).toEqual("n/a");
 	});
 });
 
@@ -72,7 +72,7 @@ describe("a payment's amount", () => {
 			label: "dividend TTE",
 		});
 
-		expect(cashAmountOf(b.node(dividend.event))).toEqual("20.5");
+		expect(ProvenanceFields.cashAmountOf(b.node(dividend.event))).toEqual("20.5");
 	});
 
 	test("a payment recorded with a quantity is its price times the quantity", () => {
@@ -90,13 +90,13 @@ describe("a payment's amount", () => {
 			label: "tax TTE",
 		});
 
-		expect(cashAmountOf(b.node(tax.event))).toEqual("-3");
+		expect(ProvenanceFields.cashAmountOf(b.node(tax.event))).toEqual("-3");
 	});
 
 	test("a node without a price has no amount", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });
 
-		expect(cashAmountOf(b.node(file))).toBeNull();
+		expect(ProvenanceFields.cashAmountOf(b.node(file))).toBeNull();
 	});
 });

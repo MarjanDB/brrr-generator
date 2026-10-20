@@ -65,7 +65,7 @@ function changeClass(value: number | null): string {
           v-for="mark in formPayments"
           :key="mark.node.id"
           class="app-table-row row-selectable"
-          v-bind="rowStateAttributes(Timelines.markStateOf(mark.node, focus.node.value, lit))"
+          v-bind="RowStates.attributesOf(Timelines.markStateOf(mark.node, focus.node.value, lit))"
           @click="focus.refocus(mark.node)"
         >
           <td class="app-table-td pl-3 whitespace-nowrap">
@@ -105,7 +105,7 @@ function changeClass(value: number | null): string {
           v-for="row in formLots"
           :key="row.lot.id"
           class="app-table-row row-selectable"
-          v-bind="rowStateAttributes(Timelines.barStateOf(row.bar, focus.node.value, lit))"
+          v-bind="RowStates.attributesOf(Timelines.barStateOf(row.bar, focus.node.value, lit))"
           @click="focus.refocus(row.lot)"
         >
           <td class="app-table-td pl-3 whitespace-nowrap">{{ nodeDate(row.bought.node) }}</td>
