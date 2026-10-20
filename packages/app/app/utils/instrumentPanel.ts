@@ -13,6 +13,7 @@ import {
 	type ReportMatchedLot,
 	type ReportProvenance,
 } from "@brrr/lib";
+import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import type {
 	LeftOutGroup,
 	PanelContract,
@@ -21,7 +22,6 @@ import type {
 	SplitChip,
 } from "~/types/instrumentPanel";
 import { SplitFactorKind } from "~/types/provenanceGraph";
-import { splitFactorOf } from "~/utils/graphModel";
 import { reachesALine } from "~/utils/instrumentTimeline";
 import { fieldOf, formatNumber } from "~/utils/provenanceFields";
 
@@ -255,7 +255,7 @@ export function splitRatioOf(
 	if (chip.before === null || chip.after === null) {
 		return null;
 	}
-	const factor = splitFactorOf(chip.before, chip.after);
+	const factor = GraphModels.splitFactorOf(chip.before, chip.after);
 	if (factor === null) {
 		return null;
 	}

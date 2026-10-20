@@ -1,9 +1,9 @@
 import { ProvenanceEventKind } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
+import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import { GraphLane, type GraphMetrics } from "~/types/provenanceGraph";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { layoutGraph, layoutNodeOf, placedNodeOf, placeGraph } from "~/utils/graphLayout";
-import { graphModelOf } from "~/utils/graphModel";
 
 // Round numbers, so every position below can be worked out by hand: a column is 150 wide with its
 // gap, a pair card is 20 + 2 * 20 = 60 tall.
@@ -52,15 +52,15 @@ describe("placing a graph layout in pixels", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(match.lot),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const placement = placeGraph(layout, metrics);
-		const pair = placedNodeOf(placement, layout.focus);
+		const placement = GraphLayouts.place(layout, metrics);
+		const pair = GraphLayouts.placedNodeOf(placement, layout.focus);
 		const fromBuy = placement.edges.find((e) => e.edge.from.node.source === b.node(buy.event));
 		const fromSell = placement.edges.find((e) => e.edge.from.node.source === b.node(sell.event));
 
@@ -103,14 +103,14 @@ describe("placing a graph layout in pixels", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(match.lot),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const placement = placeGraph(layout, metrics);
+		const placement = GraphLayouts.place(layout, metrics);
 
 		// Acquired: one 40 tall node per column, from 0. Middle: the pair is 60 tall, from 40 + 30 = 70.
 		// Sold: from 70 + 60 + 30 = 160. The graph ends 40 + 30 below that, less the last gap, plus 6.
@@ -165,20 +165,20 @@ describe("placing a graph layout in pixels", () => {
 			currency: "USD",
 			label: "buy 2",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const oneLayout = layoutNodeOf(layout, b.node(one.row));
-		const twoLayout = layoutNodeOf(layout, b.node(two.row));
+		const oneLayout = GraphLayouts.nodeOf(layout, b.node(one.row));
+		const twoLayout = GraphLayouts.nodeOf(layout, b.node(two.row));
 		assert(oneLayout !== null);
 		assert(twoLayout !== null);
 
-		const placement = placeGraph(layout, metrics);
-		const first = placedNodeOf(placement, oneLayout);
-		const second = placedNodeOf(placement, twoLayout);
+		const placement = GraphLayouts.place(layout, metrics);
+		const first = GraphLayouts.placedNodeOf(placement, oneLayout);
+		const second = GraphLayouts.placedNodeOf(placement, twoLayout);
 
 		expect(first.x).toEqual(150);
 		expect(first.y).toEqual(0);
@@ -207,8 +207,8 @@ describe("placing a graph layout in pixels", () => {
 			after: "40",
 			date: "2024-06-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(buy.event),
 			expanded: new Set(),
 			focusable: new Set(),
@@ -217,7 +217,7 @@ describe("placing a graph layout in pixels", () => {
 		// The acquired band holds two nodes in the trades' column (the trade and the faded action),
 		// so it is 40 + 10 + 40 = 90 tall; the trade is at its top (y 0) and the rebuilt trade, alone
 		// in its column, is centred in it: (90 - 40) / 2 = 25.
-		const placement = placeGraph(layout, metrics);
+		const placement = GraphLayouts.place(layout, metrics);
 		const rebuilt = placement.edges.find((e) => e.edge.to.node.source === b.node(split.rebuilt));
 		const parsed = placement.edges.find((e) => e.edge.to.node.source === b.node(buy.row));
 
@@ -246,14 +246,14 @@ describe("placing a graph layout in pixels", () => {
 			currency: "USD",
 			label: "buy ACME",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(buy.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const placement = placeGraph(layout, { ...metrics, columnGap: 10 });
+		const placement = GraphLayouts.place(layout, { ...metrics, columnGap: 10 });
 		const edge = placement.edges.find((e) => e.edge.to.node.source === b.node(buy.row));
 
 		// The file is in the middle band, 70 down, so its edge leaves at 70 + 20 = 90; the row's edge

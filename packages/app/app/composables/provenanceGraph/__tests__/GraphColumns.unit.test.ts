@@ -1,9 +1,9 @@
 import { ProvenanceEventKind } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
+import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import { GraphHeading, GraphLane } from "~/types/provenanceGraph";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { layoutGraph, layoutNodeOf } from "~/utils/graphLayout";
-import { graphModelOf } from "~/utils/graphModel";
 
 describe("the columns, lanes and order of a graph layout", () => {
 	test("columns follow the stages and skip the ones with nothing in them", () => {
@@ -38,19 +38,19 @@ describe("the columns, lanes and order of a graph layout", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(match.lot),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		expect(layoutNodeOf(layout, b.node(file))?.column).toEqual(0);
-		expect(layoutNodeOf(layout, b.node(sell.row))?.column).toEqual(1);
-		expect(layoutNodeOf(layout, b.node(sell.event))?.column).toEqual(2);
-		expect(layoutNodeOf(layout, b.node(match.lot))?.column).toEqual(3);
-		expect(layoutNodeOf(layout, b.node(buy.row))?.column).toEqual(1);
+		expect(GraphLayouts.nodeOf(layout, b.node(file))?.column).toEqual(0);
+		expect(GraphLayouts.nodeOf(layout, b.node(sell.row))?.column).toEqual(1);
+		expect(GraphLayouts.nodeOf(layout, b.node(sell.event))?.column).toEqual(2);
+		expect(GraphLayouts.nodeOf(layout, b.node(match.lot))?.column).toEqual(3);
+		expect(GraphLayouts.nodeOf(layout, b.node(buy.row))?.column).toEqual(1);
 		expect(layout.columns).toHaveLength(4);
 		expect(layout.columns[0]?.headings).toEqual([GraphHeading.EXPORT]);
 		expect(layout.columns[1]?.headings).toEqual([GraphHeading.ROW]);
@@ -97,19 +97,19 @@ describe("the columns, lanes and order of a graph layout", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-09-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(buy.row),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		expect(layoutNodeOf(layout, b.node(buy.event))?.column).toEqual(2);
-		expect(layoutNodeOf(layout, b.node(split.action))?.column).toEqual(2);
-		expect(layoutNodeOf(layout, b.node(split.action))?.isStub).toEqual(true);
-		expect(layoutNodeOf(layout, b.node(split.rebuilt))?.column).toEqual(3);
-		expect(layoutNodeOf(layout, b.node(match.lot))?.column).toEqual(4);
+		expect(GraphLayouts.nodeOf(layout, b.node(buy.event))?.column).toEqual(2);
+		expect(GraphLayouts.nodeOf(layout, b.node(split.action))?.column).toEqual(2);
+		expect(GraphLayouts.nodeOf(layout, b.node(split.action))?.isStub).toEqual(true);
+		expect(GraphLayouts.nodeOf(layout, b.node(split.rebuilt))?.column).toEqual(3);
+		expect(GraphLayouts.nodeOf(layout, b.node(match.lot))?.column).toEqual(4);
 		expect(layout.columns[2]?.headings).toEqual([GraphHeading.TRADE]);
 		expect(layout.columns[3]?.headings).toEqual([GraphHeading.AFTER_CORPORATE_ACTION]);
 		expect(layout.columns[4]?.headings).toEqual([GraphHeading.REPORT_PAIRS]);
@@ -147,19 +147,19 @@ describe("the columns, lanes and order of a graph layout", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(match.lot),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		expect(layoutNodeOf(layout, b.node(buy.event))?.lane).toEqual(GraphLane.ACQUIRED);
-		expect(layoutNodeOf(layout, b.node(sell.event))?.lane).toEqual(GraphLane.SOLD);
-		expect(layoutNodeOf(layout, b.node(match.lot))?.lane).toEqual(GraphLane.MIDDLE);
-		expect(layoutNodeOf(layout, b.node(buy.row))?.lane).toEqual(GraphLane.ACQUIRED);
-		expect(layoutNodeOf(layout, b.node(sell.row))?.lane).toEqual(GraphLane.SOLD);
+		expect(GraphLayouts.nodeOf(layout, b.node(buy.event))?.lane).toEqual(GraphLane.ACQUIRED);
+		expect(GraphLayouts.nodeOf(layout, b.node(sell.event))?.lane).toEqual(GraphLane.SOLD);
+		expect(GraphLayouts.nodeOf(layout, b.node(match.lot))?.lane).toEqual(GraphLane.MIDDLE);
+		expect(GraphLayouts.nodeOf(layout, b.node(buy.row))?.lane).toEqual(GraphLane.ACQUIRED);
+		expect(GraphLayouts.nodeOf(layout, b.node(sell.row))?.lane).toEqual(GraphLane.SOLD);
 		expect(layout.lanes).toEqual([GraphLane.ACQUIRED, GraphLane.MIDDLE, GraphLane.SOLD]);
 	});
 
@@ -190,21 +190,21 @@ describe("the columns, lanes and order of a graph layout", () => {
 			events: [dividend, tax],
 			dateReceived: "2024-04-02",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sums.daySum),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		expect(layoutNodeOf(layout, b.node(dividend.event))?.column).toEqual(2);
-		expect(layoutNodeOf(layout, b.node(tax.event))?.column).toEqual(2);
-		expect(layoutNodeOf(layout, b.node(dividend.event))?.lane).toEqual(GraphLane.ACQUIRED);
-		expect(layoutNodeOf(layout, b.node(tax.event))?.lane).toEqual(GraphLane.SOLD);
-		expect(layoutNodeOf(layout, b.node(sums.actionSum))?.lane).toEqual(GraphLane.MIDDLE);
-		expect(layoutNodeOf(layout, b.node(sums.daySum))?.lane).toEqual(GraphLane.MIDDLE);
-		expect(layoutNodeOf(layout, b.node(sums.line))?.lane).toEqual(GraphLane.MIDDLE);
+		expect(GraphLayouts.nodeOf(layout, b.node(dividend.event))?.column).toEqual(2);
+		expect(GraphLayouts.nodeOf(layout, b.node(tax.event))?.column).toEqual(2);
+		expect(GraphLayouts.nodeOf(layout, b.node(dividend.event))?.lane).toEqual(GraphLane.ACQUIRED);
+		expect(GraphLayouts.nodeOf(layout, b.node(tax.event))?.lane).toEqual(GraphLane.SOLD);
+		expect(GraphLayouts.nodeOf(layout, b.node(sums.actionSum))?.lane).toEqual(GraphLane.MIDDLE);
+		expect(GraphLayouts.nodeOf(layout, b.node(sums.daySum))?.lane).toEqual(GraphLane.MIDDLE);
+		expect(GraphLayouts.nodeOf(layout, b.node(sums.line))?.lane).toEqual(GraphLane.MIDDLE);
 		expect(layout.columns).toHaveLength(6);
 		expect(layout.columns[2]?.headings).toEqual([GraphHeading.DIVIDEND, GraphHeading.TAX]);
 		expect(layout.columns[3]?.headings).toEqual([GraphHeading.SUMMED_PER_ACTION]);
@@ -280,22 +280,22 @@ describe("the columns, lanes and order of a graph layout", () => {
 			boughtOn: "2024-01-12",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		expect(layoutNodeOf(layout, b.node(firstMatch.lot))?.row).toEqual(0);
-		expect(layoutNodeOf(layout, b.node(secondMatch.lot))?.row).toEqual(1);
-		expect(layoutNodeOf(layout, b.node(thirdMatch.lot))?.row).toEqual(2);
-		expect(layoutNodeOf(layout, b.node(firstBuy.event))?.row).toEqual(0);
-		expect(layoutNodeOf(layout, b.node(secondBuy.event))?.row).toEqual(1);
-		expect(layoutNodeOf(layout, b.node(thirdBuy.event))?.row).toEqual(2);
-		expect(layoutNodeOf(layout, b.node(firstBuy.event))?.lane).toEqual(GraphLane.ACQUIRED);
-		expect(layoutNodeOf(layout, b.node(sell.event))?.order).toEqual(0);
+		expect(GraphLayouts.nodeOf(layout, b.node(firstMatch.lot))?.row).toEqual(0);
+		expect(GraphLayouts.nodeOf(layout, b.node(secondMatch.lot))?.row).toEqual(1);
+		expect(GraphLayouts.nodeOf(layout, b.node(thirdMatch.lot))?.row).toEqual(2);
+		expect(GraphLayouts.nodeOf(layout, b.node(firstBuy.event))?.row).toEqual(0);
+		expect(GraphLayouts.nodeOf(layout, b.node(secondBuy.event))?.row).toEqual(1);
+		expect(GraphLayouts.nodeOf(layout, b.node(thirdBuy.event))?.row).toEqual(2);
+		expect(GraphLayouts.nodeOf(layout, b.node(firstBuy.event))?.lane).toEqual(GraphLane.ACQUIRED);
+		expect(GraphLayouts.nodeOf(layout, b.node(sell.event))?.order).toEqual(0);
 	});
 
 	test("laying out the same graph twice gives the same order", () => {
@@ -330,27 +330,27 @@ describe("the columns, lanes and order of a graph layout", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const first = layoutGraph(model, {
+		const first = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const second = layoutGraph(model, {
+		const second = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		expect(layoutNodeOf(second, b.node(file))?.order).toEqual(
-			layoutNodeOf(first, b.node(file))?.order,
+		expect(GraphLayouts.nodeOf(second, b.node(file))?.order).toEqual(
+			GraphLayouts.nodeOf(first, b.node(file))?.order,
 		);
-		expect(layoutNodeOf(second, b.node(sell.event))?.order).toEqual(
-			layoutNodeOf(first, b.node(sell.event))?.order,
+		expect(GraphLayouts.nodeOf(second, b.node(sell.event))?.order).toEqual(
+			GraphLayouts.nodeOf(first, b.node(sell.event))?.order,
 		);
-		expect(layoutNodeOf(second, b.node(match.lot))?.order).toEqual(
-			layoutNodeOf(first, b.node(match.lot))?.order,
+		expect(GraphLayouts.nodeOf(second, b.node(match.lot))?.order).toEqual(
+			GraphLayouts.nodeOf(first, b.node(match.lot))?.order,
 		);
 	});
 });

@@ -9,7 +9,7 @@ import {
 
 // What the graph shows, as the parts of one line: the focus, then what it became. The view writes
 // the sentence. Only the main path counts: the faded stubs are not part of what is shown.
-export function captionOf(layout: GraphLayout): CaptionSegment[] {
+function captionOf(layout: GraphLayout): CaptionSegment[] {
 	const focus = layout.focus;
 	const segments = [segment({ kind: CaptionSegmentKind.FOCUS, node: focus })];
 	const onPath = layout.nodes.filter((node) => !node.isStub);
@@ -117,3 +117,8 @@ function segment(parts: SegmentParts): CaptionSegment {
 		drop: parts.drop ?? null,
 	};
 }
+
+// The sentence under a graph, in segments.
+export const GraphCaptions = {
+	of: captionOf,
+};

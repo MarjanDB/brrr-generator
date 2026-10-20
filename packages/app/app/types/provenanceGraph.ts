@@ -186,7 +186,8 @@ export type GraphModelEdge = {
 };
 
 // The visible graph for one mode (every step, or only the steps that matter). The maps are filled
-// when it is built; read them through the lookups in utils/graphModel.ts.
+// when it is built; read them through the lookups on GraphModels
+// (composables/provenanceGraph/graphModels.ts).
 export type GraphModel = {
 	// In graph order, then the left-out nodes.
 	nodes: GraphNode[];
@@ -241,8 +242,8 @@ export type GraphLayoutEdge = {
 };
 
 // What the graph shows for one focus: the main path, the faded stubs and stacks around it, and
-// where each sits (column, lane, order). The maps are filled by layoutGraph; read them through
-// layoutNodeOf and layoutNodeFor in utils/graphLayout.ts.
+// where each sits (column, lane, order). The maps are filled by GraphLayouts.of; read them through
+// GraphLayouts.nodeOf and GraphLayouts.nodeFor (composables/provenanceGraph/graphLayouts.ts).
 export type GraphLayout = {
 	focus: GraphLayoutNode;
 	nodes: GraphLayoutNode[];
@@ -289,7 +290,8 @@ export type PlacedHeading = {
 	x: number;
 };
 
-// A layout in pixels. Read the node map through placedNodeOf in utils/graphLayout.ts.
+// A layout in pixels. Read the node map through GraphLayouts.placedNodeOf
+// (composables/provenanceGraph/graphLayouts.ts).
 export type GraphPlacement = {
 	width: number;
 	height: number;

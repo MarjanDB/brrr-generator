@@ -1,9 +1,9 @@
 import { ProvenanceChange, ProvenanceEventKind, ProvenanceStage } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
+import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import { GraphNodeKind } from "~/types/provenanceGraph";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { layoutGraph, layoutNodeOf } from "~/utils/graphLayout";
-import { graphModelOf } from "~/utils/graphModel";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -40,20 +40,20 @@ describe("what a click on a card in the graph focuses", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 		const onTheTimeline = new Set([b.node(buy.event), b.node(sell.event), b.node(match.lot)]);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(buy.event),
 			expanded: new Set(),
 			focusable: onTheTimeline,
 		});
 
-		expect(layoutNodeOf(layout, b.node(match.lot))?.follow).toBe(b.node(match.lot));
-		expect(layoutNodeOf(layout, b.node(sell.event))?.follow).toBe(b.node(sell.event));
+		expect(GraphLayouts.nodeOf(layout, b.node(match.lot))?.follow).toBe(b.node(match.lot));
+		expect(GraphLayouts.nodeOf(layout, b.node(sell.event))?.follow).toBe(b.node(sell.event));
 		expect(layout.focus.follow).toBeNull();
-		expect(layoutNodeOf(layout, b.node(buy.row))?.follow).toBeNull();
-		expect(layoutNodeOf(layout, b.node(file))?.follow).toBeNull();
+		expect(GraphLayouts.nodeOf(layout, b.node(buy.row))?.follow).toBeNull();
+		expect(GraphLayouts.nodeOf(layout, b.node(file))?.follow).toBeNull();
 	});
 
 	test("in a lot's graph, both trades are one click away, as the lot is from theirs", () => {
@@ -88,20 +88,20 @@ describe("what a click on a card in the graph focuses", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 		const onTheTimeline = new Set([b.node(buy.event), b.node(sell.event), b.node(match.lot)]);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(match.lot),
 			expanded: new Set(),
 			focusable: onTheTimeline,
 		});
 
-		expect(layoutNodeOf(layout, b.node(buy.event))?.isStub).toEqual(false);
-		expect(layoutNodeOf(layout, b.node(buy.event))?.follow).toBe(b.node(buy.event));
-		expect(layoutNodeOf(layout, b.node(sell.event))?.follow).toBe(b.node(sell.event));
+		expect(GraphLayouts.nodeOf(layout, b.node(buy.event))?.isStub).toEqual(false);
+		expect(GraphLayouts.nodeOf(layout, b.node(buy.event))?.follow).toBe(b.node(buy.event));
+		expect(GraphLayouts.nodeOf(layout, b.node(sell.event))?.follow).toBe(b.node(sell.event));
 		expect(layout.focus.follow).toBeNull();
-		expect(layoutNodeOf(layout, b.node(sell.row))?.follow).toBeNull();
+		expect(GraphLayouts.nodeOf(layout, b.node(sell.row))?.follow).toBeNull();
 	});
 
 	test("a trade the timeline doesn't draw is never followed, even as a stub", () => {
@@ -136,16 +136,16 @@ describe("what a click on a card in the graph focuses", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(buy.event),
 			expanded: new Set(),
 			focusable: new Set([b.node(buy.event)]),
 		});
 
-		expect(layoutNodeOf(layout, b.node(sell.event))?.isStub).toEqual(true);
-		expect(layoutNodeOf(layout, b.node(sell.event))?.follow).toBeNull();
+		expect(GraphLayouts.nodeOf(layout, b.node(sell.event))?.isStub).toEqual(true);
+		expect(GraphLayouts.nodeOf(layout, b.node(sell.event))?.follow).toBeNull();
 	});
 
 	test("a trade before a split stands for the trade it became", () => {
@@ -189,7 +189,7 @@ describe("what a click on a card in the graph focuses", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 		const onTheTimeline = new Set([
 			b.node(split.rebuilt),
 			b.node(sell.event),
@@ -197,21 +197,23 @@ describe("what a click on a card in the graph focuses", () => {
 			b.node(match.lot),
 		]);
 
-		const lotGraph = layoutGraph(model, {
+		const lotGraph = GraphLayouts.of(model, {
 			focus: b.node(match.lot),
 			expanded: new Set(),
 			focusable: onTheTimeline,
 		});
-		const tradeGraph = layoutGraph(model, {
+		const tradeGraph = GraphLayouts.of(model, {
 			focus: b.node(split.rebuilt),
 			expanded: new Set(),
 			focusable: onTheTimeline,
 		});
 
-		expect(layoutNodeOf(lotGraph, b.node(buy.event))?.follow).toBe(b.node(split.rebuilt));
-		expect(layoutNodeOf(lotGraph, b.node(split.action))?.follow).toBe(b.node(split.action));
-		expect(layoutNodeOf(tradeGraph, b.node(buy.event))?.follow).toBeNull();
-		expect(layoutNodeOf(tradeGraph, b.node(split.action))?.follow).toBe(b.node(split.action));
+		expect(GraphLayouts.nodeOf(lotGraph, b.node(buy.event))?.follow).toBe(b.node(split.rebuilt));
+		expect(GraphLayouts.nodeOf(lotGraph, b.node(split.action))?.follow).toBe(b.node(split.action));
+		expect(GraphLayouts.nodeOf(tradeGraph, b.node(buy.event))?.follow).toBeNull();
+		expect(GraphLayouts.nodeOf(tradeGraph, b.node(split.action))?.follow).toBe(
+			b.node(split.action),
+		);
 	});
 
 	test("a stack spreads and is never followed", () => {
@@ -258,9 +260,9 @@ describe("what a click on a card in the graph focuses", () => {
 			currency: "USD",
 			label: "buy 3",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set([

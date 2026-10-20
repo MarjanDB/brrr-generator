@@ -1,9 +1,9 @@
 import { DropReason, ProvenanceChange, ProvenanceEventKind, ProvenanceStage } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
+import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import { GraphDirection, GraphHeading, GraphNodeKind } from "~/types/provenanceGraph";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { defaultGraphMetrics, layoutGraph, layoutNodeOf, placeGraph } from "~/utils/graphLayout";
-import { graphModelOf } from "~/utils/graphModel";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -51,19 +51,19 @@ describe("the graph of a focused buy or sale", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		expect(layoutNodeOf(layout, b.node(file))?.isStub).toEqual(false);
-		expect(layoutNodeOf(layout, b.node(sell.row))?.isStub).toEqual(false);
-		expect(layoutNodeOf(layout, b.node(buy.row))).toBeNull();
-		expect(layoutNodeOf(layout, b.node(other.row))).toBeNull();
-		expect(layoutNodeOf(layout, b.node(other.event))).toBeNull();
+		expect(GraphLayouts.nodeOf(layout, b.node(file))?.isStub).toEqual(false);
+		expect(GraphLayouts.nodeOf(layout, b.node(sell.row))?.isStub).toEqual(false);
+		expect(GraphLayouts.nodeOf(layout, b.node(buy.row))).toBeNull();
+		expect(GraphLayouts.nodeOf(layout, b.node(other.row))).toBeNull();
+		expect(GraphLayouts.nodeOf(layout, b.node(other.event))).toBeNull();
 		expect(layout.nodes.filter((node) => node.node.kind === GraphNodeKind.STACK)).toHaveLength(0);
 	});
 
@@ -108,15 +108,15 @@ describe("the graph of a focused buy or sale", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(split.rebuilt),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const asFirstRecorded = layoutNodeOf(layout, b.node(buy.event));
-		const action = layoutNodeOf(layout, b.node(split.action));
+		const asFirstRecorded = GraphLayouts.nodeOf(layout, b.node(buy.event));
+		const action = GraphLayouts.nodeOf(layout, b.node(split.action));
 
 		expect(asFirstRecorded?.isStub).toEqual(false);
 		expect(action?.isStub).toEqual(false);
@@ -166,22 +166,22 @@ describe("the graph of a focused buy or sale", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(buy.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const rebuilt = layoutNodeOf(layout, b.node(split.rebuilt));
-		const lot = layoutNodeOf(layout, b.node(match.lot));
+		const rebuilt = GraphLayouts.nodeOf(layout, b.node(split.rebuilt));
+		const lot = GraphLayouts.nodeOf(layout, b.node(match.lot));
 		assert(rebuilt !== null && lot !== null);
 
 		expect(layout.focus.node.source).toBe(b.node(buy.event));
 		expect(rebuilt.row).toBeNull();
 		expect(lot.row).toEqual(0);
 		expect(lot.column).toEqual(rebuilt.column + 1);
-		expect(layoutNodeOf(layout, b.node(sell.event))?.isStub).toEqual(true);
+		expect(GraphLayouts.nodeOf(layout, b.node(sell.event))?.isStub).toEqual(true);
 	});
 
 	test("each lot is a row after the trade, ordered by the day of the trade on the other side", () => {
@@ -234,18 +234,22 @@ describe("the graph of a focused buy or sale", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		expect(layoutNodeOf(layout, b.node(earlierLot.lot))?.row).toEqual(0);
-		expect(layoutNodeOf(layout, b.node(laterLot.lot))?.row).toEqual(1);
-		expect(layoutNodeOf(layout, b.node(earlierLot.lot))?.column).toEqual(layout.focus.column + 1);
-		expect(layoutNodeOf(layout, b.node(laterLot.lot))?.column).toEqual(layout.focus.column + 1);
+		expect(GraphLayouts.nodeOf(layout, b.node(earlierLot.lot))?.row).toEqual(0);
+		expect(GraphLayouts.nodeOf(layout, b.node(laterLot.lot))?.row).toEqual(1);
+		expect(GraphLayouts.nodeOf(layout, b.node(earlierLot.lot))?.column).toEqual(
+			layout.focus.column + 1,
+		);
+		expect(GraphLayouts.nodeOf(layout, b.node(laterLot.lot))?.column).toEqual(
+			layout.focus.column + 1,
+		);
 		expect(layout.focus.row).toBeNull();
 	});
 
@@ -281,15 +285,15 @@ describe("the graph of a focused buy or sale", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const lot = layoutNodeOf(layout, b.node(match.lot));
-		const otherSide = layoutNodeOf(layout, b.node(buy.event));
+		const lot = GraphLayouts.nodeOf(layout, b.node(match.lot));
+		const otherSide = GraphLayouts.nodeOf(layout, b.node(buy.event));
 		assert(lot !== null && otherSide !== null);
 
 		expect(otherSide.isStub).toEqual(true);
@@ -328,15 +332,15 @@ describe("the graph of a focused buy or sale", () => {
 		const closed = b.matchClosed({ instrument: acme, acquired: buy, sold: sell, quantity: "10" });
 		b.graph.drop(closed.acquiredLeg, DropReason.OUTSIDE_PERIOD, stage, null);
 		b.graph.drop(closed.soldLeg, DropReason.OUTSIDE_PERIOD, stage, null);
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(buy.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const lot = layoutNodeOf(layout, b.node(closed.lot));
-		const otherSide = layoutNodeOf(layout, b.node(sell.event));
+		const lot = GraphLayouts.nodeOf(layout, b.node(closed.lot));
+		const otherSide = GraphLayouts.nodeOf(layout, b.node(sell.event));
 		const [why] = layout.nodes.filter((node) => node.node.kind === GraphNodeKind.DROP);
 		assert(lot !== null && otherSide !== null && why !== undefined);
 
@@ -382,14 +386,14 @@ describe("the graph of a focused buy or sale", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const placement = placeGraph(layout, defaultGraphMetrics);
+		const placement = GraphLayouts.place(layout, GraphLayouts.defaultMetrics);
 
 		expect(layout.banded).toEqual(false);
 		expect(placement.bands).toHaveLength(0);
@@ -445,16 +449,16 @@ describe("the graph of a focused buy or sale", () => {
 			boughtOn: "2024-02-01",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const placement = placeGraph(layout, defaultGraphMetrics);
+		const placement = GraphLayouts.place(layout, GraphLayouts.defaultMetrics);
 		const middleOf = (source: object): number => {
-			const layoutNode = layoutNodeOf(layout, b.node(source));
+			const layoutNode = GraphLayouts.nodeOf(layout, b.node(source));
 			const placed = placement.nodes.find((node) => node.layoutNode === layoutNode);
 			assert(placed !== undefined);
 			return placed.y + placed.height / 2;
@@ -497,9 +501,9 @@ describe("the graph of a focused buy or sale", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
+		const model = GraphModels.of(b.graph, b.reading(), false);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(match.lot),
 			expanded: new Set(),
 			focusable: new Set(),
@@ -541,9 +545,9 @@ describe("the graph of a focused buy or sale", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), true);
+		const model = GraphModels.of(b.graph, b.reading(), true);
 
-		const layout = layoutGraph(model, {
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),

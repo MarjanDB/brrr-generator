@@ -8,11 +8,11 @@ import {
 	ProvenanceStage,
 } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
+import { GraphCaptions } from "~/composables/provenanceGraph/graphCaptions";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
+import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import { CaptionSegmentKind } from "~/types/provenanceGraph";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { captionOf } from "~/utils/graphCaption";
-import { layoutGraph } from "~/utils/graphLayout";
-import { graphModelOf } from "~/utils/graphModel";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -67,14 +67,14 @@ describe("the caption of a graph", () => {
 			boughtOn: "2024-01-11",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const caption = captionOf(layout);
+		const caption = GraphCaptions.of(layout);
 
 		expect(caption).toHaveLength(3);
 		expect(caption[0]?.kind).toEqual(CaptionSegmentKind.FOCUS);
@@ -137,14 +137,14 @@ describe("the caption of a graph", () => {
 			boughtOn: "2024-01-11",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), true);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), true);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const caption = captionOf(layout);
+		const caption = GraphCaptions.of(layout);
 
 		expect(caption).toHaveLength(3);
 		expect(caption[1]?.kind).toEqual(CaptionSegmentKind.MATCHED_WITH);
@@ -187,14 +187,14 @@ describe("the caption of a graph", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(buy.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const caption = captionOf(layout);
+		const caption = GraphCaptions.of(layout);
 
 		expect(caption).toHaveLength(3);
 		expect(caption[1]?.kind).toEqual(CaptionSegmentKind.MATCHED_WITH);
@@ -242,14 +242,14 @@ describe("the caption of a graph", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-09-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(buy.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const caption = captionOf(layout);
+		const caption = GraphCaptions.of(layout);
 
 		expect(caption).toHaveLength(4);
 		expect(caption[0]?.kind).toEqual(CaptionSegmentKind.FOCUS);
@@ -288,14 +288,14 @@ describe("the caption of a graph", () => {
 			events: [dividend, tax],
 			dateReceived: "2024-04-02",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(dividend.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const caption = captionOf(layout);
+		const caption = GraphCaptions.of(layout);
 
 		expect(caption).toHaveLength(2);
 		expect(caption[0]?.kind).toEqual(CaptionSegmentKind.FOCUS);
@@ -336,14 +336,14 @@ describe("the caption of a graph", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(match.lot),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const caption = captionOf(layout);
+		const caption = GraphCaptions.of(layout);
 
 		expect(caption).toHaveLength(2);
 		expect(caption[0]?.kind).toEqual(CaptionSegmentKind.FOCUS);
@@ -389,14 +389,14 @@ describe("the caption of a graph", () => {
 		});
 		b.graph.derive([secondBuy.event], secondRebuilt, ProvenanceChange.SPLIT, stage, null);
 		b.graph.derive([split.action], secondRebuilt, ProvenanceChange.SPLIT, stage, null);
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(split.action),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const caption = captionOf(layout);
+		const caption = GraphCaptions.of(layout);
 
 		expect(caption).toHaveLength(2);
 		expect(caption[0]?.kind).toEqual(CaptionSegmentKind.FOCUS);
@@ -430,14 +430,14 @@ describe("the caption of a graph", () => {
 			[ProvenanceField.QUANTITY]: "40",
 		});
 		b.graph.derive([split.action], rescaledLot, ProvenanceChange.SPLIT, stage, null);
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(split.action),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const caption = captionOf(layout);
+		const caption = GraphCaptions.of(layout);
 
 		expect(caption).toHaveLength(2);
 		expect(caption[1]?.kind).toEqual(CaptionSegmentKind.ADJUSTED);
@@ -450,14 +450,14 @@ describe("the caption of a graph", () => {
 		const rename = {};
 		b.graph.node(rename, ProvenanceNodeKind.CORPORATE_ACTION, "RENAME OLD → NEW", {});
 		b.graph.derive([file], rename, ProvenanceChange.CONVERTED, stage, null);
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(rename),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const caption = captionOf(layout);
+		const caption = GraphCaptions.of(layout);
 
 		expect(caption).toHaveLength(1);
 		expect(caption[0]?.kind).toEqual(CaptionSegmentKind.FOCUS);
@@ -473,14 +473,14 @@ describe("the caption of a graph", () => {
 			kind: ProvenanceDetailKind.FORM_IGNORES_BROKER_LOTS,
 			values: {},
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(lot),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
 
-		const caption = captionOf(layout);
+		const caption = GraphCaptions.of(layout);
 
 		expect(caption).toHaveLength(2);
 		expect(caption[0]?.kind).toEqual(CaptionSegmentKind.FOCUS);

@@ -20,6 +20,9 @@ import {
 } from "@brrr/lib";
 import { TestKit } from "@brrr/test-cases";
 import { assert, describe, expect, test } from "vitest";
+import { GraphCaptions } from "~/composables/provenanceGraph/graphCaptions";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
+import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import {
 	CaptionSegmentKind,
 	GraphHeading,
@@ -27,9 +30,6 @@ import {
 	GraphNodeKind,
 	SplitFactorKind,
 } from "~/types/provenanceGraph";
-import { captionOf } from "~/utils/graphCaption";
-import { layoutGraph, layoutNodeOf } from "~/utils/graphLayout";
-import { graphModelOf } from "~/utils/graphModel";
 import { buildTimeline, focusableOf } from "~/utils/instrumentTimeline";
 
 // The taxpayer the expected files were generated for.
@@ -93,18 +93,22 @@ describe("the graph engine on what the stages really record", () => {
 		const stock = reading.stocks[0];
 		assert(stock !== undefined);
 		const sale = eventOfKind(stock, ProvenanceEventKind.SOLD);
-		const model = graphModelOf(report.provenance, reading, false);
+		const model = GraphModels.of(report.provenance, reading, false);
 		const file = report.provenance.nodes().find((node) => node.kind === ProvenanceNodeKind.FILE);
 		assert(file !== undefined);
 
-		const layout = layoutGraph(model, { focus: sale, expanded: new Set(), focusable: new Set() });
-		const caption = captionOf(layout);
+		const layout = GraphLayouts.of(model, {
+			focus: sale,
+			expanded: new Set(),
+			focusable: new Set(),
+		});
+		const caption = GraphCaptions.of(layout);
 
 		expect(
 			layout.nodes.find((n) => n.node.source?.kind === ProvenanceNodeKind.GROUPING),
 		).toBeUndefined();
 		expect(layout.nodes.find((n) => n.node.kind === GraphNodeKind.PAIR)).toBeDefined();
-		expect(layoutNodeOf(layout, file)?.column).toEqual(0);
+		expect(GraphLayouts.nodeOf(layout, file)?.column).toEqual(0);
 		expect(layout.focus.column).toEqual(2);
 		expect(layout.columns).toHaveLength(5);
 		expect(layout.columns[4]?.headings).toEqual([GraphHeading.OTHER_SIDE]);
@@ -131,9 +135,13 @@ describe("the graph engine on what the stages really record", () => {
 		const stock = reading.stocks[0];
 		assert(stock !== undefined);
 		const sale = eventOfKind(stock, ProvenanceEventKind.SOLD);
-		const model = graphModelOf(report.provenance, reading, true);
+		const model = GraphModels.of(report.provenance, reading, true);
 
-		const layout = layoutGraph(model, { focus: sale, expanded: new Set(), focusable: new Set() });
+		const layout = GraphLayouts.of(model, {
+			focus: sale,
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layout.nodes.find((n) => n.node.kind === GraphNodeKind.PAIR)).toBeUndefined();
 		expect(layout.columns).toHaveLength(8);
@@ -158,19 +166,23 @@ describe("the graph engine on what the stages really record", () => {
 			.find((edge) => edge.from.kind === ProvenanceNodeKind.CORPORATE_ACTION)?.from;
 		assert(before !== undefined);
 		assert(action !== undefined);
-		const model = graphModelOf(report.provenance, reading, false);
+		const model = GraphModels.of(report.provenance, reading, false);
 
-		const layout = layoutGraph(model, { focus: before, expanded: new Set(), focusable: new Set() });
+		const layout = GraphLayouts.of(model, {
+			focus: before,
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const splitEdge = layout.edges.find((edge) => edge.split !== null);
 
 		expect(splitEdge?.from.node.source).toBe(before);
 		expect(splitEdge?.to.node.source).toBe(rebuilt);
 		expect(splitEdge?.split?.kind).toEqual(SplitFactorKind.MULTIPLY);
 		expect(splitEdge?.split?.amount).toEqual(10);
-		expect(layoutNodeOf(layout, action)?.isStub).toEqual(false);
-		expect(layoutNodeOf(layout, action)?.column).toEqual(2);
-		expect(layoutNodeOf(layout, before)?.column).toEqual(2);
-		expect(layoutNodeOf(layout, rebuilt)?.column).toEqual(3);
+		expect(GraphLayouts.nodeOf(layout, action)?.isStub).toEqual(false);
+		expect(GraphLayouts.nodeOf(layout, action)?.column).toEqual(2);
+		expect(GraphLayouts.nodeOf(layout, before)?.column).toEqual(2);
+		expect(GraphLayouts.nodeOf(layout, rebuilt)?.column).toEqual(3);
 		expect(layout.columns).toHaveLength(6);
 		expect(layout.nodes).toHaveLength(9);
 		expect(layout.edges).toHaveLength(10);
@@ -196,16 +208,16 @@ describe("the graph engine on what the stages really record", () => {
 		const file = report.provenance.nodes().find((node) => node.kind === ProvenanceNodeKind.FILE);
 		assert(file !== undefined);
 		const focusable = focusableOf(buildTimeline(stock, walker));
-		const model = graphModelOf(report.provenance, reading, false);
+		const model = GraphModels.of(report.provenance, reading, false);
 
-		const buyGraph = layoutGraph(model, { focus: buy, expanded: new Set(), focusable });
-		const lotGraph = layoutGraph(model, { focus: lot, expanded: new Set(), focusable });
+		const buyGraph = GraphLayouts.of(model, { focus: buy, expanded: new Set(), focusable });
+		const lotGraph = GraphLayouts.of(model, { focus: lot, expanded: new Set(), focusable });
 
-		expect(layoutNodeOf(buyGraph, lot)?.follow).toBe(lot);
-		expect(layoutNodeOf(buyGraph, before)?.follow).toBeNull();
-		expect(layoutNodeOf(lotGraph, buy)?.follow).toBe(buy);
-		expect(layoutNodeOf(lotGraph, before)?.follow).toBe(buy);
-		expect(layoutNodeOf(lotGraph, file)?.follow).toBeNull();
+		expect(GraphLayouts.nodeOf(buyGraph, lot)?.follow).toBe(lot);
+		expect(GraphLayouts.nodeOf(buyGraph, before)?.follow).toBeNull();
+		expect(GraphLayouts.nodeOf(lotGraph, buy)?.follow).toBe(buy);
+		expect(GraphLayouts.nodeOf(lotGraph, before)?.follow).toBe(buy);
+		expect(GraphLayouts.nodeOf(lotGraph, file)?.follow).toBeNull();
 	});
 
 	test("a day's dividend sum has no pair, and the dividend and its withholding sit in different lanes", async () => {
@@ -222,18 +234,22 @@ describe("the graph engine on what the stages really record", () => {
 		assert(line !== undefined);
 		const daySum = new ProvenanceWalker(report.provenance).parents(line)[0]?.from;
 		assert(daySum !== undefined);
-		const model = graphModelOf(report.provenance, reading, false);
+		const model = GraphModels.of(report.provenance, reading, false);
 
-		const layout = layoutGraph(model, { focus: daySum, expanded: new Set(), focusable: new Set() });
+		const layout = GraphLayouts.of(model, {
+			focus: daySum,
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layout.nodes.find((n) => n.node.kind === GraphNodeKind.PAIR)).toBeUndefined();
-		expect(layoutNodeOf(layout, eventOfKind(payer, ProvenanceEventKind.DIVIDEND))?.lane).toEqual(
-			GraphLane.ACQUIRED,
-		);
 		expect(
-			layoutNodeOf(layout, eventOfKind(payer, ProvenanceEventKind.WITHHOLDING_TAX))?.lane,
+			GraphLayouts.nodeOf(layout, eventOfKind(payer, ProvenanceEventKind.DIVIDEND))?.lane,
+		).toEqual(GraphLane.ACQUIRED);
+		expect(
+			GraphLayouts.nodeOf(layout, eventOfKind(payer, ProvenanceEventKind.WITHHOLDING_TAX))?.lane,
 		).toEqual(GraphLane.SOLD);
-		expect(layoutNodeOf(layout, line)?.column).toEqual(5);
+		expect(GraphLayouts.nodeOf(layout, line)?.column).toEqual(5);
 		expect(layout.columns).toHaveLength(6);
 		expect(layout.nodes).toHaveLength(8);
 		expect(layout.edges).toHaveLength(8);
@@ -251,9 +267,13 @@ describe("the graph engine on what the stages really record", () => {
 		assert(contract !== undefined);
 		const lot = contract.matchedLots[0]?.node;
 		assert(lot !== undefined);
-		const model = graphModelOf(report.provenance, reading, false);
+		const model = GraphModels.of(report.provenance, reading, false);
 
-		const layout = layoutGraph(model, { focus: lot, expanded: new Set(), focusable: new Set() });
+		const layout = GraphLayouts.of(model, {
+			focus: lot,
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 
 		expect(layout.focus.node.kind).toEqual(GraphNodeKind.PAIR);
 		expect(layout.focus.column).toEqual(3);
@@ -272,9 +292,13 @@ describe("the graph engine on what the stages really record", () => {
 		const stock = reading.stocks[0];
 		assert(stock !== undefined);
 		const sale = eventOfKind(stock, ProvenanceEventKind.SOLD);
-		const model = graphModelOf(report.provenance, reading, false);
+		const model = GraphModels.of(report.provenance, reading, false);
 
-		const layout = layoutGraph(model, { focus: sale, expanded: new Set(), focusable: new Set() });
+		const layout = GraphLayouts.of(model, {
+			focus: sale,
+			expanded: new Set(),
+			focusable: new Set(),
+		});
 		const rows = layout.nodes.filter((n) => n.node.kind === GraphNodeKind.ROW && !n.isStub);
 		const files = layout.nodes.filter((n) => n.node.kind === GraphNodeKind.FILE);
 

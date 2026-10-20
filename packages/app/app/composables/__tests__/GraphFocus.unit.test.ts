@@ -4,11 +4,11 @@ import {
 	mountComposable,
 	mountComposableUnder,
 } from "~/composables/__tests__/support/mountComposable";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
+import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import { type GraphFocus, provideGraphFocus, useGraphFocus } from "~/composables/useGraphFocus";
 import { GraphNodeKind } from "~/types/provenanceGraph";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { layoutGraph, layoutNodeOf } from "~/utils/graphLayout";
-import { graphModelOf } from "~/utils/graphModel";
 
 describe("the download step's graph focus", () => {
 	test("a new focus has its node, an empty trail and nothing lit", async () => {
@@ -126,7 +126,7 @@ describe("the download step's graph focus", () => {
 		});
 		const file = b.node(builtFile);
 		const event = b.node(buy.event);
-		const layout = layoutGraph(graphModelOf(b.graph, b.reading(), false), {
+		const layout = GraphLayouts.of(GraphModels.of(b.graph, b.reading(), false), {
 			focus: event,
 			expanded: new Set(),
 			focusable: new Set(),
@@ -159,7 +159,7 @@ describe("the download step's graph focus", () => {
 		});
 		const event = b.node(buy.event);
 		const row = b.node(buy.row);
-		const layout = layoutGraph(graphModelOf(b.graph, b.reading(), false), {
+		const layout = GraphLayouts.of(GraphModels.of(b.graph, b.reading(), false), {
 			focus: event,
 			expanded: new Set(),
 			focusable: new Set(),
@@ -193,7 +193,7 @@ describe("the download step's graph focus", () => {
 		});
 		const event = b.node(buy.event);
 		const row = b.node(buy.row);
-		const layout = layoutGraph(graphModelOf(b.graph, b.reading(), false), {
+		const layout = GraphLayouts.of(GraphModels.of(b.graph, b.reading(), false), {
 			focus: event,
 			expanded: new Set(),
 			focusable: new Set(),
@@ -225,7 +225,7 @@ describe("the download step's graph focus", () => {
 		});
 		const event = b.node(buy.event);
 		const row = b.node(buy.row);
-		const layout = layoutGraph(graphModelOf(b.graph, b.reading(), false), {
+		const layout = GraphLayouts.of(GraphModels.of(b.graph, b.reading(), false), {
 			focus: row,
 			expanded: new Set(),
 			focusable: new Set(),
@@ -259,7 +259,7 @@ describe("the download step's graph focus", () => {
 		const file = b.node(builtFile);
 		const row = b.node(buy.row);
 		const event = b.node(buy.event);
-		const layout = layoutGraph(graphModelOf(b.graph, b.reading(), false), {
+		const layout = GraphLayouts.of(GraphModels.of(b.graph, b.reading(), false), {
 			focus: row,
 			expanded: new Set(),
 			focusable: new Set(),
@@ -335,13 +335,13 @@ describe("the chain a lit node or edge stands for", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const sellRow = layoutNodeOf(layout, b.node(sell.row));
+		const sellRow = GraphLayouts.nodeOf(layout, b.node(sell.row));
 		assert(sellRow !== null);
 		const focus = await mountComposable(() => provideGraphFocus());
 		focus.start(b.node(sell.event));
@@ -413,8 +413,8 @@ describe("the chain a lit node or edge stands for", () => {
 			boughtOn: "2024-01-11",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
@@ -473,14 +473,14 @@ describe("the chain a lit node or edge stands for", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(buy.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const lot = layoutNodeOf(layout, b.node(match.lot));
-		const sale = layoutNodeOf(layout, b.node(sell.event));
+		const lot = GraphLayouts.nodeOf(layout, b.node(match.lot));
+		const sale = GraphLayouts.nodeOf(layout, b.node(sell.event));
 		assert(lot !== null && sale !== null);
 		const toSale = layout.edges.find((edge) => edge.to === sale);
 		assert(toSale !== undefined);
@@ -533,13 +533,13 @@ describe("the chain a lit node or edge stands for", () => {
 			currency: "USD",
 			label: "buy 2",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),
 		});
-		const oneRow = layoutNodeOf(layout, b.node(one.row));
+		const oneRow = GraphLayouts.nodeOf(layout, b.node(one.row));
 		assert(oneRow !== null);
 		const focus = await mountComposable(() => provideGraphFocus());
 		focus.start(b.node(sell.event));
@@ -601,8 +601,8 @@ describe("the chain a lit node or edge stands for", () => {
 			currency: "USD",
 			label: "buy 3",
 		});
-		const model = graphModelOf(b.graph, b.reading(), false);
-		const layout = layoutGraph(model, {
+		const model = GraphModels.of(b.graph, b.reading(), false);
+		const layout = GraphLayouts.of(model, {
 			focus: b.node(sell.event),
 			expanded: new Set(),
 			focusable: new Set(),

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ProvenanceField, type ProvenanceNode } from "@brrr/lib";
 import { computed } from "vue";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
 import { CardState, PairSide, type PlacedNode } from "~/types/provenanceGraph";
 
 const props = defineProps<{
@@ -70,7 +71,7 @@ const classes = computed(() => [
     <AppTooltip :content="hint">
       <div
         class="flex items-center gap-1.5 px-2 bg-action-soft text-action-ink text-xs shrink-0"
-        :style="{ height: `${defaultGraphMetrics.pairHeaderHeight}px` }"
+        :style="{ height: `${GraphLayouts.defaultMetrics.pairHeaderHeight}px` }"
       >
         <span class="i-mdi-link-variant" aria-hidden="true" />
         <span class="tabular-nums">{{ quantity }}</span>

@@ -8,6 +8,7 @@ import GraphPairCard from "~/components/download/graph/GraphPairCard.vue";
 import GraphPopover from "~/components/download/graph/GraphPopover.vue";
 import GraphStackCard from "~/components/download/graph/GraphStackCard.vue";
 import AppPopover from "~/components/ui/AppPopover.vue";
+import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
 import { CardState, type GraphChain, GraphLane, type GraphLayout, type GraphLayoutEdge, type GraphLayoutNode, type GraphNode, GraphNodeKind, type GraphPlacement, type PairSide } from "~/types/provenanceGraph";
 
 const props = defineProps<{
@@ -131,7 +132,7 @@ const headings = computed(() =>
         v-for="heading in headings"
         :key="heading.x"
         class="absolute top-1 text-xs font-medium text-ink-muted truncate"
-        :style="{ left: `${heading.x}px`, width: `${defaultGraphMetrics.nodeWidth}px` }"
+        :style="{ left: `${heading.x}px`, width: `${GraphLayouts.defaultMetrics.nodeWidth}px` }"
       >
         {{ heading.text }}
       </span>

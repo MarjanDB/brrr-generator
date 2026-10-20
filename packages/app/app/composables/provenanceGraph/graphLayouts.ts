@@ -4,6 +4,7 @@ import {
 	ProvenanceField,
 	type ProvenanceNode,
 } from "@brrr/lib";
+import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import {
 	type GraphColumn,
 	GraphDirection,
@@ -25,18 +26,9 @@ import {
 	type SplitFactor,
 	StackKey,
 } from "~/types/provenanceGraph";
-import { edgeCurve } from "~/utils/edgeCurve";
-import {
-	headingOf,
-	modelIns,
-	modelIsRebuilt,
-	modelLaneOf,
-	modelNodeFor,
-	modelOuts,
-	stageOf,
-} from "~/utils/graphModel";
+import { EdgeCurves } from "~/utils/edgeCurves";
 
-export type GraphLayoutOptions = {
+type GraphLayoutOptions = {
 	// Any recorded node; it is resolved with the model's node lookup.
 	focus: ProvenanceNode;
 	// The stacks the user spread out.
@@ -67,15 +59,15 @@ const stackFrom = 3;
 
 const lanesTopToBottom = [GraphLane.ACQUIRED, GraphLane.MIDDLE, GraphLane.SOLD];
 
-export function layoutGraph(model: GraphModel, options: GraphLayoutOptions): GraphLayout {
-	const focus = modelNodeFor(model, options.focus);
+function layoutGraph(model: GraphModel, options: GraphLayoutOptions): GraphLayout {
+	const focus = GraphModels.nodeFor(model, options.focus);
 	const followOf = (node: GraphNode) => followTarget(model, node, focus, options.focusable);
 	if (isTradeFocus(model, focus)) {
 		return layoutTrade(model, focus, followOf);
 	}
 	const main = new Set<GraphNode>([
-		...closure(focus, (node) => modelIns(model, node).map((edge) => edge.from)),
-		...closure(focus, (node) => modelOuts(model, node).map((edge) => edge.to)),
+		...closure(focus, (node) => GraphModels.ins(model, node).map((edge) => edge.from)),
+		...closure(focus, (node) => GraphModels.outs(model, node).map((edge) => edge.to)),
 	]);
 
 	const drafts = new Map<GraphNode, Draft>();
@@ -87,7 +79,7 @@ export function layoutGraph(model: GraphModel, options: GraphLayoutOptions): Gra
 				isStub: false,
 				direction: null,
 				hasMore: false,
-				lane: modelLaneOf(model, node),
+				lane: GraphModels.laneOf(model, node),
 			});
 		}
 	}
@@ -104,9 +96,9 @@ export function layoutGraph(model: GraphModel, options: GraphLayoutOptions): Gra
 	for (const owner of mainDrafts) {
 		for (const direction of [GraphDirection.UP, GraphDirection.DOWN]) {
 			const up = direction === GraphDirection.UP;
-			const off = (up ? modelIns(model, owner.node) : modelOuts(model, owner.node)).filter(
-				(edge) => !main.has(up ? edge.from : edge.to),
-			);
+			const off = (
+				up ? GraphModels.ins(model, owner.node) : GraphModels.outs(model, owner.node)
+			).filter((edge) => !main.has(up ? edge.from : edge.to));
 			for (const [kind, group] of groupByKind(off, up)) {
 				const key = StackKey.of(owner.node.key, direction, kind);
 				if (group.length >= stackFrom && !options.expanded.has(key)) {
@@ -129,8 +121,9 @@ export function layoutGraph(model: GraphModel, options: GraphLayoutOptions): Gra
 							node: other,
 							isStub: true,
 							direction,
-							hasMore: (up ? modelIns(model, other) : modelOuts(model, other)).length > 0,
-							lane: modelLaneOf(model, other),
+							hasMore:
+								(up ? GraphModels.ins(model, other) : GraphModels.outs(model, other)).length > 0,
+							lane: GraphModels.laneOf(model, other),
 						};
 						stubs.set(other, stub);
 					}
@@ -226,7 +219,7 @@ function followTarget(
 function currentOf(model: GraphModel, trade: GraphNode): GraphNode {
 	let current = trade;
 	for (;;) {
-		const next = modelOuts(model, current)
+		const next = GraphModels.outs(model, current)
 			.map((edge) => edge.to)
 			.find((node) => node.kind === GraphNodeKind.EVENT);
 		if (next === undefined) {
@@ -263,14 +256,14 @@ function layoutTrade(
 ): GraphLayout {
 	const current = currentOf(model, focus);
 	const historyDrafts = closure(current, (node) =>
-		modelIns(model, node).map((edge) => edge.from),
+		GraphModels.ins(model, node).map((edge) => edge.from),
 	).map(
 		(node): Draft => ({
 			node,
 			isStub: false,
 			direction: null,
 			hasMore: false,
-			lane: modelLaneOf(model, node),
+			lane: GraphModels.laneOf(model, node),
 		}),
 	);
 	const draftOf = new Map(historyDrafts.map((draft) => [draft.node, draft]));
@@ -285,18 +278,18 @@ function layoutTrade(
 	const laneOrders = orderWithinLanes(historyDrafts, historyEdges, stages);
 	const lotsColumn = Math.max(0, ...stages.values()) + 1;
 
-	const rows = modelOuts(model, current)
+	const rows = GraphModels.outs(model, current)
 		.map((edge): TradeRow => {
 			const root = edge.to;
 			return {
 				root,
 				otherSides:
 					root.kind === GraphNodeKind.PAIR
-						? modelIns(model, root)
+						? GraphModels.ins(model, root)
 								.map((into) => into.from)
 								.filter((node) => node !== current)
 						: [],
-				after: modelOuts(model, root).map((out) => out.to),
+				after: GraphModels.outs(model, root).map((out) => out.to),
 			};
 		})
 		.sort((left, right) => {
@@ -338,7 +331,7 @@ function layoutTrade(
 			direction: null,
 			hasMore: false,
 			column: lotsColumn,
-			lane: modelLaneOf(model, root),
+			lane: GraphModels.laneOf(model, root),
 			order: 0,
 			row,
 			follow: followOf(root),
@@ -351,9 +344,9 @@ function layoutTrade(
 				isStub: isOtherSide,
 				// Drawn after its lot, so what it leads on to is to its right.
 				direction: isOtherSide ? GraphDirection.DOWN : null,
-				hasMore: isOtherSide && modelIns(model, node).length > 0,
+				hasMore: isOtherSide && GraphModels.ins(model, node).length > 0,
 				column: lotsColumn + 1,
-				lane: modelLaneOf(model, node),
+				lane: GraphModels.laneOf(model, node),
 				order,
 				row,
 				follow: followOf(node),
@@ -379,7 +372,7 @@ function layoutTrade(
 			change: edge.change,
 			split: edge.split,
 		})),
-		...modelOuts(model, current).map((edge) => ({
+		...GraphModels.outs(model, current).map((edge) => ({
 			from: layoutOf(current),
 			to: layoutOf(edge.to),
 			isStub: false,
@@ -392,14 +385,14 @@ function layoutTrade(
 				from: layoutOf(root),
 				to: layoutOf(node),
 				isStub: true,
-				change: modelIns(model, root).find((edge) => edge.from === node)?.change ?? null,
+				change: GraphModels.ins(model, root).find((edge) => edge.from === node)?.change ?? null,
 				split: null,
 			})),
 			...after.map((node) => ({
 				from: layoutOf(root),
 				to: layoutOf(node),
 				isStub: false,
-				change: modelOuts(model, root).find((edge) => edge.to === node)?.change ?? null,
+				change: GraphModels.outs(model, root).find((edge) => edge.to === node)?.change ?? null,
 				split: null,
 			})),
 		]),
@@ -407,13 +400,15 @@ function layoutTrade(
 
 	const nodes = [...layoutNodes.values()];
 	const lotsHeadings = [
-		...new Set(rows.map(({ root }) => headingOf(root, modelIsRebuilt(model, root)))),
+		...new Set(
+			rows.map(({ root }) => GraphModels.headingOf(root, GraphModels.isRebuilt(model, root))),
+		),
 	];
 	const afterHeadings = [
 		...(rows.some((row) => row.otherSides.length > 0) ? [GraphHeading.OTHER_SIDE] : []),
 		...new Set(
 			rows.flatMap(({ after }) =>
-				after.map((node) => headingOf(node, modelIsRebuilt(model, node))),
+				after.map((node) => GraphModels.headingOf(node, GraphModels.isRebuilt(model, node))),
 			),
 		),
 	];
@@ -472,11 +467,11 @@ function bySourceOf(nodes: GraphLayoutNode[]): Map<ProvenanceNode, GraphLayoutNo
 
 // Where a recorded node is drawn: itself, or the pair of a lot, leg or report line. Null for a
 // node that is not drawn, hidden steps and the instrument included.
-export function layoutNodeOf(layout: GraphLayout, source: ProvenanceNode): GraphLayoutNode | null {
+function layoutNodeOf(layout: GraphLayout, source: ProvenanceNode): GraphLayoutNode | null {
 	return layout.bySource.get(source) ?? null;
 }
 
-export function layoutNodeFor(layout: GraphLayout, node: GraphNode): GraphLayoutNode | null {
+function layoutNodeFor(layout: GraphLayout, node: GraphNode): GraphLayoutNode | null {
 	return layout.byNode.get(node) ?? null;
 }
 
@@ -489,7 +484,7 @@ function representative(draft: Draft): GraphNode {
 function columnStages(drafts: Draft[], model: GraphModel): Map<Draft, number> {
 	const stageOfDraft = (draft: Draft): number => {
 		const node = representative(draft);
-		return stageOf(node.kind) + (modelIsRebuilt(model, node) ? 1 : 0);
+		return GraphModels.stageOf(node.kind) + (GraphModels.isRebuilt(model, node) ? 1 : 0);
 	};
 	const used = [...new Set(drafts.map(stageOfDraft))].sort((left, right) => left - right);
 	return new Map(drafts.map((draft) => [draft, used.indexOf(stageOfDraft(draft))]));
@@ -507,7 +502,7 @@ function columnsOf(
 		const named = main.length > 0 ? main : inColumn;
 		const headings = named.map((draft) => {
 			const node = representative(draft);
-			return headingOf(node, modelIsRebuilt(model, node));
+			return GraphModels.headingOf(node, GraphModels.isRebuilt(model, node));
 		});
 		return { index, headings: [...new Set(headings)] };
 	});
@@ -621,7 +616,7 @@ type StackArgs = {
 // The faded card standing for a group of neighbours: its lane is the members' when they share one.
 function stackDraft(args: StackArgs): Draft {
 	const members = args.group.map((edge) => (args.up ? edge.from : edge.to));
-	const lanes = new Set(members.map((member) => modelLaneOf(args.model, member)));
+	const lanes = new Set(members.map((member) => GraphModels.laneOf(args.model, member)));
 	const [only] = [...lanes];
 	const stackKey = GraphNodeKey.Schema.parse(`stack:${args.key}`);
 	const node: GraphNode = {
@@ -649,7 +644,7 @@ function stackDraft(args: StackArgs): Draft {
 }
 
 // The sizes the placement works from. The defaults are the sketch's numbers.
-export const defaultGraphMetrics: GraphMetrics = {
+const defaultGraphMetrics: GraphMetrics = {
 	nodeWidth: 162,
 	nodeHeight: 38,
 	pairHeaderHeight: 26,
@@ -686,7 +681,7 @@ function columnXOf(metrics: GraphMetrics): (index: number) => number {
 // Puts a layout in pixels. Lanes are bands across the whole graph, as tall as their tallest column;
 // a column's nodes in a band are centred in it, in their order. A graph without bands is laid out
 // by `placeRows`.
-export function placeGraph(layout: GraphLayout, metrics: GraphMetrics): GraphPlacement {
+function placeGraph(layout: GraphLayout, metrics: GraphMetrics): GraphPlacement {
 	if (!layout.banded) {
 		return placeRows(layout, metrics);
 	}
@@ -825,7 +820,7 @@ function placement(
 			edge,
 			from,
 			to,
-			path: edgeCurve(from, to),
+			path: EdgeCurves.between(from, to),
 			badge: edge.split === null ? null : { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 },
 		};
 	});
@@ -841,7 +836,7 @@ function placement(
 	};
 }
 
-export function placedNodeOf(placement: GraphPlacement, node: GraphLayoutNode): PlacedNode {
+function placedNodeOf(placement: GraphPlacement, node: GraphLayoutNode): PlacedNode {
 	const placed = placement.byLayoutNode.get(node);
 	if (placed === undefined) {
 		throw new Error("The node is not in this placement");
@@ -868,3 +863,13 @@ function entryPoint(edge: GraphLayoutEdge, target: PlacedNode, metrics: GraphMet
 			return middle;
 	}
 }
+
+// Where each node of a graph's model sits: its column, lane and order, then its place in pixels.
+export const GraphLayouts = {
+	of: layoutGraph,
+	nodeOf: layoutNodeOf,
+	nodeFor: layoutNodeFor,
+	place: placeGraph,
+	placedNodeOf,
+	defaultMetrics: defaultGraphMetrics,
+};

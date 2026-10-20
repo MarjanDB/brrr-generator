@@ -1,5 +1,5 @@
 import { type LandingConnector, LandingConnectorAnchor, LandingSide } from "~/types/landing";
-import { edgeCurve } from "~/utils/edgeCurve";
+import { EdgeCurves } from "~/utils/edgeCurves";
 
 // The mark's height (`size-33` in LandingMark) and the gap between cards in a column (`gap-2.5` in
 // LandingFlow): the connectors' heights are worked out from them.
@@ -57,7 +57,7 @@ export function landingConnectorOf(
 		height,
 		leftEndAtTop,
 		curve: leftEndAtTop
-			? edgeCurve({ x: 0, y: 0 }, { x: 100, y: 100 })
-			: edgeCurve({ x: 0, y: 100 }, { x: 100, y: 0 }),
+			? EdgeCurves.between({ x: 0, y: 0 }, { x: 100, y: 100 })
+			: EdgeCurves.between({ x: 0, y: 100 }, { x: 100, y: 0 }),
 	};
 }

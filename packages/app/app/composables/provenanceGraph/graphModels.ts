@@ -45,12 +45,12 @@ const kindOf: Record<ProvenanceNodeKind, GraphNodeKind | null> = {
 	[ProvenanceNodeKind.REPORT_LINE]: GraphNodeKind.REPORT_LINE,
 };
 
-export function graphNodeKindOf(kind: ProvenanceNodeKind): GraphNodeKind | null {
+function graphNodeKindOf(kind: ProvenanceNodeKind): GraphNodeKind | null {
 	return kindOf[kind];
 }
 
 // Steps the reader doesn't need to see unless asked: they fold into the edges around them.
-export function isHiddenStep(kind: GraphNodeKind): boolean {
+function isHiddenStep(kind: GraphNodeKind): boolean {
 	return (
 		kind === GraphNodeKind.RECORD ||
 		kind === GraphNodeKind.STAGING_EVENT ||
@@ -60,7 +60,7 @@ export function isHiddenStep(kind: GraphNodeKind): boolean {
 	);
 }
 
-export function stageOf(kind: GraphNodeKind): GraphStage {
+function stageOf(kind: GraphNodeKind): GraphStage {
 	switch (kind) {
 		case GraphNodeKind.FILE:
 			return GraphStage.EXPORT;
@@ -92,7 +92,7 @@ export function stageOf(kind: GraphNodeKind): GraphStage {
 }
 
 // The name of the column a node stands in. A node rebuilt from one of its own stage says so.
-export function headingOf(node: GraphNode, isRebuilt: boolean): GraphHeading {
+function headingOf(node: GraphNode, isRebuilt: boolean): GraphHeading {
 	switch (node.kind) {
 		case GraphNodeKind.FILE:
 			return GraphHeading.EXPORT;
@@ -159,7 +159,7 @@ function laneOfEvent(event: ProvenanceNode): GraphLane {
 // The lane of a recorded node (not of a pair, which is in the middle, nor of a left-out node, which
 // follows its owner). A row or a hidden step takes the one lane of the trades, lots and corporate
 // actions it became, and the middle when it became things from both.
-export function laneOfSource(source: ProvenanceNode, walker: ProvenanceWalker): GraphLane {
+function laneOfSource(source: ProvenanceNode, walker: ProvenanceWalker): GraphLane {
 	const kind = graphNodeKindOf(source.kind);
 	switch (kind) {
 		case GraphNodeKind.EVENT:
@@ -206,7 +206,7 @@ function laneOfWhatItBecame(source: ProvenanceNode, walker: ProvenanceWalker): G
 }
 
 // What a split did to a quantity, or null when either is not a positive number.
-export function splitFactorOf(before: string, after: string): SplitFactor | null {
+function splitFactorOf(before: string, after: string): SplitFactor | null {
 	const quantityBefore = Number(before);
 	const quantityAfter = Number(after);
 	if (!(quantityBefore > 0) || !(quantityAfter > 0)) {
@@ -218,17 +218,17 @@ export function splitFactorOf(before: string, after: string): SplitFactor | null
 	return { kind: SplitFactorKind.DIVIDE, amount: quantityBefore / quantityAfter };
 }
 
-export function modelIns(model: GraphModel, node: GraphNode): GraphModelEdge[] {
+function modelIns(model: GraphModel, node: GraphNode): GraphModelEdge[] {
 	return model.incoming.get(node) ?? [];
 }
 
-export function modelOuts(model: GraphModel, node: GraphNode): GraphModelEdge[] {
+function modelOuts(model: GraphModel, node: GraphNode): GraphModelEdge[] {
 	return model.outgoing.get(node) ?? [];
 }
 
 // The node a recorded node is drawn as: itself when visible, its pair when it is a matched lot,
 // leg or report line of one, and for a hidden step the first visible node after it (else before).
-export function modelNodeFor(model: GraphModel, source: ProvenanceNode): GraphNode {
+function modelNodeFor(model: GraphModel, source: ProvenanceNode): GraphNode {
 	const node = model.nodeBySource.get(source);
 	if (node === undefined) {
 		throw new Error(`The graph has no visible node for ${source.id}`);
@@ -236,7 +236,7 @@ export function modelNodeFor(model: GraphModel, source: ProvenanceNode): GraphNo
 	return node;
 }
 
-export function modelLaneOf(model: GraphModel, node: GraphNode): GraphLane {
+function modelLaneOf(model: GraphModel, node: GraphNode): GraphLane {
 	const lane = model.lanes.get(node);
 	if (lane === undefined) {
 		throw new Error(`The graph has no lane for ${node.key}`);
@@ -245,7 +245,7 @@ export function modelLaneOf(model: GraphModel, node: GraphNode): GraphLane {
 }
 
 // In the next column of its stage: a trade after a split, a sum merged per day.
-export function modelIsRebuilt(model: GraphModel, node: GraphNode): boolean {
+function modelIsRebuilt(model: GraphModel, node: GraphNode): boolean {
 	return model.rebuilt.has(node);
 }
 
@@ -267,7 +267,7 @@ type BuildContext = {
 // The visible graph for one mode: the graph's recorded nodes, the matched lots with their lines as
 // pair cards, the hidden steps folded into edges, the drops as nodes of their own. The graph's
 // instruments (GROUPING) are context and never part of any model.
-export function graphModelOf(
+function graphModelOf(
 	graph: ProvenanceGraph,
 	reading: ReportProvenance,
 	showEveryStep: boolean,
@@ -596,3 +596,18 @@ function nearest(
 	}
 	return undefined;
 }
+
+// What a report's provenance graph is drawn from: the nodes and edges it shows, and lookups on them.
+export const GraphModels = {
+	of: graphModelOf,
+	nodeFor: modelNodeFor,
+	ins: modelIns,
+	outs: modelOuts,
+	laneOf: modelLaneOf,
+	isRebuilt: modelIsRebuilt,
+	nodeKindOf: graphNodeKindOf,
+	isHiddenStep,
+	stageOf,
+	headingOf,
+	splitFactorOf,
+};
