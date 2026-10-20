@@ -53,6 +53,20 @@ export type TimelineBar = {
 	weight: TimelineWeight;
 };
 
+// What a row of the timeline holds: one bar of its own, or, while the rows are folded, the lots
+// closed in other years or what is still open, each group on one row.
+export enum TimelineRowKind {
+	BAR = "BAR",
+	OTHER_YEARS = "OTHER_YEARS",
+	STILL_OPEN = "STILL_OPEN",
+}
+
+export type TimelineRow = {
+	kind: TimelineRowKind;
+	// One bar for a bar's own row; a group's bars in the order they opened.
+	bars: TimelineBar[];
+};
+
 // A mark that ends no bar (a corporate action, a dividend, a tax, a broker lot), on the row under
 // the bars. 0 is on that row; points of the same day stack downward.
 export type TimelinePoint = {

@@ -1,6 +1,12 @@
 import { ProvenanceField, type ProvenanceWalker, type ReportInstrument } from "@brrr/lib";
 import { DateTime, Duration } from "luxon";
-import type { Timeline, TimelineBar, TimelineMark } from "~/types/timeline";
+import {
+	type Timeline,
+	type TimelineBar,
+	type TimelineMark,
+	type TimelineRow,
+	TimelineRowKind,
+} from "~/types/timeline";
 import { markKeys } from "~/utils/i18nKeys";
 import { buildTimeline } from "~/utils/instrumentTimeline";
 import { fieldOf } from "~/utils/provenanceFields";
@@ -54,5 +60,24 @@ export function useInstrumentTimeline(
 		return t("download_bar_lot", { quantity, duration });
 	}
 
-	return { timeline, describeMark, describeBar };
+	// A bar's row says what its bar says; a folded row how many lots closed in other years, or how
+	// much is still open.
+	function describeRow(row: TimelineRow): string {
+		switch (row.kind) {
+			case TimelineRowKind.BAR: {
+				const [bar] = row.bars;
+				return bar === undefined ? "" : describeBar(bar);
+			}
+			case TimelineRowKind.OTHER_YEARS:
+				return t("download_row_other_years", { count: row.bars.length });
+			case TimelineRowKind.STILL_OPEN:
+				return t("download_row_still_open", {
+					quantity: new Intl.NumberFormat(locale.value).format(
+						row.bars.reduce((sum, bar) => sum + bar.quantity, 0),
+					),
+				});
+		}
+	}
+
+	return { timeline, describeMark, describeBar, describeRow };
 }

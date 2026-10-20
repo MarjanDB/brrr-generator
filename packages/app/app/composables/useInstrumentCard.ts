@@ -9,7 +9,7 @@ import type {
 } from "@brrr/lib";
 import type { ComputedRef, InjectionKey } from "vue";
 import type { PanelEntry } from "~/types/instrumentPanel";
-import type { Timeline, TimelineBar, TimelineMark } from "~/types/timeline";
+import type { Timeline, TimelineMark, TimelineRow } from "~/types/timeline";
 
 export type InstrumentCardArgs = {
 	entry: PanelEntry;
@@ -30,7 +30,7 @@ export type InstrumentCardState = InstrumentCardArgs & {
 	name: string;
 	timeline: ComputedRef<Timeline>;
 	describeMark: (mark: TimelineMark) => string;
-	describeBar: (bar: TimelineBar) => string;
+	describeRow: (row: TimelineRow) => string;
 	// What the timeline draws: the only things a click in the graph can make the focus.
 	focusable: ComputedRef<ReadonlySet<ProvenanceNode>>;
 	focus: GraphFocus;
@@ -45,7 +45,7 @@ const instrumentCardKey: InjectionKey<InstrumentCardState> = Symbol("InstrumentC
 // once, and every part starts fresh when another instrument is picked.
 export function provideInstrumentCard(args: InstrumentCardArgs): InstrumentCardState {
 	const instrument = args.entry.instrument;
-	const { timeline, describeMark, describeBar } = useInstrumentTimeline(
+	const { timeline, describeMark, describeRow } = useInstrumentTimeline(
 		() => instrument,
 		() => args.walker,
 	);
@@ -56,7 +56,7 @@ export function provideInstrumentCard(args: InstrumentCardArgs): InstrumentCardS
 		name: args.entry.contract?.occSymbol ?? args.entry.ticker,
 		timeline,
 		describeMark,
-		describeBar,
+		describeRow,
 		focusable: computed(() => focusableOf(timeline.value)),
 		focus,
 		leftOut: computed(() =>

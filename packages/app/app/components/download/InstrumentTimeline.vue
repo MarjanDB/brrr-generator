@@ -1,14 +1,22 @@
 <script setup lang="ts">
 import { Chart, type ChartConfiguration } from "chart.js/auto";
 import { DateTime } from "luxon";
-import { computed, onMounted, onUnmounted, useTemplateRef, watch } from "vue";
-import { TickGranularity, type TimelineMark, type TimelineTick } from "~/types/timeline";
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
+import {
+	TickGranularity,
+	type TimelineMark,
+	type TimelineRow,
+	TimelineRowKind,
+	type TimelineTick,
+} from "~/types/timeline";
 import {
 	barY,
+	isFoldable,
 	markSize,
 	paddedRange,
 	pointY,
 	rowPitch,
+	timelineRows,
 	timelineTicks,
 	timelineYRange,
 } from "~/utils/instrumentTimeline";
@@ -18,40 +26,51 @@ import { type TimelineMarksPlugin, timelineMarksPlugin } from "~/utils/timelineM
 // once per instrument, so the chart is built once it is mounted, at the height of its own rows.
 const { t, locale } = useI18n();
 const card = useInstrumentCard();
-const { timeline, describeMark, describeBar, focus } = card;
+const { timeline, describeMark, describeRow, focus } = card;
 const { colors } = useChartTheme();
 const canvasRef = useTemplateRef<HTMLCanvasElement>("canvas");
 let chart: Chart<"scatter"> | null = null;
 
-const yRange = computed(() =>
-	timelineYRange(timeline.value.bars.length, timeline.value.stackDepth),
-);
+// Folded, the rows follow the form: the lots of other years share one row, what is still open
+// another. Spread, every bar has its own.
+const spread = ref(false);
+const rows = computed(() => timelineRows(timeline.value.bars, spread.value));
+const foldable = computed(() => isFoldable(timeline.value.bars));
+
+const yRange = computed(() => timelineYRange(rows.value.length, timeline.value.stackDepth));
 // The rows' height plus room for the axis's labels.
 const height = computed(() =>
 	Math.max(
 		120,
-		Math.round(30 + rowPitch(timeline.value.bars.length) * (yRange.value.max - yRange.value.min)),
+		Math.round(30 + rowPitch(rows.value.length) * (yRange.value.max - yRange.value.min)),
 	),
 );
 
 // What the chart's own, invisible points stand for, so chart.js finds what is under the pointer
-// and shows its tooltip: every point under the bars, and each end of a bar.
+// and shows its tooltip: every point under the bars, each end of a bar, and each trade on the row
+// of what is still open. A row of other years' lots has none: a click spreads it.
 type HitTarget = { mark: TimelineMark; y: number };
+function rowTargets(row: TimelineRow, y: number): HitTarget[] {
+	switch (row.kind) {
+		case TimelineRowKind.BAR:
+			return row.bars.flatMap((bar) =>
+				(bar.closed === null ? [bar.opened] : [bar.opened, bar.closed]).map((mark) => ({ mark, y })),
+			);
+		case TimelineRowKind.STILL_OPEN:
+			return row.bars.map((bar) => ({ mark: bar.opened, y }));
+		case TimelineRowKind.OTHER_YEARS:
+			return [];
+	}
+}
 const targets = computed<HitTarget[]>(() => {
-	const drawn = timeline.value;
+	const drawn = rows.value;
 	return [
-		...drawn.points.map((point) => ({ mark: point.mark, y: pointY(point.stack) })),
-		...drawn.bars.flatMap((bar, index) => {
-			const y = barY(index, drawn.bars.length);
-			const ends = bar.closed === null ? [bar.opened] : [bar.opened, bar.closed];
-			return ends.map((mark) => ({ mark, y }));
-		}),
+		...timeline.value.points.map((point) => ({ mark: point.mark, y: pointY(point.stack) })),
+		...drawn.flatMap((row, index) => rowTargets(row, barY(index, drawn.length))),
 	];
 });
 // A mark is hit a little beyond its edge, and never through less than a fingertip.
-const hitRadius = computed(() =>
-	Math.max(8, markSize(rowPitch(timeline.value.bars.length)) / 2 + 3),
-);
+const hitRadius = computed(() => Math.max(8, markSize(rowPitch(rows.value.length)) / 2 + 3));
 
 function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter"> {
 	const drawn = timeline.value;
@@ -135,11 +154,14 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 				if (event.x === null || event.y === null) {
 					return;
 				}
-				// A lot's bar focuses the lot; what is still open, the trade that opened it. A click on
-				// nothing lets go of the lit chain, as in the graph.
-				const bar = plugin.barAt({ x: event.x, y: event.y });
-				if (bar !== null) {
+				// A lot's bar focuses the lot; what is still open, the trade that opened it. A folded
+				// row spreads. A click on nothing lets go of the lit chain, as in the graph.
+				const row = plugin.rowAt({ x: event.x, y: event.y });
+				const bar = row?.kind === TimelineRowKind.BAR ? row.bars[0] : undefined;
+				if (bar !== undefined) {
 					focus.refocus(bar.lot ?? bar.opened.node);
+				} else if (row !== null) {
+					spread.value = true;
 				} else {
 					focus.clearLight();
 				}
@@ -147,7 +169,7 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 			onHover: (event, elements, hovered) => {
 				const overBar =
 					elements.length === 0 && event.x !== null && event.y !== null
-						? plugin.barAt({ x: event.x, y: event.y }) !== null
+						? plugin.rowAt({ x: event.x, y: event.y }) !== null
 						: false;
 				hovered.canvas.style.cursor = elements.length > 0 || overBar ? "pointer" : "default";
 			},
@@ -190,11 +212,12 @@ function rebuild() {
 	}
 	const plugin = timelineMarksPlugin(() => ({
 		timeline: timeline.value,
+		rows: rows.value,
 		focus: focus.node.value,
 		lit: focus.lit.value?.sources ?? null,
 		colors: colors.value,
 		year: card.year,
-		describeBar,
+		describeRow,
 	}));
 	chart = new Chart(canvasRef.value, buildConfig(plugin));
 }
@@ -210,6 +233,8 @@ watch(
   () => chart?.update("none"),
 );
 watch(colors, rebuild);
+// Folding changes the rows and the height: the chart is built again once the page has the new one.
+watch(spread, rebuild, { flush: "post" });
 </script>
 
 <template>
@@ -220,5 +245,10 @@ watch(colors, rebuild);
       :aria-label="t('download_timeline_label', { name: card.name })"
       class="w-full h-full"
     />
+  </div>
+  <div v-if="foldable" class="flex justify-end -mt-1 mb-1">
+    <AppButton ghost class="px-2 py-0.5 text-xs" :aria-pressed="spread" @click="spread = !spread">
+      {{ spread ? t('download_timeline_fold') : t('download_timeline_spread') }}
+    </AppButton>
   </div>
 </template>

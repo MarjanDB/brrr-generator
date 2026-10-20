@@ -9,12 +9,15 @@ import {
 	type TimelineMark,
 	TimelineMarkKind,
 	type TimelinePoint,
+	type TimelineRow,
+	TimelineRowKind,
 	TimelineWeight,
 } from "~/types/timeline";
 import {
 	barOutline,
 	barStateOf,
 	barY,
+	labelFits,
 	markSize,
 	markStateOf,
 	offsetPolygon,
@@ -28,21 +31,32 @@ import {
 
 export type TimelineDrawState = {
 	timeline: Timeline;
+	// The rows the bars are drawn on, folded or spread, top to bottom
+	rows: TimelineRow[];
 	focus: ProvenanceNode | null;
 	lit: ReadonlySet<ProvenanceNode> | null;
 	colors: ChartThemeColors;
 	// The report's tax year, shaded behind the marks
 	year: number;
-	// The text beside a bar
-	describeBar: (bar: TimelineBar) => string;
+	// The text inside a row's bar, where it fits
+	describeRow: (row: TimelineRow) => string;
 };
 
-// A chart.js plugin, plus the bars' hit test: bars are not chart elements, so the component asks.
+// A chart.js plugin, plus the rows' hit test: bars are not chart elements, so the component asks.
 export type TimelineMarksPlugin = Plugin<"scatter"> & {
-	barAt(point: Point): TimelineBar | null;
+	rowAt(point: Point): TimelineRow | null;
 };
 
 type PlacedBar = { bar: TimelineBar; x1: number; x2: number; y: number; thickness: number };
+// A row and the span of its bars, from the first one's start to the last one's end.
+type PlacedRow = {
+	row: TimelineRow;
+	bars: PlacedBar[];
+	x1: number;
+	x2: number;
+	y: number;
+	thickness: number;
+};
 
 // Every bar, triangle and point is one size (`markSize`), its focus outline included. What's on the
 // form is drawn opaque; what's there for context is faint, its lots dotted, and what is still open
@@ -50,8 +64,6 @@ type PlacedBar = { bar: TimelineBar; x1: number; x2: number; y: number; thicknes
 // weight.
 const contextAlpha = 0.45;
 const dimmedAlpha = 0.25;
-// Rows closer than this have no room for a label above their bar, so the bars go unlabelled.
-const labelledPitch = 26;
 // A bar is easy to hit even when it's thin.
 const barHitHalfHeight = 6;
 
@@ -86,20 +98,44 @@ function pitchOf(chart: Chart<"scatter">): number {
 	return y === undefined ? 0 : Math.abs(y.getPixelForValue(1) - y.getPixelForValue(0));
 }
 
-function placeBars(chart: Chart<"scatter">, timeline: Timeline): PlacedBar[] {
+function placeRows(chart: Chart<"scatter">, rows: TimelineRow[]): PlacedRow[] {
 	const x = chart.scales.x;
 	const y = chart.scales.y;
 	if (x === undefined || y === undefined) {
 		return [];
 	}
 	const thickness = markSize(pitchOf(chart));
-	return timeline.bars.map((bar, index) => ({
-		bar,
-		x1: x.getPixelForValue(bar.opened.at),
-		x2: bar.closed === null ? chart.chartArea.right : x.getPixelForValue(bar.closed.at),
-		y: y.getPixelForValue(barY(index, timeline.bars.length)),
-		thickness,
-	}));
+	return rows.map((row, index) => {
+		const at = y.getPixelForValue(barY(index, rows.length));
+		const bars = row.bars.map((bar) => ({
+			bar,
+			x1: x.getPixelForValue(bar.opened.at),
+			x2: bar.closed === null ? chart.chartArea.right : x.getPixelForValue(bar.closed.at),
+			y: at,
+			thickness,
+		}));
+		return {
+			row,
+			bars,
+			x1: Math.min(...bars.map((bar) => bar.x1)),
+			x2: Math.max(...bars.map((bar) => bar.x2)),
+			y: at,
+			thickness,
+		};
+	});
+}
+
+// A folded row is lit or focused when one of its bars is, and dimmed when a chain is lit that
+// none of them is in.
+function rowStateOf(placed: PlacedRow, state: TimelineDrawState): MarkState {
+	const states = placed.row.bars.map((bar) => barStateOf(bar, state.focus, state.lit));
+	if (states.includes(MarkState.FOCUSED)) {
+		return MarkState.FOCUSED;
+	}
+	if (states.includes(MarkState.LIT)) {
+		return MarkState.LIT;
+	}
+	return states.includes(MarkState.DIMMED) ? MarkState.DIMMED : MarkState.NORMAL;
 }
 
 // The tax year as a band from its first day to the next year's, under the grid, its year in the
@@ -241,34 +277,84 @@ function drawBarOutline(
 	ctx.restore();
 }
 
-// The bar's text above it when it fits along the bar, else after its end, else before its start.
-function drawBarLabel(
-	ctx: CanvasRenderingContext2D,
-	chart: Chart<"scatter">,
-	placed: PlacedBar,
-	state: TimelineDrawState,
-) {
-	const { bar, x1, x2, y, thickness } = placed;
-	const text = state.describeBar(bar);
-	const barState = barStateOf(bar, state.focus, state.lit);
+// A row's text inside its bar, after the start's triangle, where it fits; nowhere else. On a solid
+// bar it is in the page's colour, on a faint one in the text's.
+function drawRowLabel(ctx: CanvasRenderingContext2D, placed: PlacedRow, state: TimelineDrawState) {
+	const { row, x1, x2, y, thickness } = placed;
+	const text = state.describeRow(row);
 	ctx.save();
 	ctx.font = `11px ${defaults.font.family}`;
-	ctx.globalAlpha = barState === MarkState.DIMMED ? dimmedAlpha : 1;
-	ctx.fillStyle =
-		bar.weight === TimelineWeight.REPORTED ? state.colors.tooltipText : state.colors.ticks;
-	const width = ctx.measureText(text).width;
-	const gap = thickness / 2 + 6;
-	if (x2 - x1 >= width + 2 * gap) {
-		ctx.textBaseline = "bottom";
-		ctx.fillText(text, x1 + gap, y - thickness / 2 - 3);
-	} else if (x2 + gap + width <= chart.chartArea.right) {
-		ctx.textBaseline = "middle";
-		ctx.fillText(text, x2 + gap, y);
-	} else {
-		ctx.textBaseline = "middle";
-		ctx.textAlign = "right";
-		ctx.fillText(text, x1 - gap, y);
+	if (!labelFits(thickness, ctx.measureText(text).width, x2 - x1)) {
+		ctx.restore();
+		return;
 	}
+	const solid =
+		row.kind === TimelineRowKind.BAR &&
+		row.bars[0]?.closed !== null &&
+		row.bars[0]?.weight === TimelineWeight.REPORTED;
+	ctx.globalAlpha = rowStateOf(placed, state) === MarkState.DIMMED ? dimmedAlpha : 1;
+	ctx.fillStyle = solid ? state.colors.barLabel : state.colors.tooltipText;
+	ctx.textBaseline = "middle";
+	ctx.fillText(text, x1 + thickness / 2 + 4, y + 0.5);
+	ctx.restore();
+}
+
+// The lots closed in other years, folded: each lot faint over the same row, so where they overlap
+// the row is darker.
+function drawOtherYears(
+	ctx: CanvasRenderingContext2D,
+	placed: PlacedRow,
+	state: TimelineDrawState,
+) {
+	const fade = rowStateOf(placed, state) === MarkState.DIMMED ? dimmedAlpha : 1;
+	ctx.save();
+	ctx.fillStyle = state.colors.arc;
+	for (const bar of placed.bars) {
+		ctx.globalAlpha = fade * 0.18;
+		ctx.fillRect(bar.x1, bar.y - bar.thickness / 2, Math.max(1, bar.x2 - bar.x1), bar.thickness);
+	}
+	ctx.restore();
+}
+
+// What is still open, folded: one bar from the first open trade, fading out to the right.
+function drawStillOpen(ctx: CanvasRenderingContext2D, placed: PlacedRow, state: TimelineDrawState) {
+	const rowState = rowStateOf(placed, state);
+	const fade = rowState === MarkState.DIMMED ? dimmedAlpha : 1;
+	const gradient = ctx.createLinearGradient(placed.x1, 0, placed.x2, 0);
+	gradient.addColorStop(0, state.colors.arc);
+	gradient.addColorStop(1, "transparent");
+	ctx.save();
+	ctx.globalAlpha = fade * (isEmphasised(rowState) ? 0.6 : 0.35);
+	ctx.fillStyle = gradient;
+	ctx.fillRect(
+		placed.x1,
+		placed.y - placed.thickness / 2,
+		Math.max(1, placed.x2 - placed.x1),
+		placed.thickness,
+	);
+	ctx.restore();
+}
+
+// A folded row that holds the focus or a lit lot is outlined around its whole span.
+function drawRowOutline(
+	ctx: CanvasRenderingContext2D,
+	placed: PlacedRow,
+	state: TimelineDrawState,
+) {
+	if (!isEmphasised(rowStateOf(placed, state))) {
+		return;
+	}
+	const gap = outlineGap + focusLine / 2;
+	const half = placed.thickness / 2;
+	ctx.save();
+	ctx.strokeStyle = state.colors.focus;
+	ctx.lineWidth = focusLine;
+	ctx.strokeRect(
+		placed.x1 - half - gap,
+		placed.y - half - gap,
+		placed.x2 - placed.x1 + placed.thickness + 2 * gap,
+		placed.thickness + 2 * gap,
+	);
 	ctx.restore();
 }
 
@@ -308,11 +394,12 @@ function drawPoint(
 	ctx.restore();
 }
 
-// Draws the tax year under the grid, the bars under the chart's own points, and their ends, their
-// labels and the points over them. The state is read through `getState` on every draw, so a focus
-// change only needs `chart.update("none")`.
+// Draws the tax year under the grid, the rows' bars under the chart's own points, and their ends,
+// outlines and labels and the points over them. A bar's row is drawn as its bar; the lots of other
+// years and what is still open, folded, as one row each. The state is read through `getState` on
+// every draw, so a focus change only needs `chart.update("none")`.
 export function timelineMarksPlugin(getState: () => TimelineDrawState): TimelineMarksPlugin {
-	let placed: PlacedBar[] = [];
+	let placed: PlacedRow[] = [];
 	return {
 		id: "timelineMarks",
 		beforeDraw(chart) {
@@ -320,36 +407,60 @@ export function timelineMarksPlugin(getState: () => TimelineDrawState): Timeline
 		},
 		beforeDatasetsDraw(chart) {
 			const state = getState();
-			placed = placeBars(chart, state.timeline);
-			for (const bar of placed) {
-				drawBar(chart.ctx, bar, state);
+			placed = placeRows(chart, state.rows);
+			for (const row of placed) {
+				switch (row.row.kind) {
+					case TimelineRowKind.BAR:
+						for (const bar of row.bars) {
+							drawBar(chart.ctx, bar, state);
+						}
+						break;
+					case TimelineRowKind.OTHER_YEARS:
+						drawOtherYears(chart.ctx, row, state);
+						break;
+					case TimelineRowKind.STILL_OPEN:
+						drawStillOpen(chart.ctx, row, state);
+						break;
+				}
 			}
 		},
 		afterDatasetsDraw(chart) {
 			const state = getState();
-			const labelled = pitchOf(chart) >= labelledPitch;
-			for (const bar of placed) {
-				drawBarEnd(chart.ctx, bar, bar.bar.opened, bar.x1, state);
-				if (bar.bar.closed !== null) {
-					drawBarEnd(chart.ctx, bar, bar.bar.closed, bar.x2, state);
+			for (const row of placed) {
+				switch (row.row.kind) {
+					case TimelineRowKind.BAR:
+						for (const bar of row.bars) {
+							drawBarEnd(chart.ctx, bar, bar.bar.opened, bar.x1, state);
+							if (bar.bar.closed !== null) {
+								drawBarEnd(chart.ctx, bar, bar.bar.closed, bar.x2, state);
+							}
+							drawBarOutline(chart.ctx, bar, state);
+						}
+						break;
+					case TimelineRowKind.OTHER_YEARS:
+						drawRowOutline(chart.ctx, row, state);
+						break;
+					case TimelineRowKind.STILL_OPEN:
+						for (const bar of row.bars) {
+							drawBarEnd(chart.ctx, bar, bar.bar.opened, bar.x1, state);
+						}
+						drawRowOutline(chart.ctx, row, state);
+						break;
 				}
-				drawBarOutline(chart.ctx, bar, state);
-				if (labelled) {
-					drawBarLabel(chart.ctx, chart, bar, state);
-				}
+				drawRowLabel(chart.ctx, row, state);
 			}
 			for (const point of state.timeline.points) {
 				drawPoint(chart.ctx, chart, point, state);
 			}
 		},
-		barAt(point) {
+		rowAt(point) {
 			return (
 				placed.find(
 					({ x1, x2, y, thickness }) =>
 						point.x >= x1 - 2 &&
 						point.x <= x2 + 2 &&
 						Math.abs(point.y - y) <= Math.max(thickness / 2, barHitHalfHeight),
-				)?.bar ?? null
+				)?.row ?? null
 			);
 		},
 	};

@@ -10,6 +10,7 @@ import { mountComposable } from "~/composables/__tests__/support/mountComposable
 import { useInstrumentTimeline } from "~/composables/useInstrumentTimeline";
 import { TimelineMarkKind } from "~/types/timeline";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
+import { timelineRows } from "~/utils/instrumentTimeline";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -187,5 +188,115 @@ describe("the tooltip text of a mark", () => {
 		await i18n.setLocale("sl");
 
 		expect(timeline.describeMark(mark)).toEqual("Nakup 10, 10. jan. 2024");
+	});
+});
+
+// Two lots closed in 2023 and two buys still open: nothing on the form, so both fold.
+function closedAndOpen(): GraphBuilder {
+	const b = new GraphBuilder();
+	const file = b.file({ name: "U1.xml" });
+	const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+	const firstBuy = b.trade({
+		file,
+		instrument: acme,
+		kind: ProvenanceEventKind.ACQUIRED,
+		date: "2023-01-10",
+		quantity: "4",
+		price: "5",
+		currency: "USD",
+		label: "first buy",
+	});
+	const firstSale = b.trade({
+		file,
+		instrument: acme,
+		kind: ProvenanceEventKind.SOLD,
+		date: "2023-03-10",
+		quantity: "-4",
+		price: "6",
+		currency: "USD",
+		label: "first sale",
+	});
+	const first = b.matchClosed({
+		instrument: acme,
+		acquired: firstBuy,
+		sold: firstSale,
+		quantity: "4",
+	});
+	b.graph.drop(first.acquiredLeg, DropReason.OUTSIDE_PERIOD, stage, null);
+	b.graph.drop(first.soldLeg, DropReason.OUTSIDE_PERIOD, stage, null);
+	const secondBuy = b.trade({
+		file,
+		instrument: acme,
+		kind: ProvenanceEventKind.ACQUIRED,
+		date: "2023-02-10",
+		quantity: "3",
+		price: "5",
+		currency: "USD",
+		label: "second buy",
+	});
+	const secondSale = b.trade({
+		file,
+		instrument: acme,
+		kind: ProvenanceEventKind.SOLD,
+		date: "2023-06-10",
+		quantity: "-3",
+		price: "6",
+		currency: "USD",
+		label: "second sale",
+	});
+	const second = b.matchClosed({
+		instrument: acme,
+		acquired: secondBuy,
+		sold: secondSale,
+		quantity: "3",
+	});
+	b.graph.drop(second.acquiredLeg, DropReason.OUTSIDE_PERIOD, stage, null);
+	b.graph.drop(second.soldLeg, DropReason.OUTSIDE_PERIOD, stage, null);
+	const openBuy = b.trade({
+		file,
+		instrument: acme,
+		kind: ProvenanceEventKind.ACQUIRED,
+		date: "2024-05-01",
+		quantity: "5",
+		price: "8",
+		currency: "USD",
+		label: "open buy",
+	});
+	b.graph.drop(openBuy.event, DropReason.POSITION_OPEN, stage, null);
+	const lastBuy = b.trade({
+		file,
+		instrument: acme,
+		kind: ProvenanceEventKind.ACQUIRED,
+		date: "2024-06-01",
+		quantity: "4",
+		price: "8",
+		currency: "USD",
+		label: "last buy",
+	});
+	b.graph.drop(lastBuy.event, DropReason.POSITION_OPEN, stage, null);
+	return b;
+}
+
+describe("what a folded row of the timeline says", () => {
+	test("the lots of other years say how many they are, and what is still open its quantity", async () => {
+		const b = closedAndOpen();
+		const { timeline } = await mountTimeline(b, b.reading().withoutLines[0]);
+
+		const [otherYears, stillOpen] = timelineRows(timeline.timeline.value.bars, false);
+		assert(otherYears !== undefined && stillOpen !== undefined);
+
+		expect(timeline.describeRow(otherYears)).toEqual("Closed in other years: 2");
+		expect(timeline.describeRow(stillOpen)).toEqual("Still open: 9");
+	});
+
+	test("in Slovenian", async () => {
+		const b = closedAndOpen();
+		const { timeline, i18n } = await mountTimeline(b, b.reading().withoutLines[0]);
+		const [otherYears, stillOpen] = timelineRows(timeline.timeline.value.bars, false);
+		assert(otherYears !== undefined && stillOpen !== undefined);
+		await i18n.setLocale("sl");
+
+		expect(timeline.describeRow(otherYears)).toEqual("Zaprto v drugih letih: 2");
+		expect(timeline.describeRow(stillOpen)).toEqual("Še odprto: 9");
 	});
 });
