@@ -9,7 +9,12 @@ const BROKER_GUIDES: BrokerGuide[] = [
 		modalTitleKey: "broker_ibkr_modal_title",
 		taglineKey: "broker_ibkr_tagline",
 		iconUrl: "/icons/brokers/ibkr.svg",
-		readKeys: ["broker_reads_trades", "broker_reads_dividends", "broker_reads_corporate_actions"],
+		readKeys: [
+			"broker_reads_stocks",
+			"broker_reads_options",
+			"broker_reads_dividends",
+			"broker_reads_corporate_actions",
+		],
 		steps: [
 			{
 				titleKey: "broker_ibkr_step1_title",

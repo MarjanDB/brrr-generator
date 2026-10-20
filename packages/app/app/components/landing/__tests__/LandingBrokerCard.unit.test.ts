@@ -11,15 +11,21 @@ describe("a broker's card on the landing page", () => {
 			modalTitleKey: "broker_ibkr_modal_title",
 			taglineKey: "broker_ibkr_tagline",
 			iconUrl: "/icons/brokers/ibkr.svg",
-			readKeys: ["broker_reads_trades", "broker_reads_dividends", "broker_reads_corporate_actions"],
+			readKeys: [
+				"broker_reads_stocks",
+				"broker_reads_options",
+				"broker_reads_dividends",
+				"broker_reads_corporate_actions",
+			],
 			steps: [],
 		};
 		const wrapper = await mountSuspended(LandingBrokerCard, { props: { broker } });
 
 		const chips = wrapper.findAll("li");
-		expect(chips.length).toEqual(3);
-		expect(chips[0]?.text()).toEqual("Trades");
-		expect(chips[1]?.text()).toEqual("Dividends");
-		expect(chips[2]?.text()).toEqual("Corporate actions");
+		expect(chips.length).toEqual(4);
+		expect(chips[0]?.text()).toEqual("Stocks");
+		expect(chips[1]?.text()).toEqual("Options");
+		expect(chips[2]?.text()).toEqual("Dividends");
+		expect(chips[3]?.text()).toEqual("Corporate actions");
 	});
 });
