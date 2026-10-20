@@ -15,7 +15,7 @@ useSeoMeta({
   <!-- The landing page: what the site takes in, the way in, and what it makes, centred in the window:
        the bottom padding matches the header above, so the space it centres in is the window's middle.
        On a phone it is taller than the screen anyway, so it skips that. A glow in the page's colour
-       follows everything it draws (text, cards, arrows, the mark), so where the corner drawing or its
+       follows everything it draws (text, cards, the printer), so where the corner drawing or its
        chart runs underneath, the content keeps its contrast. Nothing here loads lib or chart.js. -->
   <div
     class="flex-1 py-10 sm:pb-[calc(2.5rem+var(--header-height))] flex flex-col justify-center gap-11 [filter:drop-shadow(0_0_8px_var(--color-page))_drop-shadow(0_0_24px_var(--color-page))_drop-shadow(0_0_48px_var(--color-page))]"

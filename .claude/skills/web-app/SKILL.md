@@ -26,7 +26,7 @@ auto-imports and i18n work as in the app. Tests sit in a `__tests__/` beside the
 `composables/__tests__/`, `composables/provenanceGraph/__tests__/`, `components/landing/__tests__/`), import `describe`, `expect`
 and `test` from `vitest` (no globals, unlike lib), import the code under test explicitly through `~/`, and need lib built, like
 `typecheck`. Utils and a composable's modules are called directly, and what is private to a composable is tested through it. A
-component's own logic is tested by mounting it (`mountSuspended`) and reading what it renders (`LandingConnector`), and a route
+component's own logic is tested by mounting it (`mountSuspended`) and reading what it renders (`LandingPrinter`), and a route
 it fetches is mocked with `registerEndpoint` (`useCountries`, `useInfoProvider`). A composable runs inside a mounted component through
 `composables/__tests__/support/mountComposable.ts` (`mountComposableUnder` for one that injects what a parent provided), and its
 text is asserted as the English (or, after `setLocale("sl")`, Slovenian) string; the app is shared between tests, so a test that
@@ -37,20 +37,17 @@ switches the locale starts by setting `en`. `app/__tests__/support/Setup.ts` (vi
 ## The landing page
 
 `pages/index.vue` is the way in, rendered on the server: a headline, then `components/landing/LandingFlow.vue`, the brokers on
-the left, the mark in the middle and the tax offices on the right, stacked below `lg`.
+the left, the money printer in the middle and the tax offices on the right, stacked below `lg`.
 
 - The page only presents what the site supports: its cards are information, with nothing to click. The brokers are
   `BrokerGuides.all` as `LandingBrokerCard`s (the export guides stay in the upload step). The tax offices are `TaxOffices.all` (`utils/taxOffices.ts`, shapes in `types/taxOffice.ts`): what the site shows
   of each, with no ids. `TaxAuthorityCards.all` builds on them and adds the `TaxAuthorityId` the configure step picks by.
-- `LandingMark` is the one way into the flow, a link to `/report/upload`.
-- The arrows render on the server: nothing is measured. Each card's `<li>` holds a `LandingConnector`, a box in the 100px
-  gap to the mark, from the card's middle to the card's own point on the mark. Every card in a column is as tall as the
-  tallest one (`auto-rows-fr`) and the column shares its middle with the mark, so the connector (`landingConnectorOf`, inside
-  `LandingConnector.vue`) can give the box's height as a `calc()` on the card's own height (`100%` inside its row).
-  The curve is `EdgeCurves.between` (`utils/edgeCurves.ts`, the one the provenance graph draws its edges with) in a 100 by 100 SVG
-  stretched over the box, with a non-scaling stroke; the arrowhead is an SVG of its own. The connectors rely on the mark's
-  132px height, the 10px gap between cards and the 100px column gap: change one and change `LandingConnector.vue` with it.
-  Stacked, `LandingDownArrow` takes their place. Nothing moves.
+- `LandingPrinter` is the one way into the flow, a link to `/report/upload` named "Start a report", which is also the label under
+  it. It is an inline SVG in the action colours: the export goes in on the left as an XML sheet and plain forms (no
+  country's form names) come out on the right. Its box is centred on the printer's body, not on the paper, so the body lines
+  up with the headline, its label and the cards' middles; the paper on each side reaches about as far. There are no arrows:
+  the paper shows the way, and the 36px column gap either side stays open. An illustration that later replaces the printer
+  takes the same box.
 - **Nothing the landing page imports may import a value from `@brrr/lib`** (type-only imports are fine). Lib isn't marked free
   of side effects, so one enum import pulls most of it, zod and inversify included, into the page. That is why the tax offices'
   display data and `EdgeCurves` sit in files of their own.
@@ -267,7 +264,7 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
   a group), `text-label` (14 medium: a field, a column header, a small button), `text-body` (14: sentences, cells) and `text-meta`
   (12 muted: identifiers, dates under a name, captions); text is ink unless a class says otherwise (`app-container`). No capitals or
   letter spacing for labels, sentence case in both languages, identifiers (ISINs, file names, option symbols) in the body font,
-  `tabular-nums` where numbers line up. The landing page's headline and the brand mark are display type of their own.
+  `tabular-nums` where numbers line up. The landing page's headline and the printer's "brrr" are display type of their own.
 - Prefer the shortcuts: `app-text`, `app-text-muted`, `app-border`, `app-surface-raised`, `app-surface-sunken`, `card`, `card-padding-md`,
   the type roles, the controls above, `text-error`, `alert-error`, `tooltip-box`, `logo-tile` (the light tile every broker and tax office logo sits on, since logos are made for a light page; size the
   `<img>` as the logo plus the tile's padding), and for tables `app-table`, `app-table-head-row`, `app-table-row`, `app-table-th`, `app-table-td` (with a
@@ -285,7 +282,7 @@ UnoCSS (`presetWind4`, `presetIcons`), configured in `packages/app/unocss.config
 
 - `vite.build.chunkSizeWarningLimit` is 500 kB, just above the largest chunk (the entry: PostHog and i18n); keep it there
   rather than raising it freely. Each page is a chunk of its own: the tax engine (~436 kB) and chart.js (~214 kB) load only
-  with the report flow's pages, and the landing page loads neither (see "The landing page"; its mark prefetches the flow only
+  with the report flow's pages, and the landing page loads neither (see "The landing page"; its printer prefetches the flow only
   when pointed at or focused). Inside the flow, `ReviewStep` uses `<LazyInstrumentModal>` (charts and the row popover) and
   the download step `<LazyGraphView>`; make the next heavy part lazy the same way rather than raising the limit.
 - `@nuxtjs/seo` prerenders the sitemap and OG images (`zeroRuntime`), so the server bundle holds only the lookup routes.
