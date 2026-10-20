@@ -48,14 +48,14 @@ function isLink(segment: Segment): segment is LinkSegment {
       <!-- Step content -->
       <div class="flex flex-col gap-2 pt-0.5 min-w-0 pb-2">
         <span class="text-label">{{ t(step.titleKey) }}</span>
-        <p class="text-body-sm app-text-muted leading-relaxed">
+        <p class="text-body text-ink-muted leading-relaxed">
           <template v-for="(segment, si) in step.segments" :key="si">
             <a
               v-if="isLink(segment)"
               :href="segment.url"
               target="_blank"
               rel="noopener"
-              class="text-action-ink hover:underline inline-flex items-center gap-0.5"
+              class="text-action-ink hover:underline rounded-sm app-focus-ring inline-flex items-center gap-0.5"
             >{{ t(segment.textKey) }}<span class="i-mdi-open-in-new text-xs ml-0.5" /></a>
             <template v-else>{{ t(segment.textKey) }}</template>
           </template>

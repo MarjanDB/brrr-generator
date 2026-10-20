@@ -52,7 +52,7 @@ function changeClass(value: number | null): string {
         <tr
           v-for="mark in formPayments"
           :key="mark.node.id"
-          class="app-table-row app-row-interactive"
+          class="app-table-row row-selectable"
           v-bind="rowStateAttributes(markStateOf(mark.node, focus.node.value, lit))"
           @click="focus.refocus(mark.node)"
         >
@@ -82,7 +82,7 @@ function changeClass(value: number | null): string {
         <tr
           v-for="row in formLots"
           :key="row.lot.id"
-          class="app-table-row app-row-interactive"
+          class="app-table-row row-selectable"
           v-bind="rowStateAttributes(barStateOf(row.bar, focus.node.value, lit))"
           @click="focus.refocus(row.lot)"
         >

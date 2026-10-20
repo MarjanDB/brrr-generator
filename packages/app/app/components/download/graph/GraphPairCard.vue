@@ -79,7 +79,7 @@ const classes = computed(() => [
     </AppTooltip>
     <button
       type="button"
-      class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle hover:bg-surface-hover"
+      class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle cursor-pointer transition-colors hover:bg-surface-hover active:bg-surface app-focus-ring-inset"
       @click.stop="emit('clickLine', PairSide.ACQUIRED)"
     >
       <NodeIcon :look="acquiredLook" :small="true" />
@@ -87,7 +87,7 @@ const classes = computed(() => [
     </button>
     <button
       type="button"
-      class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle hover:bg-surface-hover"
+      class="flex flex-1 items-center gap-2 px-2 text-left tabular-nums border-t border-edge-subtle cursor-pointer transition-colors hover:bg-surface-hover active:bg-surface app-focus-ring-inset"
       @click.stop="emit('clickLine', PairSide.SOLD)"
     >
       <NodeIcon :look="soldLook" :small="true" />

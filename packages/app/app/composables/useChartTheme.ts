@@ -1,3 +1,4 @@
+import { defaults } from "chart.js";
 import { onMounted, ref } from "vue";
 
 export type ChartThemeColors = {
@@ -62,6 +63,9 @@ export function useChartTheme() {
 
 	onMounted(() => {
 		colors.value = readColors();
+		// The charts write in the page's font, not chart.js's own Helvetica. Set before the chart that
+		// asked is built, since its onMounted runs after this one.
+		defaults.font.family = getComputedStyle(document.body).fontFamily;
 	});
 
 	return { colors };

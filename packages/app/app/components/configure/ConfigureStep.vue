@@ -38,8 +38,8 @@ function onContinue() {
 <template>
   <!-- All a report needs is the tax authority; the year and the forms are picked on the next step. -->
   <div class="card card-padding-md flex flex-col gap-3 w-full max-w-screen-md mx-auto">
-    <h2 :id="headingId" class="text-h5">{{ t('tax_authority_label') }}</h2>
-    <p class="text-body-sm app-text-muted">{{ t('tax_authority_description') }}</p>
+    <h2 :id="headingId" class="text-heading">{{ t('tax_authority_label') }}</h2>
+    <p class="text-body text-ink-muted">{{ t('tax_authority_description') }}</p>
     <RadioGroupRoot
       :model-value="selectedAuthorityId ?? undefined"
       :aria-labelledby="headingId"

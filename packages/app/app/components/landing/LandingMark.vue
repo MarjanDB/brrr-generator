@@ -16,7 +16,7 @@ const hintId = useId();
 			prefetch-on="interaction"
 			:aria-label="t('landing_start')"
 			:aria-describedby="hintId"
-			class="relative grid size-33 place-items-center rounded-[34px] border-2 border-action-edge bg-action text-action-on shadow-md hover:bg-action-hover app-focus-ring"
+			class="relative grid size-33 place-items-center rounded-[34px] border-2 border-action-edge bg-action text-action-on shadow-md transition-colors hover:bg-action-hover active:bg-action-pressed app-focus-ring"
 		>
 			<span class="absolute left-3.5 top-1/2 -translate-y-1/2 flex flex-col gap-1.25" aria-hidden="true">
 				<span class="block h-0.75 w-2.5 rounded-full bg-action-ink opacity-55" />

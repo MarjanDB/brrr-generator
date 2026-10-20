@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
 import type { TaxpayerDetails } from "~/types/taxYearReports";
-import { ColorIntent } from "~/types/ui";
 
 const props = defineProps<{
 	outputs: GeneratedOutputs;
@@ -57,7 +56,7 @@ async function onSubmit(valid: boolean) {
 		:description="t('taxpayer_dialog_description')"
 	>
 		<template #trigger>
-			<AppButton :color="ColorIntent.ACCENT">{{ t('download_xml_label') }}</AppButton>
+			<AppButton>{{ t('download_xml_label') }}</AppButton>
 		</template>
 
 		<AppForm class="flex flex-col gap-4" @submit="onSubmit">

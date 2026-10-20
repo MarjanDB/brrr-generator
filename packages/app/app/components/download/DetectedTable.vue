@@ -53,7 +53,7 @@ const verdictColors: Record<DetectedReason, ColorIntent> = {
         <tr
           v-for="row in detected"
           :key="row.mark.node.id"
-          class="app-table-row app-row-interactive"
+          class="app-table-row row-selectable"
           v-bind="rowStateAttributes(detectedRowStateOf(row.mark, timeline, focus.node.value, lit))"
           @click="focus.refocus(row.mark.node)"
         >

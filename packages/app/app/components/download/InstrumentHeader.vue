@@ -28,23 +28,21 @@ const subtitle = computed(() => {
 	if (contract === null) {
 		return entry.isin ?? "";
 	}
-	return t("download_option_expires", { date: dateText(contract.expiry) });
+	return t("download_option_expires", {
+		symbol: contract.occSymbol,
+		date: dateText(contract.expiry),
+	});
 });
-
-const identifier = computed(() => entry.contract?.occSymbol ?? entry.isin ?? "");
 </script>
 
 <template>
   <div class="flex items-center gap-3 px-4 pt-3 pb-1 flex-wrap">
     <InstrumentMonogram :ticker="monogramTicker" :large="true" />
     <div class="min-w-0">
-      <h3 class="text-lg font-bold text-ink leading-tight">{{ title }}</h3>
-      <p class="text-sm text-ink-muted">{{ subtitle }}</p>
+      <h3 class="text-heading leading-tight">{{ title }}</h3>
+      <p class="text-meta">{{ subtitle }}</p>
     </div>
     <div class="flex items-center gap-1.5 flex-wrap">
-      <AppBadge v-if="identifier !== ''" pill class="font-mono">
-        {{ identifier }}
-      </AppBadge>
       <AppBadge v-if="entry.contract !== null" pill>
         {{ t('download_chip_option') }}
       </AppBadge>

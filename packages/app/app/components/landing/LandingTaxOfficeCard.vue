@@ -17,7 +17,7 @@ const { t } = useI18n();
 			<span class="text-base font-semibold app-text">{{ t(office.countryKey) }}</span>
 			<img :src="office.iconUrl" alt="" class="logo-tile h-7 w-auto shrink-0" />
 		</div>
-		<span class="text-body-sm">{{ office.name }}</span>
+		<span class="text-body text-ink-muted">{{ office.name }}</span>
 		<div class="mt-2 flex flex-wrap gap-1.5">
 			<AppBadge v-for="key in office.formKeys" :key="key" :color="ColorIntent.ACCENT">
 				{{ t(key) }}

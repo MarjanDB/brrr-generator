@@ -11,6 +11,7 @@ import {
 	TimelineRowKind,
 	type TimelineTick,
 } from "~/types/timeline";
+import { ButtonVariant, ControlSize } from "~/types/ui";
 import {
 	barY,
 	isFoldable,
@@ -299,7 +300,12 @@ watch(spread, rebuild, { flush: "post" });
     </AppTooltip>
   </div>
   <div v-if="foldable" class="flex justify-end -mt-1 mb-1">
-    <AppButton ghost class="px-2 py-0.5 text-xs" :aria-pressed="spread" @click="spread = !spread">
+    <AppButton
+      :variant="ButtonVariant.QUIET"
+      :size="ControlSize.SM"
+      :aria-pressed="spread"
+      @click="spread = !spread"
+    >
       {{ spread ? t('download_timeline_fold') : t('download_timeline_spread') }}
     </AppButton>
   </div>
@@ -311,8 +317,8 @@ watch(spread, rebuild, { flush: "post" });
     :aria-label="offerText"
     class="w-64"
   >
-    <p class="text-sm text-ink">{{ offerText }}</p>
-    <AppButton class="mt-2 gap-1 px-2 py-1 text-xs" @click="offered !== null && showTrace(offered)">
+    <p class="text-body">{{ offerText }}</p>
+    <AppButton :size="ControlSize.SM" class="mt-2" @click="offered !== null && showTrace(offered)">
       <span class="i-mdi-graph-outline" aria-hidden="true" />
       {{ t('download_view_trace') }}
     </AppButton>

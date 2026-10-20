@@ -47,8 +47,8 @@ if (form) {
 			:accept="accept"
 			:multiple="multiple"
 			:disabled="disabled"
-			:class="error ? 'input-md-error' : 'input-md'"
-			class="w-full cursor-pointer"
+			:class="error ? 'field field-invalid' : 'field'"
+			class="cursor-pointer overflow-hidden pl-0 py-0 file:mr-3 file:h-full file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-edge-strong file:bg-surface-hover file:px-4 file:text-ink file:transition-colors hover:file:bg-surface-raised"
 			@change="onChange"
 		/>
 		<span v-if="error" class="text-error">{{ error }}</span>

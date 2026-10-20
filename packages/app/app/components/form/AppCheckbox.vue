@@ -31,19 +31,19 @@ if (form) {
 
 <template>
 	<div class="flex flex-col gap-1">
-		<label :for="id" class="flex items-center gap-2 cursor-pointer" :class="{ 'opacity-70 cursor-not-allowed': disabled }">
+		<label :for="id" class="flex items-center gap-2 cursor-pointer" :class="{ 'opacity-50 pointer-events-none': disabled }">
 			<CheckboxRoot
 				:id="id"
 				v-model="model"
 				:disabled="disabled"
-				:class="error ? 'checkbox-error' : 'checkbox-base'"
+				:class="error ? 'checkbox checkbox-invalid' : 'checkbox'"
 				@update:model-value="onChange"
 			>
 				<CheckboxIndicator class="flex items-center justify-center w-full h-full">
 					<span class="i-mdi-check text-ink-inverse text-xs" />
 				</CheckboxIndicator>
 			</CheckboxRoot>
-			<span v-if="label" class="text-sm app-text select-none">{{ label }}</span>
+			<span v-if="label" class="text-body select-none">{{ label }}</span>
 		</label>
 		<span v-if="error" class="text-error ml-6">{{ error }}</span>
 	</div>

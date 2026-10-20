@@ -46,7 +46,7 @@ function formatAmount(amount: number, currency: string) {
               :key="trade.id"
               class="app-table-row-dense"
             >
-              <td class="app-table-td-dense font-mono">{{ formatDate(trade.date) }}</td>
+              <td class="app-table-td-dense tabular-nums">{{ formatDate(trade.date) }}</td>
               <td class="app-table-td-dense">
                 {{ trade instanceof TradeEventDerivativeAcquired ? t("modal_trade_buy") : t("modal_trade_sell") }}
               </td>

@@ -4,4 +4,4 @@
 export const tabListClasses = "flex overflow-x-auto shadow-[inset_0_-1px_0_var(--color-edge)]";
 
 export const tabTriggerClasses =
-	"flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-muted rounded-t-sm transition-colors hover:text-ink aria-selected:border-accent-edge aria-selected:text-ink app-focus-ring focus-visible:-outline-offset-2";
+	"flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-muted rounded-t-sm cursor-pointer transition-colors hover:bg-surface-raised hover:text-ink active:bg-surface-hover aria-selected:border-accent-edge aria-selected:text-ink app-focus-ring-inset";

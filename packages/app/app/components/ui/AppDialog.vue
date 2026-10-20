@@ -62,13 +62,13 @@ function onCloseAutoFocus(event: Event) {
 					<div class="flex items-center gap-3 min-w-0">
 						<slot name="icon" />
 						<div class="flex flex-col gap-0.5 min-w-0">
-							<DialogTitle class="text-h5">{{ title }}</DialogTitle>
-							<DialogDescription v-if="hasDescription" class="text-caption">
+							<DialogTitle class="text-heading">{{ title }}</DialogTitle>
+							<DialogDescription v-if="hasDescription" class="text-meta">
 								<slot name="description">{{ description }}</slot>
 							</DialogDescription>
 						</div>
 					</div>
-					<DialogClose class="button-ghost shrink-0 p-1" :aria-label="t('dialog_close')">
+					<DialogClose class="button-quiet control-icon shrink-0" :aria-label="t('dialog_close')">
 						<span class="i-mdi-close text-lg block" aria-hidden="true" />
 					</DialogClose>
 				</div>

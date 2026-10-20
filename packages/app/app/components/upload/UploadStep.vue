@@ -79,8 +79,8 @@ watch(xmlFiles, (v) => {
 
 <template>
   <div class="card card-padding-md flex flex-col gap-3 w-full max-w-screen-md mx-auto">
-    <h2 class="text-h5">{{ t('ibkr_export_title') }}</h2>
-    <p class="text-body-sm app-text-muted">{{ t('ibkr_export_hint') }}</p>
+    <h2 class="text-heading">{{ t('ibkr_export_title') }}</h2>
+    <p class="text-body text-ink-muted">{{ t('ibkr_export_hint') }}</p>
     
     <BrokerSupportSection :brokers="BROKER_GUIDES" />
     
@@ -95,7 +95,7 @@ watch(xmlFiles, (v) => {
         />
 
         <div v-if="detections.length > 0" class="flex flex-col gap-2">
-          <div class="text-body-sm app-text-muted">
+          <div class="text-body text-ink-muted">
             {{ t('upload_summary', { n: detections.length }) }}
           </div>
           <div class="overflow-x-auto">
@@ -116,7 +116,7 @@ watch(xmlFiles, (v) => {
                   :key="row.fileName"
                   class="app-table-row"
                 >
-                  <td class="app-table-td pl-2 font-mono text-xs">{{ row.fileName }}</td>
+                  <td class="app-table-td">{{ row.fileName }}</td>
                   <td class="app-table-td">
                     <span v-if="row.detectedBroker" class="inline-flex items-center gap-2 app-text">
                       <img
@@ -135,7 +135,7 @@ watch(xmlFiles, (v) => {
           </div>
           <div
             v-if="detections.some((d) => d.detectedBroker === null)"
-            class="text-body-sm app-text-muted"
+            class="text-body text-ink-muted"
           >
             {{ t('upload_detection_ignored') }}
           </div>

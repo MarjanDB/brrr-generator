@@ -35,14 +35,14 @@ const expiry = computed(() => {
       type="button"
       :aria-pressed="selected"
       @click="emit('select')"
-      class="w-full flex items-center gap-2 text-left rounded-r-md py-1 pl-3 pr-1.5 ml-3 border-l border-edge transition-colors"
-      :class="selected ? 'bg-action-soft' : 'hover:bg-surface-hover'"
+      class="flex items-center gap-2 text-left py-1 pl-3 pr-2 ml-3 border-l border-edge app-focus-ring-inset"
+      :class="selected ? 'row-selected' : 'row-selectable'"
     >
       <AppBadge :color="isCall ? ColorIntent.SUCCESS : ColorIntent.DANGER">
         {{ isCall ? t('download_option_call_short') : t('download_option_put_short') }}
       </AppBadge>
-      <span class="font-semibold text-sm tabular-nums">{{ formatNumber(entry.contract.strike, locale) }}</span>
-      <span class="text-xs text-ink-muted flex-1 truncate">{{ expiry }}</span>
+      <span class="text-label tabular-nums">{{ formatNumber(entry.contract.strike, locale) }}</span>
+      <span class="text-meta flex-1 truncate">{{ expiry }}</span>
       <AppTooltip v-if="entry.warningCount > 0" :content="t('download_badge_warnings', { n: entry.warningCount })">
         <AppBadge :color="ColorIntent.WARNING" class="gap-1">
           <span class="i-mdi-alert-outline" />
@@ -63,18 +63,18 @@ const expiry = computed(() => {
     type="button"
     :aria-pressed="selected"
     @click="emit('select')"
-    class="w-full flex items-center gap-2 text-left rounded-md p-1.5 transition-colors"
-    :class="selected ? 'bg-action-soft' : 'hover:bg-surface-hover'"
+    class="w-full flex items-center gap-2 text-left px-2 py-1.5 app-focus-ring-inset"
+    :class="selected ? 'row-selected' : 'row-selectable'"
   >
     <InstrumentMonogram :ticker="entry.ticker" :large="false" />
     <span class="min-w-0 flex-1">
-      <span class="flex items-center gap-1.5 font-semibold text-sm text-ink">
+      <span class="flex items-center gap-1.5 text-label">
         <span class="truncate">{{ entry.ticker }}</span>
         <AppTooltip v-if="entry.hasCorporateAction" :content="t('download_badge_corporate_action')">
           <span class="i-mdi-call-split text-accent-ink" />
         </AppTooltip>
       </span>
-      <span class="block text-xs text-ink-muted truncate">{{ entry.isin }}</span>
+      <span class="block text-meta truncate">{{ entry.isin }}</span>
     </span>
     <AppTooltip v-if="entry.warningCount > 0" :content="t('download_badge_warnings', { n: entry.warningCount })">
       <AppBadge :color="ColorIntent.WARNING" class="gap-1">

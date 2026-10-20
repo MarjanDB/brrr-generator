@@ -11,8 +11,8 @@ const localePath = useLocalePath();
     <div class="relative px-4 sm:px-8 min-h-screen flex flex-col [--header-height:4.125rem]">
       <!-- The site's header, on the landing page and every page of the report flow. -->
       <header class="min-h-[var(--header-height)] pt-6 flex items-center justify-between gap-3 flex-wrap">
-        <div class="flex items-center gap-3">
-          <NuxtLink :to="localePath('/')" class="text-lg font-bold app-text rounded-sm app-focus-ring">
+        <div class="flex items-center gap-2">
+          <NuxtLink :to="localePath('/')" class="mr-1 text-lg font-bold rounded-sm app-focus-ring">
             {{ t('app_title') }}
           </NuxtLink>
           <!-- biome-ignore lint/a11y/useAnchorContent: icon-only link, named by its aria-label -->
@@ -21,8 +21,10 @@ const localePath = useLocalePath();
             target="_blank"
             rel="noopener"
             :aria-label="t('github_link_label')"
-            class="i-mdi-github text-2xl app-text-muted hover:app-text transition-colors"
-          />
+            class="button-quiet control-icon"
+          >
+            <span class="i-mdi-github text-2xl" aria-hidden="true" />
+          </a>
           <LanguageSwitch />
         </div>
       </header>

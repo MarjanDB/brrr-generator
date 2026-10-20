@@ -10,7 +10,7 @@ import AppTooltip from "~/components/ui/AppTooltip.vue";
 import type { GeneratedOutputs } from "~/types/generatedOutputs";
 import type { PanelSections } from "~/types/instrumentPanel";
 import type { TaxAuthorityForm } from "~/types/taxYearReports";
-import { ColorIntent } from "~/types/ui";
+import { ButtonVariant, ColorIntent } from "~/types/ui";
 import type { TaxAuthorityGuide } from "~/utils/taxAuthorityGuides";
 
 const props = defineProps<{
@@ -78,7 +78,7 @@ async function downloadXml() {
         <p class="text-label mb-2">{{ t('download_needs_look_title') }}</p>
         <ul class="flex flex-col gap-1.5">
           <AppCallout v-for="(item, index) in reading.needsALook" :key="index" as="li" :color="ColorIntent.WARNING">
-            <span class="mr-1.5 rounded-sm bg-surface px-1 font-mono text-xs text-ink-muted">{{ item.subject.label }}</span>
+            <span class="mr-1.5 text-meta">{{ item.subject.label }}</span>
             {{ dropSentence(item.drop) }}
           </AppCallout>
         </ul>
@@ -102,7 +102,7 @@ async function downloadXml() {
         <p class="text-label mb-2">{{ t('download_warnings_title') }}</p>
         <ul class="flex flex-col gap-1.5">
           <AppCallout v-for="(item, index) in warningItems" :key="index" as="li" :color="ColorIntent.WARNING">
-            <span class="mr-1.5 rounded-sm bg-surface px-1 font-mono text-xs text-ink-muted">{{ item.title }}</span>
+            <span class="mr-1.5 text-meta">{{ item.title }}</span>
             {{ warningSentence(item.warning) }}
           </AppCallout>
         </ul>
@@ -117,18 +117,19 @@ async function downloadXml() {
 
     <span class="flex-1" />
 
+    <!-- One filled button: the XML is what the tax office imports. -->
     <GuideModal v-if="guide" :name-key="guide.nameKey" :steps="guide.steps">
       <template #trigger>
-        <AppButton>
+        <AppButton :variant="ButtonVariant.SECONDARY">
           {{ t('tax_authority_guide_button') }}
         </AppButton>
       </template>
     </GuideModal>
-    <a v-if="csvUrl" :href="csvUrl" :download="outputs.csvFilename" class="button-filled-accent">
+    <a v-if="csvUrl" :href="csvUrl" :download="outputs.csvFilename" class="button-secondary control-md">
       {{ t('download_csv_label') }}
     </a>
     <TaxpayerDialog v-if="form.takesTaxpayer" :outputs="outputs" :form-name="form.code" />
-    <AppButton v-else :color="ColorIntent.ACCENT" :loading="savingXml" @click="downloadXml">
+    <AppButton v-else :loading="savingXml" @click="downloadXml">
       {{ t('download_xml_label') }}
     </AppButton>
   </div>

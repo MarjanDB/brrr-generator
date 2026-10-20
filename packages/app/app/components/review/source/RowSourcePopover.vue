@@ -21,7 +21,7 @@ const all = computed(() => allAttributesOf(rows.value.row.row));
     <h4 class="text-label">{{ t("review_source_title") }}</h4>
 
     <div class="flex flex-wrap items-center gap-1.5">
-      <span class="text-caption">{{ t("review_source_from") }}</span>
+      <span class="text-meta">{{ t("review_source_from") }}</span>
       <FileChip :name="rows.row.fileName" />
       <FileChip v-for="(copy, index) in rows.alsoIn" :key="index" :name="copy.fileName" />
     </div>
@@ -33,21 +33,21 @@ const all = computed(() => allAttributesOf(rows.value.row.row));
 
     <dl v-if="keys.length > 0" class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
       <template v-for="attribute in keys" :key="attribute.name">
-        <dt class="font-mono text-xs app-text-muted">{{ attribute.name }}</dt>
-        <dd class="font-mono text-xs app-text break-all">{{ attribute.value === "" ? "—" : attribute.value }}</dd>
+        <dt class="text-xs text-ink-muted">{{ attribute.name }}</dt>
+        <dd class="text-xs break-all">{{ attribute.value === "" ? "—" : attribute.value }}</dd>
       </template>
     </dl>
 
     <CollapsibleRoot :default-open="keys.length === 0" class="flex flex-col gap-2">
-      <CollapsibleTrigger class="button-ghost flex items-center gap-1 self-start px-1 text-xs">
+      <CollapsibleTrigger class="button-quiet control-sm self-start px-2">
         <span class="i-mdi-chevron-down" />
         {{ t("review_source_all_attributes", { n: all.length }) }}
       </CollapsibleTrigger>
       <CollapsibleContent>
         <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
           <template v-for="attribute in all" :key="attribute.name">
-            <dt class="font-mono text-xs app-text-muted">{{ attribute.name }}</dt>
-            <dd class="font-mono text-xs app-text break-all">{{ attribute.value === "" ? "—" : attribute.value }}</dd>
+            <dt class="text-xs text-ink-muted">{{ attribute.name }}</dt>
+            <dd class="text-xs break-all">{{ attribute.value === "" ? "—" : attribute.value }}</dd>
           </template>
         </dl>
       </CollapsibleContent>

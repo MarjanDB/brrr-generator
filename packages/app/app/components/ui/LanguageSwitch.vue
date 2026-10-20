@@ -34,18 +34,18 @@ function choose(code: unknown) {
   <DropdownMenuRoot>
     <DropdownMenuTrigger
       :aria-label="t('language_label', { language: current?.name ?? locale })"
-      class="inline-flex items-center rounded-sm p-1 cursor-pointer transition-colors hover:bg-surface-hover data-[state=open]:bg-surface-hover app-focus-ring"
+      class="button-quiet control-icon w-auto px-1"
     >
       <img :src="flags[locale]" alt="" class="h-3.5 w-7 rounded-xs ring-1 ring-edge-strong" />
     </DropdownMenuTrigger>
     <DropdownMenuPortal>
-      <DropdownMenuContent align="start" :side-offset="6" class="z-50 min-w-40 card p-1 shadow-md">
+      <DropdownMenuContent align="start" :side-offset="6" class="menu-box">
         <DropdownMenuRadioGroup :model-value="locale" @update:model-value="choose">
           <DropdownMenuRadioItem
             v-for="entry in locales"
             :key="entry.code"
             :value="entry.code"
-            class="flex items-center gap-2 px-3 py-2 text-sm app-text rounded-sm cursor-pointer select-none outline-none data-[highlighted]:bg-surface-hover"
+            class="menu-item"
           >
             <img :src="flags[entry.code]" alt="" class="h-3 w-6 rounded-xs ring-1 ring-edge-strong" />
             <span class="flex-1">{{ entry.name }}</span>

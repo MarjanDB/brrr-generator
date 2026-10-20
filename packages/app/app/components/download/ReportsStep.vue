@@ -10,7 +10,7 @@ import { DateTime } from "luxon";
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from "reka-ui";
 import DownloadStep from "~/components/download/DownloadStep.vue";
 import TaxYearPicker from "~/components/download/TaxYearPicker.vue";
-import { ColorIntent } from "~/types/ui";
+import { ButtonVariant } from "~/types/ui";
 import { ApiInfoProvider } from "~/utils/ApiInfoProvider";
 
 const props = defineProps<{
@@ -67,7 +67,7 @@ const tabs = computed(() =>
 			<span class="text-label">{{ t('tax_year_label') }}</span>
 			<TaxYearPicker v-model="year" :years="years" />
 			<span class="flex-1" />
-			<AppButton :color="ColorIntent.NEUTRAL" @click="emit('restart')">
+			<AppButton :variant="ButtonVariant.SECONDARY" @click="emit('restart')">
 				{{ t('restart_button') }}
 			</AppButton>
 		</div>

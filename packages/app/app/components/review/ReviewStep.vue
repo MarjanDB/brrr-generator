@@ -30,11 +30,6 @@ enum ReviewTab {
   ISSUES = "ISSUES",
 }
 
-// An underline marks the open tab, drawn over the list's base line. The list scrolls sideways when
-// the tabs don't fit, which clips anything outside it, so the focus ring is drawn inside the tab.
-const tabTrigger =
-  "flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm font-medium text-ink-muted rounded-t-sm transition-colors hover:text-ink aria-selected:border-accent-edge aria-selected:text-ink app-focus-ring focus-visible:-outline-offset-2";
-
 interface InstrumentRow {
   name: string;
   isin: string;
@@ -95,12 +90,12 @@ function openModal(row: InstrumentRow, event: MouseEvent) {
 <template>
   <div class="card card-padding-md flex flex-col gap-4 w-full max-w-screen-md mx-auto">
     <TabsRoot :default-value="ReviewTab.INSTRUMENTS" class="flex flex-col gap-4">
-      <TabsList :aria-label="t('review_tabs_label')" class="flex overflow-x-auto shadow-[inset_0_-1px_0_var(--color-edge)]">
-        <TabsTrigger :value="ReviewTab.INSTRUMENTS" :class="tabTrigger">
+      <TabsList :aria-label="t('review_tabs_label')" :class="tabListClasses">
+        <TabsTrigger :value="ReviewTab.INSTRUMENTS" :class="tabTriggerClasses">
           {{ t('review_tab_instruments') }}
           <AppBadge>{{ rows.length }}</AppBadge>
         </TabsTrigger>
-        <TabsTrigger :value="ReviewTab.ISSUES" :class="tabTrigger">
+        <TabsTrigger :value="ReviewTab.ISSUES" :class="tabTriggerClasses">
           {{ t('review_tab_issues') }}
           <AppBadge v-if="leftOut.needsALook > 0" :color="ColorIntent.WARNING" class="gap-1">
             <span class="i-mdi-alert-outline" aria-hidden="true" />
@@ -119,27 +114,27 @@ function openModal(row: InstrumentRow, event: MouseEvent) {
         <table class="app-table">
           <thead>
             <tr class="app-table-head-row">
-              <th class="app-table-th text-left">{{ t('review_column_name') }}</th>
+              <th class="app-table-th pl-3 text-left">{{ t('review_column_name') }}</th>
               <th class="app-table-th text-left">{{ t('review_column_isin') }}</th>
               <th class="app-table-th text-right">{{ t('review_column_stock_trades') }}</th>
               <th class="app-table-th text-right">{{ t('review_column_dividends') }}</th>
-              <th class="app-table-th text-right">{{ t('review_column_derivatives') }}</th>
+              <th class="app-table-th pr-3 text-right">{{ t('review_column_derivatives') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr
               v-for="(row, i) in rows"
               :key="row.isin || String(i)"
-              class="app-table-row app-row-interactive"
+              class="app-table-row row-selectable"
               @click="openModal(row, $event)"
             >
-              <td class="app-table-td pl-2">
+              <td class="app-table-td pl-3">
                 <button type="button" class="text-left rounded-sm hover:underline app-focus-ring">{{ row.name }}</button>
               </td>
-              <td class="app-table-td font-mono text-xs"><span class="app-text-muted">{{ row.isin }}</span></td>
+              <td class="app-table-td text-ink-muted">{{ row.isin }}</td>
               <td class="app-table-td text-right">{{ row.stockTrades  }}</td>
               <td class="app-table-td text-right">{{ row.dividends  }}</td>
-              <td class="app-table-td text-right">{{ row.derivatives  }}</td>
+              <td class="app-table-td pr-3 text-right">{{ row.derivatives  }}</td>
             </tr>
           </tbody>
         </table>

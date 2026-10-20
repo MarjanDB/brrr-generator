@@ -13,7 +13,7 @@ const { t } = useI18n();
   <!-- Portaled: the instrument dialog is translated and clips its overflow. -->
   <AppPopover align="end" :tooltip="t('review_source_button')" class="w-88">
     <template #trigger>
-      <button type="button" class="button-ghost p-1" :aria-label="t('review_source_button')">
+      <button type="button" class="button-quiet control-icon" :aria-label="t('review_source_button')">
         <span class="i-mdi-file-find-outline block" />
       </button>
     </template>

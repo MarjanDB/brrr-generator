@@ -21,10 +21,10 @@ const isRow = computed(() => props.node.kind === GraphNodeKind.ROW);
     </div>
     <dl class="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 tabular-nums">
       <template v-for="row in content.rows" :key="row.name">
-        <dt class="text-ink-muted" :class="isRow ? 'font-mono text-xs' : ''">
+        <dt class="text-ink-muted" :class="isRow ? 'text-xs' : ''">
           {{ row.name }}
         </dt>
-        <dd :class="isRow ? 'font-mono text-xs break-all' : ''">
+        <dd :class="isRow ? 'text-xs break-all' : ''">
           {{ row.value }}
         </dd>
       </template>

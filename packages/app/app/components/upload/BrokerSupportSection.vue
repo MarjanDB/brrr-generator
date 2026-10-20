@@ -11,7 +11,7 @@ const { t } = useI18n();
 
 <template>
   <div class="flex flex-col gap-2">
-    <span class="text-label app-text-muted">{{ t('broker_support_section_title') }}</span>
+    <h3 class="text-subheading">{{ t('broker_support_section_title') }}</h3>
     <div class="flex flex-col gap-2">
       <GuideModal
         v-for="broker in brokers"
@@ -24,7 +24,7 @@ const { t } = useI18n();
         <template #trigger>
           <button
             type="button"
-            class="flex items-center gap-3 rounded-lg border app-border p-3 app-surface-raised w-full text-left app-row-interactive"
+            class="flex items-center gap-3 w-full p-3 text-left rounded-md border border-edge-strong bg-surface-raised cursor-pointer transition-colors hover:bg-surface-hover active:bg-surface app-focus-ring"
           >
             <img
               :src="broker.iconUrl"
@@ -32,10 +32,10 @@ const { t } = useI18n();
               class="logo-tile h-10 w-10 shrink-0"
             />
             <div class="flex flex-col gap-0.5 flex-1 min-w-0">
-              <span class="text-body font-medium app-text">{{ t(broker.nameKey) }}</span>
-              <span class="text-body-sm app-text-muted">{{ t(broker.taglineKey) }}</span>
+              <span class="text-label">{{ t(broker.nameKey) }}</span>
+              <span class="text-meta">{{ t(broker.taglineKey) }}</span>
             </div>
-            <span class="i-mdi-help-circle-outline text-lg app-text-muted shrink-0" />
+            <span class="i-mdi-help-circle-outline text-lg text-ink-muted shrink-0" aria-hidden="true" />
           </button>
         </template>
       </GuideModal>
