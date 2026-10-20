@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import AppBadge from "~/components/ui/AppBadge.vue";
 import type { TaxOfficeDisplay } from "~/types/taxOffice";
-import { ColorIntent } from "~/types/ui";
 
 defineProps<{
 	office: TaxOfficeDisplay;
@@ -18,10 +17,10 @@ const { t } = useI18n();
 			<img :src="office.iconUrl" alt="" class="logo-tile h-7 w-auto shrink-0" />
 		</div>
 		<span class="text-body text-ink-muted">{{ office.name }}</span>
-		<div class="mt-2 flex flex-wrap gap-1.5">
-			<AppBadge v-for="key in office.formKeys" :key="key" :color="ColorIntent.ACCENT">
-				{{ t(key) }}
-			</AppBadge>
-		</div>
+		<ul class="mt-2 flex flex-wrap gap-1.5">
+			<li v-for="key in office.formKeys" :key="key">
+				<AppBadge pill>{{ t(key) }}</AppBadge>
+			</li>
+		</ul>
 	</div>
 </template>

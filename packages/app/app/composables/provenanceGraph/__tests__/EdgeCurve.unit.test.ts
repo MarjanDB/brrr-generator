@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { EdgeCurves } from "~/utils/edgeCurves";
+import { EdgeCurves } from "~/composables/provenanceGraph/edgeCurves";
 
 describe("the curve the graph's edges and the landing page's arrows draw", () => {
 	test("a long hop bends halfway across", () => {

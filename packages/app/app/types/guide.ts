@@ -26,6 +26,8 @@ export type BrokerGuide = {
 	modalTitleKey: string;
 	taglineKey: string;
 	iconUrl: string;
+	// What the site reads from its export, as i18n keys.
+	readKeys: string[];
 	steps: GuideStep[];
 };
 
