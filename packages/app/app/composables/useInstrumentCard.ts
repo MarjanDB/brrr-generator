@@ -30,6 +30,9 @@ export type InstrumentCardArgs = {
 	formName: string;
 	// The form as the tax authority calls it, which the reasons in "Everything detected" name.
 	formCode: string;
+	// Where the focus starts, when something asked to show an item of the instrument; else on its
+	// default.
+	startAt: ProvenanceNode | null;
 };
 
 // What every part of one instrument's card reads: the instrument and its report, its timeline,
@@ -91,7 +94,7 @@ export function provideInstrumentCard(args: InstrumentCardArgs): InstrumentCardS
 		() => args.walker,
 	);
 	const focus = provideGraphFocus();
-	focus.start(defaultFocus(instrument, args.walker));
+	focus.start(args.startAt ?? defaultFocus(instrument, args.walker));
 	const tab = ref(InstrumentCardTab.ON_THE_FORM);
 	const offered = shallowRef<ProvenanceNode | null>(null);
 	const formLots = computed(() => formLotsOf(instrument, timeline.value));

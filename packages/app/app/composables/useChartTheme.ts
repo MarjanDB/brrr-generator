@@ -18,8 +18,10 @@ export type ChartThemeColors = {
 	focus: string;
 	// The band behind the instrument timeline's tax year
 	taxYear: string;
-	// A label inside a solid bar of the timeline
+	// A label inside a solid bar of the timeline, and the inside of a problem's badge
 	barLabel: string;
+	// A problem's badge on a mark of the timeline
+	warning: string;
 };
 
 function cssVar(name: string): string {
@@ -55,6 +57,7 @@ function readColors(): ChartThemeColors {
 		focus: cssVar("--color-action-edge"),
 		taxYear: cssVar("--color-surface-raised"),
 		barLabel: cssVar("--color-page"),
+		warning: cssVar("--color-warning-ink"),
 	};
 }
 

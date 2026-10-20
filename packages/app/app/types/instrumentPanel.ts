@@ -1,9 +1,7 @@
 import type {
 	IdentifierChangeType,
 	OptionRight,
-	ProvenanceDetailKind,
 	ProvenanceDrop,
-	ProvenanceWarning,
 	ReportInstrument,
 	ReportInstrumentKind,
 	ReportLeftOut,
@@ -48,22 +46,8 @@ export type PanelSections = {
 	withoutLines: PanelEntry[];
 };
 
-export type WarningItem = {
-	// The instrument the warning is about, which a click on it selects, and its title: its ticker,
-	// or a contract's OCC symbol.
-	instrument: ReportInstrument;
-	title: string;
-	warning: ProvenanceWarning;
-};
-
-// The report's warnings of one kind, as the list its warnings button opens groups them.
-export type WarningGroup = {
-	kind: ProvenanceDetailKind;
-	items: WarningItem[];
-};
-
-// What the report left out for one reason, said the same way, as the list its needs-a-look button
-// opens groups it. The drop says the group's sentence.
+// What the report left out for one reason, said the same way, as the problems view groups it. The
+// drop says the group's sentence.
 export type LeftOutGroup = {
 	drop: ProvenanceDrop;
 	items: ReportLeftOut[];

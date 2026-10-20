@@ -21,6 +21,7 @@ import {
 	filterPanel,
 	findEntry,
 	firstEntry,
+	sameEntryIn,
 } from "~/utils/instrumentPanel";
 import { monogramIntent, monogramText } from "~/utils/nodeLook";
 
@@ -997,5 +998,94 @@ describe("the warning count of a panel entry", () => {
 		expect(sections.payers[0]?.warningCount).toEqual(0);
 		expect(sections.payers[1]?.ticker).toEqual("TTE");
 		expect(sections.payers[1]?.warningCount).toEqual(1);
+	});
+});
+
+describe("the same instrument in a report made again", () => {
+	test("is found by its kind, ticker and ISIN, though its nodes are new", () => {
+		const first = new GraphBuilder();
+		const firstFile = first.file({ name: "U1.xml" });
+		const firstNope = first.instrument({ ticker: "NOPE", isin: "XS0000000009" });
+		const firstDividend = first.dividend({
+			file: firstFile,
+			instrument: firstNope,
+			kind: ProvenanceEventKind.DIVIDEND,
+			date: "2022-04-01",
+			amount: "2.64",
+			currency: "EUR",
+			label: "dividend NOPE",
+		});
+		first.sumInto({ instrument: firstNope, events: [firstDividend], dateReceived: "2022-04-01" });
+		const second = new GraphBuilder();
+		const secondFile = second.file({ name: "U1.xml" });
+		const secondTte = second.instrument({ ticker: "TTE", isin: "FR0000120271" });
+		const tteDividend = second.dividend({
+			file: secondFile,
+			instrument: secondTte,
+			kind: ProvenanceEventKind.DIVIDEND,
+			date: "2022-04-02",
+			amount: "2.64",
+			currency: "EUR",
+			label: "dividend TTE",
+		});
+		second.sumInto({ instrument: secondTte, events: [tteDividend], dateReceived: "2022-04-02" });
+		const secondNope = second.instrument({ ticker: "NOPE", isin: "XS0000000009" });
+		const secondDividend = second.dividend({
+			file: secondFile,
+			instrument: secondNope,
+			kind: ProvenanceEventKind.DIVIDEND,
+			date: "2022-04-01",
+			amount: "2.64",
+			currency: "EUR",
+			label: "dividend NOPE",
+		});
+		second.sumInto({
+			instrument: secondNope,
+			events: [secondDividend],
+			dateReceived: "2022-04-01",
+		});
+		const before = buildPanel(first.reading());
+		const after = buildPanel(second.reading());
+		const nope = before.payers[0];
+		assert(nope !== undefined);
+
+		const same = sameEntryIn(after, nope);
+
+		expect(same?.ticker).toEqual("NOPE");
+		expect(same?.instrument).toBe(after.payers[0]?.instrument);
+		expect(same?.instrument).not.toBe(nope.instrument);
+	});
+
+	test("is none when the new report doesn't have it", () => {
+		const first = new GraphBuilder();
+		const firstFile = first.file({ name: "U1.xml" });
+		const firstNope = first.instrument({ ticker: "NOPE", isin: "XS0000000009" });
+		const firstDividend = first.dividend({
+			file: firstFile,
+			instrument: firstNope,
+			kind: ProvenanceEventKind.DIVIDEND,
+			date: "2022-04-01",
+			amount: "2.64",
+			currency: "EUR",
+			label: "dividend NOPE",
+		});
+		first.sumInto({ instrument: firstNope, events: [firstDividend], dateReceived: "2022-04-01" });
+		const second = new GraphBuilder();
+		const secondFile = second.file({ name: "U1.xml" });
+		const secondTte = second.instrument({ ticker: "TTE", isin: "FR0000120271" });
+		const tteDividend = second.dividend({
+			file: secondFile,
+			instrument: secondTte,
+			kind: ProvenanceEventKind.DIVIDEND,
+			date: "2022-04-02",
+			amount: "2.64",
+			currency: "EUR",
+			label: "dividend TTE",
+		});
+		second.sumInto({ instrument: secondTte, events: [tteDividend], dateReceived: "2022-04-02" });
+		const nope = buildPanel(first.reading()).payers[0];
+		assert(nope !== undefined);
+
+		expect(sameEntryIn(buildPanel(second.reading()), nope)).toBeNull();
 	});
 });

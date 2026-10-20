@@ -42,7 +42,7 @@ export const detailKindKeys: Record<ProvenanceDetailKind, string> = {
 	[ProvenanceDetailKind.COMPANY_LOOKUP_FAILED]: "download_detail_company_lookup_failed",
 };
 
-// The heading of a group of the report's warnings of one kind, in the list its warnings button opens.
+// The heading of a group of the report's problems of one kind, in the problems view's list.
 export const warningGroupKeys: Record<ProvenanceDetailKind, string> = {
 	[ProvenanceDetailKind.FILE_ERROR]: "download_warning_group_file_error",
 	[ProvenanceDetailKind.ASSET_CLASS_NOT_SUPPORTED]:

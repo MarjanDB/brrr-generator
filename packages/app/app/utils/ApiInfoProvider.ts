@@ -1,4 +1,4 @@
-import type { CompanyInfo, Country, IInfoProvider } from "@brrr/lib";
+import type { CompanyDefinition, CompanyInfo, Country, IInfoProvider } from "@brrr/lib";
 import { PredefinedInfoProvider, type TreatyType } from "@brrr/lib";
 
 // The country route's JSON: a Country with its treaties as a plain object.
@@ -38,6 +38,10 @@ export class ApiInfoProvider implements IInfoProvider {
 		return country;
 	}
 
+	// A payer defined by hand, which the lookup gives before asking the server.
+	public defineCompany(definition: CompanyDefinition): void {
+		this.predefined.defineCompany(definition);
+	}
 	public addCompany(isin: string, info: CompanyInfo): void {
 		this.predefined.addCompany(isin, info);
 	}

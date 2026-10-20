@@ -3,111 +3,16 @@ import {
 	ProvenanceDetail,
 	ProvenanceDetailKind,
 	ProvenanceDetailValue,
-	ProvenanceEventKind,
 	ProvenanceNodeKind,
 	ProvenanceStage,
 } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import {
-	buildPanel,
-	leftOutGroupsOf,
-	warningGroupsOf,
-	warningItemsOf,
-} from "~/utils/instrumentPanel";
+import { leftOutGroupsOf } from "~/utils/instrumentPanel";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
-describe("the report's problems, grouped by cause for the list a problem button opens", () => {
-	test("warnings group by their kind, in the order the kinds first come, each with its instruments", () => {
-		const b = new GraphBuilder();
-		const file = b.file({ name: "U1.xml" });
-		const tte = b.instrument({ ticker: "TTE", isin: "FR0000120271" });
-		const tteDividend = b.dividend({
-			file,
-			instrument: tte,
-			kind: ProvenanceEventKind.DIVIDEND,
-			date: "2024-04-01",
-			amount: "20",
-			currency: "EUR",
-			label: "dividend TTE",
-		});
-		const tteLine = b.sumInto({
-			instrument: tte,
-			events: [tteDividend],
-			dateReceived: "2024-04-01",
-		});
-		b.graph.warn(
-			tteLine.line,
-			stage,
-			new ProvenanceDetail({
-				kind: ProvenanceDetailKind.COMPANY_NOT_FOUND,
-				values: { [ProvenanceDetailValue.ISIN]: "FR0000120271" },
-			}),
-		);
-		const sap = b.instrument({ ticker: "SAP", isin: "DE0007164600" });
-		const sapDividend = b.dividend({
-			file,
-			instrument: sap,
-			kind: ProvenanceEventKind.DIVIDEND,
-			date: "2024-05-02",
-			amount: "10",
-			currency: "EUR",
-			label: "dividend SAP",
-		});
-		const sapLine = b.sumInto({
-			instrument: sap,
-			events: [sapDividend],
-			dateReceived: "2024-05-02",
-		});
-		b.graph.warn(
-			sapLine.line,
-			stage,
-			new ProvenanceDetail({
-				kind: ProvenanceDetailKind.COMPANY_LOOKUP_FAILED,
-				values: {
-					[ProvenanceDetailValue.ISIN]: "DE0007164600",
-					[ProvenanceDetailValue.ERROR]: "timeout",
-				},
-			}),
-		);
-		const asml = b.instrument({ ticker: "ASML", isin: "NL0010273215" });
-		const asmlDividend = b.dividend({
-			file,
-			instrument: asml,
-			kind: ProvenanceEventKind.DIVIDEND,
-			date: "2024-06-03",
-			amount: "5",
-			currency: "EUR",
-			label: "dividend ASML",
-		});
-		const asmlLine = b.sumInto({
-			instrument: asml,
-			events: [asmlDividend],
-			dateReceived: "2024-06-03",
-		});
-		b.graph.warn(
-			asmlLine.line,
-			stage,
-			new ProvenanceDetail({
-				kind: ProvenanceDetailKind.COMPANY_NOT_FOUND,
-				values: { [ProvenanceDetailValue.ISIN]: "NL0010273215" },
-			}),
-		);
-		const reading = b.reading();
-
-		const groups = warningGroupsOf(warningItemsOf(buildPanel(reading), reading.warnings));
-
-		expect(groups).toHaveLength(2);
-		expect(groups[0]?.kind).toEqual(ProvenanceDetailKind.COMPANY_NOT_FOUND);
-		expect(groups[0]?.items).toHaveLength(2);
-		expect(groups[0]?.items[0]?.title).toEqual("ASML");
-		expect(groups[0]?.items[1]?.title).toEqual("TTE");
-		expect(groups[1]?.kind).toEqual(ProvenanceDetailKind.COMPANY_LOOKUP_FAILED);
-		expect(groups[1]?.items).toHaveLength(1);
-		expect(groups[1]?.items[0]?.title).toEqual("SAP");
-	});
-
+describe("what the report left out, grouped by cause for the problems view", () => {
 	test("what was left out groups by its reason and how it was said, so each asset class is its own group", () => {
 		const b = new GraphBuilder();
 		const file = b.file({ name: "U1.xml" });

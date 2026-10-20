@@ -19,8 +19,6 @@ import type {
 	PanelEntry,
 	PanelSections,
 	SplitChip,
-	WarningGroup,
-	WarningItem,
 } from "~/types/instrumentPanel";
 import { SplitFactorKind } from "~/types/provenanceGraph";
 import { splitFactorOf } from "~/utils/graphModel";
@@ -110,7 +108,8 @@ export function filterPanel(sections: PanelSections, rawQuery: string): PanelSec
 	};
 }
 
-function entriesOf(sections: PanelSections): PanelEntry[] {
+// Every entry of the panel, in its sections' order.
+export function entriesOf(sections: PanelSections): PanelEntry[] {
 	return [
 		...sections.stocks,
 		...sections.underlyings.flatMap((underlying) => underlying.contracts),
@@ -125,6 +124,20 @@ export function findEntry(
 	instrument: ReportInstrument,
 ): PanelEntry | null {
 	return entriesOf(sections).find((entry) => entry.instrument === instrument) ?? null;
+}
+
+// The same instrument's entry in a report made again, whose nodes are new: the one of its kind with
+// its ticker, ISIN and contract.
+export function sameEntryIn(sections: PanelSections, entry: PanelEntry): PanelEntry | null {
+	return (
+		entriesOf(sections).find(
+			(candidate) =>
+				candidate.kind === entry.kind &&
+				candidate.ticker === entry.ticker &&
+				candidate.isin === entry.isin &&
+				candidate.contract?.occSymbol === entry.contract?.occSymbol,
+		) ?? null
+	);
 }
 
 // The entry the step opens on: stocks, then contracts, then payers, then instruments without lines.
@@ -166,21 +179,6 @@ export function defaultFocus(
 	return focus;
 }
 
-// The warnings the report raised (`reported`, the reading's own), each with the instrument it
-// belongs to, in the panel's order. An instrument's list also holds what its import warned about,
-// which is the import's to show.
-export function warningItemsOf(
-	sections: PanelSections,
-	reported: ProvenanceWarning[],
-): WarningItem[] {
-	return entriesOf(sections).flatMap((entry) => {
-		const title = entry.contract?.occSymbol ?? entry.ticker;
-		return entry.instrument.warnings
-			.filter((warning) => reported.includes(warning))
-			.map((warning) => ({ instrument: entry.instrument, title, warning }));
-	});
-}
-
 // Items in groups by a key, the groups in the order their keys first come.
 function groupsBy<Item>(items: Item[], keyOf: (item: Item) => string): Item[][] {
 	const groups = new Map<string, Item[]>();
@@ -189,14 +187,6 @@ function groupsBy<Item>(items: Item[], keyOf: (item: Item) => string): Item[][] 
 		groups.set(key, [...(groups.get(key) ?? []), item]);
 	}
 	return [...groups.values()];
-}
-
-// The warnings grouped by their kind: "no company was found" once, with every payer it is about.
-export function warningGroupsOf(items: WarningItem[]): WarningGroup[] {
-	return groupsBy(items, (item) => item.warning.detail.kind).flatMap((group) => {
-		const [first] = group;
-		return first === undefined ? [] : [{ kind: first.warning.detail.kind, items: group }];
-	});
 }
 
 // What was left out, grouped by its reason and how it was said, as the review step groups the

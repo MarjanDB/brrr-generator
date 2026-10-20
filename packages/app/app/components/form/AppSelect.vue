@@ -81,7 +81,7 @@ if (form) {
 				<SelectContent
 					position="popper"
 					:side-offset="4"
-					class="menu-box min-w-[var(--reka-select-trigger-width)] overflow-hidden"
+					class="menu-box min-w-[var(--reka-select-trigger-width)] max-h-[min(20rem,var(--reka-select-content-available-height))] overflow-hidden"
 				>
 					<SelectViewport class="p-1">
 						<SelectItem
