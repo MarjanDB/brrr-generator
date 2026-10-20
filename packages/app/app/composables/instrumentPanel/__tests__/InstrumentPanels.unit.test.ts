@@ -123,7 +123,6 @@ describe("the download panel's sections", () => {
 		expect(sections.payers[0]?.ticker).toEqual("TTE");
 		expect(sections.withoutLines).toHaveLength(1);
 		expect(sections.withoutLines[0]?.ticker).toEqual("ZED");
-		expect(sections.withoutLines[0]?.notInReport).toEqual(1);
 	});
 
 	test("an underlying's contracts stay separate rows, each with its own terms", () => {

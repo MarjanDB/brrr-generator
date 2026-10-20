@@ -38,7 +38,6 @@ function entryOf(instrument: ReportInstrument): PanelEntry {
 		isin: ProvenanceFields.of(instrument.node, ProvenanceField.ISIN),
 		contract: contractOf(instrument),
 		hasCorporateAction: instrument.corporateActions.length > 0,
-		notInReport: instrument.notInReport,
 		lineCount: instrument.lines.length,
 		warningCount: instrument.warnings.length,
 	};

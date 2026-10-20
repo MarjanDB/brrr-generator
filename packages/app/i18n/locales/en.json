@@ -263,7 +263,6 @@
 	"download_section_options": "Options",
 	"download_section_payers": "Dividend payers",
 	"download_section_without_lines": "Not in this report",
-	"download_badge_not_in_report": "{n} not in this report",
 	"download_badge_lines": "{n} report line(s)",
 	"download_badge_corporate_action": "Corporate action",
 	"download_option_call": "call",
