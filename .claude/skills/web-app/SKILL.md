@@ -174,6 +174,10 @@ step 1, the guide button in the download header), with screenshots under `packag
 - Buttons are `AppButton`: `color` (a `ColorIntent`, filled) or `ghost`, plus `loading` and `disabled`; it renders the
   `button-filled-<intent>` / `button-ghost` shortcut itself, so callers add only layout classes. The `button` shortcut carries
   `app-focus-ring`. A link styled as a button (the downloads) uses the shortcut directly.
+- Counted text ("2 shares", "3 items need a look", "5 postavk") goes through `useCountText().countText(CountNoun, count)`: the
+  locale's plural form (`pluralFormOf`: `Intl.PluralRules` below a hundred, where Slovenian has one, two, few and other, and
+  "other" from a hundred up, since CLDR's last-two-digits rule would write "401 postavka") picks the key from
+  `countKeys` in `utils/i18nKeys.ts`, each with `{count}`. No "(s)" in new text.
 - Tooltips, not `title`: `AppTooltip` (or `AppPopover`'s `tooltip`) for any hint, including on the graph's cards. Over a canvas, `AppTooltip` takes a `reference` (a virtual element at the point) and `open`, and lets the pointer through to the chart. `tooltip-box`
   is a small card (the surface, a border, ink text), the look the review step's chart tooltip has; it keeps line
   breaks and wraps at `max-w-80`.

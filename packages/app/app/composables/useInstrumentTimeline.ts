@@ -7,7 +7,7 @@ import {
 	ReportInstrumentKind,
 } from "@brrr/lib";
 import { DateTime, Duration } from "luxon";
-import { PluralForm, QuantityUnit } from "~/types/instrumentCard";
+import { CountNoun } from "~/types/counts";
 import {
 	type Timeline,
 	type TimelineBar,
@@ -16,7 +16,7 @@ import {
 	type TimelineRow,
 	TimelineRowKind,
 } from "~/types/timeline";
-import { eventKindKeys, markKeys, quantityUnitKeys } from "~/utils/i18nKeys";
+import { eventKindKeys, markKeys } from "~/utils/i18nKeys";
 import { chipOf } from "~/utils/instrumentPanel";
 import { buildTimeline } from "~/utils/instrumentTimeline";
 import { fieldOf } from "~/utils/provenanceFields";
@@ -30,20 +30,18 @@ export function useInstrumentTimeline(
 ) {
 	const { t, locale } = useI18n();
 	const { date, chipText } = useProvenanceText();
+	const { countText } = useCountText();
 
 	const timeline = computed<Timeline>(() => buildTimeline(instrument(), walker()));
 
-	// "10 shares", "1 contract": a quantity with its unit, in the plural form the locale asks for.
+	// "10 shares", "1 contract": a quantity with its unit.
 	function describeQuantity(quantity: number): string {
-		const unit =
+		return countText(
 			instrument().kind === ReportInstrumentKind.OPTION_CONTRACT
-				? QuantityUnit.CONTRACT
-				: QuantityUnit.SHARE;
-		const category = new Intl.PluralRules(locale.value).select(quantity);
-		const form = Object.values(PluralForm).find((candidate) => candidate === category);
-		return t(quantityUnitKeys[unit][form ?? PluralForm.OTHER], {
-			quantity: new Intl.NumberFormat(locale.value).format(quantity),
-		});
+				? CountNoun.CONTRACT
+				: CountNoun.SHARE,
+			quantity,
+		);
 	}
 
 	function describeMark(mark: TimelineMark): string {

@@ -2,6 +2,7 @@ import { ReportInstrumentKind } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
 import {
 	chipKindKeys,
+	countKeys,
 	detailKindKeys,
 	detectedDetailKeys,
 	detectedPartKeys,
@@ -16,7 +17,6 @@ import {
 	lotMatchingKeys,
 	markKeys,
 	nodeValueKeys,
-	quantityUnitKeys,
 	reportStepKeys,
 	stackKindKeys,
 } from "~/utils/i18nKeys";
@@ -148,8 +148,8 @@ describe("the locale files", () => {
 		}
 	});
 
-	test("every unit has every plural form in the locale files", () => {
-		for (const forms of Object.values(quantityUnitKeys)) {
+	test("every counted noun has every plural form in the locale files", () => {
+		for (const forms of Object.values(countKeys)) {
 			for (const key of Object.values(forms)) {
 				expect(englishKeys.has(key)).toEqual(true);
 			}

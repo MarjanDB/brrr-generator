@@ -10,7 +10,8 @@ import {
 	ReportInstrumentKind,
 	TaxAuthorityLotMatchingMethod,
 } from "@brrr/lib";
-import { DetectedReason, PluralForm, QuantityUnit } from "~/types/instrumentCard";
+import { CountNoun, PluralForm } from "~/types/counts";
+import { DetectedReason } from "~/types/instrumentCard";
 import { GraphHeading, GraphNodeKind, NodeValueKind } from "~/types/provenanceGraph";
 import { ReportStep } from "~/types/reportFlow";
 import { TimelineMarkKind } from "~/types/timeline";
@@ -126,19 +127,49 @@ export const detectedPartKeys: Record<DetectedReason, string> = {
 	[DetectedReason.NO_EFFECT]: "download_reason_no_effect",
 };
 
-// A quantity with its unit, in each plural form ({quantity}).
-export const quantityUnitKeys: Record<QuantityUnit, Record<PluralForm, string>> = {
-	[QuantityUnit.SHARE]: {
+// A count with what it counts, in each plural form ({count}).
+export const countKeys: Record<CountNoun, Record<PluralForm, string>> = {
+	[CountNoun.SHARE]: {
 		[PluralForm.ONE]: "download_unit_share_one",
 		[PluralForm.TWO]: "download_unit_share_two",
 		[PluralForm.FEW]: "download_unit_share_few",
 		[PluralForm.OTHER]: "download_unit_share_other",
 	},
-	[QuantityUnit.CONTRACT]: {
+	[CountNoun.CONTRACT]: {
 		[PluralForm.ONE]: "download_unit_contract_one",
 		[PluralForm.TWO]: "download_unit_contract_two",
 		[PluralForm.FEW]: "download_unit_contract_few",
 		[PluralForm.OTHER]: "download_unit_contract_other",
+	},
+	[CountNoun.FORM_LINE]: {
+		[PluralForm.ONE]: "count_form_line_one",
+		[PluralForm.TWO]: "count_form_line_two",
+		[PluralForm.FEW]: "count_form_line_few",
+		[PluralForm.OTHER]: "count_form_line_other",
+	},
+	[CountNoun.ITEM_NOT_ON_FORM]: {
+		[PluralForm.ONE]: "count_item_not_on_form_one",
+		[PluralForm.TWO]: "count_item_not_on_form_two",
+		[PluralForm.FEW]: "count_item_not_on_form_few",
+		[PluralForm.OTHER]: "count_item_not_on_form_other",
+	},
+	[CountNoun.ITEM_NEEDS_A_LOOK]: {
+		[PluralForm.ONE]: "count_item_needs_a_look_one",
+		[PluralForm.TWO]: "count_item_needs_a_look_two",
+		[PluralForm.FEW]: "count_item_needs_a_look_few",
+		[PluralForm.OTHER]: "count_item_needs_a_look_other",
+	},
+	[CountNoun.WARNING]: {
+		[PluralForm.ONE]: "count_warning_one",
+		[PluralForm.TWO]: "count_warning_two",
+		[PluralForm.FEW]: "count_warning_few",
+		[PluralForm.OTHER]: "count_warning_other",
+	},
+	[CountNoun.ITEM_LEFT_OUT]: {
+		[PluralForm.ONE]: "count_item_left_out_one",
+		[PluralForm.TWO]: "count_item_left_out_two",
+		[PluralForm.FEW]: "count_item_left_out_few",
+		[PluralForm.OTHER]: "count_item_left_out_other",
 	},
 };
 
