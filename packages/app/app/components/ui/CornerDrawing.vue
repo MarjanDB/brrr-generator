@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t } = useI18n();
+
 const drawing = "/images/fx-warrior.webp";
 
 // Where the screen's light can't reach: the monitor's back, its stand, and everything under the desk.
@@ -116,5 +118,9 @@ const chartPlane = {
 		<div class="absolute inset-0 isolate opacity-45 mix-blend-multiply bg-blend-multiply" :style="screenLight">
 			<div v-for="(style, index) in spotStyles" :key="index" class="absolute mix-blend-multiply" :style="style" />
 		</div>
+		<!-- Where the drawing comes from, beside its bottom edge. -->
+		<span class="absolute bottom-2 left-full ml-2 whitespace-nowrap text-meta">
+			{{ t('corner_drawing_credit') }}
+		</span>
 	</div>
 </template>
