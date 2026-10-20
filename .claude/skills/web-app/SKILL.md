@@ -52,7 +52,7 @@ the left, the money printer in the middle and the tax offices on the right, stac
   takes the same box.
 - **Nothing the landing page imports may import a value from `@brrr/lib`** (type-only imports are fine). Lib isn't marked free
   of side effects, so one enum import pulls most of it, zod and inversify included, into the page. That is why the tax offices'
-  display data and `EdgeCurves` sit in files of their own.
+  display data sits in a file of its own.
 
 ## The report flow
 

@@ -4,6 +4,7 @@ import {
 	ProvenanceField,
 	type ProvenanceNode,
 } from "@brrr/lib";
+import { EdgeCurves } from "~/composables/provenanceGraph/edgeCurves";
 import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import {
 	type GraphColumn,
@@ -26,7 +27,6 @@ import {
 	type SplitFactor,
 	StackKey,
 } from "~/types/provenanceGraph";
-import { EdgeCurves } from "~/utils/edgeCurves";
 
 type GraphLayoutOptions = {
 	// Any recorded node; it is resolved with the model's node lookup.
