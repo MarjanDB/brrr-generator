@@ -11,11 +11,11 @@ import {
 import { assert, describe, expect, test } from "vitest";
 import { shallowRef } from "vue";
 import { mountComposable } from "~/composables/__tests__/support/mountComposable";
+import { InstrumentPanels } from "~/composables/instrumentPanel/instrumentPanels";
 import { provideReportProblems } from "~/composables/useReportProblems";
 import type { DefinedPayer } from "~/types/reportFlow";
 import { ProblemState, ReportPanelTab } from "~/types/reportProblems";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { buildPanel } from "~/utils/instrumentPanel";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 const acmePayer: DefinedPayer = {
@@ -82,7 +82,7 @@ describe("the report's problems view", () => {
 		const walker = new ProvenanceWalker(b.graph);
 		const problems = await mountComposable(() =>
 			provideReportProblems({
-				sections: () => buildPanel(reading),
+				sections: () => InstrumentPanels.build(reading),
 				reading: () => reading,
 				walker: () => walker,
 				formCode: () => "Doh-Div",
@@ -150,7 +150,7 @@ describe("the report's problems view", () => {
 		const payers = shallowRef<ReadonlyMap<string, DefinedPayer>>(new Map());
 		const problems = await mountComposable(() =>
 			provideReportProblems({
-				sections: () => buildPanel(made.value.reading()),
+				sections: () => InstrumentPanels.build(made.value.reading()),
 				reading: () => made.value.reading(),
 				walker: () => new ProvenanceWalker(made.value.graph),
 				formCode: () => "Doh-Div",
@@ -240,7 +240,7 @@ describe("the report's problems view", () => {
 		const walker = new ProvenanceWalker(b.graph);
 		const problems = await mountComposable(() =>
 			provideReportProblems({
-				sections: () => buildPanel(reading),
+				sections: () => InstrumentPanels.build(reading),
 				reading: () => reading,
 				walker: () => walker,
 				formCode: () => "Doh-Div",
@@ -318,7 +318,7 @@ describe("the report's problems view", () => {
 		const walker = new ProvenanceWalker(b.graph);
 		const problems = await mountComposable(() =>
 			provideReportProblems({
-				sections: () => buildPanel(reading),
+				sections: () => InstrumentPanels.build(reading),
 				reading: () => reading,
 				walker: () => walker,
 				formCode: () => "Doh-Div",
@@ -365,7 +365,7 @@ describe("the report's problems view", () => {
 		const shown: { instrument: ReportInstrument; at: ProvenanceNode }[] = [];
 		const problems = await mountComposable(() =>
 			provideReportProblems({
-				sections: () => buildPanel(reading),
+				sections: () => InstrumentPanels.build(reading),
 				reading: () => reading,
 				walker: () => walker,
 				formCode: () => "Doh-Div",

@@ -14,6 +14,7 @@ import {
 	ProblemState,
 	ReportPanelTab,
 } from "~/types/reportProblems";
+import { ReportInstruments } from "~/utils/reportInstruments";
 
 type ReportProblemsArgs = {
 	sections: () => PanelSections;
@@ -71,7 +72,7 @@ export function provideReportProblems(args: ReportProblemsArgs): ReportProblems 
 		problemGroupsOf(args.sections(), args.reading().warnings, args.payers(), args.walker()),
 	);
 	const problems = computed(() => groups.value.flatMap((group) => group.problems));
-	const leftOut = computed(() => leftOutGroupsOf(args.reading().needsALook));
+	const leftOut = computed(() => ReportInstruments.leftOutGroupsOf(args.reading().needsALook));
 	const current = computed(() => {
 		const key = picked.value;
 		const known =

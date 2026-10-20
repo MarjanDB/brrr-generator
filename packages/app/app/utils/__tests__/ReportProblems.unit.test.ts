@@ -7,10 +7,10 @@ import {
 	ProvenanceWalker,
 } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
+import { InstrumentPanels } from "~/composables/instrumentPanel/instrumentPanels";
 import type { DefinedPayer } from "~/types/reportFlow";
 import { ProblemState } from "~/types/reportProblems";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { buildPanel } from "~/utils/instrumentPanel";
 import { openProblemCount, problemGroupsOf } from "~/utils/reportProblems";
 
 const stage = ProvenanceStage.Schema.parse("Test");
@@ -87,7 +87,7 @@ describe("the report's problems about its instruments, in the problems view's li
 		const reading = b.reading();
 
 		const groups = problemGroupsOf(
-			buildPanel(reading),
+			InstrumentPanels.build(reading),
 			reading.warnings,
 			noPayers,
 			new ProvenanceWalker(b.graph),
@@ -151,7 +151,7 @@ describe("the report's problems about its instruments, in the problems view's li
 		const reading = b.reading();
 
 		const groups = problemGroupsOf(
-			buildPanel(reading),
+			InstrumentPanels.build(reading),
 			reading.warnings,
 			new Map([["XS0000000009", payer]]),
 			new ProvenanceWalker(b.graph),
@@ -211,7 +211,7 @@ describe("the report's problems about its instruments, in the problems view's li
 		const reading = b.reading();
 
 		const groups = problemGroupsOf(
-			buildPanel(reading),
+			InstrumentPanels.build(reading),
 			reading.warnings,
 			new Map([["XS0000000009", payer]]),
 			new ProvenanceWalker(b.graph),
@@ -294,13 +294,13 @@ describe("the report's problems about its instruments, in the problems view's li
 		const secondReading = second.reading();
 
 		const before = problemGroupsOf(
-			buildPanel(firstReading),
+			InstrumentPanels.build(firstReading),
 			firstReading.warnings,
 			noPayers,
 			new ProvenanceWalker(first.graph),
 		);
 		const after = problemGroupsOf(
-			buildPanel(secondReading),
+			InstrumentPanels.build(secondReading),
 			secondReading.warnings,
 			payers,
 			new ProvenanceWalker(second.graph),
@@ -331,7 +331,7 @@ describe("the report's problems about its instruments, in the problems view's li
 		const reading = b.reading();
 
 		const groups = problemGroupsOf(
-			buildPanel(reading),
+			InstrumentPanels.build(reading),
 			[],
 			noPayers,
 			new ProvenanceWalker(b.graph),

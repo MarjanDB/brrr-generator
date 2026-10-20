@@ -4,11 +4,11 @@ import {
 	type ProvenanceWalker,
 	type ProvenanceWarning,
 } from "@brrr/lib";
+import { InstrumentPanels } from "~/composables/instrumentPanel/instrumentPanels";
 import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import type { PanelEntry, PanelSections } from "~/types/instrumentPanel";
 import type { DefinedPayer } from "~/types/reportFlow";
 import { type InstrumentProblem, type ProblemGroup, ProblemState } from "~/types/reportProblems";
-import { entriesOf } from "~/utils/instrumentPanel";
 
 // Whether a payer defined by hand resolves a warning of this kind: the company lookup found none,
 // or failed.
@@ -47,7 +47,7 @@ export function problemGroupsOf(
 	const add = (problem: InstrumentProblem) => {
 		groups.set(problem.kind, [...(groups.get(problem.kind) ?? []), problem]);
 	};
-	for (const entry of entriesOf(sections)) {
+	for (const entry of InstrumentPanels.entriesOf(sections)) {
 		const title = entry.contract?.occSymbol ?? entry.ticker;
 		const keyOf = (kind: ProvenanceDetailKind) =>
 			`${kind}:${entry.kind}:${entry.isin ?? ""}:${title}`;

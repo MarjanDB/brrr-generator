@@ -13,6 +13,7 @@ import {
 	mountComposable,
 	mountComposableUnder,
 } from "~/composables/__tests__/support/mountComposable";
+import { InstrumentPanels } from "~/composables/instrumentPanel/instrumentPanels";
 import { useGraphFocus } from "~/composables/useGraphFocus";
 import {
 	type InstrumentCardState,
@@ -21,7 +22,6 @@ import {
 } from "~/composables/useInstrumentCard";
 import { DetectedReason, InstrumentCardTab } from "~/types/instrumentCard";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { buildPanel, firstEntry } from "~/utils/instrumentPanel";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -59,7 +59,7 @@ describe("one instrument's card on the reports step", () => {
 			soldOn: "2024-03-10",
 		});
 		const reading = b.reading();
-		const entry = firstEntry(buildPanel(reading));
+		const entry = InstrumentPanels.first(InstrumentPanels.build(reading));
 		assert(entry !== null);
 
 		const card = await mountComposable(() =>
@@ -113,7 +113,7 @@ describe("one instrument's card on the reports step", () => {
 			soldOn: "2024-03-10",
 		});
 		const reading = b.reading();
-		const entry = firstEntry(buildPanel(reading));
+		const entry = InstrumentPanels.first(InstrumentPanels.build(reading));
 		assert(entry !== null);
 
 		const card = await mountComposable(() =>
@@ -167,7 +167,7 @@ describe("one instrument's card on the reports step", () => {
 			soldOn: "2024-03-10",
 		});
 		const reading = b.reading();
-		const entry = firstEntry(buildPanel(reading));
+		const entry = InstrumentPanels.first(InstrumentPanels.build(reading));
 		assert(entry !== null);
 
 		const card = await mountComposable(() =>
@@ -236,7 +236,7 @@ describe("one instrument's card on the reports step", () => {
 		});
 		b.graph.drop(open.event, DropReason.POSITION_OPEN, stage, null);
 		const reading = b.reading();
-		const entry = firstEntry(buildPanel(reading));
+		const entry = InstrumentPanels.first(InstrumentPanels.build(reading));
 		assert(entry !== null);
 		const card = await mountComposable(() =>
 			provideInstrumentCard({
@@ -293,7 +293,7 @@ describe("one instrument's card on the reports step", () => {
 			soldOn: "2024-03-10",
 		});
 		const reading = b.reading();
-		const entry = firstEntry(buildPanel(reading));
+		const entry = InstrumentPanels.first(InstrumentPanels.build(reading));
 		assert(entry !== null);
 
 		const card = await mountComposable(() =>
@@ -353,7 +353,7 @@ describe("one instrument's card on the reports step", () => {
 			soldOn: "2024-03-10",
 		});
 		const reading = b.reading();
-		const entry = firstEntry(buildPanel(reading));
+		const entry = InstrumentPanels.first(InstrumentPanels.build(reading));
 		assert(entry !== null);
 		const card = await mountComposable(() =>
 			provideInstrumentCard({
@@ -409,7 +409,7 @@ describe("one instrument's card on the reports step", () => {
 			soldOn: "2024-03-10",
 		});
 		const reading = b.reading();
-		const entry = firstEntry(buildPanel(reading));
+		const entry = InstrumentPanels.first(InstrumentPanels.build(reading));
 		assert(entry !== null);
 		const card = await mountComposable(() =>
 			provideInstrumentCard({
@@ -504,7 +504,7 @@ describe("one instrument's card on the reports step", () => {
 		b.graph.derive([brokerLot], acme, ProvenanceChange.GROUPED, stage, null);
 		b.graph.drop(brokerLot, DropReason.NOT_USED, stage, null);
 		const reading = b.reading();
-		const entry = firstEntry(buildPanel(reading));
+		const entry = InstrumentPanels.first(InstrumentPanels.build(reading));
 		assert(entry !== null);
 		const { card, i18n } = await mountComposable(() => ({
 			card: provideInstrumentCard({
@@ -594,7 +594,7 @@ describe("one instrument's card on the reports step", () => {
 			soldOn: "2024-03-10",
 		});
 		const reading = b.reading();
-		const entry = firstEntry(buildPanel(reading));
+		const entry = InstrumentPanels.first(InstrumentPanels.build(reading));
 		assert(entry !== null);
 		const provided: { card: InstrumentCardState | null } = { card: null };
 

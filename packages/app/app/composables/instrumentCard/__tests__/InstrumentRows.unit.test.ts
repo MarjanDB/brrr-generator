@@ -9,17 +9,11 @@ import {
 	ProvenanceWalker,
 } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
+import { InstrumentRows } from "~/composables/instrumentCard/instrumentRows";
 import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import { DetectedReason } from "~/types/instrumentCard";
 import { MarkState, TimelineMarkKind } from "~/types/timeline";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import {
-	detectedRowStateOf,
-	detectedRowsOf,
-	formLotsOf,
-	formPaymentsOf,
-	formTotalOf,
-} from "~/utils/instrumentRows";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -101,7 +95,7 @@ describe("the rows under an instrument's timeline", () => {
 		assert(instrument !== undefined);
 		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
-		const lots = formLotsOf(instrument, timeline);
+		const lots = InstrumentRows.formLotsOf(instrument, timeline);
 
 		expect(lots).toHaveLength(2);
 		expect(lots[0]?.lot).toBe(b.node(first.lot));
@@ -149,7 +143,7 @@ describe("the rows under an instrument's timeline", () => {
 		assert(instrument !== undefined);
 		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
-		const lots = formLotsOf(instrument, timeline);
+		const lots = InstrumentRows.formLotsOf(instrument, timeline);
 
 		expect(lots).toHaveLength(1);
 		expect(lots[0]?.bar.opened.node).toBe(b.node(sale.event));
@@ -227,7 +221,7 @@ describe("the rows under an instrument's timeline", () => {
 		assert(instrument !== undefined);
 		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
-		const lots = formLotsOf(instrument, timeline);
+		const lots = InstrumentRows.formLotsOf(instrument, timeline);
 
 		expect(lots).toHaveLength(2);
 		expect(lots[0]?.boughtPrice).toEqual(5);
@@ -236,7 +230,7 @@ describe("the rows under an instrument's timeline", () => {
 		expect(lots[1]?.boughtPrice).toEqual(8);
 		expect(lots[1]?.soldPrice).toEqual(7);
 		expect(lots[1]?.netChange).toEqual(-7);
-		expect(formTotalOf(lots)).toEqual(-1);
+		expect(InstrumentRows.formTotalOf(lots)).toEqual(-1);
 	});
 
 	test("a lot whose lines carry no prices has no net change, and adds nothing to the total", () => {
@@ -275,12 +269,12 @@ describe("the rows under an instrument's timeline", () => {
 		assert(instrument !== undefined);
 		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
-		const lots = formLotsOf(instrument, timeline);
+		const lots = InstrumentRows.formLotsOf(instrument, timeline);
 
 		expect(lots[0]?.boughtPrice).toBeNull();
 		expect(lots[0]?.soldPrice).toBeNull();
 		expect(lots[0]?.netChange).toBeNull();
-		expect(formTotalOf(lots)).toEqual(0);
+		expect(InstrumentRows.formTotalOf(lots)).toEqual(0);
 	});
 
 	test("a split that rebuilt a trade on the form applies to it", () => {
@@ -328,7 +322,7 @@ describe("the rows under an instrument's timeline", () => {
 		assert(instrument !== undefined);
 		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
-		const detected = detectedRowsOf(instrument, timeline, 2024);
+		const detected = InstrumentRows.detectedRowsOf(instrument, timeline, 2024);
 
 		expect(detected[1]?.mark.kind).toEqual(TimelineMarkKind.CORPORATE_ACTION);
 		expect(detected[1]?.parts).toEqual([
@@ -373,8 +367,8 @@ describe("the rows under an instrument's timeline", () => {
 		assert(instrument !== undefined);
 		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
-		const payments = formPaymentsOf(timeline);
-		const detected = detectedRowsOf(instrument, timeline, 2024);
+		const payments = InstrumentRows.formPaymentsOf(timeline);
+		const detected = InstrumentRows.detectedRowsOf(instrument, timeline, 2024);
 
 		expect(payments).toHaveLength(2);
 		expect(payments[0]?.node).toBe(b.node(dividend.event));
@@ -472,7 +466,7 @@ describe("the rows under an instrument's timeline", () => {
 		assert(instrument !== undefined);
 		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
-		const detected = detectedRowsOf(instrument, timeline, 2024);
+		const detected = InstrumentRows.detectedRowsOf(instrument, timeline, 2024);
 
 		expect(detected).toHaveLength(6);
 		expect(detected[0]?.mark.node).toBe(b.node(oldBuy.event));
@@ -537,8 +531,8 @@ describe("the rows under an instrument's timeline", () => {
 		assert(instrument !== undefined);
 		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
-		const before = detectedRowsOf(instrument, timeline, 2024);
-		const after = detectedRowsOf(instrument, timeline, 2022);
+		const before = InstrumentRows.detectedRowsOf(instrument, timeline, 2024);
+		const after = InstrumentRows.detectedRowsOf(instrument, timeline, 2022);
 
 		expect(before).toHaveLength(2);
 		expect(before[0]?.mark.node).toBe(b.node(buy.event));
@@ -555,7 +549,7 @@ describe("the rows under an instrument's timeline", () => {
 			{ reason: DetectedReason.CLOSED_AFTER_YEAR, quantity: 6, years: [2023] },
 			{ reason: DetectedReason.STILL_OPEN, quantity: 4, years: [] },
 		]);
-		expect(formLotsOf(instrument, timeline)).toHaveLength(0);
+		expect(InstrumentRows.formLotsOf(instrument, timeline)).toHaveLength(0);
 	});
 
 	test("a split that changed no lot on the form has no effect on it", () => {
@@ -603,7 +597,7 @@ describe("the rows under an instrument's timeline", () => {
 		assert(instrument !== undefined);
 		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
-		const detected = detectedRowsOf(instrument, timeline, 2024);
+		const detected = InstrumentRows.detectedRowsOf(instrument, timeline, 2024);
 
 		expect(detected).toHaveLength(3);
 		expect(detected[1]?.mark.kind).toEqual(TimelineMarkKind.CORPORATE_ACTION);
@@ -652,11 +646,17 @@ describe("the rows under an instrument's timeline", () => {
 		const [bought, sold] = timeline.marks;
 		assert(bought !== undefined && sold !== undefined);
 
-		expect(detectedRowStateOf(bought, timeline, b.node(match.lot), null)).toEqual(MarkState.LIT);
-		expect(detectedRowStateOf(sold, timeline, b.node(match.lot), null)).toEqual(MarkState.LIT);
-		expect(detectedRowStateOf(bought, timeline, b.node(buy.event), null)).toEqual(
+		expect(InstrumentRows.detectedRowStateOf(bought, timeline, b.node(match.lot), null)).toEqual(
+			MarkState.LIT,
+		);
+		expect(InstrumentRows.detectedRowStateOf(sold, timeline, b.node(match.lot), null)).toEqual(
+			MarkState.LIT,
+		);
+		expect(InstrumentRows.detectedRowStateOf(bought, timeline, b.node(buy.event), null)).toEqual(
 			MarkState.FOCUSED,
 		);
-		expect(detectedRowStateOf(sold, timeline, b.node(buy.event), null)).toEqual(MarkState.NORMAL);
+		expect(InstrumentRows.detectedRowStateOf(sold, timeline, b.node(buy.event), null)).toEqual(
+			MarkState.NORMAL,
+		);
 	});
 });

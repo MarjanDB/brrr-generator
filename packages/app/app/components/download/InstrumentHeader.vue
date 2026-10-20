@@ -3,11 +3,12 @@ import { OptionRight } from "@brrr/lib";
 import { computed } from "vue";
 import { ProblemState } from "~/types/reportProblems";
 import { ColorIntent } from "~/types/ui";
+import { ReportInstruments } from "~/utils/reportInstruments";
 
 // The card's instrument: its name, identifier and corporate actions, and the report's problem about
 // it, with a way to it.
 const { entry } = useInstrumentCard();
-const chips = chipsOf(entry.instrument);
+const chips = ReportInstruments.chipsOf(entry.instrument);
 
 const { t, locale } = useI18n();
 const { chipText, date: dateText } = useProvenanceText();

@@ -18,8 +18,8 @@ import {
 	TimelineRowKind,
 } from "~/types/timeline";
 import { eventKindKeys, markKeys } from "~/utils/i18nKeys";
-import { chipOf } from "~/utils/instrumentPanel";
 import { fieldOf } from "~/utils/provenanceFields";
+import { ReportInstruments } from "~/utils/reportInstruments";
 
 // An instrument's timeline: its marks, bars and points, and what the timeline, the tables under it
 // and the Trace tab say about them, in the reader's locale. The axis ticks depend on the axis's
@@ -96,7 +96,7 @@ export function useInstrumentTimeline(
 		if (mark.kind === TimelineMarkKind.BROKER_LOT) {
 			return t("download_what_broker_lot");
 		}
-		const chip = chipOf(mark.node);
+		const chip = ReportInstruments.chipOf(mark.node);
 		return chip === null ? t("download_what_corporate_action") : chipText(chip);
 	}
 

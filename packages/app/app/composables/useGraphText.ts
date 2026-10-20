@@ -28,8 +28,8 @@ import {
 	nodeValueKeys,
 	stackKindKeys,
 } from "~/utils/i18nKeys";
-import { splitRatioOf } from "~/utils/instrumentPanel";
 import { fieldOf, formatNumber } from "~/utils/provenanceFields";
+import { ReportInstruments } from "~/utils/reportInstruments";
 
 export type CaptionContext = {
 	ticker: string;
@@ -147,7 +147,7 @@ function corporateActionValue(node: GraphNode, locale: string): NodeValue {
 	switch (kind) {
 		case IdentifierChangeType.SPLIT:
 		case IdentifierChangeType.REVERSE_SPLIT: {
-			const ratio = splitRatioOf(
+			const ratio = ReportInstruments.splitRatioOf(
 				{
 					kind,
 					before: fieldOf(source, ProvenanceField.SPLIT_BEFORE),

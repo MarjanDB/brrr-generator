@@ -17,8 +17,8 @@ import {
 	dropReasonKeys,
 	lotMatchingKeys,
 } from "~/utils/i18nKeys";
-import { splitRatioOf } from "~/utils/instrumentPanel";
 import { cashAmountOf, fieldOf, formatNumber } from "~/utils/provenanceFields";
+import { ReportInstruments } from "~/utils/reportInstruments";
 
 // The sentences and values the download step writes about the provenance graph, finished and in
 // the reader's locale.
@@ -70,7 +70,7 @@ export function useProvenanceText() {
 	// A split's ratio in the usual form, its numbers written for the locale; null when the chip has
 	// no ratio.
 	function splitRatio(chip: SplitChip): { before: string; after: string } | null {
-		return splitRatioOf(chip, locale.value);
+		return ReportInstruments.splitRatioOf(chip, locale.value);
 	}
 
 	// What a corporate action's chip says: the split's ratio, or the name it had before.

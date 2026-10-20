@@ -3,6 +3,7 @@ import type { ReportInstrument } from "@brrr/lib";
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from "reka-ui";
 import { computed, ref } from "vue";
 import InstrumentPanelRow from "~/components/download/InstrumentPanelRow.vue";
+import { InstrumentPanels } from "~/composables/instrumentPanel/instrumentPanels";
 import { CountNoun } from "~/types/counts";
 import type { PanelSections } from "~/types/instrumentPanel";
 
@@ -24,7 +25,7 @@ const groupHeading = "flex items-baseline justify-between px-2 pt-3 pb-1 text-su
 const query = ref("");
 const withoutLinesOpen = ref(false);
 
-const shown = computed(() => filterPanel(props.sections, query.value));
+const shown = computed(() => InstrumentPanels.filter(props.sections, query.value));
 const searching = computed(() => query.value.trim() !== "");
 // "Not in this report" is collapsed until asked for, and open while a search is looking through it
 // or the selected instrument is in it.

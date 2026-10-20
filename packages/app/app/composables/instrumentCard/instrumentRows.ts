@@ -22,7 +22,7 @@ import {
 	TimelineMarkKind,
 	TimelineWeight,
 } from "~/types/timeline";
-import { leftOutOf } from "~/utils/instrumentPanel";
+import { ReportInstruments } from "~/utils/reportInstruments";
 
 // A number a form line holds, as a magnitude: a sale's line holds its quantity, and so its total,
 // negative. Null when the line, or the field, is missing.
@@ -54,7 +54,7 @@ function formFiguresOf(
 // The lots on the form, as the timeline draws them: top to bottom, by the day each opened, with the
 // form's figures for each. A written option opens with its sale, so the buy and the sale are told
 // apart by kind.
-export function formLotsOf(instrument: ReportInstrument, timeline: Timeline): FormLot[] {
+function formLotsOf(instrument: ReportInstrument, timeline: Timeline): FormLot[] {
 	return timeline.bars.flatMap((bar) => {
 		if (bar.lot === null || bar.closed === null || bar.weight !== TimelineWeight.REPORTED) {
 			return [];
@@ -74,12 +74,12 @@ export function formLotsOf(instrument: ReportInstrument, timeline: Timeline): Fo
 }
 
 // The net change of every lot on the form that has one.
-export function formTotalOf(lots: FormLot[]): number {
+function formTotalOf(lots: FormLot[]): number {
 	return lots.reduce((total, lot) => total + (lot.netChange ?? 0), 0);
 }
 
 // A dividend payer's dividends and taxes on the form, by date.
-export function formPaymentsOf(timeline: Timeline): TimelineMark[] {
+function formPaymentsOf(timeline: Timeline): TimelineMark[] {
 	return timeline.marks.filter(
 		(mark) =>
 			(mark.kind === TimelineMarkKind.DIVIDEND || mark.kind === TimelineMarkKind.TAX) &&
@@ -174,13 +174,13 @@ function partsOf(
 
 // Everything detected for the instrument, one row per mark of its timeline, by date: each trade,
 // payment, broker lot and corporate action, with why it is, or isn't, on the form of `year`.
-export function detectedRowsOf(
+function detectedRowsOf(
 	instrument: ReportInstrument,
 	timeline: Timeline,
 	year: number,
 ): DetectedRow[] {
 	return timeline.marks.map((mark) => {
-		const leftOut = leftOutOf(instrument, mark.node);
+		const leftOut = ReportInstruments.leftOutOf(instrument, mark.node);
 		return { mark, parts: partsOf(mark, leftOut, timeline, year), leftOut };
 	});
 }
@@ -188,7 +188,7 @@ export function detectedRowsOf(
 // How a row of "Everything detected" shows the focus: as its mark on the timeline, and lit when the
 // focus is a lot it opened or closed, as the ends of the lot's bar are. `lit` is the chain the user
 // picked, or null when none is picked.
-export function detectedRowStateOf(
+function detectedRowStateOf(
 	mark: TimelineMark,
 	timeline: Timeline,
 	focus: ProvenanceNode | null,
@@ -203,3 +203,12 @@ export function detectedRowStateOf(
 	);
 	return endsTheFocusedLot ? MarkState.LIT : own;
 }
+
+// The rows of the card's tables: the lots or payments on the form, and everything detected.
+export const InstrumentRows = {
+	formLotsOf,
+	formTotalOf,
+	formPaymentsOf,
+	detectedRowsOf,
+	detectedRowStateOf,
+};

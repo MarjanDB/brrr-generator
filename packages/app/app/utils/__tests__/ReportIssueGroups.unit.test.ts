@@ -8,7 +8,7 @@ import {
 } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { leftOutGroupsOf } from "~/utils/instrumentPanel";
+import { ReportInstruments } from "~/utils/reportInstruments";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -51,7 +51,7 @@ describe("what the report left out, grouped by cause for the problems view", () 
 		);
 		b.graph.drop(file, DropReason.NOT_RECOGNISED, stage, null);
 
-		const groups = leftOutGroupsOf(b.reading().needsALook);
+		const groups = ReportInstruments.leftOutGroupsOf(b.reading().needsALook);
 
 		expect(groups).toHaveLength(3);
 		expect(groups[0]?.drop.detail?.values[ProvenanceDetailValue.ASSET_CLASS]).toEqual("BOND");

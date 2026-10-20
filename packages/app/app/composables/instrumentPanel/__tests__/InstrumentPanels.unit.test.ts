@@ -8,22 +8,14 @@ import {
 	ProvenanceDetailValue,
 	ProvenanceEventKind,
 	ProvenanceStage,
-	ProvenanceWalker,
 	ReportInstrumentKind,
 } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
+import { InstrumentPanels } from "~/composables/instrumentPanel/instrumentPanels";
 import { ColorIntent } from "~/types/ui";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import {
-	buildPanel,
-	chipsOf,
-	defaultFocus,
-	filterPanel,
-	findEntry,
-	firstEntry,
-	sameEntryIn,
-} from "~/utils/instrumentPanel";
 import { monogramIntent, monogramText } from "~/utils/nodeLook";
+import { ReportInstruments } from "~/utils/reportInstruments";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -119,7 +111,7 @@ describe("the download panel's sections", () => {
 		});
 		b.graph.drop(zedBuy.event, DropReason.POSITION_OPEN, stage, null);
 
-		const sections = buildPanel(b.reading());
+		const sections = InstrumentPanels.build(b.reading());
 
 		expect(sections.stocks).toHaveLength(1);
 		expect(sections.stocks[0]?.ticker).toEqual("ACME");
@@ -208,7 +200,7 @@ describe("the download panel's sections", () => {
 			soldOn: "2024-02-21",
 		});
 
-		const sections = buildPanel(b.reading());
+		const sections = InstrumentPanels.build(b.reading());
 		const contracts = sections.underlyings[0]?.contracts ?? [];
 
 		expect(contracts).toHaveLength(2);
@@ -264,10 +256,10 @@ describe("the download panel's sections", () => {
 			soldOn: "2024-03-10",
 		});
 
-		const sections = buildPanel(b.reading());
+		const sections = InstrumentPanels.build(b.reading());
 		const [stock] = sections.stocks;
 		assert(stock !== undefined);
-		const chips = chipsOf(stock.instrument);
+		const chips = ReportInstruments.chipsOf(stock.instrument);
 
 		expect(sections.stocks).toHaveLength(1);
 		expect(sections.stocks[0]?.hasCorporateAction).toEqual(true);
@@ -310,212 +302,12 @@ describe("the download panel's sections", () => {
 			soldOn: "2024-03-10",
 		});
 
-		const sections = buildPanel(b.reading());
+		const sections = InstrumentPanels.build(b.reading());
 		const [stock] = sections.stocks;
 		assert(stock !== undefined);
 
 		expect(stock.hasCorporateAction).toEqual(false);
-		expect(chipsOf(stock.instrument)).toHaveLength(0);
-	});
-});
-
-describe("the item an instrument opens on", () => {
-	test("an instrument with a buy and a sale opens on the sale", () => {
-		const b = new GraphBuilder();
-		const file = b.file({ name: "U1.xml" });
-		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
-		const buy = b.trade({
-			file,
-			instrument: acme,
-			kind: ProvenanceEventKind.ACQUIRED,
-			date: "2024-01-10",
-			quantity: "10",
-			price: "5",
-			currency: "USD",
-			label: "buy ACME",
-		});
-		const sell = b.trade({
-			file,
-			instrument: acme,
-			kind: ProvenanceEventKind.SOLD,
-			date: "2024-03-10",
-			quantity: "-10",
-			price: "6",
-			currency: "USD",
-			label: "sell ACME",
-		});
-		b.match({
-			instrument: acme,
-			acquired: buy,
-			sold: sell,
-			quantity: "10",
-			boughtOn: "2024-01-10",
-			soldOn: "2024-03-10",
-		});
-
-		const [instrument] = b.reading().stocks;
-		assert(instrument !== undefined);
-
-		const focus = defaultFocus(instrument, new ProvenanceWalker(b.graph));
-
-		expect(focus).toBe(b.node(sell.event));
-	});
-
-	test("an instrument with only a buy opens on the buy", () => {
-		const b = new GraphBuilder();
-		const file = b.file({ name: "U1.xml" });
-		const zed = b.instrument({ ticker: "ZED", isin: "US0000000009" });
-		const buy = b.trade({
-			file,
-			instrument: zed,
-			kind: ProvenanceEventKind.ACQUIRED,
-			date: "2024-05-01",
-			quantity: "5",
-			price: "7",
-			currency: "USD",
-			label: "buy ZED",
-		});
-		b.graph.drop(buy.event, DropReason.POSITION_OPEN, stage, null);
-
-		const [instrument] = b.reading().withoutLines;
-		assert(instrument !== undefined);
-
-		const focus = defaultFocus(instrument, new ProvenanceWalker(b.graph));
-
-		expect(focus).toBe(b.node(buy.event));
-	});
-
-	test("a dividend payer opens on the dividend, not the withholding", () => {
-		const b = new GraphBuilder();
-		const file = b.file({ name: "U1.xml" });
-		const tte = b.instrument({ ticker: "TTE", isin: "FR0000120271" });
-		const tax = b.dividend({
-			file,
-			instrument: tte,
-			kind: ProvenanceEventKind.WITHHOLDING_TAX,
-			date: "2024-04-01",
-			amount: "-3",
-			currency: "EUR",
-			label: "tax TTE",
-		});
-		const dividend = b.dividend({
-			file,
-			instrument: tte,
-			kind: ProvenanceEventKind.DIVIDEND,
-			date: "2024-04-01",
-			amount: "20",
-			currency: "EUR",
-			label: "dividend TTE",
-		});
-		b.sumInto({ instrument: tte, events: [tax, dividend], dateReceived: "2024-04-01" });
-
-		const [instrument] = b.reading().dividendPayers;
-		assert(instrument !== undefined);
-
-		const focus = defaultFocus(instrument, new ProvenanceWalker(b.graph));
-
-		expect(focus).toBe(b.node(dividend.event));
-	});
-	test("an instrument opens on its first sale on the form, not an earlier sale from another year", () => {
-		const b = new GraphBuilder();
-		const file = b.file({ name: "U1.xml" });
-		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
-		const earlyBuy = b.trade({
-			file,
-			instrument: acme,
-			kind: ProvenanceEventKind.ACQUIRED,
-			date: "2023-01-10",
-			quantity: "10",
-			price: "5",
-			currency: "USD",
-			label: "buy ACME in 2023",
-		});
-		const earlySell = b.trade({
-			file,
-			instrument: acme,
-			kind: ProvenanceEventKind.SOLD,
-			date: "2023-03-10",
-			quantity: "-10",
-			price: "6",
-			currency: "USD",
-			label: "sell ACME in 2023",
-		});
-		const buy = b.trade({
-			file,
-			instrument: acme,
-			kind: ProvenanceEventKind.ACQUIRED,
-			date: "2024-01-10",
-			quantity: "10",
-			price: "7",
-			currency: "USD",
-			label: "buy ACME in 2024",
-		});
-		const sell = b.trade({
-			file,
-			instrument: acme,
-			kind: ProvenanceEventKind.SOLD,
-			date: "2024-03-10",
-			quantity: "-10",
-			price: "8",
-			currency: "USD",
-			label: "sell ACME in 2024",
-		});
-		const early = b.matchClosed({
-			instrument: acme,
-			acquired: earlyBuy,
-			sold: earlySell,
-			quantity: "10",
-		});
-		b.graph.drop(early.acquiredLeg, DropReason.OUTSIDE_PERIOD, stage, null);
-		b.graph.drop(early.soldLeg, DropReason.OUTSIDE_PERIOD, stage, null);
-		b.match({
-			instrument: acme,
-			acquired: buy,
-			sold: sell,
-			quantity: "10",
-			boughtOn: "2024-01-10",
-			soldOn: "2024-03-10",
-		});
-
-		const [instrument] = b.reading().stocks;
-		assert(instrument !== undefined);
-
-		const focus = defaultFocus(instrument, new ProvenanceWalker(b.graph));
-
-		expect(focus).toBe(b.node(sell.event));
-	});
-
-	test("a dividend payer opens on its first dividend on the form, not an earlier one from another year", () => {
-		const b = new GraphBuilder();
-		const file = b.file({ name: "U1.xml" });
-		const tte = b.instrument({ ticker: "TTE", isin: "FR0000120271" });
-		const earlier = b.dividend({
-			file,
-			instrument: tte,
-			kind: ProvenanceEventKind.DIVIDEND,
-			date: "2023-04-01",
-			amount: "18",
-			currency: "EUR",
-			label: "dividend TTE in 2023",
-		});
-		const dividend = b.dividend({
-			file,
-			instrument: tte,
-			kind: ProvenanceEventKind.DIVIDEND,
-			date: "2024-04-01",
-			amount: "20",
-			currency: "EUR",
-			label: "dividend TTE in 2024",
-		});
-		b.graph.drop(earlier.event, DropReason.OUTSIDE_PERIOD, stage, null);
-		b.sumInto({ instrument: tte, events: [dividend], dateReceived: "2024-04-01" });
-
-		const [instrument] = b.reading().dividendPayers;
-		assert(instrument !== undefined);
-
-		const focus = defaultFocus(instrument, new ProvenanceWalker(b.graph));
-
-		expect(focus).toBe(b.node(dividend.event));
+		expect(ReportInstruments.chipsOf(stock.instrument)).toHaveLength(0);
 	});
 });
 
@@ -622,9 +414,9 @@ describe("searching the panel", () => {
 			boughtOn: "2024-02-02",
 			soldOn: "2024-02-21",
 		});
-		const sections = buildPanel(b.reading());
+		const sections = InstrumentPanels.build(b.reading());
 
-		const found = filterPanel(sections, "spx");
+		const found = InstrumentPanels.filter(sections, "spx");
 
 		expect(found.stocks).toHaveLength(0);
 		expect(found.underlyings).toHaveLength(1);
@@ -705,9 +497,9 @@ describe("searching the panel", () => {
 			boughtOn: "2024-02-02",
 			soldOn: "2024-02-21",
 		});
-		const sections = buildPanel(b.reading());
+		const sections = InstrumentPanels.build(b.reading());
 
-		const found = filterPanel(sections, "p04900");
+		const found = InstrumentPanels.filter(sections, "p04900");
 
 		expect(found.underlyings).toHaveLength(1);
 		expect(found.underlyings[0]?.symbol).toEqual("SPX");
@@ -747,9 +539,9 @@ describe("searching the panel", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const sections = buildPanel(b.reading());
+		const sections = InstrumentPanels.build(b.reading());
 
-		const found = filterPanel(sections, "us0000000001");
+		const found = InstrumentPanels.filter(sections, "us0000000001");
 
 		expect(found.stocks).toHaveLength(1);
 		expect(found.stocks[0]?.ticker).toEqual("ACME");
@@ -787,9 +579,9 @@ describe("searching the panel", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const sections = buildPanel(b.reading());
+		const sections = InstrumentPanels.build(b.reading());
 
-		const found = filterPanel(sections, "  ");
+		const found = InstrumentPanels.filter(sections, "  ");
 
 		expect(found).toEqual(sections);
 	});
@@ -826,15 +618,15 @@ describe("searching the panel", () => {
 			boughtOn: "2024-01-10",
 			soldOn: "2024-03-10",
 		});
-		const sections = buildPanel(b.reading());
+		const sections = InstrumentPanels.build(b.reading());
 
-		const found = filterPanel(sections, "nothing");
+		const found = InstrumentPanels.filter(sections, "nothing");
 
 		expect(found.stocks).toHaveLength(0);
 		expect(found.underlyings).toHaveLength(0);
 		expect(found.payers).toHaveLength(0);
 		expect(found.withoutLines).toHaveLength(0);
-		expect(firstEntry(found)).toBeNull();
+		expect(InstrumentPanels.first(found)).toBeNull();
 	});
 
 	test("the first entry is the first stock when there is one", () => {
@@ -870,7 +662,7 @@ describe("searching the panel", () => {
 			soldOn: "2024-03-10",
 		});
 
-		const first = firstEntry(buildPanel(b.reading()));
+		const first = InstrumentPanels.first(InstrumentPanels.build(b.reading()));
 
 		expect(first?.ticker).toEqual("ACME");
 	});
@@ -929,10 +721,10 @@ describe("finding an instrument's entry", () => {
 		assert(stock !== undefined);
 		assert(stranger !== undefined);
 
-		const sections = buildPanel(reading);
+		const sections = InstrumentPanels.build(reading);
 
-		expect(findEntry(sections, stock)?.ticker).toEqual("ACME");
-		expect(findEntry(sections, stranger)).toBeNull();
+		expect(InstrumentPanels.find(sections, stock)?.ticker).toEqual("ACME");
+		expect(InstrumentPanels.find(sections, stranger)).toBeNull();
 	});
 });
 
@@ -992,7 +784,7 @@ describe("the warning count of a panel entry", () => {
 		});
 		b.sumInto({ instrument: eni, events: [eniDividend], dateReceived: "2024-04-02" });
 
-		const sections = buildPanel(b.reading());
+		const sections = InstrumentPanels.build(b.reading());
 
 		expect(sections.payers[0]?.ticker).toEqual("ENI");
 		expect(sections.payers[0]?.warningCount).toEqual(0);
@@ -1044,12 +836,12 @@ describe("the same instrument in a report made again", () => {
 			events: [secondDividend],
 			dateReceived: "2022-04-01",
 		});
-		const before = buildPanel(first.reading());
-		const after = buildPanel(second.reading());
+		const before = InstrumentPanels.build(first.reading());
+		const after = InstrumentPanels.build(second.reading());
 		const nope = before.payers[0];
 		assert(nope !== undefined);
 
-		const same = sameEntryIn(after, nope);
+		const same = InstrumentPanels.sameEntryIn(after, nope);
 
 		expect(same?.ticker).toEqual("NOPE");
 		expect(same?.instrument).toBe(after.payers[0]?.instrument);
@@ -1083,9 +875,9 @@ describe("the same instrument in a report made again", () => {
 			label: "dividend TTE",
 		});
 		second.sumInto({ instrument: secondTte, events: [tteDividend], dateReceived: "2022-04-02" });
-		const nope = buildPanel(first.reading()).payers[0];
+		const nope = InstrumentPanels.build(first.reading()).payers[0];
 		assert(nope !== undefined);
 
-		expect(sameEntryIn(buildPanel(second.reading()), nope)).toBeNull();
+		expect(InstrumentPanels.sameEntryIn(InstrumentPanels.build(second.reading()), nope)).toBeNull();
 	});
 });
