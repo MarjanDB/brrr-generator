@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { IdentifierChangeType, OptionRight } from "@brrr/lib";
+import { OptionRight } from "@brrr/lib";
 import { computed } from "vue";
-import type { SplitChip } from "~/types/instrumentPanel";
 import { ColorIntent } from "~/types/ui";
 
 // The card's instrument: its name, identifier and corporate actions.
@@ -9,7 +8,7 @@ const { entry } = useInstrumentCard();
 const chips = chipsOf(entry.instrument);
 
 const { t, locale } = useI18n();
-const { splitRatio, date: dateText } = useProvenanceText();
+const { chipText, date: dateText } = useProvenanceText();
 
 // An option wears its underlying's monogram.
 const monogramTicker = computed(() => entry.contract?.underlyingSymbol ?? entry.ticker);
@@ -33,22 +32,6 @@ const subtitle = computed(() => {
 });
 
 const identifier = computed(() => entry.contract?.occSymbol ?? entry.isin ?? "");
-
-function chipText(chip: SplitChip): string {
-	const ratio = splitRatio(chip);
-	const params = {
-		before: ratio?.before ?? chip.before ?? "",
-		after: ratio?.after ?? chip.after ?? "",
-		isin: chip.fromIsin ?? "",
-		ticker: chip.fromTicker ?? "",
-	};
-	const keys: Record<IdentifierChangeType, string> = {
-		[IdentifierChangeType.SPLIT]: "download_chip_split",
-		[IdentifierChangeType.REVERSE_SPLIT]: "download_chip_reverse_split",
-		[IdentifierChangeType.RENAME]: "download_chip_rename",
-	};
-	return t(keys[chip.kind], params);
-}
 </script>
 
 <template>

@@ -66,6 +66,7 @@ const cardKey = computed(() =>
         v-if="selectedEntry !== null"
         :key="cardKey"
         :entry="selectedEntry"
+        :form-code="form.code"
         :outputs="outputs"
         :reading="reading"
         :walker="walker"

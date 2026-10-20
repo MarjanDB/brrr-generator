@@ -1,4 +1,4 @@
-import type { ProvenanceField, ProvenanceNode } from "@brrr/lib";
+import { ProvenanceField, type ProvenanceNode } from "@brrr/lib";
 
 // A fact a stage recorded on a node, or null when that node has none of it.
 export function fieldOf(node: ProvenanceNode, field: ProvenanceField): string | null {
@@ -13,4 +13,14 @@ export function formatNumber(value: string, locale: string): string {
 		return value;
 	}
 	return new Intl.NumberFormat(locale, { maximumFractionDigits: 6 }).format(number);
+}
+
+// A cash transaction is one unit of its amount, unless it was recorded with a quantity: its price
+// times that quantity, or null when it has no price.
+export function cashAmountOf(node: ProvenanceNode): string | null {
+	const price = fieldOf(node, ProvenanceField.PRICE);
+	if (price === null) {
+		return null;
+	}
+	return String(Number(price) * Number(fieldOf(node, ProvenanceField.QUANTITY) ?? "1"));
 }

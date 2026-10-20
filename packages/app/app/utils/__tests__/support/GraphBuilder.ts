@@ -127,7 +127,15 @@ export class GraphBuilder {
 
 	// [acquired, sold] -MATCHED-> MATCHED_LOT -MATCHED-> two LEGs -(with the instrument) REPORTED-> two REPORT_LINEs.
 	// The legs are derived sold first on purpose: the side is read from LEG_SIDE, never from the order.
-	public match(args: MatchArgs & { boughtOn: string; soldOn: string }): BuiltMatch {
+	// `boughtLine` and `soldLine` are more of the lines' fields (the form's prices), when a test needs them.
+	public match(
+		args: MatchArgs & {
+			boughtOn: string;
+			soldOn: string;
+			boughtLine?: Record<string, string>;
+			soldLine?: Record<string, string>;
+		},
+	): BuiltMatch {
 		const closed = this.matchClosed(args);
 		const acquiredLine = {};
 		const soldLine = {};
@@ -138,6 +146,7 @@ export class GraphBuilder {
 			{
 				[EDavkiProvenanceField.BOUGHT_ON]: args.boughtOn,
 				[EDavkiProvenanceField.QUANTITY]: args.quantity,
+				...args.boughtLine,
 			},
 		);
 		this.graph.node(
@@ -147,6 +156,7 @@ export class GraphBuilder {
 			{
 				[EDavkiProvenanceField.SOLD_ON]: args.soldOn,
 				[EDavkiProvenanceField.QUANTITY]: `-${args.quantity}`,
+				...args.soldLine,
 			},
 		);
 		this.graph.derive(

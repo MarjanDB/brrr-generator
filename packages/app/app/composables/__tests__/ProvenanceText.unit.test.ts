@@ -4,6 +4,8 @@ import {
 	ProvenanceDetail,
 	ProvenanceDetailKind,
 	ProvenanceDetailValue,
+	ProvenanceEventKind,
+	ProvenanceField,
 	ProvenanceNodeKind,
 	ProvenanceStage,
 	TaxAuthorityLotMatchingMethod,
@@ -291,5 +293,113 @@ describe("a split chip's ratio", () => {
 
 		expect(ratio?.before).toEqual("2,5");
 		expect(ratio?.after).toEqual("1");
+	});
+});
+
+describe("what a corporate action's chip says", () => {
+	test("a split says its ratio and the ISIN it had", async () => {
+		const { text } = await mountText();
+		const chip: SplitChip = {
+			kind: IdentifierChangeType.SPLIT,
+			before: "4",
+			after: "40",
+			fromIsin: "US86800U1043",
+			fromTicker: "SMCI.OLD",
+		};
+
+		expect(text.chipText(chip)).toEqual("10 : 1 split · was US86800U1043");
+	});
+
+	test("a rename says the ticker it had", async () => {
+		const { text } = await mountText();
+		const chip: SplitChip = {
+			kind: IdentifierChangeType.RENAME,
+			before: null,
+			after: null,
+			fromIsin: "US0000000001",
+			fromTicker: "OLD",
+		};
+
+		expect(text.chipText(chip)).toEqual("Renamed · was OLD");
+	});
+});
+
+describe("a node's values in the tables under the timeline", () => {
+	test("a sale's date, its quantity without the sign, and its price with the currency", async () => {
+		const { text } = await mountText();
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const acme = b.instrument({ ticker: "ACME", isin: "US0000000001" });
+		const sale = b.trade({
+			file,
+			instrument: acme,
+			kind: ProvenanceEventKind.SOLD,
+			date: "2024-03-10",
+			quantity: "-1250",
+			price: "6.5",
+			currency: "USD",
+			label: "sell ACME",
+		});
+		const node = b.node(sale.event);
+
+		expect(text.nodeDate(node)).toEqual("Mar 10, 2024");
+		expect(text.nodeQuantity(node)).toEqual("1,250");
+		expect(text.nodePrice(node)).toEqual("6.5 USD");
+	});
+
+	test("a broker lot's date is the day it was acquired", async () => {
+		const { text } = await mountText();
+		const b = new GraphBuilder();
+		const lot = {};
+		b.graph.node(lot, ProvenanceNodeKind.LOT, "lot ACME", {
+			[ProvenanceField.ACQUIRED_DATE]: "2024-01-10",
+			[ProvenanceField.QUANTITY]: "10",
+		});
+
+		expect(text.nodeDate(b.node(lot))).toEqual("Jan 10, 2024");
+		expect(text.nodePrice(b.node(lot))).toEqual("");
+	});
+
+	test("a dividend's amount with its currency, in the reader's language", async () => {
+		const { text, i18n } = await mountText();
+		const b = new GraphBuilder();
+		const file = b.file({ name: "U1.xml" });
+		const tte = b.instrument({ ticker: "TTE", isin: "FR0000120271" });
+		const dividend = b.dividend({
+			file,
+			instrument: tte,
+			kind: ProvenanceEventKind.DIVIDEND,
+			date: "2024-04-01",
+			amount: "20.5",
+			currency: "EUR",
+			label: "dividend TTE",
+		});
+		const node = b.node(dividend.event);
+
+		expect(text.nodeAmount(node)).toEqual("20.5 EUR");
+		expect(text.nodeQuantity(node)).toEqual("");
+		await i18n.setLocale("sl");
+		expect(text.nodeAmount(node)).toEqual("20,5 EUR");
+	});
+});
+
+describe("the form's figures, in the base currency the form reads them in", () => {
+	test("a price keeps two to four decimals, and a change shows its sign", async () => {
+		const { text } = await mountText();
+
+		expect(text.formPrice(5)).toEqual("5.00 EUR");
+		expect(text.formPrice(5.12345)).toEqual("5.1235 EUR");
+		expect(text.formChange(6)).toEqual("+6.00 EUR");
+		expect(text.formChange(-7.005)).toEqual("-7.01 EUR");
+		expect(text.formChange(0)).toEqual("0.00 EUR");
+	});
+
+	test("in Slovenian", async () => {
+		const { text, i18n } = await mountText();
+		await i18n.setLocale("sl");
+
+		expect(text.formPrice(5.5)).toEqual("5,50 EUR");
+		expect(text.formChange(-7)).toEqual("\u22127,00 EUR");
+		await i18n.setLocale("en");
 	});
 });

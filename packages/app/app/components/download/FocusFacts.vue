@@ -46,9 +46,10 @@ const facts = computed<Fact[]>(() => {
 	const currency = fieldOf(node, ProvenanceField.CURRENCY) ?? "";
 	if (kind !== undefined && cashKinds.includes(kind)) {
 		// A cash transaction is one unit of its amount: show the amount, not a quantity and a price.
-		if (price !== null) {
-			const amount = formatNumber(String(Number(price) * Number(quantity ?? "1")), locale.value);
-			result.push({ label: t("download_fact_amount"), value: `${amount} ${currency}`.trim() });
+		const amount = cashAmountOf(node);
+		if (amount !== null) {
+			const value = `${formatNumber(amount, locale.value)} ${currency}`.trim();
+			result.push({ label: t("download_fact_amount"), value });
 		}
 	} else {
 		if (quantity !== null) {
