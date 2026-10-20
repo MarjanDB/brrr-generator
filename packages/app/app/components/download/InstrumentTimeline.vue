@@ -4,6 +4,9 @@ import { Chart, type ChartConfiguration } from "chart.js/auto";
 import { DateTime } from "luxon";
 import type { ReferenceElement } from "reka-ui";
 import { computed, onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
+import { TimelineGeometry } from "~/composables/instrumentTimeline/timelineGeometry";
+import type { TimelineMarksPlugin } from "~/composables/instrumentTimeline/timelineMarks";
+import { TimelineMarks } from "~/composables/instrumentTimeline/timelineMarks";
 import {
 	TickGranularity,
 	type TimelineMark,
@@ -12,18 +15,6 @@ import {
 	type TimelineTick,
 } from "~/types/timeline";
 import { ButtonVariant, ControlSize } from "~/types/ui";
-import {
-	barY,
-	isFoldable,
-	markSize,
-	paddedRange,
-	pointY,
-	rowPitch,
-	timelineRows,
-	timelineTicks,
-	timelineYRange,
-} from "~/utils/instrumentTimeline";
-import { type TimelineMarksPlugin, timelineMarksPlugin } from "~/utils/timelineMarksPlugin";
 
 // The card's instrument over time, with the report's tax year shaded behind it. The card is made
 // once per instrument, so the chart is built once it is mounted, at the height of its own rows. A
@@ -54,15 +45,15 @@ let chart: Chart<"scatter"> | null = null;
 // Folded, the rows follow the form: the lots of other years share one row, what is still open
 // another. Spread, every bar has its own.
 const spread = ref(false);
-const rows = computed(() => timelineRows(timeline.value.bars, spread.value));
-const foldable = computed(() => isFoldable(timeline.value.bars));
+const rows = computed(() => TimelineGeometry.rows(timeline.value.bars, spread.value));
+const foldable = computed(() => TimelineGeometry.isFoldable(timeline.value.bars));
 
-const yRange = computed(() => timelineYRange(rows.value.length, timeline.value.stackDepth));
+const yRange = computed(() => TimelineGeometry.yRange(rows.value.length, timeline.value.stackDepth));
 // The rows' height plus room for the axis's labels.
 const height = computed(() =>
 	Math.max(
 		120,
-		Math.round(30 + rowPitch(rows.value.length) * (yRange.value.max - yRange.value.min)),
+		Math.round(30 + TimelineGeometry.rowPitch(rows.value.length) * (yRange.value.max - yRange.value.min)),
 	),
 );
 
@@ -85,12 +76,12 @@ function rowTargets(row: TimelineRow, y: number): HitTarget[] {
 const targets = computed<HitTarget[]>(() => {
 	const drawn = rows.value;
 	return [
-		...timeline.value.points.map((point) => ({ mark: point.mark, y: pointY(point.stack) })),
-		...drawn.flatMap((row, index) => rowTargets(row, barY(index, drawn.length))),
+		...timeline.value.points.map((point) => ({ mark: point.mark, y: TimelineGeometry.pointY(point.stack) })),
+		...drawn.flatMap((row, index) => rowTargets(row, TimelineGeometry.barY(index, drawn.length))),
 	];
 });
 // A mark is hit a little beyond its edge, and never through less than a fingertip.
-const hitRadius = computed(() => Math.max(8, markSize(rowPitch(rows.value.length)) / 2 + 3));
+const hitRadius = computed(() => Math.max(8, TimelineGeometry.markSize(TimelineGeometry.rowPitch(rows.value.length)) / 2 + 3));
 
 // The point in the canvas the offered trace's card hangs on, kept to the canvas as the page scrolls.
 const anchor = shallowRef<ReferenceElement | undefined>(undefined);
@@ -137,7 +128,7 @@ function focusAndOffer(node: ProvenanceNode, x: number, y: number) {
 function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter"> {
 	const drawn = timeline.value;
 	const hits = targets.value;
-	const range = paddedRange(drawn.first, drawn.last);
+	const range = TimelineGeometry.paddedRange(drawn.first, drawn.last);
 	const c = colors.value;
 	// Laid out again for the axis's width whenever the chart is, a resize included.
 	let tickList: TimelineTick[] = [];
@@ -183,7 +174,7 @@ function buildConfig(plugin: TimelineMarksPlugin): ChartConfiguration<"scatter">
 					grid: { color: c.grid },
 					border: { color: c.grid },
 					afterBuildTicks: (scale) => {
-						tickList = timelineTicks(drawn.first, drawn.last, scale.width);
+						tickList = TimelineGeometry.ticks(drawn.first, drawn.last, scale.width);
 						scale.ticks = tickList.map((tick) => ({ value: tick.at }));
 					},
 					ticks: {
@@ -272,7 +263,7 @@ function rebuild() {
 	if (canvasRef.value === null) {
 		return;
 	}
-	const plugin = timelineMarksPlugin(() => ({
+	const plugin = TimelineMarks.plugin(() => ({
 		timeline: timeline.value,
 		rows: rows.value,
 		focus: focus.node.value,

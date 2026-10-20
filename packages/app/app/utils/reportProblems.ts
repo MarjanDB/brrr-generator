@@ -4,11 +4,11 @@ import {
 	type ProvenanceWalker,
 	type ProvenanceWarning,
 } from "@brrr/lib";
+import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import type { PanelEntry, PanelSections } from "~/types/instrumentPanel";
 import type { DefinedPayer } from "~/types/reportFlow";
 import { type InstrumentProblem, type ProblemGroup, ProblemState } from "~/types/reportProblems";
 import { entriesOf } from "~/utils/instrumentPanel";
-import { linesReachedBy } from "~/utils/instrumentTimeline";
 
 // Whether a payer defined by hand resolves a warning of this kind: the company lookup found none,
 // or failed.
@@ -28,7 +28,7 @@ function affectedOf(
 	return entry.instrument.events
 		.map((item) => item.node)
 		.filter((node) => {
-			const reached = linesReachedBy(node, walker);
+			const reached = Timelines.linesReachedBy(node, walker);
 			return lines === null ? reached.length > 0 : reached.some((line) => lines.includes(line));
 		});
 }

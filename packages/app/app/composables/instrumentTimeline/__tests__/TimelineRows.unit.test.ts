@@ -1,8 +1,9 @@
 import { DropReason, ProvenanceEventKind, ProvenanceStage, ProvenanceWalker } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
+import { TimelineGeometry } from "~/composables/instrumentTimeline/timelineGeometry";
+import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import { TimelineRowKind } from "~/types/timeline";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { buildTimeline, isFoldable, timelineRows } from "~/utils/instrumentTimeline";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -114,9 +115,9 @@ describe("the rows of an instrument's timeline", () => {
 		const b = twoYears();
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
-		const rows = timelineRows(timeline.bars, false);
+		const rows = TimelineGeometry.rows(timeline.bars, false);
 
 		expect(timeline.bars).toHaveLength(5);
 		expect(rows).toHaveLength(3);
@@ -126,16 +127,16 @@ describe("the rows of an instrument's timeline", () => {
 		expect(rows[1]?.bars).toEqual([timeline.bars[0], timeline.bars[1]]);
 		expect(rows[2]?.kind).toEqual(TimelineRowKind.STILL_OPEN);
 		expect(rows[2]?.bars).toEqual([timeline.bars[3], timeline.bars[4]]);
-		expect(isFoldable(timeline.bars)).toEqual(true);
+		expect(TimelineGeometry.isFoldable(timeline.bars)).toEqual(true);
 	});
 
 	test("spread, every bar has a row of its own, in the order they opened", () => {
 		const b = twoYears();
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
-		const rows = timelineRows(timeline.bars, true);
+		const rows = TimelineGeometry.rows(timeline.bars, true);
 
 		expect(rows).toHaveLength(5);
 		expect(rows[0]?.kind).toEqual(TimelineRowKind.BAR);
@@ -204,9 +205,9 @@ describe("the rows of an instrument's timeline", () => {
 		});
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
-		const rows = timelineRows(timeline.bars, false);
+		const rows = TimelineGeometry.rows(timeline.bars, false);
 
 		expect(timeline.bars).toHaveLength(3);
 		expect(rows).toHaveLength(3);
@@ -216,6 +217,6 @@ describe("the rows of an instrument's timeline", () => {
 		expect(rows[1]?.bars).toEqual([timeline.bars[0]]);
 		expect(rows[2]?.kind).toEqual(TimelineRowKind.BAR);
 		expect(rows[2]?.bars).toEqual([timeline.bars[2]]);
-		expect(isFoldable(timeline.bars)).toEqual(false);
+		expect(TimelineGeometry.isFoldable(timeline.bars)).toEqual(false);
 	});
 });

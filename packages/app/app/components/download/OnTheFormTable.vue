@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { type ProvenanceNode, ReportInstrumentKind } from "@brrr/lib";
 import { computed } from "vue";
+import { Timelines } from "~/composables/instrumentTimeline/timelines";
 
 // The "On the form" tab: the lots on the form with the form's own figures (prices per unit and the
 // net change, in the base currency, and their total), or a dividend payer's payments on it. A click
@@ -64,7 +65,7 @@ function changeClass(value: number | null): string {
           v-for="mark in formPayments"
           :key="mark.node.id"
           class="app-table-row row-selectable"
-          v-bind="rowStateAttributes(markStateOf(mark.node, focus.node.value, lit))"
+          v-bind="rowStateAttributes(Timelines.markStateOf(mark.node, focus.node.value, lit))"
           @click="focus.refocus(mark.node)"
         >
           <td class="app-table-td pl-3 whitespace-nowrap">
@@ -104,7 +105,7 @@ function changeClass(value: number | null): string {
           v-for="row in formLots"
           :key="row.lot.id"
           class="app-table-row row-selectable"
-          v-bind="rowStateAttributes(barStateOf(row.bar, focus.node.value, lit))"
+          v-bind="rowStateAttributes(Timelines.barStateOf(row.bar, focus.node.value, lit))"
           @click="focus.refocus(row.lot)"
         >
           <td class="app-table-td pl-3 whitespace-nowrap">{{ nodeDate(row.bought.node) }}</td>

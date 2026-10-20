@@ -8,6 +8,7 @@ import type {
 	TaxAuthorityLotMatchingMethod,
 } from "@brrr/lib";
 import type { ComputedRef, InjectionKey, Ref } from "vue";
+import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import {
 	type DetectedPartText,
 	DetectedReason,
@@ -129,7 +130,7 @@ export function provideInstrumentCard(args: InstrumentCardArgs): InstrumentCardS
 		describeHeld,
 		describeWhat,
 		describeNode,
-		focusable: computed(() => focusableOf(timeline.value)),
+		focusable: computed(() => Timelines.focusableOf(timeline.value)),
 		focus,
 		leftOut: computed(() =>
 			focus.node.value === null ? [] : leftOutOf(instrument, focus.node.value),

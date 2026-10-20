@@ -13,6 +13,7 @@ import {
 	type ReportMatchedLot,
 	type ReportProvenance,
 } from "@brrr/lib";
+import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import { GraphModels } from "~/composables/provenanceGraph/graphModels";
 import type {
 	LeftOutGroup,
@@ -22,7 +23,6 @@ import type {
 	SplitChip,
 } from "~/types/instrumentPanel";
 import { SplitFactorKind } from "~/types/provenanceGraph";
-import { reachesALine } from "~/utils/instrumentTimeline";
 import { fieldOf, formatNumber } from "~/utils/provenanceFields";
 
 function optionRightOf(value: string | null): OptionRight {
@@ -159,7 +159,7 @@ export function defaultFocus(
 	walker: ProvenanceWalker,
 ): ProvenanceNode {
 	const events = instrument.events.map((item) => item.node);
-	const reported = events.filter((event) => reachesALine(event, walker));
+	const reported = events.filter((event) => Timelines.reachesALine(event, walker));
 	const firstOf = (
 		candidates: ProvenanceNode[],
 		kind: ProvenanceEventKind,

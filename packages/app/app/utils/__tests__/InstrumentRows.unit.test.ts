@@ -9,6 +9,7 @@ import {
 	ProvenanceWalker,
 } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
+import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import { DetectedReason } from "~/types/instrumentCard";
 import { MarkState, TimelineMarkKind } from "~/types/timeline";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
@@ -19,7 +20,6 @@ import {
 	formPaymentsOf,
 	formTotalOf,
 } from "~/utils/instrumentRows";
-import { buildTimeline } from "~/utils/instrumentTimeline";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -99,7 +99,7 @@ describe("the rows under an instrument's timeline", () => {
 		});
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		const lots = formLotsOf(instrument, timeline);
 
@@ -147,7 +147,7 @@ describe("the rows under an instrument's timeline", () => {
 		});
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		const lots = formLotsOf(instrument, timeline);
 
@@ -225,7 +225,7 @@ describe("the rows under an instrument's timeline", () => {
 		});
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		const lots = formLotsOf(instrument, timeline);
 
@@ -273,7 +273,7 @@ describe("the rows under an instrument's timeline", () => {
 		});
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		const lots = formLotsOf(instrument, timeline);
 
@@ -326,7 +326,7 @@ describe("the rows under an instrument's timeline", () => {
 		});
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		const detected = detectedRowsOf(instrument, timeline, 2024);
 
@@ -371,7 +371,7 @@ describe("the rows under an instrument's timeline", () => {
 		b.sumInto({ instrument: tte, events: [dividend, tax], dateReceived: "2024-04-01" });
 		const [instrument] = b.reading().dividendPayers;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		const payments = formPaymentsOf(timeline);
 		const detected = detectedRowsOf(instrument, timeline, 2024);
@@ -470,7 +470,7 @@ describe("the rows under an instrument's timeline", () => {
 		b.graph.drop(brokerLot, DropReason.NOT_USED, stage, null);
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		const detected = detectedRowsOf(instrument, timeline, 2024);
 
@@ -535,7 +535,7 @@ describe("the rows under an instrument's timeline", () => {
 		b.graph.drop(closed.soldLeg, DropReason.OUTSIDE_PERIOD, stage, null);
 		const [instrument] = b.reading().withoutLines;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		const before = detectedRowsOf(instrument, timeline, 2024);
 		const after = detectedRowsOf(instrument, timeline, 2022);
@@ -601,7 +601,7 @@ describe("the rows under an instrument's timeline", () => {
 		b.graph.drop(closed.soldLeg, DropReason.OUTSIDE_PERIOD, stage, null);
 		const [instrument] = b.reading().withoutLines;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		const detected = detectedRowsOf(instrument, timeline, 2024);
 
@@ -648,7 +648,7 @@ describe("the rows under an instrument's timeline", () => {
 		});
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 		const [bought, sold] = timeline.marks;
 		assert(bought !== undefined && sold !== undefined);
 

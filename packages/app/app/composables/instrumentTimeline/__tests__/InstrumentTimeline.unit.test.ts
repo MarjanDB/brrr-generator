@@ -9,9 +9,10 @@ import {
 	ProvenanceWalker,
 } from "@brrr/lib";
 import { assert, describe, expect, test } from "vitest";
+import { TimelineGeometry } from "~/composables/instrumentTimeline/timelineGeometry";
+import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import { TimelineMarkKind, TimelineWeight } from "~/types/timeline";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { buildTimeline, focusableOf, taxYearSpan } from "~/utils/instrumentTimeline";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 
@@ -51,7 +52,7 @@ describe("the data behind an instrument's timeline", () => {
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks).toHaveLength(2);
 		expect(timeline.marks[0]?.kind).toEqual(TimelineMarkKind.BOUGHT);
@@ -111,7 +112,7 @@ describe("the data behind an instrument's timeline", () => {
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks).toHaveLength(3);
 		expect(timeline.bars).toHaveLength(1);
@@ -166,7 +167,7 @@ describe("the data behind an instrument's timeline", () => {
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks).toHaveLength(3);
 		expect(timeline.marks[0]?.kind).toEqual(TimelineMarkKind.BOUGHT);
@@ -206,7 +207,7 @@ describe("the data behind an instrument's timeline", () => {
 		const [instrument] = b.reading().dividendPayers;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks).toHaveLength(2);
 		expect(timeline.points[0]?.mark.kind).toEqual(TimelineMarkKind.DIVIDEND);
@@ -252,7 +253,7 @@ describe("the data behind an instrument's timeline", () => {
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.bars).toHaveLength(2);
 		expect(timeline.bars[0]?.quantity).toEqual(6);
@@ -281,7 +282,7 @@ describe("the data behind an instrument's timeline", () => {
 		const [instrument] = b.reading().withoutLines;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.bars).toHaveLength(1);
 		expect(timeline.bars[0]?.opened.node).toBe(b.node(buy.event));
@@ -332,7 +333,7 @@ describe("the data behind an instrument's timeline", () => {
 		const instrument = underlying?.contracts[0];
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.bars).toHaveLength(1);
 		expect(timeline.bars[0]?.opened.node).toBe(b.node(sell.event));
@@ -365,7 +366,7 @@ describe("the data behind an instrument's timeline", () => {
 		const [instrument] = b.reading().dividendPayers;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks).toHaveLength(1);
 		expect(timeline.marks[0]?.node).toBe(b.node(dividend.event));
@@ -388,7 +389,7 @@ describe("the data behind an instrument's timeline", () => {
 		const [instrument] = b.reading().dividendPayers;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.first).toEqual(Date.UTC(2024, 3, 1));
 		expect(timeline.last).toEqual(Date.UTC(2024, 3, 1));
@@ -432,7 +433,7 @@ describe("what an instrument's timeline draws as reported and what as context", 
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks[0]?.node).toBe(b.node(buy.event));
 		expect(timeline.marks[0]?.weight).toEqual(TimelineWeight.REPORTED);
@@ -471,7 +472,7 @@ describe("what an instrument's timeline draws as reported and what as context", 
 		const [instrument] = b.reading().withoutLines;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks[0]?.node).toBe(b.node(buy.event));
 		expect(timeline.marks[0]?.weight).toEqual(TimelineWeight.CONTEXT);
@@ -533,7 +534,7 @@ describe("what an instrument's timeline draws as reported and what as context", 
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks[0]?.node).toBe(b.node(buy.event));
 		expect(timeline.marks[0]?.weight).toEqual(TimelineWeight.REPORTED);
@@ -593,7 +594,7 @@ describe("what an instrument's timeline draws as reported and what as context", 
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks[2]?.node).toBe(b.node(open.event));
 		expect(timeline.marks[2]?.weight).toEqual(TimelineWeight.CONTEXT);
@@ -641,7 +642,7 @@ describe("what an instrument's timeline draws as reported and what as context", 
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks[1]?.node).toBe(b.node(brokerLot));
 		expect(timeline.marks[1]?.weight).toEqual(TimelineWeight.CONTEXT);
@@ -691,7 +692,7 @@ describe("what an instrument's timeline draws as reported and what as context", 
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks[1]?.node).toBe(b.node(split.action));
 		expect(timeline.marks[1]?.weight).toEqual(TimelineWeight.REPORTED);
@@ -751,7 +752,7 @@ describe("what an instrument's timeline draws as reported and what as context", 
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks[2]?.node).toBe(b.node(split.action));
 		expect(timeline.marks[2]?.weight).toEqual(TimelineWeight.REPORTED);
@@ -799,7 +800,7 @@ describe("what an instrument's timeline draws as reported and what as context", 
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks[1]?.node).toBe(b.node(rename));
 		expect(timeline.marks[1]?.weight).toEqual(TimelineWeight.REPORTED);
@@ -882,7 +883,7 @@ describe("what an instrument's timeline draws as reported and what as context", 
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks[1]?.node).toBe(b.node(split.action));
 		expect(timeline.marks[1]?.weight).toEqual(TimelineWeight.CONTEXT);
@@ -915,7 +916,7 @@ describe("what an instrument's timeline draws as reported and what as context", 
 		const [instrument] = b.reading().dividendPayers;
 		assert(instrument !== undefined);
 
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
 		expect(timeline.marks[0]?.node).toBe(b.node(earlier.event));
 		expect(timeline.marks[0]?.weight).toEqual(TimelineWeight.CONTEXT);
@@ -926,21 +927,30 @@ describe("what an instrument's timeline draws as reported and what as context", 
 
 describe("the tax year behind an instrument's timeline", () => {
 	test("a tax year inside the axis spans its first day to the next year's first day", () => {
-		const span = taxYearSpan(2024, { min: Date.UTC(2023, 5, 1), max: Date.UTC(2025, 5, 1) });
+		const span = TimelineGeometry.taxYearSpan(2024, {
+			min: Date.UTC(2023, 5, 1),
+			max: Date.UTC(2025, 5, 1),
+		});
 
 		expect(span?.from).toEqual(Date.UTC(2024, 0, 1));
 		expect(span?.to).toEqual(Date.UTC(2025, 0, 1));
 	});
 
 	test("the part of a tax year outside the axis is cut off", () => {
-		const span = taxYearSpan(2024, { min: Date.UTC(2024, 2, 1), max: Date.UTC(2024, 8, 1) });
+		const span = TimelineGeometry.taxYearSpan(2024, {
+			min: Date.UTC(2024, 2, 1),
+			max: Date.UTC(2024, 8, 1),
+		});
 
 		expect(span?.from).toEqual(Date.UTC(2024, 2, 1));
 		expect(span?.to).toEqual(Date.UTC(2024, 8, 1));
 	});
 
 	test("a tax year the axis doesn't reach has no span", () => {
-		const span = taxYearSpan(2024, { min: Date.UTC(2022, 0, 1), max: Date.UTC(2023, 5, 1) });
+		const span = TimelineGeometry.taxYearSpan(2024, {
+			min: Date.UTC(2022, 0, 1),
+			max: Date.UTC(2023, 5, 1),
+		});
 
 		expect(span).toBeNull();
 	});
@@ -988,9 +998,9 @@ describe("what the graph can focus on an instrument's timeline", () => {
 		b.graph.drop(brokerLot, DropReason.NOT_USED, stage, null);
 		const [instrument] = b.reading().stocks;
 		assert(instrument !== undefined);
-		const timeline = buildTimeline(instrument, new ProvenanceWalker(b.graph));
+		const timeline = Timelines.build(instrument, new ProvenanceWalker(b.graph));
 
-		const focusable = focusableOf(timeline);
+		const focusable = Timelines.focusableOf(timeline);
 
 		expect(focusable.size).toEqual(4);
 		expect(focusable.has(b.node(buy.event))).toEqual(true);

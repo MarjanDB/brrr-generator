@@ -1,5 +1,7 @@
 import type { ProvenanceNode } from "@brrr/lib";
 import { type Chart, defaults, type Plugin } from "chart.js";
+import { TimelineGeometry } from "~/composables/instrumentTimeline/timelineGeometry";
+import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import type { ChartThemeColors } from "~/composables/useChartTheme";
 import {
 	MarkState,
@@ -13,23 +15,12 @@ import {
 	TimelineRowKind,
 	TimelineWeight,
 } from "~/types/timeline";
-import {
-	barOutline,
-	barStateOf,
-	barY,
-	labelFits,
-	markSize,
-	markStateOf,
-	offsetPolygon,
-	pointY,
-	taxYearSpan,
-} from "~/utils/instrumentTimeline";
 
 // Everything here is the first pass of how the timeline looks: the marker shapes, the bars'
 // thickness and fills, where a label goes. The data, the state and the interaction around it are
 // final.
 
-export type TimelineDrawState = {
+type TimelineDrawState = {
 	timeline: Timeline;
 	// The rows the bars are drawn on, folded or spread, top to bottom
 	rows: TimelineRow[];
@@ -60,7 +51,7 @@ type PlacedRow = {
 	thickness: number;
 };
 
-// Every bar, triangle and point is one size (`markSize`), its focus outline included. What's on the
+// Every bar, triangle and point is one size (`TimelineGeometry.markSize`), its focus outline included. What's on the
 // form is drawn opaque; what's there for context is faint, its lots dotted, and what is still open
 // fades out to the right. A mark or a bar in the chain the user picked is opaque whatever its
 // weight.
@@ -108,9 +99,9 @@ function placeRows(chart: Chart<"scatter">, rows: TimelineRow[]): PlacedRow[] {
 	if (x === undefined || y === undefined) {
 		return [];
 	}
-	const thickness = markSize(pitchOf(chart));
+	const thickness = TimelineGeometry.markSize(pitchOf(chart));
 	return rows.map((row, index) => {
-		const at = y.getPixelForValue(barY(index, rows.length));
+		const at = y.getPixelForValue(TimelineGeometry.barY(index, rows.length));
 		const bars = row.bars.map((bar) => ({
 			bar,
 			x1: x.getPixelForValue(bar.opened.at),
@@ -132,7 +123,7 @@ function placeRows(chart: Chart<"scatter">, rows: TimelineRow[]): PlacedRow[] {
 // A folded row is lit or focused when one of its bars is, and dimmed when a chain is lit that
 // none of them is in.
 function rowStateOf(placed: PlacedRow, state: TimelineDrawState): MarkState {
-	const states = placed.row.bars.map((bar) => barStateOf(bar, state.focus, state.lit));
+	const states = placed.row.bars.map((bar) => Timelines.barStateOf(bar, state.focus, state.lit));
 	if (states.includes(MarkState.FOCUSED)) {
 		return MarkState.FOCUSED;
 	}
@@ -146,7 +137,8 @@ function rowStateOf(placed: PlacedRow, state: TimelineDrawState): MarkState {
 // bottom corner, under the bars.
 function drawTaxYear(chart: Chart<"scatter">, state: TimelineDrawState) {
 	const x = chart.scales.x;
-	const span = x === undefined ? null : taxYearSpan(state.year, { min: x.min, max: x.max });
+	const span =
+		x === undefined ? null : TimelineGeometry.taxYearSpan(state.year, { min: x.min, max: x.max });
 	if (x === undefined || span === null) {
 		return;
 	}
@@ -166,7 +158,7 @@ function drawTaxYear(chart: Chart<"scatter">, state: TimelineDrawState) {
 
 function drawBar(ctx: CanvasRenderingContext2D, placed: PlacedBar, state: TimelineDrawState) {
 	const { bar, x1, x2, y, thickness } = placed;
-	const barState = barStateOf(bar, state.focus, state.lit);
+	const barState = Timelines.barStateOf(bar, state.focus, state.lit);
 	const fade = barState === MarkState.DIMMED ? dimmedAlpha : 1;
 	const top = y - thickness / 2;
 	const width = Math.max(1, x2 - x1);
@@ -244,7 +236,10 @@ function drawBarEnd(
 	state: TimelineDrawState,
 ) {
 	ctx.save();
-	ctx.globalAlpha = alphaOf(placed.bar.weight, barStateOf(placed.bar, state.focus, state.lit));
+	ctx.globalAlpha = alphaOf(
+		placed.bar.weight,
+		Timelines.barStateOf(placed.bar, state.focus, state.lit),
+	);
 	markPath(ctx, mark.kind, { x, y: placed.y }, placed.thickness / 2);
 	ctx.fillStyle = state.colors[markColors[mark.kind]];
 	ctx.fill();
@@ -281,11 +276,18 @@ function drawBarOutline(
 	state: TimelineDrawState,
 ) {
 	const { bar, x1, x2, y, thickness } = placed;
-	if (!isEmphasised(barStateOf(bar, state.focus, state.lit))) {
+	if (!isEmphasised(Timelines.barStateOf(bar, state.focus, state.lit))) {
 		return;
 	}
-	const shape = barOutline(x1, x2, y, thickness, bar.opened.kind, bar.closed?.kind ?? null);
-	const outline = offsetPolygon(shape, outlineGap + focusLine / 2);
+	const shape = TimelineGeometry.barOutline(
+		x1,
+		x2,
+		y,
+		thickness,
+		bar.opened.kind,
+		bar.closed?.kind ?? null,
+	);
+	const outline = TimelineGeometry.offsetPolygon(shape, outlineGap + focusLine / 2);
 	ctx.save();
 	ctx.strokeStyle = state.colors.focus;
 	ctx.lineWidth = focusLine;
@@ -310,7 +312,7 @@ function drawRowLabel(ctx: CanvasRenderingContext2D, placed: PlacedRow, state: T
 	const text = state.describeRow(row);
 	ctx.save();
 	ctx.font = `11px ${defaults.font.family}`;
-	if (!labelFits(thickness, ctx.measureText(text).width, x2 - x1)) {
+	if (!TimelineGeometry.labelFits(thickness, ctx.measureText(text).width, x2 - x1)) {
 		ctx.restore();
 		return;
 	}
@@ -393,11 +395,11 @@ function drawPoint(
 	const { mark } = point;
 	const at = {
 		x: chart.scales.x?.getPixelForValue(mark.at) ?? 0,
-		y: chart.scales.y?.getPixelForValue(pointY(point.stack)) ?? 0,
+		y: chart.scales.y?.getPixelForValue(TimelineGeometry.pointY(point.stack)) ?? 0,
 	};
-	const markState = markStateOf(mark.node, state.focus, state.lit);
+	const markState = Timelines.markStateOf(mark.node, state.focus, state.lit);
 	const color = state.colors[markColors[mark.kind]];
-	const radius = markSize(pitchOf(chart)) / 2;
+	const radius = TimelineGeometry.markSize(pitchOf(chart)) / 2;
 	ctx.save();
 	ctx.globalAlpha = alphaOf(mark.weight, markState);
 	if (isEmphasised(markState)) {
@@ -427,7 +429,7 @@ function drawPoint(
 // outlines and labels and the points over them. A bar's row is drawn as its bar; the lots of other
 // years and what is still open, folded, as one row each. The state is read through `getState` on
 // every draw, so a focus change only needs `chart.update("none")`.
-export function timelineMarksPlugin(getState: () => TimelineDrawState): TimelineMarksPlugin {
+function timelineMarksPlugin(getState: () => TimelineDrawState): TimelineMarksPlugin {
 	let placed: PlacedRow[] = [];
 	return {
 		id: "timelineMarks",
@@ -494,3 +496,8 @@ export function timelineMarksPlugin(getState: () => TimelineDrawState): Timeline
 		},
 	};
 }
+
+// The chart.js plugin that draws the timeline.
+export const TimelineMarks = {
+	plugin: timelineMarksPlugin,
+};

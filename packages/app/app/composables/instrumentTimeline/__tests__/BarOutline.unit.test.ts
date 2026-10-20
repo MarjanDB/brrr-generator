@@ -1,10 +1,17 @@
 import { describe, expect, test } from "vitest";
+import { TimelineGeometry } from "~/composables/instrumentTimeline/timelineGeometry";
 import { TimelineMarkKind } from "~/types/timeline";
-import { barOutline, offsetPolygon } from "~/utils/instrumentTimeline";
 
 describe("the shape of a lot on the timeline", () => {
 	test("a buy then a sale: the bar with the buy's triangle out to the left at the bottom and the sale's out to the right at the top", () => {
-		const shape = barOutline(0, 100, 6, 12, TimelineMarkKind.BOUGHT, TimelineMarkKind.SOLD);
+		const shape = TimelineGeometry.barOutline(
+			0,
+			100,
+			6,
+			12,
+			TimelineMarkKind.BOUGHT,
+			TimelineMarkKind.SOLD,
+		);
 
 		expect(shape).toEqual([
 			{ x: 0, y: 0 },
@@ -15,7 +22,14 @@ describe("the shape of a lot on the timeline", () => {
 	});
 
 	test("a written option, a sale then a buy: the triangles stick out the other way", () => {
-		const shape = barOutline(0, 100, 6, 12, TimelineMarkKind.SOLD, TimelineMarkKind.BOUGHT);
+		const shape = TimelineGeometry.barOutline(
+			0,
+			100,
+			6,
+			12,
+			TimelineMarkKind.SOLD,
+			TimelineMarkKind.BOUGHT,
+		);
 
 		expect(shape).toEqual([
 			{ x: -6, y: 0 },
@@ -26,7 +40,7 @@ describe("the shape of a lot on the timeline", () => {
 	});
 
 	test("what is still open ends square", () => {
-		const shape = barOutline(0, 100, 6, 12, TimelineMarkKind.BOUGHT, null);
+		const shape = TimelineGeometry.barOutline(0, 100, 6, 12, TimelineMarkKind.BOUGHT, null);
 
 		expect(shape).toEqual([
 			{ x: 0, y: 0 },
@@ -39,7 +53,7 @@ describe("the shape of a lot on the timeline", () => {
 
 describe("an outline around a shape, the same distance from every edge", () => {
 	test("a rectangle grows by the distance on every side", () => {
-		const outline = offsetPolygon(
+		const outline = TimelineGeometry.offsetPolygon(
 			[
 				{ x: 0, y: 0 },
 				{ x: 10, y: 0 },
@@ -58,7 +72,7 @@ describe("an outline around a shape, the same distance from every edge", () => {
 	});
 
 	test("a lot's slanted ends move out along their own slant, 3 px from it", () => {
-		const outline = offsetPolygon(
+		const outline = TimelineGeometry.offsetPolygon(
 			[
 				{ x: 0, y: 0 },
 				{ x: 106, y: 0 },
@@ -79,7 +93,7 @@ describe("an outline around a shape, the same distance from every edge", () => {
 	});
 
 	test("a corner repeated, as a lot opened and closed on the same day, is outlined once", () => {
-		const outline = offsetPolygon(
+		const outline = TimelineGeometry.offsetPolygon(
 			[
 				{ x: 0, y: 0 },
 				{ x: 0, y: 0 },

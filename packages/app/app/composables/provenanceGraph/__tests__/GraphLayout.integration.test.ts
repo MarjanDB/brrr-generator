@@ -20,6 +20,7 @@ import {
 } from "@brrr/lib";
 import { TestKit } from "@brrr/test-cases";
 import { assert, describe, expect, test } from "vitest";
+import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import { GraphCaptions } from "~/composables/provenanceGraph/graphCaptions";
 import { GraphLayouts } from "~/composables/provenanceGraph/graphLayouts";
 import { GraphModels } from "~/composables/provenanceGraph/graphModels";
@@ -30,7 +31,6 @@ import {
 	GraphNodeKind,
 	SplitFactorKind,
 } from "~/types/provenanceGraph";
-import { buildTimeline, focusableOf } from "~/utils/instrumentTimeline";
 
 // The taxpayer the expected files were generated for.
 const taxpayer = TaxpayerConfigSchema.parse({
@@ -207,7 +207,7 @@ describe("the graph engine on what the stages really record", () => {
 		assert(before !== undefined);
 		const file = report.provenance.nodes().find((node) => node.kind === ProvenanceNodeKind.FILE);
 		assert(file !== undefined);
-		const focusable = focusableOf(buildTimeline(stock, walker));
+		const focusable = Timelines.focusableOf(Timelines.build(stock, walker));
 		const model = GraphModels.of(report.provenance, reading, false);
 
 		const buyGraph = GraphLayouts.of(model, { focus: buy, expanded: new Set(), focusable });

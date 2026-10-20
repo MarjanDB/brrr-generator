@@ -7,6 +7,7 @@ import {
 	type ReportMatchedLot,
 } from "@brrr/lib";
 import { DateTime } from "luxon";
+import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import {
 	type DetectedPart,
 	DetectedReason,
@@ -22,7 +23,6 @@ import {
 	TimelineWeight,
 } from "~/types/timeline";
 import { leftOutOf } from "~/utils/instrumentPanel";
-import { markStateOf } from "~/utils/instrumentTimeline";
 
 // A number a form line holds, as a magnitude: a sale's line holds its quantity, and so its total,
 // negative. Null when the line, or the field, is missing.
@@ -194,7 +194,7 @@ export function detectedRowStateOf(
 	focus: ProvenanceNode | null,
 	lit: ReadonlySet<ProvenanceNode> | null,
 ): MarkState {
-	const own = markStateOf(mark.node, focus, lit);
+	const own = Timelines.markStateOf(mark.node, focus, lit);
 	if (own === MarkState.FOCUSED || own === MarkState.LIT) {
 		return own;
 	}

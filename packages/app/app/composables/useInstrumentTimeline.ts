@@ -7,6 +7,7 @@ import {
 	ReportInstrumentKind,
 } from "@brrr/lib";
 import { DateTime, Duration } from "luxon";
+import { Timelines } from "~/composables/instrumentTimeline/timelines";
 import { CountNoun } from "~/types/counts";
 import {
 	type Timeline,
@@ -18,7 +19,6 @@ import {
 } from "~/types/timeline";
 import { eventKindKeys, markKeys } from "~/utils/i18nKeys";
 import { chipOf } from "~/utils/instrumentPanel";
-import { buildTimeline } from "~/utils/instrumentTimeline";
 import { fieldOf } from "~/utils/provenanceFields";
 
 // An instrument's timeline: its marks, bars and points, and what the timeline, the tables under it
@@ -32,7 +32,7 @@ export function useInstrumentTimeline(
 	const { date, chipText } = useProvenanceText();
 	const { countText } = useCountText();
 
-	const timeline = computed<Timeline>(() => buildTimeline(instrument(), walker()));
+	const timeline = computed<Timeline>(() => Timelines.build(instrument(), walker()));
 
 	// "10 shares", "1 contract": a quantity with its unit.
 	function describeQuantity(quantity: number): string {
