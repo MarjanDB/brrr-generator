@@ -26,7 +26,7 @@ auto-imports and i18n work as in the app. Tests sit in a `__tests__/` beside the
 `composables/__tests__/`, `composables/provenanceGraph/__tests__/`, `components/landing/__tests__/`), import `describe`, `expect`
 and `test` from `vitest` (no globals, unlike lib), import the code under test explicitly through `~/`, and need lib built, like
 `typecheck`. Utils and a composable's modules are called directly, and what is private to a composable is tested through it. A
-component's own logic is tested by mounting it (`mountSuspended`) and reading what it renders (`LandingPrinter`), and a route
+component's own logic is tested by mounting it (`mountSuspended`) and reading what it renders (`LandingPrinter`, `LandingBrokerCard`), and a route
 it fetches is mocked with `registerEndpoint` (`useCountries`, `useInfoProvider`). A composable runs inside a mounted component through
 `composables/__tests__/support/mountComposable.ts` (`mountComposableUnder` for one that injects what a parent provided), and its
 text is asserted as the English (or, after `setLocale("sl")`, Slovenian) string; the app is shared between tests, so a test that
@@ -42,6 +42,8 @@ the left, the money printer in the middle and the tax offices on the right, stac
 - The page only presents what the site supports: its cards are information, with nothing to click. The brokers are
   `BrokerGuides.all` as `LandingBrokerCard`s (the export guides stay in the upload step). The tax offices are `TaxOffices.all` (`utils/taxOffices.ts`, shapes in `types/taxOffice.ts`): what the site shows
   of each, with no ids. `TaxAuthorityCards.all` builds on them and adds the `TaxAuthorityId` the configure step picks by.
+- The brokers' cards list what the site reads from each export (`BrokerGuide.readKeys`), as the tax offices' list the forms
+  they take (`formKeys`), both as neutral `AppBadge pill`s, so the printer's colour is the only one in the row.
 - `LandingPrinter` is the one way into the flow, a link to `/report/upload` named "Start a report", which is also the label under
   it. It is an inline SVG in the action colours: the export goes in on the left as an XML sheet and plain forms (no
   country's form names) come out on the right. Its box is centred on the printer's body, not on the paper, so the body lines
