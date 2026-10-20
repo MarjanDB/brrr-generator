@@ -9,7 +9,8 @@ const { t } = useI18n();
 const { countText } = useCountText();
 const { dropSentence } = useProvenanceText();
 const problems = useReportProblems();
-const { groups, leftOut, selected, selectedLeftOut, select, titleOf } = problems;
+const { groups, leftOut, selected, selectedLeftOut, select, titleOf, definesPayer, leftOutKey } =
+	problems;
 
 // A group's name, with how many it holds on the right.
 const groupHeading = "flex items-baseline justify-between px-2 pt-3 pb-1 text-subheading";

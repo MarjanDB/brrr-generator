@@ -12,7 +12,7 @@ import { type InstrumentProblem, type ProblemGroup, ProblemState } from "~/types
 
 // Whether a payer defined by hand resolves a warning of this kind: the company lookup found none,
 // or failed.
-export function definesPayer(kind: ProvenanceDetailKind): boolean {
+function definesPayer(kind: ProvenanceDetailKind): boolean {
 	return (
 		kind === ProvenanceDetailKind.COMPANY_NOT_FOUND ||
 		kind === ProvenanceDetailKind.COMPANY_LOOKUP_FAILED
@@ -37,7 +37,7 @@ function affectedOf(
 // first come: an instrument's warnings of one kind are one problem. Only the report's own warnings
 // count, not its import's. A payer defined by hand resolves its problem, and stays in that
 // problem's group once the report, made again with it, no longer warns about it.
-export function problemGroupsOf(
+function problemGroupsOf(
 	sections: PanelSections,
 	reported: ProvenanceWarning[],
 	payers: ReadonlyMap<string, DefinedPayer>,
@@ -91,13 +91,21 @@ export function problemGroupsOf(
 }
 
 // How many problems still need the report's maker.
-export function openProblemCount(groups: ProblemGroup[]): number {
+function openProblemCount(groups: ProblemGroup[]): number {
 	return groups
 		.flatMap((group) => group.problems)
 		.filter((problem) => problem.state === ProblemState.OPEN).length;
 }
 
 // What the view calls the group of what was left out for one reason, at its place in the list.
-export function leftOutKey(index: number): string {
+function leftOutKey(index: number): string {
 	return `left-out:${index}`;
 }
+
+// The report's problems about its instruments, one per instrument and cause, grouped by cause.
+export const ProblemGroups = {
+	of: problemGroupsOf,
+	openCount: openProblemCount,
+	leftOutKey,
+	definesPayer,
+};

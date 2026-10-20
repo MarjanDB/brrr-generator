@@ -8,10 +8,10 @@ import {
 } from "@brrr/lib";
 import { describe, expect, test } from "vitest";
 import { InstrumentPanels } from "~/composables/instrumentPanel/instrumentPanels";
+import { ProblemGroups } from "~/composables/reportProblems/problemGroups";
 import type { DefinedPayer } from "~/types/reportFlow";
 import { ProblemState } from "~/types/reportProblems";
 import { GraphBuilder } from "~/utils/__tests__/support/GraphBuilder";
-import { openProblemCount, problemGroupsOf } from "~/utils/reportProblems";
 
 const stage = ProvenanceStage.Schema.parse("Test");
 const noPayers: ReadonlyMap<string, DefinedPayer> = new Map();
@@ -86,7 +86,7 @@ describe("the report's problems about its instruments, in the problems view's li
 		b.sumInto({ instrument: tte, events: [tteDividend], dateReceived: "2022-04-02" });
 		const reading = b.reading();
 
-		const groups = problemGroupsOf(
+		const groups = ProblemGroups.of(
 			InstrumentPanels.build(reading),
 			reading.warnings,
 			noPayers,
@@ -109,7 +109,7 @@ describe("the report's problems about its instruments, in the problems view's li
 		expect(problem?.lineCount).toEqual(2);
 		expect(problem?.defined).toBeNull();
 		expect(problem?.state).toEqual(ProblemState.OPEN);
-		expect(openProblemCount(groups)).toEqual(2);
+		expect(ProblemGroups.openCount(groups)).toEqual(2);
 	});
 
 	test("a payer defined by hand resolves its problem while the report still warns about it", () => {
@@ -150,7 +150,7 @@ describe("the report's problems about its instruments, in the problems view's li
 		};
 		const reading = b.reading();
 
-		const groups = problemGroupsOf(
+		const groups = ProblemGroups.of(
 			InstrumentPanels.build(reading),
 			reading.warnings,
 			new Map([["XS0000000009", payer]]),
@@ -161,7 +161,7 @@ describe("the report's problems about its instruments, in the problems view's li
 		expect(groups[0]?.problems[0]?.defined).toBe(payer);
 		expect(groups[0]?.problems[0]?.warnings).toHaveLength(1);
 		expect(groups[0]?.problems[0]?.state).toEqual(ProblemState.RESOLVED);
-		expect(openProblemCount(groups)).toEqual(0);
+		expect(ProblemGroups.openCount(groups)).toEqual(0);
 	});
 
 	test("once the report no longer warns, a payer defined by hand stays in its problem's group, resolved", () => {
@@ -210,7 +210,7 @@ describe("the report's problems about its instruments, in the problems view's li
 		};
 		const reading = b.reading();
 
-		const groups = problemGroupsOf(
+		const groups = ProblemGroups.of(
 			InstrumentPanels.build(reading),
 			reading.warnings,
 			new Map([["XS0000000009", payer]]),
@@ -228,7 +228,7 @@ describe("the report's problems about its instruments, in the problems view's li
 		expect(groups[0]?.problems[1]?.affected[0]).toBe(b.node(april.event));
 		expect(groups[0]?.problems[1]?.lineCount).toEqual(1);
 		expect(groups[0]?.problems[1]?.state).toEqual(ProblemState.RESOLVED);
-		expect(openProblemCount(groups)).toEqual(1);
+		expect(ProblemGroups.openCount(groups)).toEqual(1);
 	});
 
 	test("a problem keeps its key in a report made again, whose nodes are new", () => {
@@ -293,13 +293,13 @@ describe("the report's problems about its instruments, in the problems view's li
 		const firstReading = first.reading();
 		const secondReading = second.reading();
 
-		const before = problemGroupsOf(
+		const before = ProblemGroups.of(
 			InstrumentPanels.build(firstReading),
 			firstReading.warnings,
 			noPayers,
 			new ProvenanceWalker(first.graph),
 		);
-		const after = problemGroupsOf(
+		const after = ProblemGroups.of(
 			InstrumentPanels.build(secondReading),
 			secondReading.warnings,
 			payers,
@@ -330,7 +330,7 @@ describe("the report's problems about its instruments, in the problems view's li
 		);
 		const reading = b.reading();
 
-		const groups = problemGroupsOf(
+		const groups = ProblemGroups.of(
 			InstrumentPanels.build(reading),
 			[],
 			noPayers,

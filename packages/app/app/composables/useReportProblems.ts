@@ -6,6 +6,7 @@ import {
 	type ReportProvenance,
 } from "@brrr/lib";
 import type { ComputedRef, InjectionKey, Ref } from "vue";
+import { ProblemGroups } from "~/composables/reportProblems/problemGroups";
 import type { LeftOutGroup, PanelSections } from "~/types/instrumentPanel";
 import type { DefinedPayer } from "~/types/reportFlow";
 import {
@@ -37,6 +38,8 @@ export type ReportProblems = {
 	leftOut: ComputedRef<LeftOutGroup[]>;
 	// The problems still open, and each reason something was left out: the Problems tab's count.
 	openCount: ComputedRef<number>;
+	// Only the problems still open: the header's warnings button counts them.
+	openProblemCount: ComputedRef<number>;
 	// Whether there is anything to list, open or resolved; without it there is no Problems tab.
 	hasProblems: ComputedRef<boolean>;
 	tab: Ref<ReportPanelTab>;
@@ -57,6 +60,10 @@ export type ReportProblems = {
 	sentenceOf: (problem: InstrumentProblem) => string;
 	// The few words a sign shows where the instrument is listed.
 	signOf: (problem: InstrumentProblem) => string;
+	// Whether a payer defined by hand resolves a problem of this kind.
+	definesPayer: (kind: ProvenanceDetailKind) => boolean;
+	// The key of what was left out for one reason, at its place in the list.
+	leftOutKey: (index: number) => string;
 };
 
 const reportProblemsKey: InjectionKey<ReportProblems> = Symbol("ReportProblems");
@@ -69,7 +76,7 @@ export function provideReportProblems(args: ReportProblemsArgs): ReportProblems 
 	const picked = ref<string | null>(null);
 
 	const groups = computed(() =>
-		problemGroupsOf(args.sections(), args.reading().warnings, args.payers(), args.walker()),
+		ProblemGroups.of(args.sections(), args.reading().warnings, args.payers(), args.walker()),
 	);
 	const problems = computed(() => groups.value.flatMap((group) => group.problems));
 	const leftOut = computed(() => ReportInstruments.leftOutGroupsOf(args.reading().needsALook));
@@ -77,21 +84,21 @@ export function provideReportProblems(args: ReportProblemsArgs): ReportProblems 
 		const key = picked.value;
 		const known =
 			problems.value.some((problem) => problem.key === key) ||
-			leftOut.value.some((_, index) => leftOutKey(index) === key);
+			leftOut.value.some((_, index) => ProblemGroups.leftOutKey(index) === key);
 		if (key !== null && known) {
 			return key;
 		}
 		const open = problems.value.find((problem) => problem.state === ProblemState.OPEN);
 		return (
 			open?.key ??
-			(leftOut.value.length > 0 ? leftOutKey(0) : null) ??
+			(leftOut.value.length > 0 ? ProblemGroups.leftOutKey(0) : null) ??
 			problems.value[0]?.key ??
 			null
 		);
 	});
 
 	function titleOf(problem: InstrumentProblem): string {
-		return definesPayer(problem.kind) && problem.entry.isin !== null
+		return ProblemGroups.definesPayer(problem.kind) && problem.entry.isin !== null
 			? t("problems_payer_title", { isin: problem.entry.isin })
 			: problem.title;
 	}
@@ -128,14 +135,16 @@ export function provideReportProblems(args: ReportProblemsArgs): ReportProblems 
 	const view: ReportProblems = {
 		groups,
 		leftOut,
-		openCount: computed(() => openProblemCount(groups.value) + leftOut.value.length),
+		openCount: computed(() => ProblemGroups.openCount(groups.value) + leftOut.value.length),
+		openProblemCount: computed(() => ProblemGroups.openCount(groups.value)),
 		hasProblems: computed(() => problems.value.length > 0 || leftOut.value.length > 0),
 		tab,
 		selected: computed(
 			() => problems.value.find((problem) => problem.key === current.value) ?? null,
 		),
 		selectedLeftOut: computed(
-			() => leftOut.value.find((_, index) => leftOutKey(index) === current.value) ?? null,
+			() =>
+				leftOut.value.find((_, index) => ProblemGroups.leftOutKey(index) === current.value) ?? null,
 		),
 		select: (key) => {
 			picked.value = key;
@@ -157,6 +166,8 @@ export function provideReportProblems(args: ReportProblemsArgs): ReportProblems 
 		titleOf,
 		sentenceOf,
 		signOf,
+		definesPayer: ProblemGroups.definesPayer,
+		leftOutKey: ProblemGroups.leftOutKey,
 	};
 	provide(reportProblemsKey, view);
 	return view;

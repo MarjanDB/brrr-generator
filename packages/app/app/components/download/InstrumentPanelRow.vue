@@ -22,7 +22,7 @@ const emit = defineEmits<{
 
 const { t, locale } = useI18n();
 const { countText } = useCountText();
-const { problemOf, signOf } = useReportProblems();
+const { problemOf, signOf, definesPayer } = useReportProblems();
 
 // A payer problem says so in place of the ISIN, and an unknown company has no monogram of its own.
 const problem = computed(() => {

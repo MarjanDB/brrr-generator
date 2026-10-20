@@ -24,7 +24,7 @@ const reports = useTaxYearReports();
 // The report step's own problems: each button opens the Problems tab on them. What the import left
 // out is the review step's.
 const problems = useReportProblems();
-const openWarnings = computed(() => openProblemCount(problems.groups.value));
+const openWarnings = problems.openProblemCount;
 
 // "10 lines on the form, 5 items not on it": what the form holds, and what the import has that it
 // doesn't.
@@ -81,7 +81,7 @@ async function downloadXml() {
     <IssueButton
       v-if="reading.totals.needsALook > 0"
       :severity="IssueSeverity.DANGER"
-      @click="problems.review(leftOutKey(0))"
+      @click="problems.review(problems.leftOutKey(0))"
     >
       {{ countText(CountNoun.ITEM_NEEDS_A_LOOK, reading.totals.needsALook) }}
     </IssueButton>

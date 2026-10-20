@@ -16,7 +16,8 @@ import { ButtonVariant, ColorIntent, ControlSize } from "~/types/ui";
 // payer, to edit or remove.
 const { t, locale } = useI18n();
 const { dropSentence, nodeDate, nodeAmount } = useProvenanceText();
-const { selected, selectedLeftOut, titleOf, sentenceOf, showOnForm } = useReportProblems();
+const { selected, selectedLeftOut, titleOf, sentenceOf, showOnForm, definesPayer } =
+	useReportProblems();
 const { definePayer, removePayer } = useReportFlow();
 
 const editing = ref(false);

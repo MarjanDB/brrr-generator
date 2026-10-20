@@ -12,7 +12,7 @@ const chips = ReportInstruments.chipsOf(entry.instrument);
 
 const { t, locale } = useI18n();
 const { chipText, date: dateText } = useProvenanceText();
-const { problemOf, sentenceOf, review } = useReportProblems();
+const { problemOf, sentenceOf, review, definesPayer } = useReportProblems();
 
 const problem = computed(() => problemOf(entry.instrument));
 const open = computed(() => problem.value?.state === ProblemState.OPEN);
