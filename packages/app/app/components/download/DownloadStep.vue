@@ -55,6 +55,7 @@ const cardKey = computed(() =>
       :reading="reading"
       :sections="sections"
       :guide="guide"
+      @select="select"
     />
 
     <p v-if="selected === null" class="app-text-muted">{{ t('download_nothing') }}</p>

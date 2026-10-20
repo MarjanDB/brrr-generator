@@ -14,10 +14,12 @@ import {
 	type ReportProvenance,
 } from "@brrr/lib";
 import type {
+	LeftOutGroup,
 	PanelContract,
 	PanelEntry,
 	PanelSections,
 	SplitChip,
+	WarningGroup,
 	WarningItem,
 } from "~/types/instrumentPanel";
 import { SplitFactorKind } from "~/types/provenanceGraph";
@@ -164,14 +166,46 @@ export function defaultFocus(
 	return focus;
 }
 
-function warningItemsOfEntry(entry: PanelEntry): WarningItem[] {
-	const title = entry.contract?.occSymbol ?? entry.ticker;
-	return entry.instrument.warnings.map((warning) => ({ title, warning }));
+// The warnings the report raised (`reported`, the reading's own), each with the instrument it
+// belongs to, in the panel's order. An instrument's list also holds what its import warned about,
+// which is the import's to show.
+export function warningItemsOf(
+	sections: PanelSections,
+	reported: ProvenanceWarning[],
+): WarningItem[] {
+	return entriesOf(sections).flatMap((entry) => {
+		const title = entry.contract?.occSymbol ?? entry.ticker;
+		return entry.instrument.warnings
+			.filter((warning) => reported.includes(warning))
+			.map((warning) => ({ instrument: entry.instrument, title, warning }));
+	});
 }
 
-// Every warning in the report, each with the instrument it belongs to, in the panel's order.
-export function warningItemsOf(sections: PanelSections): WarningItem[] {
-	return entriesOf(sections).flatMap(warningItemsOfEntry);
+// Items in groups by a key, the groups in the order their keys first come.
+function groupsBy<Item>(items: Item[], keyOf: (item: Item) => string): Item[][] {
+	const groups = new Map<string, Item[]>();
+	for (const item of items) {
+		const key = keyOf(item);
+		groups.set(key, [...(groups.get(key) ?? []), item]);
+	}
+	return [...groups.values()];
+}
+
+// The warnings grouped by their kind: "no company was found" once, with every payer it is about.
+export function warningGroupsOf(items: WarningItem[]): WarningGroup[] {
+	return groupsBy(items, (item) => item.warning.detail.kind).flatMap((group) => {
+		const [first] = group;
+		return first === undefined ? [] : [{ kind: first.warning.detail.kind, items: group }];
+	});
+}
+
+// What was left out, grouped by its reason and how it was said, as the review step groups the
+// import's: rows of an asset class we don't support are one group, another asset class another.
+export function leftOutGroupsOf(leftOut: ReportLeftOut[]): LeftOutGroup[] {
+	return groupsBy(leftOut, (item) => dropKey(item.drop)).flatMap((group) => {
+		const [first] = group;
+		return first === undefined ? [] : [{ drop: first.drop, items: group }];
+	});
 }
 
 function matchedLotOf(instrument: ReportInstrument, node: ProvenanceNode): ReportMatchedLot | null {

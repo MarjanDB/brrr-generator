@@ -42,6 +42,21 @@ export const detailKindKeys: Record<ProvenanceDetailKind, string> = {
 	[ProvenanceDetailKind.COMPANY_LOOKUP_FAILED]: "download_detail_company_lookup_failed",
 };
 
+// The heading of a group of the report's warnings of one kind, in the list its warnings button opens.
+export const warningGroupKeys: Record<ProvenanceDetailKind, string> = {
+	[ProvenanceDetailKind.FILE_ERROR]: "download_warning_group_file_error",
+	[ProvenanceDetailKind.ASSET_CLASS_NOT_SUPPORTED]:
+		"download_warning_group_asset_class_not_supported",
+	[ProvenanceDetailKind.CLOSED_OUTSIDE_PERIOD]: "download_warning_group_closed_outside_period",
+	[ProvenanceDetailKind.PAID_OUTSIDE_PERIOD]: "download_warning_group_paid_outside_period",
+	[ProvenanceDetailKind.LOT_MATCHING_IGNORES_BROKER_LOTS]:
+		"download_warning_group_lot_matching_ignores_broker_lots",
+	[ProvenanceDetailKind.FORM_IGNORES_BROKER_LOTS]:
+		"download_warning_group_form_ignores_broker_lots",
+	[ProvenanceDetailKind.COMPANY_NOT_FOUND]: "download_warning_group_company_not_found",
+	[ProvenanceDetailKind.COMPANY_LOOKUP_FAILED]: "download_warning_group_company_lookup_failed",
+};
+
 // The name each value of a detail has in its sentence's text: {error}, {assetClass}, {date}, ...
 export const detailValueParams: Record<ProvenanceDetailValue, string> = {
 	[ProvenanceDetailValue.ERROR]: "error",

@@ -358,6 +358,60 @@ test("what the import dropped needs a look, whatever instrument it was near", ()
 	expect(reading.stocks).toHaveLength(0);
 });
 
+test("a report's problems are the ones its own step raised, not its import's", () => {
+	const imported = new ProvenanceGraph({ parent: null });
+	const file = {};
+	const row = {};
+	const grouping = {};
+	const dividend = {};
+	imported.node(file, ProvenanceNodeKind.FILE, "U1.xml", {});
+	imported.node(row, ProvenanceNodeKind.ROW, "Trade 7 · ES", {});
+	imported.node(grouping, ProvenanceNodeKind.GROUPING, "grouping FR1 · TTE", {
+		[ProvenanceField.ISIN]: "FR1",
+		[ProvenanceField.TICKER]: "TTE",
+	});
+	imported.node(dividend, ProvenanceNodeKind.EVENT, "dividend d1 · TTE", {
+		[ProvenanceField.EVENT_KIND]: ProvenanceEventKind.DIVIDEND,
+		[ProvenanceField.DATE]: "2022-04-02",
+	});
+	imported.derive([file], row, ProvenanceChange.CONTAINS, stage, null);
+	imported.derive([dividend], grouping, ProvenanceChange.GROUPED, stage, null);
+	imported.drop(
+		row,
+		DropReason.NOT_SUPPORTED,
+		stage,
+		new ProvenanceDetail({
+			kind: ProvenanceDetailKind.ASSET_CLASS_NOT_SUPPORTED,
+			values: { [ProvenanceDetailValue.ASSET_CLASS]: "BOND" },
+		}),
+	);
+	const report = imported.layer();
+	const sum = {};
+	const line = {};
+	report.node(sum, ProvenanceNodeKind.SUM, "action sum 1", {});
+	report.node(line, ProvenanceNodeKind.REPORT_LINE, "DOH_DIV 2022-04-02", {});
+	report.derive([dividend], sum, ProvenanceChange.SUMMED, stage, null);
+	report.derive([sum], line, ProvenanceChange.REPORTED, stage, null);
+	report.warn(
+		line,
+		stage,
+		new ProvenanceDetail({
+			kind: ProvenanceDetailKind.COMPANY_NOT_FOUND,
+			values: { [ProvenanceDetailValue.ISIN]: "FR1" },
+		}),
+	);
+
+	const reading = new ProvenanceReportReader().read(report);
+
+	expect(reading.needsALook).toHaveLength(0);
+	expect(reading.totals.needsALook).toEqual(0);
+	expect(reading.warnings).toHaveLength(1);
+	expect(reading.warnings[0].detail.kind).toEqual(ProvenanceDetailKind.COMPANY_NOT_FOUND);
+	expect(reading.totals.warnings).toEqual(1);
+	expect(reading.dividendPayers).toHaveLength(1);
+	expect(reading.dividendPayers[0].warnings).toHaveLength(1);
+});
+
 test("a matched lot whose legs closed outside the period is one thing left out and has no lines", () => {
 	const graph = new ProvenanceGraph({ parent: null });
 	const grouping = {};

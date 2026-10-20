@@ -1,9 +1,12 @@
 import type {
 	IdentifierChangeType,
 	OptionRight,
+	ProvenanceDetailKind,
+	ProvenanceDrop,
 	ProvenanceWarning,
 	ReportInstrument,
 	ReportInstrumentKind,
+	ReportLeftOut,
 } from "@brrr/lib";
 
 // An option contract's terms, as the grouping recorded them.
@@ -46,9 +49,24 @@ export type PanelSections = {
 };
 
 export type WarningItem = {
-	// The instrument the warning is about: its ticker, or a contract's OCC symbol.
+	// The instrument the warning is about, which a click on it selects, and its title: its ticker,
+	// or a contract's OCC symbol.
+	instrument: ReportInstrument;
 	title: string;
 	warning: ProvenanceWarning;
+};
+
+// The report's warnings of one kind, as the list its warnings button opens groups them.
+export type WarningGroup = {
+	kind: ProvenanceDetailKind;
+	items: WarningItem[];
+};
+
+// What the report left out for one reason, said the same way, as the list its needs-a-look button
+// opens groups it. The drop says the group's sentence.
+export type LeftOutGroup = {
+	drop: ProvenanceDrop;
+	items: ReportLeftOut[];
 };
 
 // What a corporate action chip in the instrument header says, as the action recorded it.

@@ -36,6 +36,7 @@ export class ProvenanceReportReader {
 		const flow = new ProvenanceWalker(graph, [ProvenanceChange.GROUPED]);
 		const all = new ProvenanceWalker(graph);
 		const warnings = graph.warnings();
+		const reportWarnings = graph.ownWarnings();
 		const nodes = graph.nodes();
 
 		const instruments = nodes
@@ -51,7 +52,10 @@ export class ProvenanceReportReader {
 
 		const allDrops = graph.drops();
 		const leftOutOf = (drop: ProvenanceDrop): ReportLeftOut => this.leftOutOf(drop, flow);
-		const needsALook = allDrops
+		// The report's problems are the ones its own step raised. What the import dropped or warned
+		// about is the import's to show, and every report of it would repeat it.
+		const needsALook = graph
+			.ownDrops()
 			.map(leftOutOf)
 			.filter((leftOut) => leftOut.category === DropCategory.NEEDS_A_LOOK);
 		const notInReport = allDrops
@@ -79,11 +83,12 @@ export class ProvenanceReportReader {
 				),
 			],
 			needsALook,
+			warnings: reportWarnings,
 			totals: new ReportTotals({
 				lines: nodes.filter((node) => node.kind === ProvenanceNodeKind.REPORT_LINE).length,
 				notInReport: new Set(notInReport.map((leftOut) => leftOut.subject)).size,
 				needsALook: new Set(needsALook.map((leftOut) => leftOut.subject)).size,
-				warnings: warnings.length,
+				warnings: reportWarnings.length,
 			}),
 		});
 	}
