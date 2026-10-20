@@ -61,7 +61,7 @@ const tabs = computed(() =>
 </script>
 
 <template>
-	<div class="card card-padding-md flex flex-col gap-4">
+	<div class="step-card card-padding-md flex flex-col gap-4">
 		<div class="flex items-center gap-3 flex-wrap">
 			<span class="text-label">{{ t('tax_year_label') }}</span>
 			<TaxYearPicker v-model="year" :years="years" />

@@ -54,6 +54,8 @@ export default defineConfig({
 
 		// Card
 		["card", "bg-surface border app-border-strong rounded-md"],
+		// A report step's card lets a little of the page, and the drawing on it, show through.
+		["step-card", "card bg-op-95"],
 		["card-padding-md", "p-4"],
 
 		// Tables: a step's own tables, and the denser ones inside a dialog. Cells leave their alignment
