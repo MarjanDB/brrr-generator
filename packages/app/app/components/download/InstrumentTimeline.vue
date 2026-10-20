@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { ProvenanceWalker, ReportInstrument } from "@brrr/lib";
 import { Chart, type ChartConfiguration } from "chart.js/auto";
 import { DateTime } from "luxon";
 import { computed, onMounted, onUnmounted, useTemplateRef, watch } from "vue";
@@ -15,22 +14,11 @@ import {
 } from "~/utils/instrumentTimeline";
 import { type TimelineMarksPlugin, timelineMarksPlugin } from "~/utils/timelineMarksPlugin";
 
-const props = defineProps<{
-	instrument: ReportInstrument;
-	walker: ProvenanceWalker;
-	locale: string;
-	// The instrument's name for the screen reader
-	name: string;
-	// The report's tax year, shaded behind the marks
-	year: number;
-}>();
-
-const { t } = useI18n();
-const focus = useGraphFocus();
-const { timeline, describeMark, describeBar } = useInstrumentTimeline(
-	() => props.instrument,
-	() => props.walker,
-);
+// The card's instrument over time, with the report's tax year shaded behind it. The card is made
+// once per instrument, so the chart is built once it is mounted, at the height of its own rows.
+const { t, locale } = useI18n();
+const card = useInstrumentCard();
+const { timeline, describeMark, describeBar, focus } = card;
 const { colors } = useChartTheme();
 const canvasRef = useTemplateRef<HTMLCanvasElement>("canvas");
 let chart: Chart<"scatter"> | null = null;
@@ -176,10 +164,10 @@ function tickLabel(
 ): string {
 	const at = DateTime.fromMillis(value, { zone: "utc" });
 	if (granularity === TickGranularity.YEAR) {
-		return new Intl.DateTimeFormat(props.locale, { year: "numeric", timeZone: "UTC" }).format(value);
+		return new Intl.DateTimeFormat(locale.value, { year: "numeric", timeZone: "UTC" }).format(value);
 	}
 	if (granularity === TickGranularity.DAY) {
-		return new Intl.DateTimeFormat(props.locale, {
+		return new Intl.DateTimeFormat(locale.value, {
 			day: "numeric",
 			month: "short",
 			timeZone: "UTC",
@@ -187,7 +175,7 @@ function tickLabel(
 	}
 	const yearChanged =
 		previous === undefined || DateTime.fromMillis(previous, { zone: "utc" }).year !== at.year;
-	return new Intl.DateTimeFormat(props.locale, {
+	return new Intl.DateTimeFormat(locale.value, {
 		month: "short",
 		...(yearChanged ? { year: "numeric" } : {}),
 		timeZone: "UTC",
@@ -205,7 +193,7 @@ function rebuild() {
 		focus: focus.node.value,
 		lit: focus.lit.value?.sources ?? null,
 		colors: colors.value,
-		year: props.year,
+		year: card.year,
 		describeBar,
 	}));
 	chart = new Chart(canvasRef.value, buildConfig(plugin));
@@ -218,10 +206,9 @@ onUnmounted(() => {
 });
 
 watch(
-  () => [focus.node.value, focus.lit.value, props.year],
+  () => [focus.node.value, focus.lit.value],
   () => chart?.update("none"),
 );
-watch(timeline, rebuild);
 watch(colors, rebuild);
 </script>
 
@@ -230,7 +217,7 @@ watch(colors, rebuild);
     <canvas
       ref="canvas"
       role="img"
-      :aria-label="t('download_timeline_label', { name })"
+      :aria-label="t('download_timeline_label', { name: card.name })"
       class="w-full h-full"
     />
   </div>

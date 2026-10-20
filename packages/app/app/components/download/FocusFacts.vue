@@ -3,19 +3,13 @@ import {
 	DropCategory,
 	ProvenanceEventKind,
 	ProvenanceField,
-	type ProvenanceWarning,
-	type ReportLeftOut,
 } from "@brrr/lib";
 import { computed } from "vue";
 import { ColorIntent } from "~/types/ui";
 
-defineProps<{
-	leftOut: ReportLeftOut[];
-	warnings: ProvenanceWarning[];
-}>();
-
+// The card's focused item: its facts, and what the report left out or warns about it.
 const { t, locale } = useI18n();
-const focus = useGraphFocus();
+const { focus, leftOut, warnings } = useInstrumentCard();
 const { dropSentence, warningSentence, date: dateText } = useProvenanceText();
 
 type Fact = { label: string; value: string };
