@@ -13,14 +13,19 @@ withDefaults(defineProps<{
 	opens: false,
 });
 
+// UnoCSS only sees class strings written out in full.
 const icons: Record<IssueSeverity, string> = {
 	[IssueSeverity.DANGER]: "i-mdi-alert-circle-outline",
 	[IssueSeverity.WARNING]: "i-mdi-alert-outline",
 };
+const severityClasses: Record<IssueSeverity, string> = {
+	[IssueSeverity.DANGER]: "button-issue-danger",
+	[IssueSeverity.WARNING]: "button-issue-warning",
+};
 </script>
 
 <template>
-	<button type="button" v-bind="$attrs" class="control-sm" :class="issueButtonClasses[severity]">
+	<button type="button" v-bind="$attrs" class="control-sm" :class="severityClasses[severity]">
 		<span :class="icons[severity]" class="size-4" aria-hidden="true" />
 		<slot />
 		<span v-if="opens" class="i-mdi-chevron-down size-4" aria-hidden="true" />
